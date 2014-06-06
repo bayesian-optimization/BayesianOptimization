@@ -135,21 +135,13 @@ class acquisition:
     # ------------------------------ // ------------------------------ #
     #Methods that I currently don't have a use for anymore.
 
-    def full_PI(ymax, mean, var):
-        '''
-        Function to calculate the probability of improvement. In the current implementation
-        it breaks down in the system has no noise (even though it shouldn't!). It can easily
-        be fixed and I will do it later...
-        '''
+    def full_UCB(self, mean, var):
         mean = mean.reshape(len(mean))
-        var = numpy.diagonal(var)
-
-        gamma = (mean - ymax)/var
-    
-        return norm.cdf(gamma)
+        
+        return (mean + self.kappa * var).reshape(len(mean))
 
 
-    def full_EI(ymax, mean, var, verbose = False):
+    def full_EI(self, ymax, mean, var, verbose = False):
         '''
         Function to calculate the expected improvement. Robust agains noiseless
         systems.
@@ -160,13 +152,26 @@ class acquisition:
         ei = numpy.zeros(len(mean))
 
         mean = mean.reshape(len(mean))
-        var = numpy.diagonal(var)
+        #var = numpy.diagonal(var)
 
         Z = (mean[var > 0] - ymax)/var[var > 0]
 
         ei[var > 0] = (mean[var > 0] - ymax) * norm.cdf(Z) + var[var > 0] * norm.pdf(Z)
 
         return ei
+
+    def full_PoI(self, ymax, mean, var):
+        '''
+        Function to calculate the probability of improvement. In the current implementation
+        it breaks down in the system has no noise (even though it shouldn't!). It can easily
+        be fixed and I will do it later...
+        '''
+        mean = mean.reshape(len(mean))
+        #var = numpy.diagonal(var)
+
+        gamma = (mean - ymax)/var
+    
+        return norm.cdf(gamma)
 
 
 ################################################################################
