@@ -112,6 +112,8 @@ class acquisition:
         '''If UCB is to be used, a constant kappa is needed.'''
         self.kappa = k
 
+    # ------------------------------ // ------------------------------ #
+    # Methods for single sample calculation.
     def UCB(self, x, gp, ymax):
         mean, var = gp.sample_predict(x)
         return mean + self.kappa * var
@@ -133,8 +135,7 @@ class acquisition:
             return norm.cdf(Z)
 
     # ------------------------------ // ------------------------------ #
-    #Methods that I currently don't have a use for anymore.
-
+    # Methods for bulk calculation.
     def full_UCB(self, mean, var):
         mean = mean.reshape(len(mean))
         
