@@ -1,11 +1,11 @@
 '''
 ________ Bayesian optimization ________
 
-Issues: Works for test functions, time to
-put it to work against harder stuff
+Issues: Pre initialization of Log_maximize is broken, must fix it.
 
 See papers: http://papers.nips.cc/paper/4522-practical-bayesian-optimization-of-machine-learning-algorithms.pdf
             http://arxiv.org/pdf/1012.2599v1.pdf
+            http://www.gaussianprocess.org/gpml/
 
 for references.
 '''
@@ -20,6 +20,9 @@ from scipy.optimize import minimize
 from math import exp, fabs, sqrt, log, pi
 from help_functions import covariance, sample_covariance, kernels, acquisition
 
+# Python 2.7 users.
+# from __future__ import print_function
+# from __future__ import division
 
 
 ################################################################################
@@ -37,7 +40,7 @@ class GP:
     def __init__(self, noise = 1e-6, kernel = 'squared_exp', theta = 2, l = 1):
         '''Three different kernels'''
         
-        # ----------------------- // ----------------------- #
+        # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
         if noise == 0:
             print('Non zero noise helps with numerical stability and it is strongly advised.')
         if noise < 0:
@@ -45,7 +48,7 @@ class GP:
         self.noise = noise
 
 
-        # ----------------------- // ----------------------- #
+        # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
         kn = kernels(theta, l)
         kernel_types = {'squared_exp' : kn.squared_exp, 'ARD_matern' : kn.ARD_matern, 'trivial' : kn.trivial}
 
@@ -57,7 +60,7 @@ class GP:
             self.kernel = kernel
 
 
-        # ----------------------- // ----------------------- #
+        # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
         ##Gp fit parameters
         self.fit_flag = False
         self.L = 0 # Stores the cholesky decomposition of the kernel matrix
@@ -96,8 +99,8 @@ class GP:
 
 
 
-    # ------------------------------ // ------------------------------ #
-    # ------------------------------ // ------------------------------ #
+    # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
+    # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
     def fit(self, xtrain, ytrain, verbose = False):
         '''Methods responsible for fitting the gaussian process. It follows the pseudo-code in the GP book.'''
         start = datetime.now()
@@ -129,8 +132,8 @@ class GP:
             self.fit(xtrain, ytrain)
 
 
-    # ------------------------------ // ------------------------------ #
-    # ------------------------------ // ------------------------------ #
+    # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
+    # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
     def predict(self, xtest):
         if self.fit_flag == False:
             raise RuntimeError('You have to fit the GP model first.')
@@ -185,7 +188,7 @@ class bayes_opt:
 
     '''
 
-    def __init__(self, f, arr_tup, kernel = 'squared_exp', acq = 'ei'):
+    def __init__(self, f, arr_tup, kernel = 'squared_exp', acq = 'ei', min_log = True):
         '''This is an object to find the global maximum of an unknown function via gaussian processes./n
            It takes a function of N variables and the lower and upper bounds for each variable as parameters.
            It also (will) accept the log_grid boolean appropriate for when the bounds are several orders of magnitude apart.'''
@@ -196,7 +199,7 @@ class bayes_opt:
             if pair[1] < pair[0]:
                 raise RuntimeError('The upper bound of parameter %i is less than the lower bound, the upper bound must be greater than the lower bound.' % n)
 
-        # ----------------------- // ----------------------- #
+        # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
         self.bounds = numpy.asarray(arr_tup)
         self.log_bounds = 0 * numpy.asarray(arr_tup)
         self.dim = len(arr_tup)
@@ -209,7 +212,7 @@ class bayes_opt:
             pass
 
 
-        # ----------------------- // ----------------------- #
+        # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
         self.f = f
         
         self.kernel = kernel
@@ -225,17 +228,18 @@ class bayes_opt:
             self.ac = acq
 
 
-        # ----------------------- // ----------------------- #
+        # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
+        self.min_log = min_log
         self.user_init = False
         self.user_x = numpy.empty((1, len(arr_tup)))
         self.user_y = numpy.empty(1)
 
 
         
-    # ----------------------- // ----------------------- #
-    # ----------------------- // ----------------------- #
+    # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
+    # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
     def set_acquisition(self, acq = 'ucb', k = 1):
-        '''A method to set the acquisition function to be used --- under construction.'''
+        '''A method to set the acquisition function to be used.'''
         
         ac = acquisition(k)
         ac_types = {'ei' : ac.EI, 'pi' : ac.PoI, 'ucb' : ac.UCB}
@@ -246,15 +250,16 @@ class bayes_opt:
             self.ac = acq
 
     def set_kernel(self, kernel = 'ARD_matern', theta = 1, l = 1):
-        '''A method to set the kernel to be used --- under construction.'''
+        '''A method to set the kernel to be used.'''
         self.kernel = kernel
         self.k_theta = theta
         self.k_l = l
 
 
-    # ----------------------- // ----------------------- #
-    # ----------------------- // ----------------------- #
+    # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
+    # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
     def maximize(self, init_points = 3, restarts = 10, min_it = 10, max_it = 25, ei_threshold = 0.01, verbose = True, full_out = False):
+        '''Main optimization method.'''
 
         if not self.user_init:
             print('Optimization procedure is initializing at %i random points.' % init_points)
@@ -270,10 +275,13 @@ class bayes_opt:
             print('Optimization procedure is done initializing.')
 
 
-        # ----------- // ----------- #
-        # Fitting the gaussian process
+        # ----------- // ----------- # ----------- // ----------- #
+        # Fitting the gaussian process.
         gp = GP(kernel = self.kernel, theta = self.k_theta, l = self.k_l)
-        gp.best_fit(xtrain, ytrain)
+        if self.min_log:
+            gp.best_fit(xtrain, ytrain)
+        else:
+            gp.fit(xtrain, ytrain)
         ymax = ytrain.max()
 
 
@@ -304,7 +312,10 @@ class bayes_opt:
             ymax = ytrain.max()
 
             #Updating the GP.
-            gp.best_fit(xtrain, ytrain)
+            if self.min_log:
+                gp.best_fit(xtrain, ytrain)
+            else:
+                gp.fit(xtrain, ytrain)
 
             #Sampling random points and looking for new maximum.
             x_max = self.bounds[:, 0]
@@ -342,6 +353,8 @@ class bayes_opt:
 
 
     def log_maximize(self, init_points = 3, restarts = 10, min_it = 10, max_it = 25, ei_threshold = 0.01, verbose = True, full_out = False):
+        '''This method performs the optimization algorithm in a log scale of the bounds provided. Particularly useful when
+           the order of magnitude of the bounds is too different.'''
 
         for n, pair in enumerate(self.bounds):
             if pair[0] <= 0:
@@ -368,10 +381,13 @@ class bayes_opt:
             print('Optimization procedure is done initializing.')
 
 
-        # ----------- // ----------- #
+        # ----------- // ----------- # ----------- // ----------- #
         # Fitting the gaussian process
         gp = GP(kernel = self.kernel, theta = self.k_theta, l = self.k_l)
-        gp.best_fit(xtrain, ytrain)
+        if self.min_log:
+            gp.best_fit(xtrain, ytrain)
+        else:
+            gp.fit(xtrain, ytrain)
         ymax = ytrain.max()
 
 
@@ -403,7 +419,10 @@ class bayes_opt:
             ymax = ytrain.max()
 
             #Updating the GP.
-            gp.best_fit(xtrain, ytrain)
+            if self.min_log:
+                gp.best_fit(xtrain, ytrain)
+            else:
+                gp.fit(xtrain, ytrain)
 
             #Sampling random points and looking for new maximum.
             x_max = self.log_bounds[:, 0]
@@ -444,17 +463,11 @@ class bayes_opt:
 
 
 
-    # ------------------------------ // ------------------------------ #
-    # ------------------------------ // ------------------------------ #
-
-    def log_initialize(self, points):
-        '''initialize log scale --- under construction.'''
-        return 0
-
-
+    # ------------------------------ // ------------------------------ # ------------------------------ // ------------------------------ #
+    # ------------------------------ // ------------------------------ # ------------------------------ // ------------------------------ #
     def initialize(self, points):
-        '''The user will pass a colection of points and to initialize the object.
-        so to point the algorithm is the right direction.'''
+        '''The user can pass a colection of points to initialize the object and
+        point the algorithm in the right direction.'''
         
 
         print('Initializing %i points...' % len(points))
@@ -478,40 +491,3 @@ class bayes_opt:
 
 
         self.user_init = True
-
-
-################################################################################
-################################____Example____#################################
-################################################################################
-
-'''
-Work on this section, create a visualization and some examples.
-'''
-
-
-
-if __name__ == "__main__":
-
-    import matplotlib.pyplot as plt
-
-    def my_function(array):
-    #return -0.05*array**3 + 0.5*array**2 + 1
-        return numpy.exp(-numpy.square(array - 2)) + 5*numpy.exp(-numpy.square(array - 5)) + 3*numpy.exp(-numpy.square(array/2 - 4))+\
-           8*numpy.exp(-numpy.square((array - 11)*3)) - 0*numpy.exp(-numpy.square((array - 9)*2))
-
-    def my_2dfunction(array):
-        return numpy.exp(-numpy.square(array[0] - 2)) + 5*numpy.exp(-numpy.square(array[0] - 5))+ 3*numpy.exp(-numpy.square(array[1] - 5))
-    
-    xtrain = numpy.asarray([[1],[2],[4.25],[6],[6.5],[9]])
-    ytrain = my_function(xtrain) 
-
-    xtest = numpy.linspace(0, 10, 100).reshape(-1, 1)    
-    ytest = my_function(xtest)
-
-    gp = GP()
-    gp.fit(xtrain, ytrain)
-
-    xtrain2d = numpy.asarray([[1,1],[2,3],[4.25,2],[6,5],[6.5,1.5],[9,7]])
-    ytrain2d = numpy.asarray([my_2dfunction(xtrain2d) for x in xtrain])
-
-    bo = bayes_opt(my_2dfunction, [(1,10),(1,10)])

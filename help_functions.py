@@ -3,6 +3,10 @@ from datetime import datetime
 from scipy.stats import norm
 from math import exp, fabs, sqrt, log, pi
 
+# Python 2.7 users.
+# from __future__ import print_function
+# from __future__ import division
+
 
 ################################################################################
 ################################################################################
@@ -163,3 +167,16 @@ class acquisition:
         ei[var > 0] = (mean[var > 0] - ymax) * norm.cdf(Z) + var[var > 0] * norm.pdf(Z)
 
         return ei
+
+
+################################################################################
+################################## Print Info ##################################
+################################################################################
+
+
+class print_info:
+    '''A class to take care of the verbosity of the other classes.'''
+    '''Under construction!'''
+
+    def __init__(self, infos):
+        self.info = infos
