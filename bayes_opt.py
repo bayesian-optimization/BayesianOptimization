@@ -78,7 +78,19 @@ class GP:
         return text + text2
 
     def set_kernel(self, new_kernel = 'ARD_matern', theta = 1, l = 1):
-        '''Set a new kernel for the gaussian process.'''
+        ''' Set a new kernel for the gaussian process.
+
+
+            Parameters
+            ----------
+            xtrain : nd array with predictor values.
+            
+            ytrain : 1d array with target values.
+  
+            Returns
+            -------
+            Nothing.
+        '''
         
         kn = kernels(theta, l)
         kernel_types = {'squared_exp' : kn.squared_exp, 'ARD_matern' : kn.ARD_matern, 'trivial' : kn.trivial}
@@ -88,9 +100,21 @@ class GP:
         except KeyError:
             print('Using a custom kernel.')
             self.kernel = new_kernel
+            
 
     def log_like(self):
-        '''Methods that return the log likelihood of the gaussian process.'''
+        ''' Methods that return the log likelihood of the gaussian process.
+
+
+            Parameters
+            ----------
+            No parameters.
+
+
+            Returns
+            -------
+            The log likelihood of the currently fitted GP model.
+        '''
         
         if self.fit_flag == False:
             raise RuntimeError('You have to fit the GP model first.')
@@ -101,9 +125,20 @@ class GP:
 
     # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
     # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
-    def fit(self, xtrain, ytrain, verbose = False):
-        '''Methods responsible for fitting the gaussian process. It follows the pseudo-code in the GP book.'''
-        start = datetime.now()
+    def fit(self, xtrain, ytrain):
+        ''' Methods responsible for fitting the gaussian process. It follows the pseudo-code in the GP book.
+
+
+            Parameters
+            ----------
+            xtrain : nd array with predictor values.
+            
+            ytrain : 1d array with target values.
+  
+            Returns
+            -------
+            Nothing.
+        '''
         
         self.train = xtrain
         self.L = numpy.linalg.cholesky(covariance(self.train, self.train, kernel = self.kernel) + self.noise * numpy.eye(len(self.train)))
@@ -111,12 +146,22 @@ class GP:
         self.ll = -0.5 * numpy.dot(ytrain.T, self.a) - numpy.sum(numpy.log(numpy.diagonal(self.L))) - 0.5 * len(self.train) * log(2 * pi)
         self.fit_flag = True
 
-        if verbose:
-            print('GP fit finished in: ', datetime.now() - start)
 
     def best_fit(self, xtrain, ytrain):
-        '''This method perform the GP fit but it maximizes the log likelihood by varying the parameters of the kernel.
-           The function log_res defines the function to be optimized. In case the optimization fails regular fit is performed.'''
+        ''' This method perform the GP fit but it maximizes the log likelihood by varying the parameters of the kernel.
+            The function log_res defines the function to be optimized. In case the optimization fails regular fit is performed.
+
+
+            Parameters
+            ----------
+            xtrain : nd array with predictor values.
+            
+            ytrain : 1d array with target values.
+  
+            Returns
+            -------
+            Nothing.
+        '''
 
         def log_res(para):
             self.set_kernel(new_kernel = self.kernel_name, theta = para[0], l = para[1])

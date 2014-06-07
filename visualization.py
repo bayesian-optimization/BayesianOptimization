@@ -4,6 +4,10 @@ from math import log, fabs, sqrt
 from bayes_opt import bayes_opt, GP
 from help_functions import acquisition
 
+# Python 2.7 users.
+# from __future__ import print_function
+# from __future__ import division
+
 # ------------------------------ // ------------------------------ // ------------------------------ #
 # ------------------------------ // ------------------------------ // ------------------------------ #
 def my_function1(array):
@@ -42,7 +46,7 @@ def gp1(grid):
     y = numpy.asarray([my_function1(x) for x in x])
 
     gp = GP(kernel = 'squared_exp', theta = 1, l = 1)
-    gp.fit(x, y, verbose = True)
+    gp.fit(x, y)
 
     mean, var = gp.fast_predict(grid.reshape((len(grid), 1)))
 
@@ -65,7 +69,7 @@ def gp1(grid):
     y = numpy.asarray([my_function1(x) for x in x])
 
     gp = GP(kernel = 'squared_exp', theta = 0.5, l = .9)
-    gp.fit(x, y, verbose = True)
+    gp.fit(x, y)
 
     mean, var = gp.fast_predict(grid.reshape((len(grid), 1)))
     

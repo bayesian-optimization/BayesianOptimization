@@ -181,7 +181,7 @@ class print_info:
 
     def print_info(self, op_start, i, x_max, ymax, xtrain, ytrain):
 
-        in self.lvl == 2:
+        if self.lvl == 2:
             minutes, seconds = divmod((datetime.now() - op_start).seconds, 60)
                 
             numpy.set_printoptions(precision = 4, suppress = True)
@@ -202,7 +202,7 @@ class print_info:
 
     def print_log(self, op_start, i, x_max, ymax, xtrain, ytrain):
 
-        in self.lvl == 2:
+        if self.lvl == 2:
             minutes, seconds = divmod((datetime.now() - op_start).seconds, 60)
                 
             numpy.set_printoptions(precision = 4, suppress = True)
