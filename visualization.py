@@ -237,9 +237,9 @@ if __name__ == "__main__":
     log_grid = numpy.log10(numpy.arange(0.01,13,0.01)/0.01)/log(13/0.01, 10)
 
     # ------------------------------ // ------------------------------ # 
-    #show_functions(grid, log_grid)
-    #gp1(grid)
-    #sampled_x = find_max(grid)
-    #gp2(grid, sampled_x)
+    show_functions(grid, log_grid)
+    gp1(grid)
+    sampled_x = find_max(grid)
+    gp2(grid, sampled_x)
     sampled_x_log = find_max_log(grid, log_grid)
-    #gp3_log(grid, log_grid, sampled_x_log)
+    gp3_log(grid, log_grid, sampled_x_log)

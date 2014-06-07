@@ -449,7 +449,7 @@ class bayes_opt:
             # Finding new argmax of the acquisition function.
             x_max = self.acq_max(gp, ymax, restarts, self.log_bounds)
 
-            pi.print_log(op_start, i, x_max, ymax, xtrain, ytrain)
+            pi.print_log(op_start, i, x_max, xmins, min_max_ratio, ymax, xtrain, ytrain)
                 
 
         if full_out:

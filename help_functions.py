@@ -106,22 +106,22 @@ class acquisition:
     # Methods for single sample calculation.
     def UCB(self, x, gp, ymax):
         mean, var = gp.sample_predict(x)
-        return mean + self.kappa * var
+        return mean + self.kappa * sqrt(var)
 
     def EI(self, x, gp, ymax):
         mean, var = gp.sample_predict(x)
         if var == 0:
             return 0
         else:
-            Z = (mean- ymax)/var
-            return (mean - ymax) * norm.cdf(Z) + var * norm.pdf(Z)
+            Z = (mean - ymax)/sqrt(var)
+            return (mean - ymax) * norm.cdf(Z) + sqrt(var) * norm.pdf(Z)
 
     def PoI(self, x, gp, ymax):
         mean, var = gp.sample_predict(x)
         if var == 0:
             return 1
         else:
-            Z = (mean- ymax)/var
+            Z = (mean - ymax)/sqrt(var)
             return norm.cdf(Z)
 
     # ------------------------------ // ------------------------------ #
@@ -129,7 +129,7 @@ class acquisition:
     def full_UCB(self, mean, var):
         mean = mean.reshape(len(mean))
         
-        return (mean + self.kappa * var).reshape(len(mean))
+        return (mean + self.kappa * numpy.sqrt(var)).reshape(len(mean))
 
 
     def full_EI(self, ymax, mean, var, verbose = False):
@@ -143,7 +143,7 @@ class acquisition:
         ei = numpy.zeros(len(mean))
 
         mean = mean.reshape(len(mean))
-        #var = numpy.diagonal(var)
+        var = numpy.sqrt(var)
 
         Z = (mean[var > 0] - ymax)/var[var > 0]
 
@@ -158,7 +158,7 @@ class acquisition:
         be fixed and I will do it later...
         '''
         mean = mean.reshape(len(mean))
-        #var = numpy.diagonal(var)
+        var = numpy.sqrt(var)
 
         gamma = (mean - ymax)/var
     
@@ -200,7 +200,7 @@ class print_info:
             pass
 
 
-    def print_log(self, op_start, i, x_max, ymax, xtrain, ytrain):
+    def print_log(self, op_start, i, x_max, xmins, min_max_ratio, ymax, xtrain, ytrain):
 
         if self.lvl == 2:
             minutes, seconds = divmod((datetime.now() - op_start).seconds, 60)
