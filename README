@@ -1,3 +1,21 @@
 Working Python implementation of global optimization with gaussian processes.
 
-—Under construction!
+—Under development!
+
+This repository contain a python implementation of Bayesian optimization with Gaussian Processes. In the main file “bayes_opt.py” the main object ‘hayes_opt’ is found, and optimization as well as supporting methods are defined. Additionally the ‘GP’ object is also defined together with methods necessary for fitting a gaussian process model and using it to make predictions.
+
+Currently the squared exponential and ARD Matern kernels are supported, however the user has the option to pass a custom kernel to the objects — custom kernel consistency is not checked.
+
+There are three acquisition functions available: (i) probability of improvement, (ii) expected improvement, and (iii) upper confidence bound, all three are part of the acquisition object. Expected improvement over time, as well as other time budgeted oriented acquisition functions are to be added shortly.
+
+In the file “visualization.py” a number of exemples showcasing the main uses of this package are implemented.
+
+This project is written in python3, python2 users should make the necessary __future__ calls.
+
+References for this implementation can be found in:
+
+http://papers.nips.cc/paper/4522-practical-bayesian-optimization-of-machine-learning-algorithms.pdf
+http://arxiv.org/pdf/1012.2599v1.pdf
+http://www.gaussianprocess.org/gpml/
+
+Help and comments are appreciated.
