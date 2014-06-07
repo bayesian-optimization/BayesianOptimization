@@ -18,7 +18,7 @@ from datetime import datetime
 from scipy.optimize import minimize
 
 from math import exp, fabs, sqrt, log, pi
-from help_functions import covariance, sample_covariance, kernels, acquisition
+from help_functions import covariance, sample_covariance, kernels, acquisition, print_info
 
 # Python 2.7 users.
 # from __future__ import print_function
@@ -254,12 +254,33 @@ class bayes_opt:
         self.k_theta = theta
         self.k_l = l
 
+    # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
+    def acq_max(self, gp, ymax, restarts, Bounds):
+
+        x_max = Bounds[:, 0]
+        ei_max = 0
+
+        for i in range(restarts):
+            #Sample some points at random.
+            x_try = numpy.asarray([numpy.random.uniform(x[0], x[1], size = 1) for x in Bounds]).T
+            
+            #Find the minimum of minus que acquisition function
+            res = minimize(lambda x: -self.ac(x, gp = gp, ymax = ymax), x_try, bounds = Bounds, method = 'L-BFGS-B')
+
+            #Store it if better than previous minimum.
+            if -res.fun >= ei_max:
+                x_max = res.x
+                ei_max = -res.fun
+
+        return x_max
+
 
     # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
     # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
-    def maximize(self, init_points = 3, restarts = 10, min_it = 10, max_it = 25, ei_threshold = 0.01, verbose = True, full_out = False):
+    def maximize(self, init_points = 3, restarts = 10, num_it = 15, verbose = 2, full_out = False):
         '''Main optimization method.'''
 
+        # ------------------------------ // ------------------------------ // ------------------------------ #
         if not self.user_init:
             print('Optimization procedure is initializing at %i random points.' % init_points)
             xtrain = numpy.asarray([numpy.random.uniform(x[0], x[1], size = init_points) for x in self.bounds]).T
@@ -274,35 +295,25 @@ class bayes_opt:
             print('Optimization procedure is done initializing.')
 
 
-        # ----------- // ----------- # ----------- // ----------- #
+
+        pi = print_info(verbose)
+        ymax = ytrain.max()
+
+        # ------------------------------ // ------------------------------ // ------------------------------ #
         # Fitting the gaussian process.
         gp = GP(kernel = self.kernel, theta = self.k_theta, l = self.k_l)
+        
         if self.min_log:
             gp.best_fit(xtrain, ytrain)
         else:
             gp.fit(xtrain, ytrain)
-        ymax = ytrain.max()
 
+        
+        # Finding argmax of the acquisition function.
+        x_max = self.acq_max(gp, ymax, restarts, self.bounds)
+                
 
-        #####
-        # Multiple starts must be performed to
-        # improve chances of finding global maximum
-        # of the expected improvement.
-        #####
-        x_max = self.bounds[:, 0]
-        ei_max = 0
-
-        for i in range(restarts):
-            x_try = numpy.asarray([numpy.random.uniform(x[0], x[1], size = 1) for x in self.bounds]).T               
-            res = minimize(lambda x: -self.ac(x, gp = gp, ymax = ymax), x_try, bounds = self.bounds, method = 'L-BFGS-B')
-
-            if -res.fun >= ei_max:
-                x_max = res.x
-                ei_max = -res.fun
-
-        count = 0
-
-        while not ((ei_max < ei_threshold) and count > min_it) and count < max_it:
+        for i in range(num_it):
             op_start = datetime.now()
 
             xtrain = numpy.concatenate((xtrain, x_max.reshape((1, self.dim))), axis = 0)
@@ -316,45 +327,24 @@ class bayes_opt:
             else:
                 gp.fit(xtrain, ytrain)
 
-            #Sampling random points and looking for new maximum.
-            x_max = self.bounds[:, 0]
-            ei_max = 0
+            # Finding new argmax of the acquisition function.
+            x_max = self.acq_max(gp, ymax, restarts, self.bounds)
 
-            for i in range(restarts):
-                x_try = numpy.asarray([numpy.random.uniform(x[0], x[1], size = 1) for x in self.bounds]).T
-                res = minimize(lambda x: -self.ac(x, gp=gp, ymax=ymax), x_try, bounds = self.bounds, method = 'L-BFGS-B')
-
-                if -res.fun >= ei_max:
-                    x_max = res.x
-                    ei_max = -res.fun
-
-            count += 1
-        
-            if verbose == True:
-                minutes, seconds = divmod((datetime.now() - op_start).seconds, 60)
+            pi.print_info(op_start, i, x_max, ymax, xtrain, ytrain)
+            
                 
-                numpy.set_printoptions(precision = 4, suppress = True)
-                print('Iteration: %3i | Posterior Maximum Expected Improvement: %.4f | Last sampled point: ' % (count, ei_max), x_max)
-                print('               | Time taken: %i:%f' % (minutes,seconds))
-                print('               | Current maximum: %f | At position: ' % ymax, xtrain[numpy.argmax(ytrain)])
-                print('')
-            if verbose == 'sus':
-                if (count)%10 == 0:
-                    minutes, seconds = divmod((datetime.now() - op_start).seconds, 60)
-                    print('Iteration: %3i | Current maximum: %f | Time taken: %s%s' % (count, ymax, minutes, seconds))
-                
-
-
         if full_out:
             return ytrain.max(), xtrain[numpy.argmax(ytrain)], ytrain, xtrain
         else:
             return ytrain.max(), xtrain[numpy.argmax(ytrain)]
 
 
-    def log_maximize(self, init_points = 3, restarts = 10, min_it = 10, max_it = 25, ei_threshold = 0.01, verbose = True, full_out = False):
+    def log_maximize(self, init_points = 3, restarts = 10, num_it = 15, verbose = 2, full_out = False):
         '''This method performs the optimization algorithm in a log scale of the bounds provided. Particularly useful when
            the order of magnitude of the bounds is too different.'''
 
+
+        # ------------------------------ // ------------------------------ // ------------------------------ #
         for n, pair in enumerate(self.bounds):
             if pair[0] <= 0:
                 raise RuntimeError('The lower bound of parameter %i is less or equal to zero, log grid requires strictly positive lower bounds.' % n)
@@ -380,36 +370,23 @@ class bayes_opt:
             print('Optimization procedure is done initializing.')
 
 
-        # ----------- // ----------- # ----------- // ----------- #
+        pi = print_info(verbose)
+        ymax = ytrain.max()
+
+
+        # ------------------------------ // ------------------------------ // ------------------------------ #
         # Fitting the gaussian process
         gp = GP(kernel = self.kernel, theta = self.k_theta, l = self.k_l)
         if self.min_log:
             gp.best_fit(xtrain, ytrain)
         else:
             gp.fit(xtrain, ytrain)
-        ymax = ytrain.max()
+        
 
+        # Finding argmax of the acquisition function.
+        x_max = self.acq_max(gp, ymax, restarts, self.log_bounds)
 
-        #####
-        # Multiple starts must be performed to
-        # improve chances of finding global maximum
-        # of the expected improvement.
-        #####
-        x_max = self.log_bounds[:, 0]
-        ei_max = 0
-
-        for i in range(restarts):
-            x_try = numpy.asarray([numpy.random.uniform(x[0], x[1], size = 1) for x in self.log_bounds]).T
-                
-            res = minimize(lambda x: -self.ac(x, gp=gp, ymax=ymax), x_try, bounds = self.log_bounds, method = 'L-BFGS-B')
-
-            if -res.fun >= ei_max:
-                x_max = res.x
-                ei_max = -res.fun
-
-        count = 0
-
-        while not ((ei_max < ei_threshold) and count > min_it) and count < max_it:
+        for i in range(num_it):
             op_start = datetime.now()
 
             xtrain = numpy.concatenate((xtrain, x_max.reshape((1, self.dim))), axis = 0)
@@ -423,37 +400,12 @@ class bayes_opt:
             else:
                 gp.fit(xtrain, ytrain)
 
-            #Sampling random points and looking for new maximum.
-            x_max = self.log_bounds[:, 0]
-            ei_max = 0
 
-            for i in range(restarts):
-                x_try = numpy.asarray([numpy.random.uniform(x[0], x[1], size = 1) for x in self.log_bounds]).T
-                    
-                res = minimize(lambda x: -self.ac(x, gp=gp, ymax=ymax), x_try, bounds = self.log_bounds, method = 'L-BFGS-B')
+            # Finding new argmax of the acquisition function.
+            x_max = self.acq_max(gp, ymax, restarts, self.log_bounds)
 
-                if -res.fun >= ei_max:
-                    x_max = res.x
-                    ei_max = -res.fun
-
-
-
-            count += 1
-        
-            if verbose == True:
-                minutes, seconds = divmod((datetime.now() - op_start).seconds, 60)
+            pi.print_log(op_start, i, x_max, ymax, xtrain, ytrain)
                 
-                numpy.set_printoptions(precision = 4, suppress = True)
-                print('Iteration: %3i | Posterior Maximum Expected Improvement: %.4f | Last sampled point: ' % (count, ei_max), xmins * (10 ** (x_max * min_max_ratio)))
-                print('               | Time taken: %i:%f' % (minutes,seconds))
-                print('               | Current maximum: %f | At position: ' % ymax, xmins * (10 ** (xtrain[numpy.argmax(ytrain)] * min_max_ratio)))
-                print('')
-            if verbose == 'sus':
-                if (count)%10 == 0:
-                    minutes, seconds = divmod((datetime.now() - op_start).seconds, 60)
-                    print('Iteration: %3i | Current maximum: %f | Time taken: %s%s' % (count, ymax, minutes, seconds))
-                
-
 
         if full_out:
             return ytrain.max(), xmins * (10 ** (xtrain[numpy.argmax(ytrain)] * min_max_ratio)), ytrain, xtrain

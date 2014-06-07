@@ -94,7 +94,7 @@ def find_max(grid):
         return my_function1(para[0])
 
     bo = bayes_opt(local_fun, [(0, 13)])
-    ymax, xmax, y, x = bo.maximize(init_points = 5, ei_threshold = 0.001, full_out = True)
+    ymax, xmax, y, x = bo.maximize(init_points = 5, full_out = True)
 
     ax = plt.subplot(1,1,1)
     #Read on how to creat these objects properly!
@@ -156,7 +156,6 @@ def gp2(grid, sampled_x):
 
 
 # ------------------------------ // ------------------------------ // ------------------------------ #
-<<<<<<< HEAD
 def find_max_log(grid, log_grid):
 
     # The target function has to take arrays as entries
@@ -164,7 +163,7 @@ def find_max_log(grid, log_grid):
         return my_function2(para[0])
 
     bo = bayes_opt(local_fun, [(0.01, 13)])
-    ymax, xmax, y, x = bo.log_maximize(init_points = 5, ei_threshold = 0.001, full_out = True)
+    ymax, xmax, y, x = bo.log_maximize(init_points = 5, full_out = True)
 
     ax = plt.subplot(1,1,1)
     #Read on how to creat these objects properly!
@@ -239,51 +238,4 @@ if __name__ == "__main__":
     #sampled_x = find_max(grid)
     #gp2(grid, sampled_x)
     sampled_x_log = find_max_log(grid, log_grid)
-    gp3_log(grid, log_grid, sampled_x_log)
-
-=======
-# ------------------------------ // ------------------------------ // ------------------------------ #
-if __name__ == "__main__":
-
-    grid = numpy.arange(0.01,13,0.01)
-    log_grid = numpy.log10(numpy.arange(0.01,13,0.01)/0.01)/log(13/0.01, 10)
-
-    # ------------------------------ // ------------------------------ # 
-    #show_functions(grid, log_grid)
-    #gp1(grid)
-    sampled_x = find_max(grid)
-    gp2(grid, sampled_x)
-
-
-    '''
-    xtrain = numpy.asarray([[1],[2],[3],[3.5],[8],[4.25],[6],[6.5],[9]])
-    ytrain = my_function(xtrain) 
-
-    xtest = numpy.linspace(0, 10, 100).reshape(-1, 1)    
-    ytest = my_function(xtest)
-
-    mean, var, log_like = GP(xtrain, ytrain, xtest, verbose = True)
-    #print('Log likelihood: ', log_like)
-
-    visualisation(xtrain, ytrain, xtest, mean, var, my_function)
-    
-
-    #xtr, ytr, xte, me, sig = optimizer(my_function, .1, 14, te_grid = 1000, log_grid = True)
-    #visualisation(xtr, ytr, xte, me, sig, my_function)
-
-    
-    xtrain = numpy.asarray([[1],[2],[4.25],[6],[6.5],[9]])
-    ytrain = my_function(xtrain) 
-
-    xtest = numpy.linspace(0, 10, 100).reshape(-1, 1)    
-    ytest = my_function(xtest)
-
-    gp = GP()
-    gp.fit(xtrain, ytrain)
-
-    xtrain2d = numpy.asarray([[1,1],[2,3],[4.25,2],[6,5],[6.5,1.5],[9,7]])
-    ytrain2d = numpy.asarray([my_2dfunction(xtrain2d) for x in xtrain])
-
-    bo = bayes_opt(my_2dfunction, [(1,10),(1,10)])
-'''
->>>>>>> upstream/master
+    #gp3_log(grid, log_grid, sampled_x_log)

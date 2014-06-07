@@ -174,5 +174,48 @@ class print_info:
     '''A class to take care of the verbosity of the other classes.'''
     '''Under construction!'''
 
-    def __init__(self, infos):
-        self.info = infos
+    def __init__(self, level):
+
+        self.lvl = level
+
+
+    def print_info(self, op_start, i, x_max, ymax, xtrain, ytrain):
+
+        in self.lvl == 2:
+            minutes, seconds = divmod((datetime.now() - op_start).seconds, 60)
+                
+            numpy.set_printoptions(precision = 4, suppress = True)
+            print('Iteration: %3i | Last sampled point: ' % (i+1), x_max)
+            print('               | Time taken: %i:%f' % (minutes,seconds))
+            print('               | Current maximum: %f | At position: ' % ymax, xtrain[numpy.argmax(ytrain)])
+            print('')
+
+
+        elif self.lvl == 1:
+            if (i+1)%10 == 0:
+                minutes, seconds = divmod((datetime.now() - op_start).seconds, 60)
+                print('Iteration: %3i | Current maximum: %f | Time taken: %s%s' % (i+1, ymax, minutes, seconds))
+
+        else:
+            pass
+
+
+    def print_log(self, op_start, i, x_max, ymax, xtrain, ytrain):
+
+        in self.lvl == 2:
+            minutes, seconds = divmod((datetime.now() - op_start).seconds, 60)
+                
+            numpy.set_printoptions(precision = 4, suppress = True)
+            print('Iteration: %3i | Last sampled point: ' % (i+1), xmins * (10 ** (x_max * min_max_ratio)))
+            print('               | Time taken: %i:%f' % (minutes,seconds))
+            print('               | Current maximum: %f | At position: ' % ymax, xmins * (10 ** (xtrain[numpy.argmax(ytrain)] * min_max_ratio)))
+            print('')
+
+
+        elif self.lvl == 1:
+            if (i+1)%10 == 0:
+                minutes, seconds = divmod((datetime.now() - op_start).seconds, 60)
+                print('Iteration: %3i | Current maximum: %f | Time taken: %s%s' % (i+1, ymax, minutes, seconds))
+
+        else:
+            pass
