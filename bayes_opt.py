@@ -33,12 +33,69 @@ class GP:
     '''
     ________ Gaussian Process Class ________
 
-    Enter here the basic information regarding this class and how it works
+    Parameters
+    -----------
+
+    kernel : defaults to 'squared_exp', can accept a user defined one. This is the
+    similarity function the gaussian process builds the covariance matrix from.
+
+    theta : Kernel parameter related to how strongly related the data points are,
+    see the kernel class.
+
+    l : Another kernel parameter related to how fast the correlation between points
+    decay with increasing distance, see kernel class.
+
+    noise : defaults to 1e-6, introduces diagonal noise to the covariance matrix,
+    useful both to model noisy models as well as for numerical stability.
+
+
+    Methods
+    -------
+
+    set_kernel : allows to user to change the kernel of an existing gp object.
+
+    log_like : return the loglikelihood of the fitted model.
+
+    fit : Fit the gaussian process to the given data.
+
+    best_fit : Fit the gaussian process and maximizes the log likelihood as function
+    of the kernel parameters.
+
+    predict : Make a prediction based on the fitted model and returns the mean and
+    covariance matrix for the given data.
+
+    fast_predict : Make a prediction based on the fitted model and returns the mean
+    and only the diagonal elements of the covariance matrix for the given data.
+
+    sample_predict : Make a prediction for a single data point, return the predicted
+    mean and variance of the sample. 
 
     '''
 
     def __init__(self, noise = 1e-6, kernel = 'squared_exp', theta = 2, l = 1):
-        '''Three different kernels'''
+        '''Initializes the GP object with default parameters.
+
+           Member variables
+           -----------
+
+           self.kernel : Stores the kernel of choice as a member variable.
+
+           self.fit_flag : A member variable to keep track of whether the the fit
+           methods has already being called.
+
+           self.L : Stores the cholesky decomposition of the train covariance matrix.
+
+           self.a : Stores a vector used for solving the linear system in the gp.
+
+           self.ll : Stores the log likelihood of the fitted model.
+
+           self.train : Stores the train data, necessary to make predictions, without
+           the need to ask for train data again.
+
+           self.noise : Member variable to store the noise value.
+
+
+        '''
         
         # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
         if noise == 0:
@@ -66,8 +123,8 @@ class GP:
         self.L = 0 # Stores the cholesky decomposition of the kernel matrix
         self.a = 0 # Vector used in the fitting algorith
         self.ll = 0 # Stores the log likelihood of the fitted model
-        self.train = 0 # Stores the x train data. Necessary to make predictions without the need to ask for train data everytime.
-
+        self.train = 0 # Stores the x train data.
+        
     def __str__(self):
         text = 'This is an object that performs non-linear interpolation using gaussian processes.\n'
         if self.fit_flag == False:
@@ -126,7 +183,7 @@ class GP:
     # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
     # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
     def fit(self, xtrain, ytrain):
-        ''' Methods responsible for fitting the gaussian process. It follows the pseudo-code in the GP book.
+        ''' Method responsible for fitting the gaussian process. It follows the pseudo-code in the GP book.
 
 
             Parameters
@@ -180,6 +237,19 @@ class GP:
     # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
     # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
     def predict(self, xtest):
+        ''' Method responsible for making predictions based of the fitted model for multiple new data points.
+
+
+            Parameters
+            ----------
+            xtest : nd array with predictor values.
+
+  
+            Returns
+            -------
+            1d-array with mean values and the full covariance matrix.
+        '''
+        
         if self.fit_flag == False:
             raise RuntimeError('You have to fit the GP model first.')
 
@@ -193,6 +263,19 @@ class GP:
         return mean, var
 
     def fast_predict(self, xtest):
+        ''' Method responsible for making predictions based of the fitted model for multiple new data points.
+
+
+            Parameters
+            ----------
+            xtest : nd array with predictor values.
+
+  
+            Returns
+            -------
+            1d-array with mean values and the diagonal of the covariance matrix.
+        '''
+        
         if self.fit_flag == False:
             raise RuntimeError('You have to fit the GP model first.')
 
@@ -206,6 +289,19 @@ class GP:
         return mean, var
 
     def sample_predict(self, xtest):
+        ''' Method responsible for making predictions based of the fitted model for a single new data point.
+
+
+            Parameters
+            ----------
+            xtest : 1d array with predictor values.
+
+  
+            Returns
+            -------
+            The mean and covariance for the predicted point.
+        '''
+        
         if self.fit_flag == False:
             raise RuntimeError('You have to fit the GP model first.')
 
@@ -227,9 +323,41 @@ class GP:
 
 class bayes_opt:
     '''
-    ________ Optimization Class ________
+    ________ Bayesian Optimization Class ________
 
-    Enter here the basic information regarding this class and how it works
+    An object to perform global constrained optimization.
+    
+
+    Parameters
+    -----------
+
+    f : The function whose maximum is to be found. It must be of the form f(params) where params
+    is an 1d-array.
+    --- Given a function F of N variables, another function f = lambda x: F(x[0],...,x[N-1]) should
+    be passed to the object. ---
+
+
+    arr_tup : The minimum and maximum bounds for the variables of the target function. It has to have
+    shape = (N variables, 2), or should be able to be converted to a numpy array of this shape with
+    numpy.asarray().
+
+    kernel : defaults to 'squared_exp', is the kernel to be used in the gaussian process.
+
+    acq : defaults to 'ei' (Expected Improvement), is the acquisition function to be used
+    when deciding where to sample next.
+
+    min_log : Parameter dictating whether to find the kernel parameters that lead to the best gp fit
+    (maximum likelihood) or to use the specified kernel parameters.
+
+
+    Methods
+    -------
+
+    
+
+
+    Methods
+    ------- 
 
     '''
 
