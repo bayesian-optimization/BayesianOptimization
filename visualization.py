@@ -101,10 +101,6 @@ def find_max(grid):
     ymax, xmax, y, x = bo.maximize(init_points = 5, full_out = True)
 
     ax = plt.subplot(1,1,1)
-    #Read on how to creat these objects properly!
-    #ax.suptitle('Finding the maximum', fontsize=20)
-    #ax.xlabel('x')
-    #ax.ylabel('f(x)')
     ax.grid(True, color='k', linestyle='--', linewidth=.8, alpha = 0.4)
 
     p1, = ax.plot(x, y, 'b-', marker='o', color = 'k')
@@ -170,10 +166,6 @@ def find_max_log(grid, log_grid):
     ymax, xmax, y, x = bo.log_maximize(init_points = 5, full_out = True)
 
     ax = plt.subplot(1,1,1)
-    #Read on how to creat these objects properly!
-    #ax.suptitle('Finding the maximum', fontsize=20)
-    #ax.xlabel('x')
-    #ax.ylabel('f(x)')
     ax.grid(True, color='k', linestyle='--', linewidth=.8, alpha = 0.4)
 
     p1, = ax.plot(numpy.log10(x/0.01) / log(13/0.01, 10), y, 'b-', marker='o', color = 'k')
@@ -237,9 +229,11 @@ if __name__ == "__main__":
     log_grid = numpy.log10(numpy.arange(0.01,13,0.01)/0.01)/log(13/0.01, 10)
 
     # ------------------------------ // ------------------------------ # 
-    #show_functions(grid, log_grid)
-    #gp1(grid)
-    #sampled_x = find_max(grid)
-    #gp2(grid, sampled_x)
+    show_functions(grid, log_grid)
+    gp1(grid)
+    
+    sampled_x = find_max(grid)
+    gp2(grid, sampled_x)
+    
     sampled_x_log = find_max_log(grid, log_grid)
     gp3_log(grid, log_grid, sampled_x_log)

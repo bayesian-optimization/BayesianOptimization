@@ -1,8 +1,10 @@
 Working Python implementation of global optimization with gaussian processes.
 
-—Under development!
+—Under (constant) development!
 
-This repository contain a python implementation of Bayesian optimization with Gaussian Processes. In the main file “bayes_opt.py” the main object ‘bayes_opt’ is found, and optimization as well as supporting methods are defined. Additionally the ‘GP’ object is also defined together with methods necessary for fitting a gaussian process model and using it to make predictions.
+This repository contain a python implementation of Bayesian optimization with Gaussian Processes. In the main file “bayes_opt.py” the main object ‘bayes_opt’ is found, and optimization as well as supporting methods are defined. Additionally the ‘GP’ object is also defined together with methods necessary for fitting a gaussian process model and using it to make predictions. This object takes an arbitrary function and in a few iterations by fitting a gaussian process to it and looking for the point where progress is more likely.
+
+Note that the function passed to the object must take an array of len( N variables ) and that this implementation does not support functions of integer values, therefore the user is responsible for defining his function in such a way as to take care of this.
 
 Currently the squared exponential and ARD Matern kernels are supported, however the user has the option to pass a custom kernel to the objects — custom kernel consistency is not checked.
 
@@ -10,7 +12,11 @@ There are three acquisition functions available: (i) probability of improvement,
 
 In the file “visualization.py” a number of exemples showcasing the main uses of this package are implemented.
 
+The “sklearn_example.py” uses the bayes_opt object to find good parameters for three different classifiers over the iris data set.
+
 This project is written in python3, python2 users should make the necessary __future__ calls.
+
+Basic dependencies are Scipy, Numpy. Examples dependencies also include matplotlib and sklearn.
 
 References for this implementation can be found in:
 

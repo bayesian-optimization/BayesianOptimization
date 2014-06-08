@@ -43,6 +43,7 @@ class kernels:
         return (self.t ** 2) * (1 + sqrt(5 * r2) + (5/3) * r2) * exp(-sqrt(5 * r2))
 
     def trivial(self, x1, x2):
+        '''Regular dot product. Not really usefull, it's here just for fun.'''
         return self.t * numpy.dot(x1, x2)
 
 ################################################################################
