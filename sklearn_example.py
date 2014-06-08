@@ -1,3 +1,4 @@
+#Testing on the Iris data set
 from sklearn.datasets import load_iris
 from sklearn.cross_validation import KFold
 
@@ -71,14 +72,14 @@ def RF_CV(params):
 
 if __name__ == "__main__":
 
-    # Search a good set of parameters for logistic regression
+    # Search for a good set of parameters for logistic regression
     bo_LR = bayes_opt(LR_CV, [(0.001, 100), (0.001, 100)])
     ylr, xlr = bo_LR.log_maximize(num_it = 25)
 
-    # Search a good set of parameters for support vector machine
+    # Search for a good set of parameters for support vector machine
     #bo_SVR = bayes_opt(SVR_CV, [(0.001, 100), (0.0001, 1), (0.001, 10)])
     #ysvr, xsvr = bo_SVR.log_maximize(init_points = 5, restarts = 15, num_it = 25)
 
-    # Search a good set of parameters for random forest.
+    # Search for a good set of parameters for random forest.
     #bo_RF = bayes_opt(RF_CV, [(10, 200), (2, 20), (1, 10)])
     #yrf, xrf = bo_RF.maximize(init_points = 5, restarts = 15, num_it = 25)
