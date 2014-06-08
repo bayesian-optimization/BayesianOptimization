@@ -181,15 +181,15 @@ class print_info:
             print('Iteration: %3i | Last sampled value: %8f' % ((i+1), ytrain[-1]), '| at position: ', xtrain[-1])
             print('               | Current maximum: %11f | at position: ' % ymax, xtrain[numpy.argmax(ytrain)])
             
-            minutes, microseconds = divmod((datetime.now() - op_start).microseconds, 60000000)
-            print('               | Time taken: %s minutes and %s seconds' % (minutes, microseconds/1000000))
+            minutes, seconds = divmod((datetime.now() - op_start).total_seconds(), 60)
+            print('               | Time taken: %s minutes and %s seconds' % (minutes, seconds))
             print('')
 
 
         elif self.lvl == 1:
             if (i+1)%10 == 0:
-                minutes, microseconds = divmod((datetime.now() - op_start).microseconds, 60000000)
-                print('Iteration: %3i | Current maximum: %f | Time taken: %i minutes and %f seconds' % (i+1, ymax, minutes, microseconds/1000000))
+                minutes, seconds = divmod((datetime.now() - op_start).total_seconds(), 60)
+                print('Iteration: %3i | Current maximum: %f | Time taken: %i minutes and %f seconds' % (i+1, ymax, minutes, seconds))
 
         else:
             pass
@@ -206,15 +206,15 @@ class print_info:
             print('Iteration: %3i | Last sampled value: %8f' % ((i+1), ytrain[-1]), '| at position: ', return_log(xtrain[-1]))
             print('               | Current maximum: %11f | at position: ' % ymax, return_log( xtrain[numpy.argmax(ytrain)]))
 
-            minutes, microseconds = divmod((datetime.now() - op_start).microseconds, 60000000)
-            print('               | Time taken: %s minutes and %s seconds' % (minutes, microseconds/1000000))
+            minutes, seconds = divmod((datetime.now() - op_start).total_seconds(), 60)
+            print('               | Time taken: %s minutes and %s seconds' % (minutes, seconds))
             print('')
 
 
         elif self.lvl == 1:
             if (i+1)%10 == 0:
-                minutes, microseconds = divmod((datetime.now() - op_start).microseconds, 60000000)
-                print('Iteration: %3i | Current maximum: %f | Time taken: %i minutes and %f seconds' % (i+1, ymax, minutes, microseconds/1000000))
+                minutes, seconds = divmod((datetime.now() - op_start).total_seconds(), 60)
+                print('Iteration: %3i | Current maximum: %f | Time taken: %i minutes and %f seconds' % (i+1, ymax, minutes, seconds))
 
         else:
             pass
