@@ -50,13 +50,7 @@ class kernels:
 ################################################################################
 
 def covariance(X1, X2, kernel, fast = False):
-    '''
-    This ugly functions builds the covariance matrix given a pair
-    of matrices. It can be done much more elegantly,
-    but this is the solution I came up with and for now it is staying
-    like this.
-
-    Note the shapes of the arrays X1 and X2 must be changed to matrix like!
+    ''' Function to compute the covariance matrix given two arrays (matrices or vectors or a combination).
     '''
 
     try:
@@ -83,6 +77,7 @@ def covariance(X1, X2, kernel, fast = False):
     return M
 
 def sample_covariance(X1, sample, kernel):
+    '''Function to compute the covariance between a given point 'sample' and an existing set of points 'X1'.'''
     M = numpy.zeros(len(X1))
     
     for row in range(len(X1)):
@@ -181,20 +176,20 @@ class print_info:
 
     def print_info(self, op_start, i, x_max, ymax, xtrain, ytrain):
 
-        if self.lvl == 2:
-            minutes, seconds = divmod((datetime.now() - op_start).seconds, 60)
-                
+        if self.lvl == 2:                
             numpy.set_printoptions(precision = 4, suppress = True)
-            print('Iteration: %3i | Last sampled point: ' % (i+1), x_max)
-            print('               | Time taken: %i:%f' % (minutes,seconds))
-            print('               | Current maximum: %f | At position: ' % ymax, xtrain[numpy.argmax(ytrain)])
+            print('Iteration: %3i | Last sampled value: %8f' % ((i+1), ytrain[-1]), '| at position: ', xtrain[-1])
+            print('               | Current maximum: %11f | at position: ' % ymax, xtrain[numpy.argmax(ytrain)])
+            
+            minutes, microseconds = divmod((datetime.now() - op_start).microseconds, 60000000)
+            print('               | Time taken: %s minutes and %s seconds' % (minutes, microseconds/1000000))
             print('')
 
 
         elif self.lvl == 1:
             if (i+1)%10 == 0:
-                minutes, seconds = divmod((datetime.now() - op_start).seconds, 60)
-                print('Iteration: %3i | Current maximum: %f | Time taken: %s%s' % (i+1, ymax, minutes, seconds))
+                minutes, microseconds = divmod((datetime.now() - op_start).microseconds, 60000000)
+                print('Iteration: %3i | Current maximum: %f | Time taken: %i minutes and %f seconds' % (i+1, ymax, minutes, microseconds/1000000))
 
         else:
             pass
@@ -202,20 +197,24 @@ class print_info:
 
     def print_log(self, op_start, i, x_max, xmins, min_max_ratio, ymax, xtrain, ytrain):
 
+        def return_log(x):
+            return xmins * (10 ** (x * min_max_ratio))
+
         if self.lvl == 2:
-            minutes, seconds = divmod((datetime.now() - op_start).seconds, 60)
                 
             numpy.set_printoptions(precision = 4, suppress = True)
-            print('Iteration: %3i | Last sampled point: ' % (i+1), xmins * (10 ** (x_max * min_max_ratio)))
-            print('               | Time taken: %i:%f' % (minutes,seconds))
-            print('               | Current maximum: %f | At position: ' % ymax, xmins * (10 ** (xtrain[numpy.argmax(ytrain)] * min_max_ratio)))
+            print('Iteration: %3i | Last sampled value: %8f' % ((i+1), ytrain[-1]), '| at position: ', return_log(xtrain[-1]))
+            print('               | Current maximum: %11f | at position: ' % ymax, return_log( xtrain[numpy.argmax(ytrain)]))
+
+            minutes, microseconds = divmod((datetime.now() - op_start).microseconds, 60000000)
+            print('               | Time taken: %s minutes and %s seconds' % (minutes, microseconds/1000000))
             print('')
 
 
         elif self.lvl == 1:
             if (i+1)%10 == 0:
-                minutes, seconds = divmod((datetime.now() - op_start).seconds, 60)
-                print('Iteration: %3i | Current maximum: %f | Time taken: %s%s' % (i+1, ymax, minutes, seconds))
+                minutes, microseconds = divmod((datetime.now() - op_start).microseconds, 60000000)
+                print('Iteration: %3i | Current maximum: %f | Time taken: %i minutes and %f seconds' % (i+1, ymax, minutes, microseconds/1000000))
 
         else:
             pass

@@ -176,7 +176,7 @@ def find_max_log(grid, log_grid):
     #ax.ylabel('f(x)')
     ax.grid(True, color='k', linestyle='--', linewidth=.8, alpha = 0.4)
 
-    p1, = ax.plot(x, y, 'b-', marker='o', color = 'k')
+    p1, = ax.plot(numpy.log10(x/0.01) / log(13/0.01, 10), y, 'b-', marker='o', color = 'k')
     p1.set_linestyle(' ')
     p2, = ax.plot(log_grid, numpy.asarray([my_function2(x) for x in grid]), 'm-')
 
@@ -191,7 +191,7 @@ def find_max_log(grid, log_grid):
 def gp3_log(grid, log_grid, sampled_x):
     '''This is broken, something wrong with the GP and plots, fix it!'''
     x = sampled_x
-    y = numpy.asarray([my_function2(0.01 * (10 ** (x * log(13/0.01, 10)))) for x in x])
+    y = numpy.asarray([my_function2(x) for x in x])#numpy.asarray([my_function2(0.01 * (10 ** (x * log(13/0.01, 10)))) for x in x])
 
     gp = GP(kernel = 'squared_exp')
     gp.best_fit(x, y)
@@ -208,7 +208,7 @@ def gp3_log(grid, log_grid, sampled_x):
     ax1 = plt.subplot(2, 1, 1)
     ax1.grid(True, color='k', linestyle='--', linewidth= 0.8, alpha = 0.4)
     
-    p1, = ax1.plot(x, y, 'b-', marker='o', color = 'k')
+    p1, = ax1.plot(numpy.log10(x/0.01) / log(13/0.01, 10), y, 'b-', marker='o', color = 'k')
     p2, = ax1.plot(log_grid, [(mean[i] + 2*sqrt(fabs(var[i])))[0] for i in range(len(mean))])
     p3, = ax1.plot(log_grid, [(mean[i] - 2*sqrt(fabs(var[i])))[0] for i in range(len(mean))])
     p4, = ax1.plot(log_grid, numpy.asarray([my_function2(x) for x in grid]), 'm--')
@@ -237,9 +237,9 @@ if __name__ == "__main__":
     log_grid = numpy.log10(numpy.arange(0.01,13,0.01)/0.01)/log(13/0.01, 10)
 
     # ------------------------------ // ------------------------------ # 
-    show_functions(grid, log_grid)
-    gp1(grid)
-    sampled_x = find_max(grid)
-    gp2(grid, sampled_x)
+    #show_functions(grid, log_grid)
+    #gp1(grid)
+    #sampled_x = find_max(grid)
+    #gp2(grid, sampled_x)
     sampled_x_log = find_max_log(grid, log_grid)
     gp3_log(grid, log_grid, sampled_x_log)

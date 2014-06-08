@@ -2,7 +2,7 @@ Working Python implementation of global optimization with gaussian processes.
 
 —Under development!
 
-This repository contain a python implementation of Bayesian optimization with Gaussian Processes. In the main file “bayes_opt.py” the main object ‘hayes_opt’ is found, and optimization as well as supporting methods are defined. Additionally the ‘GP’ object is also defined together with methods necessary for fitting a gaussian process model and using it to make predictions.
+This repository contain a python implementation of Bayesian optimization with Gaussian Processes. In the main file “bayes_opt.py” the main object ‘bayes_opt’ is found, and optimization as well as supporting methods are defined. Additionally the ‘GP’ object is also defined together with methods necessary for fitting a gaussian process model and using it to make predictions.
 
 Currently the squared exponential and ARD Matern kernels are supported, however the user has the option to pass a custom kernel to the objects — custom kernel consistency is not checked.
 
