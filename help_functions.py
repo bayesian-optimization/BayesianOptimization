@@ -175,47 +175,61 @@ class print_info:
         self.lvl = level
 
 
-    def print_info(self, op_start, i, x_max, ymax, xtrain, ytrain):
+    def print_info(self, op_start, i, x_max, ymax, xtrain, ytrain, keys):
 
         if self.lvl == 2:                
             numpy.set_printoptions(precision = 4, suppress = True)
-            print('Iteration: %3i | Last sampled value: %8f' % ((i+1), ytrain[-1]), '| at position: ', xtrain[-1])
-            print('               | Current maximum: %11f | at position: ' % ymax, xtrain[numpy.argmax(ytrain)])
+            print('Iteration: %3i | Last sampled value: %8f' % ((i+1), ytrain[-1]), '| with parameters: ', dict(zip(keys, xtrain[-1])))
+            #print('Iteration: %3i | Last sampled value: %8f' % ((i+1), ytrain[-1]), '| with parameters: ', end = ' ')#, dict(zip(keys, xtrain[-1])))
+            '''
+            for i, key in enumerate(keys):
+                #print(' '*64, '%-10s = %8.2f' % (key, xtrain[-1, i]))#, end = ", ")
+                print('%5s = %5.2f' % (key, xtrain[-1, i]), end = ", ")
+            print()
+            '''
+            print('               | Current maximum: %11f | with parameters: ' % ymax, dict(zip(keys, xtrain[numpy.argmax(ytrain)])))
             
             minutes, seconds = divmod((datetime.now() - op_start).total_seconds(), 60)
-            print('               | Time taken: %s minutes and %s seconds' % (minutes, seconds))
+            print('               | Time taken: %i minutes and %s seconds' % (minutes, seconds))
             print('')
 
 
         elif self.lvl == 1:
             if (i+1)%10 == 0:
                 minutes, seconds = divmod((datetime.now() - op_start).total_seconds(), 60)
-                print('Iteration: %3i | Current maximum: %f | Time taken: %i minutes and %f seconds' % (i+1, ymax, minutes, seconds))
+                print('Iteration: %3i | Current maximum: %f | Time taken: %i minutes and %.2f seconds' % (i+1, ymax, minutes, seconds))
 
         else:
             pass
 
 
-    def print_log(self, op_start, i, x_max, xmins, min_max_ratio, ymax, xtrain, ytrain):
+    def print_log(self, op_start, i, x_max, xmins, min_max_ratio, ymax, xtrain, ytrain, keys):
 
         def return_log(x):
             return xmins * (10 ** (x * min_max_ratio))
 
+        dict_len = len(keys)
+
         if self.lvl == 2:
                 
             numpy.set_printoptions(precision = 4, suppress = True)
-            print('Iteration: %3i | Last sampled value: %8f' % ((i+1), ytrain[-1]), '| at position: ', return_log(xtrain[-1]))
-            print('               | Current maximum: %11f | at position: ' % ymax, return_log( xtrain[numpy.argmax(ytrain)]))
+            print('Iteration: %3i | Last sampled value: %8f' % ((i+1), ytrain[-1]), '| with parameters: ',  dict(zip(keys, return_log(xtrain[-1])) ))
+
+            #for key in keys: #Still can't print dict data nicely!
+#                print(key),
+
+            
+            print('               | Current maximum: %11f | with parameters: ' % ymax, dict(zip(keys, return_log( xtrain[numpy.argmax(ytrain)]))))
 
             minutes, seconds = divmod((datetime.now() - op_start).total_seconds(), 60)
-            print('               | Time taken: %s minutes and %s seconds' % (minutes, seconds))
+            print('               | Time taken: %i minutes and %s seconds' % (minutes, seconds))
             print('')
 
 
         elif self.lvl == 1:
             if (i+1)%10 == 0:
                 minutes, seconds = divmod((datetime.now() - op_start).total_seconds(), 60)
-                print('Iteration: %3i | Current maximum: %f | Time taken: %i minutes and %f seconds' % (i+1, ymax, minutes, seconds))
+                print('Iteration: %3i | Current maximum: %f | Time taken: %i minutes and %.2f seconds' % (i+1, ymax, minutes, seconds))
 
         else:
             pass

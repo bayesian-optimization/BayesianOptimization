@@ -1,6 +1,6 @@
 import numpy
 import matplotlib.pyplot as plt
-from math import log, fabs, sqrt
+from math import log, fabs, sqrt, exp
 from bayes_opt import bayes_opt, GP
 from help_functions import acquisition
 
@@ -10,14 +10,14 @@ from help_functions import acquisition
 
 # ------------------------------ // ------------------------------ // ------------------------------ #
 # ------------------------------ // ------------------------------ // ------------------------------ #
-def my_function1(array):
-    return 2.5*numpy.exp(-numpy.square(array - 2)) + 5*numpy.exp(-numpy.square(array - 5)) +\
-           3*numpy.exp(-numpy.square(array/2 - 4))+ 8*numpy.exp(-numpy.square((array - 11)*2))
+def my_function1(x):
+    return 2.5*exp(-(x - 2)**2) + 5*exp(-(x - 5)**2)+\
+           3*exp(-(x/2 - 4)**2)+ 8*exp(-2*(x - 11)**2)
 
-def my_function2(array):
-    return numpy.exp(-numpy.square(array - 2)) + 5*numpy.exp(-numpy.square(array - 5)) +\
-           3*numpy.exp(-numpy.square(array/2 - 4))+\
-           8*numpy.exp(-numpy.square((array - 0.1)*10)) - numpy.exp(-numpy.square((array - 9)*2))
+def my_function2(x):
+    return exp(-(x - 2)**2) + 5*exp(-(x - 5)**2) +\
+           3*exp(-(x/2 - 4)**2) + \
+           8*exp(-10*(x - 0.1)**2) - exp(-2*(x - 9)**2)
 
 # ------------------------------ // ------------------------------ // ------------------------------ #
 # ------------------------------ // ------------------------------ // ------------------------------ #
@@ -43,7 +43,7 @@ def show_functions(grid, log_grid):
 # ------------------------------ // ------------------------------ // ------------------------------ #
 def gp1(grid):
     x = numpy.asarray([3,6,8,10]).reshape((4, 1))
-    y = numpy.asarray([my_function1(x) for x in x])
+    y = numpy.asarray([my_function1(x[0]) for x in x])
 
     gp = GP(kernel = 'squared_exp', theta = 1, l = 1)
     gp.fit(x, y)
@@ -53,10 +53,11 @@ def gp1(grid):
     # ------------------------------ // ------------------------------ #     
     ax1 = plt.subplot(2, 1, 1)
     ax1.grid(True, color='k', linestyle='--', linewidth= 0.8, alpha = 0.4)
+
     
     p1, = ax1.plot(x, y, 'b-', marker='o', color = 'k')
-    p2, = ax1.plot(grid, [(mean[i] + 2*sqrt(fabs(var[i])))[0] for i in range(len(mean))])
-    p3, = ax1.plot(grid, [(mean[i] - 2*sqrt(fabs(var[i])))[0] for i in range(len(mean))])
+    p2, = ax1.plot(grid, [(mean[i] + 2*sqrt(fabs(var[i]))) for i in range(len(mean))])
+    p3, = ax1.plot(grid, [(mean[i] - 2*sqrt(fabs(var[i]))) for i in range(len(mean))])
     p4, = ax1.plot(grid, numpy.asarray([my_function1(x) for x in grid]), 'm--')
     p5, = ax1.plot(grid, [mean[i] for i in range(len(mean))], 'y')
 
@@ -66,7 +67,7 @@ def gp1(grid):
 
     # ------------------------------ // ------------------------------ # 
     x = numpy.arange(0, 14, 1).reshape((14, 1))
-    y = numpy.asarray([my_function1(x) for x in x])
+    y = numpy.asarray([my_function1(x[0]) for x in x])
 
     gp = GP(kernel = 'squared_exp', theta = 0.5, l = .9)
     gp.fit(x, y)
@@ -78,8 +79,8 @@ def gp1(grid):
     ax2.grid(True, color='k', linestyle='--', linewidth=.8, alpha = 0.4)
     
     p12, = ax2.plot(x, y, 'b-', marker='o', color = 'k')
-    p22, = ax2.plot(grid, [(mean[i] + 2*sqrt(fabs(var[i])))[0] for i in range(len(mean))])
-    p32, = ax2.plot(grid, [(mean[i] - 2*sqrt(fabs(var[i])))[0] for i in range(len(mean))])
+    p22, = ax2.plot(grid, [(mean[i] + 2*sqrt(fabs(var[i]))) for i in range(len(mean))])
+    p32, = ax2.plot(grid, [(mean[i] - 2*sqrt(fabs(var[i]))) for i in range(len(mean))])
     p42, = ax2.plot(grid, numpy.asarray([my_function1(x) for x in grid]), 'm--')
     p52, = ax2.plot(grid, [mean[i] for i in range(len(mean))], 'y')
 
@@ -93,11 +94,8 @@ def gp1(grid):
 # ------------------------------ // ------------------------------ // ------------------------------ #
 def find_max(grid):
 
-    # The target function has to take arrays as entries
-    def local_fun(para):
-        return my_function1(para[0])
 
-    bo = bayes_opt(local_fun, [(0, 13)])
+    bo = bayes_opt(my_function1, {'x' : (0, 13)})
     ymax, xmax, y, x = bo.maximize(init_points = 5, full_out = True)
 
     ax = plt.subplot(1,1,1)
@@ -135,8 +133,8 @@ def gp2(grid, sampled_x):
     ax1.grid(True, color='k', linestyle='--', linewidth= 0.8, alpha = 0.4)
     
     p1, = ax1.plot(x, y, 'b-', marker='o', color = 'k')
-    p2, = ax1.plot(grid, [(mean[i] + 2*sqrt(fabs(var[i])))[0] for i in range(len(mean))])
-    p3, = ax1.plot(grid, [(mean[i] - 2*sqrt(fabs(var[i])))[0] for i in range(len(mean))])
+    p2, = ax1.plot(grid, [(mean[i] + 2*sqrt(fabs(var[i]))) for i in range(len(mean))])
+    p3, = ax1.plot(grid, [(mean[i] - 2*sqrt(fabs(var[i]))) for i in range(len(mean))])
     p4, = ax1.plot(grid, numpy.asarray([my_function1(x) for x in grid]), 'm--')
     p5, = ax1.plot(grid, [mean[i] for i in range(len(mean))], 'y')
 
@@ -158,11 +156,7 @@ def gp2(grid, sampled_x):
 # ------------------------------ // ------------------------------ // ------------------------------ #
 def find_max_log(grid, log_grid):
 
-    # The target function has to take arrays as entries
-    def local_fun(para):
-        return my_function2(para[0])
-
-    bo = bayes_opt(local_fun, [(0.01, 13)])
+    bo = bayes_opt(my_function2, {'x' : (0.01, 13)})
     ymax, xmax, y, x = bo.log_maximize(init_points = 5, full_out = True)
 
     ax = plt.subplot(1,1,1)
@@ -201,8 +195,8 @@ def gp3_log(grid, log_grid, sampled_x):
     ax1.grid(True, color='k', linestyle='--', linewidth= 0.8, alpha = 0.4)
     
     p1, = ax1.plot(numpy.log10(x/0.01) / log(13/0.01, 10), y, 'b-', marker='o', color = 'k')
-    p2, = ax1.plot(log_grid, [(mean[i] + 2*sqrt(fabs(var[i])))[0] for i in range(len(mean))])
-    p3, = ax1.plot(log_grid, [(mean[i] - 2*sqrt(fabs(var[i])))[0] for i in range(len(mean))])
+    p2, = ax1.plot(log_grid, [(mean[i] + 2*sqrt(fabs(var[i]))) for i in range(len(mean))])
+    p3, = ax1.plot(log_grid, [(mean[i] - 2*sqrt(fabs(var[i]))) for i in range(len(mean))])
     p4, = ax1.plot(log_grid, numpy.asarray([my_function2(x) for x in grid]), 'm--')
     p5, = ax1.plot(log_grid, [mean[i] for i in range(len(mean))], 'y')
 
