@@ -2,7 +2,7 @@ Working Python implementation of global optimization with gaussian processes.
 
 —Under (constant) development!
 
-This repository contains a python implementation of Bayesian optimization with Gaussian Processes. In the main file “bayes_opt.py” the main object ‘bayes_opt’ is found, and optimization as well as supporting methods are defined. Additionally the ‘GP’ object is also defined together with methods necessary for fitting a gaussian process model and using it to make predictions. This object takes an arbitrary function and, in a few iterations, by fitting a gaussian process to it and looking for the point where progress is more likely, attempts to find its global maximum.
+This repository contains a python package to perform Bayesian optimization with Gaussian Processes. In the main folder “bo” the main object ‘bayes_opt’ inside ‘hayes_opt.py’ is found, and optimization as well as supporting methods are defined. Additionally the ‘GP’ object in the ‘GP.py’ is also defined together with methods necessary for fitting a gaussian process model and using it to make predictions. This object takes an arbitrary function and, in a few iterations, by fitting a gaussian process to it and looking for the point where progress is more likely, attempts to find its global maximum.
 
 Note that the function passed to the object must take as arguments floats, in its current state this implementation does not support integer valued arguments, the user is responsible for defining his function in such a way as to take care of this.
 
@@ -10,9 +10,7 @@ Currently the squared exponential and ARD Matern kernels are supported, however 
 
 There are three acquisition functions available: (i) probability of improvement, (ii) expected improvement, and (iii) upper confidence bound, all three are part of the acquisition object. Expected improvement over time, as well as other time budgeted oriented acquisition functions are to be added shortly.
 
-In the file “visualization.py” a number of exemples showcasing the main uses of this package are implemented.
-
-The “sklearn_example.py” uses the bayes_opt object to find good parameters for three different classifiers over the iris data set. Take a look at this file to have an idea of how to use bayes_opt.
+The example folder contains two simples demonstrations of the package in action. In the file “visualization.py” a number of exemples showcasing the main uses of this package are implemented. The “sklearn_example.py” uses the bayes_opt object to find good parameters for three different classifiers over the iris data set. Take a look at this file to have an idea of how to use bayes_opt.
 
 This project is written in python3, python2 users should make the necessary __future__ calls.
 
