@@ -12,6 +12,10 @@ for references.
 Fernando Nogueira
 '''
 
+# Python 2.7 users.
+from __future__ import print_function
+from __future__ import division
+
 
 
 import numpy
@@ -25,9 +29,7 @@ from .GP import GP
 from ..support.objects import covariance, sample_covariance, kernels, acquisition, print_info
 #from help_functions import covariance, sample_covariance, kernels, acquisition, print_info
 
-# Python 2.7 users.
-# from __future__ import print_function
-# from __future__ import division
+
 
 
 ################################################################################

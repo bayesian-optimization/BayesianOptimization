@@ -1,3 +1,7 @@
+# Python 2.7 users.
+from __future__ import print_function
+from __future__ import division
+
 import numpy
 import matplotlib.pyplot as plt
 from math import log, fabs, sqrt, exp
@@ -5,10 +9,6 @@ from math import log, fabs, sqrt, exp
 from bayes_opt.bo.bayes_opt import bayes_opt
 from bayes_opt.bo.GP import GP
 from bayes_opt.support.objects import acquisition
-
-# Python 2.7 users.
-# from __future__ import print_function
-# from __future__ import division
 
 # ------------------------------ // ------------------------------ // ------------------------------ #
 # ------------------------------ // ------------------------------ // ------------------------------ #

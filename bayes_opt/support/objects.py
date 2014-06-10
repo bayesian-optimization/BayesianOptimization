@@ -1,11 +1,13 @@
+# Python 2.7 users.
+from __future__ import print_function
+from __future__ import division
+
 import numpy
 from datetime import datetime
 from scipy.stats import norm
 from math import exp, fabs, sqrt, log, pi
 
-# Python 2.7 users.
-# from __future__ import print_function
-# from __future__ import division
+
 
 
 ################################################################################

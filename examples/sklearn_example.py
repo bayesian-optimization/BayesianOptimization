@@ -1,3 +1,7 @@
+# Python 2.7 users.
+from __future__ import print_function
+from __future__ import division
+
 #Testing on the Iris data set
 from sklearn.datasets import load_iris
 from sklearn.cross_validation import KFold
