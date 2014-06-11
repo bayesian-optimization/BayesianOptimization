@@ -519,9 +519,9 @@ class bayes_opt:
             self.user_y = numpy.concatenate((self.user_y, numpy.asarray([self.f(**dict(zip(self.keys, x))) for x in user_pts])))
 
         numpy.set_printoptions(precision = 4, suppress = True)
-        minutes, miliseconds = divmod((datetime.now() - op_start).microseconds, 60000)
+        minutes, seconds = divmod((datetime.now() - op_start).total_seconds(), 60)
         
-        print('...done in %s minutes and %s seconds.' % (minutes, miliseconds/1000))
+        print('...done in %s minutes and %s seconds.' % (minutes, seconds))
         print('The current maximum is: %f, with parameters: ' % numpy.max(self.user_y), dict(zip(self.keys, self.user_x[numpy.argmax(self.user_y)])))
 
 
