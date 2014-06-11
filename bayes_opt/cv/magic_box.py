@@ -32,12 +32,22 @@ class magic_box:
 
 
 
-    def tryall_classification(self):
+    def tryall(self, prob = 'classification'):
         '''Try some basic ones and return best + score - like NB, LR, RF, that kind of stuff'''
+
+
+        if prob = 'classification':
+            from sklearn.linear_model import LogisticRegression
+            from sklearn.ensemble import RandomForestClassifier
+            from sklearn.naive_bayes import GaussianNB
+
+            from sklearn.cross_validation import cross_val_score
+
+            logit = {'c' : (0.001, 100), 'int' : (0.0001, 10)}
+
+        else:
+            print('Regression under construction.')
+            return 0
         
         return 0
 
-    def tryall_regression(self):
-        '''Try some basic ones and return best + score - like NB, LR, RF, that kind of stuff'''
-        
-        return 0
