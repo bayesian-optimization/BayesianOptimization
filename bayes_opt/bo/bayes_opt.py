@@ -361,10 +361,10 @@ class bayes_opt:
             
                 
         if full_out:
-            return ytrain.max(), xtrain[numpy.argmax(ytrain)], ytrain, xtrain
+            return ytrain.max(), dict(zip(self.keys, xtrain[numpy.argmax(ytrain)])), ytrain, xtrain
         else:
-            return ytrain.max(), xtrain[numpy.argmax(ytrain)]
-
+            return ytrain.max(), dict(zip(self.keys, xtrain[numpy.argmax(ytrain)]))
+        
 
     def log_maximize(self, init_points = 3, restarts = 10, num_it = 15, verbose = 2, full_out = False):
         ''' Main optimization method perfomed in a log scale.
@@ -466,9 +466,9 @@ class bayes_opt:
                 
 
         if full_out:
-            return ytrain.max(), return_log(xtrain[numpy.argmax(ytrain)]), ytrain, return_log(xtrain)
+            return ytrain.max(), dict(zip(self.keys, return_log(xtrain[numpy.argmax(ytrain)]))), ytrain, return_log(xtrain)
         else:
-            return ytrain.max(), return_log(xtrain[numpy.argmax(ytrain)])
+            return ytrain.max(), dict(zip(self.keys, return_log(xtrain[numpy.argmax(ytrain)])))
 
 
 
