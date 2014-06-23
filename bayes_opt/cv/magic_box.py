@@ -114,26 +114,26 @@ class magic_box_classifier:
 
 
         print('Ensemble time')
-        if self.sm == 'roc_auc':
-            self.logit_model = LogisticRegression(**self.logit_argmax)
-            self.svm_model = SVC(**self.svm_argmax)
-            self.svm_model.set_params(probability = True, random_state = 0)
-            self.randf_model = RandomForestClassifier(n_estimators = int(self.randf_argmax['n_estimators']),\
+        self.logit_model = LogisticRegression(**self.logit_argmax)
+        self.svm_model = SVC(**self.svm_argmax)
+        self.randf_model = RandomForestClassifier(n_estimators = int(self.randf_argmax['n_estimators']),\
                                                min_samples_split = int(self.randf_argmax['min_samples_split']),\
                                                random_state = 1)
-
+        if self.sm == 'roc_auc':
+            
+            self.svm_model.set_params(probability = True, random_state = 0)
+            
             pred = self.skf_proba(self.logit_model, self.svm_model, self.randf_model)
 
-
-            bo_ense = bayes_opt(lambda C1, C2, C3: self.ensemble(c1 = C1, c2 = C2, c3 = C3,\
+            bo_ense = bayes_opt(lambda c_logit, c_svm, c_randf: self.ensemble(c1 = c_logit, c2 = c_svm, c3 = c_randf,\
                                                            pred1 = pred[:, 0],\
                                                            pred2 = pred[:, 1],\
                                                            pred3 = pred[:, 2],\
                                                            y = self.y,\
                                                            scoring = classification_scores[self.sm]),\
-                                {'C1' : (1e-15, 1), 'C2' : (1e-15, 1),  'C3' : (1e-15, 1)})
+                                {'c_logit' : (1e-15, 1), 'c_svm' : (1e-15, 1),  'c_randf' : (1e-15, 1)})
             
-            self.coefs = bo_ense.maximize(restarts = 50, init_points = 5, verbose = 2, num_it = 10)
+            best_ensemble, self.coefs = bo_ense.maximize(restarts = 50, init_points = 5, verbose = 2, num_it = 5)
         else:
             print('not done yet')
 
@@ -143,25 +143,25 @@ class magic_box_classifier:
         self.svm_model.fit(self.x, self.y)
         self.randf_model.fit(self.x, self.y)
 
+        print('Done, best single model and parameters...')
+        print(self.coefs)
 
-    def predict(self, x):
-        '''
-        if self.sm == 'roc_auc':
-            logit_pred = self.logit_model.predict_proba(x)
-            svm_pred = self.svm_model.predict_proba(x)
-            randf_pred = self.randf_model.predict_proba(x)
 
-            preds = [logit_pred, svm_pred, randf_pred]
+    def predict_proba(self, x):
+        print('starting prediction')
 
-            weights = [self.coefs[key] for key in self.coefs.keys()]
-            wsum = reduce(lambda x, y: x+y, weights)
+        logit_pred = self.logit_model.predict_proba(x)
+        svm_pred = self.svm_model.predict_proba(x)
+        randf_pred = self.randf_model.predict_proba(x)
+
+
+        wsum = self.coefs['c_logit'] + self.coefs['c_svm'] + self.coefs['c_randf']
+  
+        ense = (self.coefs['c_logit']/wsum) * logit_pred +\
+               (self.coefs['c_svm']/wsum) * svm_pred +\
+               (self.coefs['c_randf']/wsum) * randf_pred
             
-            ense = 0
-            for i, w in enumerate(weights):
-                ense += (w/wsum) * preds[i]
-            
-            return ense
-        '''
-        return 0
+        return ense
+
 
 
