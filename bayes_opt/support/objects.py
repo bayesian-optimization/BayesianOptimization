@@ -175,6 +175,7 @@ class print_info:
     def __init__(self, level):
 
         self.lvl = level
+        self.timer = 0
 
 
     def print_info(self, op_start, i, x_max, ymax, xtrain, ytrain, keys):
@@ -197,10 +198,12 @@ class print_info:
 
 
         elif self.lvl == 1:
+            self.timer += (datetime.now() - op_start).total_seconds()
+            
             if (i+1)%10 == 0:
-                minutes, seconds = divmod((datetime.now() - op_start).total_seconds(), 60)
+                minutes, seconds = divmod(self.timer, 60)
                 print('Iteration: %3i | Current maximum: %f | Time taken: %i minutes and %.2f seconds' % (i+1, ymax, minutes, seconds))
-
+                self.timer = 0
         else:
             pass
 
@@ -229,9 +232,13 @@ class print_info:
 
 
         elif self.lvl == 1:
+
+            self.timer += (datetime.now() - op_start).total_seconds()
+            
             if (i+1)%10 == 0:
-                minutes, seconds = divmod((datetime.now() - op_start).total_seconds(), 60)
+                minutes, seconds = divmod(self.timer, 60)
                 print('Iteration: %3i | Current maximum: %f | Time taken: %i minutes and %.2f seconds' % (i+1, ymax, minutes, seconds))
+                self.timer = 0
 
         else:
             pass

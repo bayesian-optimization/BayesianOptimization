@@ -240,7 +240,7 @@ class magic_box_classifier:
                                                                      y = self.y,\
                                                                      scoring = classification_scores[self.sm]), coefs_range)
             
-            best_ensemble, self.coefs = bo_ense.maximize(restarts = 100, init_points = 5, verbose = 1, num_it = 50)
+            best_ensemble, self.coefs = bo_ense.maximize(restarts = 100, init_points = 10, verbose = 1, num_it = 50)
             
         else:
             pred = self.skf(self.logit_model, self.svm_model, self.randf_model, self.gbt_model)
@@ -256,7 +256,7 @@ class magic_box_classifier:
                                                                      y = self.y,\
                                                                      scoring = classification_scores[self.sm]), coefs_range)
             
-            best_ensemble, self.coefs = bo_ense.maximize(restarts = 100, init_points = 5, verbose = 1, num_it = 50)
+            best_ensemble, self.coefs = bo_ense.maximize(restarts = 100, init_points = 10, verbose = 1, num_it = 50)
 
             print('Best ensemble score: %f' % best_ensemble)
 

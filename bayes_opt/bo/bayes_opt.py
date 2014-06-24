@@ -303,6 +303,7 @@ class bayes_opt:
             y_max, x_max, y, x : In addition to the maximum and arg max, return all the sampled x and y points.
             
         '''
+        total_time = datetime.now()
 
         # ------------------------------ // ------------------------------ // ------------------------------ #
         if not self.user_init:
@@ -359,6 +360,9 @@ class bayes_opt:
             # Printing everything
             pi.print_info(op_start, i, x_max, ymax, xtrain, ytrain, self.keys)
             
+
+        tmin, tsec = divmod((datetime.now() - total_time).total_seconds(), 60)
+        print('Optimization finished with maximum: %8f | Time taken: %i minutes and %s seconds' % (ytrain.max(), tmin, tsec))
                 
         if full_out:
             return ytrain.max(), dict(zip(self.keys, xtrain[numpy.argmax(ytrain)])), ytrain, xtrain
@@ -392,6 +396,7 @@ class bayes_opt:
             y_max, x_max, y, x : In addition to the maximum and arg max, return all the sampled x and y points.
             
         '''
+        total_time = datetime.now()
 
 
         # ------------------------------ // ------------------------------ // ------------------------------ #
@@ -465,10 +470,14 @@ class bayes_opt:
             pi.print_log(op_start, i, x_max, xmins, min_max_ratio, ymax, xtrain, ytrain, self.keys)
                 
 
+        tmin, tsec = divmod((datetime.now() - total_time).total_seconds(), 60)
+        print('Optimization finished with maximum: %8f | Time taken: %i minutes and %s seconds' % (ytrain.max(), tmin, tsec))
+
         if full_out:
             return ytrain.max(), dict(zip(self.keys, return_log(xtrain[numpy.argmax(ytrain)]))), ytrain, return_log(xtrain)
         else:
             return ytrain.max(), dict(zip(self.keys, return_log(xtrain[numpy.argmax(ytrain)])))
+
 
 
 
@@ -526,3 +535,9 @@ class bayes_opt:
 
 
         self.user_init = True
+
+
+
+    def init(self, points_dict):
+        '''A function to perform all initialization and clear the optimize methods - To be constructed'''
+        return 0
