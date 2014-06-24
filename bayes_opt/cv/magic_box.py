@@ -31,7 +31,7 @@ class magic_box_classifier:
    
 
 
-    def __init__(self, score_metric, n_folds = 5, n_jobs = 1, iterations = 50):      
+    def __init__(self, score_metric, n_folds = 10, n_jobs = 1, iterations = 50):      
 
         self.sm = score_metric
         self.folds = n_folds
@@ -39,6 +39,7 @@ class magic_box_classifier:
         self.it = iterations
 
         self.logit_argmax = {'C' : 1, 'intercept_scaling' : 1}
+        self.svm_argmax = {'C' : 1, 'gamma' : 0.0}
         self.randf_argmax = {'n_estimators' : 10, 'min_samples_split' : 2}
 
         self.coefs = {'c_logit' : 0.3333, 'c_svm' : 0.3333, 'c_randf' : 0.3333}
@@ -46,6 +47,14 @@ class magic_box_classifier:
         self.logit_model = 0
         self.randf_model = 0
         self.svm_model = 0
+
+
+    def get_parameters(self):
+
+        models = ['logit', 'svm', 'rf']
+        paras = [self.logit_argmax, self.svm_argmax, self.randf_argmax]
+
+        return dict(zip(models, paras))
 
 
     def logit_cv(self, C, intercept_scaling):
@@ -90,6 +99,29 @@ class magic_box_classifier:
         return prediction
 
 
+    def skf(self, clf_logit, clf_svm, clf_randf):
+        
+        from sklearn.cross_validation import StratifiedKFold
+        skfold = StratifiedKFold(self.y, n_folds = self.folds)
+        
+        prediction = numpy.zeros((len(self.y), 3))
+        
+        for itr, ite in skfold:
+            xtrain, xtest = self.x[itr], self.x[ite]
+            ytrain, ytest = self.y[itr], self.y[ite]
+
+            clf_logit.fit(xtrain, ytrain)
+            clf_svm.fit(xtrain, ytrain)
+            clf_randf.fit(xtrain, ytrain)
+            
+            prediction[ite, 0] = clf_logit.predict(xtest)
+            prediction[ite, 1] = clf_svm.predict(xtest)
+            prediction[ite, 2] = clf_randf.predict(xtest)
+            
+
+        return prediction
+
+
     def fit(self, x, y):
         '''Try some basic ones and return best + score - like NB, LR, RF, that kind of stuff'''
 
@@ -120,7 +152,6 @@ class magic_box_classifier:
                                                min_samples_split = int(self.randf_argmax['min_samples_split']),\
                                                random_state = 1)
         if self.sm == 'roc_auc':
-            
             self.svm_model.set_params(probability = True, random_state = 0)
             
             pred = self.skf_proba(self.logit_model, self.svm_model, self.randf_model)
@@ -133,9 +164,24 @@ class magic_box_classifier:
                                                            scoring = classification_scores[self.sm]),\
                                 {'c_logit' : (1e-15, 1), 'c_svm' : (1e-15, 1),  'c_randf' : (1e-15, 1)})
             
-            best_ensemble, self.coefs = bo_ense.maximize(restarts = 50, init_points = 5, verbose = 2, num_it = 5)
+            best_ensemble, self.coefs = bo_ense.maximize(restarts = 50, init_points = 5, verbose = 2, num_it = 10)
+            
         else:
-            print('not done yet')
+            self.svm_model.set_params(random_state = 0)
+            
+            pred = self.skf(self.logit_model, self.svm_model, self.randf_model)
+
+            bo_ense = bayes_opt(lambda c_logit, c_svm, c_randf: self.ensemble(c1 = c_logit, c2 = c_svm, c3 = c_randf,\
+                                                           pred1 = pred[:, 0],\
+                                                           pred2 = pred[:, 1],\
+                                                           pred3 = pred[:, 2],\
+                                                           y = self.y,\
+                                                           scoring = classification_scores[self.sm]),\
+                                {'c_logit' : (1e-15, 1), 'c_svm' : (1e-15, 1),  'c_randf' : (1e-15, 1)})
+            
+            best_ensemble, self.coefs = bo_ense.maximize(restarts = 50, init_points = 5, verbose = 2, num_it = 10)
+
+            
 
         print('Fitting the models at last.')
 
@@ -148,11 +194,28 @@ class magic_box_classifier:
 
 
     def predict_proba(self, x):
-        print('starting prediction')
+        print('starting prob prediction')
 
         logit_pred = self.logit_model.predict_proba(x)
         svm_pred = self.svm_model.predict_proba(x)
         randf_pred = self.randf_model.predict_proba(x)
+
+
+        wsum = self.coefs['c_logit'] + self.coefs['c_svm'] + self.coefs['c_randf']
+  
+        ense = (self.coefs['c_logit']/wsum) * logit_pred +\
+               (self.coefs['c_svm']/wsum) * svm_pred +\
+               (self.coefs['c_randf']/wsum) * randf_pred
+            
+        return ense
+
+
+    def predict(self, x):
+        print('starting prediction')
+
+        logit_pred = self.logit_model.predict(x)
+        svm_pred = self.svm_model.predict(x)
+        randf_pred = self.randf_model.predict(x)
 
 
         wsum = self.coefs['c_logit'] + self.coefs['c_svm'] + self.coefs['c_randf']
