@@ -11,7 +11,7 @@ for references.
 
 Fernando Nogueira
 '''
-# Python 2.7 users.
+
 from __future__ import print_function
 from __future__ import division
 
@@ -22,10 +22,7 @@ from datetime import datetime
 from scipy.optimize import minimize
 
 from math import exp, fabs, sqrt, log, pi
-from ..support.objects import covariance, sample_covariance, kernels, acquisition, print_info
-#from help_functions import covariance, sample_covariance, kernels, acquisition, print_info
-
-
+from support.objects import covariance, sample_covariance, kernels, acquisition, print_info
 
 
 
