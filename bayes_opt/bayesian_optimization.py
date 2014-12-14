@@ -24,30 +24,33 @@ from datetime import datetime
 from sklearn.gaussian_process import GaussianProcess as GP
 
 from scipy.optimize import minimize
-from .helpers import acquisition, print_info
+from .helpers import AcquisitionFunction, PrintInfo
 
 
 
 # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
 def acq_max(ac, gp, ymax, restarts, bounds):
-    ''' A function to find the maximum of the acquisition function using the 'L-BFGS-B' method.
+    """
+    A function to find the maximum of the acquisition function using the 'L-BFGS-B' method.
 
-        Parameters
-        ----------
-        gp : A gaussian process fitted to the relevant data.
+    Parameters
+    ----------
+    :param ac: The acquisition function object that return its pointwise value.
 
-        ymax : The current maximum known value of the target function.
+    :param gp: A gaussian process fitted to the relevant data.
 
-        restarts : The number of times minimation if to be repeated. Larger number of restarts
-                   improves the chances of finding the true maxima.
+    :param ymax: The current maximum known value of the target function.
 
-        Bounds : The variables bounds to limit the search of the acq max.
+    :param restarts: The number of times minimation if to be repeated. Larger number of restarts
+                     improves the chances of finding the true maxima.
+
+    :param bounds: The variables bounds to limit the search of the acq max.
 
 
-        Returns
-        -------
-        x_max : The arg max of the acquisition function.
-    '''
+    Returns
+    -------
+    :return: x_max, The arg max of the acquisition function.
+    """
 
     x_max = bounds[:, 0]
     ei_max = 0
@@ -67,14 +70,14 @@ def acq_max(ac, gp, ymax, restarts, bounds):
     return x_max
 
 def unique_rows(a):
-    '''
+    """
     A functions to trim repeated rows that may appear when optimizing.
     This is necessary to avoid the sklearn GP object from breaking
 
     :param a: array to trim repeated rows from
 
     :return: mask of unique rows
-    '''
+    """
 
     # Sort array and kep track of where things should go back to
     order = numpy.lexsort(a.T)
@@ -90,11 +93,21 @@ def unique_rows(a):
 
 ###
 
-class bayes_opt(object):
+class BayesianOptimization(object):
+    """
+    Bayesian global optimization with Gaussian Process.
+    """
 
     def __init__(self, f, pbounds, verbose=1):
+        """
+        :param f: Function to be maximized.
 
+        :param pbounds: Dictionary with parameters names as keys and a tuple with
+                        minimum and maximum values.
 
+        :param verbose: Controls levels of verbosity.
+
+        """
         # Store the original dictionary
         self.pbounds = pbounds
 
@@ -113,9 +126,10 @@ class bayes_opt(object):
         # Some function to be optimized
         self.f = f
 
-        # Initialization lists
+        # Initialization flag
         self.initialized = False
 
+        # Initialization lists --- stores starting points before process begins
         self.init_points = []
         self.x_init = []
         self.y_init = []
@@ -124,16 +138,23 @@ class bayes_opt(object):
         self.verbose = verbose
 
     def init(self, init_points):
+        """
+        Initialization method to kick start the optimization process. It is a combination of
+        points passed by the user, and randomly sampled ones.
+
+        :param init_points: Number of random points to probe.
+        """
 
         # Generate random points
         l = [numpy.random.uniform(x[0], x[1], size=init_points) for x in self.bounds]
 
-        # Concatenate its transpose to the list of init points
+        # Concatenate new random points to possible existing points from self.explore method.
         self.init_points += list(map(list, zip(*l)))
 
         # Create empty list to store the new values of the function
         y_init = []
 
+        # Evaluate target function at all initialization points (random + explore)
         for x in self.init_points:
 
             if self.verbose:
@@ -144,20 +165,24 @@ class bayes_opt(object):
             if self.verbose:
                 print(' | result: %f' % y_init[-1])
 
+        # Append any other points passed by the self.initialize method (these also have
+        # a corresponding target value passed by the user).
         self.init_points += self.x_init
 
+        # Append the target value of self.initialize method.
         y_init += self.y_init
-        y_init = numpy.asarray(y_init)
 
+        # Turn it into numpy array and store.
         self.X = numpy.asarray(self.init_points)
-        self.Y = y_init
+        self.Y = numpy.asarray(y_init)
 
+        # Updates the flag
         self.initialized = True
 
     # ------------------------------ // ---- # ----- // ------------------------------ #
     # ------------------------------ // ---- # ----- // ------------------------------ #
     def explore(self, points_dict):
-        ''' Main optimization method.
+        """ Main optimization method.
             Parameters
             ----------
             points_dict: {p1: [x1, x2...], p2: [y1, y2, ...]}
@@ -166,7 +191,7 @@ class bayes_opt(object):
             -------
             Nothing.
 
-        '''
+        """
 
         ################################################
         # Consistency check
@@ -193,7 +218,8 @@ class bayes_opt(object):
 
 
     def initialize(self, points_dict):
-        ''' Main optimization method.
+        """
+            Main optimization method.
             Parameters
             ----------
             points_dict: {y: {x1: x, ...}}
@@ -203,9 +229,7 @@ class bayes_opt(object):
             -------
             Nothing.
 
-        '''
-        ################################################
-        # Turn into list of lists
+        """
 
         for target in points_dict:
 
@@ -220,39 +244,36 @@ class bayes_opt(object):
 
     # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
     def maximize(self, init_points=5, restarts=50, n_iter=25, acq='ei', **gp_params):
-        ''' Main optimization method.
+        """
+        Main optimization method.
 
-            Parameters
-            ----------
-            init_points : Number of randomly chosen points to sample the target function before fitting the gp.
+        Parameters
+        ----------
+        :param init_points: Number of randomly chosen points to sample the target function before fitting the gp.
 
-            restarts : The number of times minimation if to be repeated. Larger number of restarts
-                       improves the chances of finding the true maxima.
+        :param restarts: The number of times minimation if to be repeated. Larger number of restarts
+                         improves the chances of finding the true maxima.
 
-            num_it : Total number of times the process is to reapeated. Note that currently this methods does not have
-                     stopping criteria (due to a number of reasons), therefore the total number of points to be sampled
-                     must be specified.
+        :param n_iter: Total number of times the process is to reapeated. Note that currently this methods does not have
+                       stopping criteria (due to a number of reasons), therefore the total number of points to be sampled
+                       must be specified.
 
-            verbose : The amount of information to be printed during optimization. Accepts 0(nothing), 1(partial), 2(full).
+        :param acq: Acquisition function to be used, defaults to Expected Improvement.
 
-            full_out : If the full output is to be returned or just the function maximum and arg max.
+        :param gp_params: Parameters to be passed to the Scikit-learn Gaussian Process object
 
-
-            Returns
-            -------
-            y_max, x_max : The function maximum and its position.
-
-            y_max, x_max, y, x : In addition to the maximum and arg max, return all the sampled x and y points.
-
-        '''
+        Returns
+        -------
+        :return: Nothing
+        """
         # Start a timer
         total_time = datetime.now()
 
         # Create instance of printer object
-        printI = print_info(self.verbose)
+        printI = PrintInfo(self.verbose)
 
         # Set acquisition function
-        AC = acquisition()
+        AC = AcquisitionFunction()
         ac_types = {'ei': AC.EI, 'pi': AC.PoI, 'ucb': AC.UCB}
         ac = ac_types[acq]
 
@@ -280,6 +301,12 @@ class bayes_opt(object):
         x_max = acq_max(ac, gp, ymax, restarts, self.bounds)
 
 
+        # ------------------------------ // ------------------------------ // ------------------------------ #
+        # Iterative process of searching for the maximum. At each round the most recent x and y values
+        # probed are added to the X and Y arrays used to train the Gaussian Process. Next the maximum
+        # known value of the target function is found and passed to the acq_max function. The arg_max
+        # of the acquisition function is found and this will be the next probed value of the tharget
+        # function in the next round.
         for i in range(n_iter):
             op_start = datetime.now()
 
@@ -287,12 +314,13 @@ class bayes_opt(object):
             self.X = numpy.concatenate((self.X, x_max.reshape((1, self.dim))), axis=0)
             self.Y = numpy.append(self.Y, self.f(**dict(zip(self.keys, x_max))))
 
-            #Updating the GP.
+            # Updating the GP.
             ur = unique_rows(self.X)
             gp.fit(self.X[ur], self.Y[ur])
 
-            # Finding new maximum value to search for next probe point.
-            ymax = self.Y.max()
+            # Update maximum value to search for next probe point.
+            if self.Y[-1] > ymax:
+                ymax = self.Y[-1]
 
             # Maximize acquisition function to find next probing point
             x_max = acq_max(ac, gp, ymax, restarts, self.bounds)
@@ -300,21 +328,20 @@ class bayes_opt(object):
             # Print stuff
             printI.print_info(op_start, i, x_max, ymax, self.X, self.Y, self.keys)
 
-
+        # ------------------------------ // ------------------------------ // ------------------------------ #
+        # Output dictionary
         self.res = {}
         self.res['max'] = {'max_val': self.Y.max(), 'max_params': dict(zip(self.keys, self.X[self.Y.argmax()]))}
         self.res['all'] = {'values': [], 'params': []}
 
-
+        # Fill values
         for t, p in zip(self.Y, self.X):
             self.res['all']['values'].append(t)
             self.res['all']['params'].append(dict(zip(self.keys, p)))
 
-
+        # Print a final report if verbose active.
         if self.verbose:
             tmin, tsec = divmod((datetime.now() - total_time).total_seconds(), 60)
             print('Optimization finished with maximum: %8f, at position: %8s.' % (self.res['max']['max_val'],\
                                                                                   self.res['max']['max_params']))
             print('Time taken: %i minutes and %s seconds.' % (tmin, tsec))
-
-

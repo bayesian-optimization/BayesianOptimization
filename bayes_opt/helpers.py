@@ -6,9 +6,6 @@ from datetime import datetime
 from scipy.stats import norm
 from math import exp, fabs, sqrt, log, pi
 
-
-
-
 ################################################################################
 ################################################################################
 ################################ Help Functions ################################
@@ -19,11 +16,11 @@ from math import exp, fabs, sqrt, log, pi
 ############################# Aquisition Functions #############################
 ################################################################################
 
-class acquisition(object):
+class AcquisitionFunction(object):
     '''An object to compute the acquisition functions.'''
 
 
-    def __init__(self, k = 1):
+    def __init__(self, k=1):
         '''If UCB is to be used, a constant kappa is needed.'''
         self.kappa = k
 
@@ -95,7 +92,7 @@ class acquisition(object):
 ################################################################################
 
 
-class print_info(object):
+class PrintInfo(object):
     '''A class to take care of the verbosity of the other classes.'''
     '''Under construction!'''
 

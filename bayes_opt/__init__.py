@@ -1,1 +1,2 @@
-from .bayes_opt import bayes_opt
+from .bayesian_optimization import BayesianOptimization
+from .helpers import AcquisitionFunction, PrintInfo
