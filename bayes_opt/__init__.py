@@ -1,1 +1,1 @@
-import bayes_opt
+from .bayes_opt import bayes_opt
