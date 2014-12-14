@@ -1,18 +1,23 @@
-Working Python implementation of global optimization with gaussian processes.
+Python implementation of bayesian global optimization with gaussian processes.
 
-—Under (constant) development! (See the wiki for more information.)
+This is a constrained global optimization package built upon bayesian inference and
+gaussian process, that attempts to find the maximum value of an unknown function in
+as few iterations as possible. This technique is particularly suited for optimization
+of high cost functions, situations where the balance between exploration and
+exploitation is important.
 
-This is a constrained global optimization package built upon bayesian inference and gaussian process, that attempts to find the maximum value of an unknown function in as few iterations as possible. This technique is particularly suited for optimization of high cost functions, situations where the balance between exploration and exploitation is important.
+Checkout the examples folder for simple scripts indicating how to use this package.
 
-This package was motivated by hyper-parameter optimization of machine leaning algorithms when performing cross validation. Some of the design choices were clearly made with this setting in mind and ultimately a out-of-the-box cross validation optimization object will be implemented (soon).
+Disclaimer: This project is under active development, if you find a bug, or anything
+that needs correction, please let me know.
 
-Disclaimer: This project is under active development, some of its functionalities and sintaxes are bound to change, sometimes dramatically. If you find a bug, or anything that needs correction, please let me know.
+Dependencies:
+    * Scipy
+    * Numpy
+    * Scikit-Learn
 
-Basic dependencies are Scipy, Numpy. Examples dependencies also include matplotlib and sklearn.
-
-References for this implementation can be found in:
-
-http://papers.nips.cc/paper/4522-practical-bayesian-optimization-of-machine-learning-algorithms.pdf
-http://arxiv.org/pdf/1012.2599v1.pdf
-http://www.gaussianprocess.org/gpml/
-https://www.youtube.com/watch?v=vz3D36VXefI&index=10&list=PLE6Wd9FR--EdyJ5lbFl8UuGjecvVw66F6
+References:
+    * http://papers.nips.cc/paper/4522-practical-bayesian-optimization-of-machine-learning-algorithms.pdf
+    * http://arxiv.org/pdf/1012.2599v1.pdf
+    * http://www.gaussianprocess.org/gpml/
+    * https://www.youtube.com/watch?v=vz3D36VXefI&index=10&list=PLE6Wd9FR--EdyJ5lbFl8UuGjecvVw66F6
