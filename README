@@ -1,15 +1,10 @@
 Python implementation of bayesian global optimization with gaussian processes.
 
-This is a constrained global optimization package built upon bayesian inference and
-gaussian process, that attempts to find the maximum value of an unknown function in
-as few iterations as possible. This technique is particularly suited for optimization
-of high cost functions, situations where the balance between exploration and
-exploitation is important.
+This is a constrained global optimization package built upon bayesian inference and gaussian process, that attempts to find the maximum value of an unknown function in as few iterations as possible. This technique is particularly suited for optimization of high cost functions, situations where the balance between exploration and exploitation is important.
 
 Checkout the examples folder for simple scripts indicating how to use this package.
 
-Disclaimer: This project is under active development, if you find a bug, or anything
-that needs correction, please let me know.
+Disclaimer: This project is under active development, if you find a bug, or anything that needs correction, please let me know.
 
 Dependencies:
     * Scipy
