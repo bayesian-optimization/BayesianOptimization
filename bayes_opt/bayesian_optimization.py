@@ -59,7 +59,7 @@ def acq_max(ac, gp, ymax, restarts, bounds):
         #Sample some points at random.
         x_try = numpy.asarray([numpy.random.uniform(x[0], x[1], size=1) for x in bounds]).T
 
-        #Find the minimum of minus que acquisition function
+        #Find the minimum of minus the acquisition function
         res = minimize(lambda x: -ac(x, gp=gp, ymax=ymax), x_try, bounds=bounds, method='L-BFGS-B')
 
         #Store it if better than previous minimum(maximum).
@@ -119,8 +119,8 @@ class BayesianOptimization(object):
 
         # Create an array with parameters bounds
         self.bounds = []
-        for key in pbounds.keys():
-            self.bounds.append(pbounds[key])
+        for key in self.pbounds.keys():
+            self.bounds.append(self.pbounds[key])
         self.bounds = numpy.asarray(self.bounds)
 
         # Some function to be optimized
@@ -240,6 +240,24 @@ class BayesianOptimization(object):
                 all_points.append(points_dict[target][key])
 
             self.x_init.append(all_points)
+
+
+    def set_bounds(self, new_bounds):
+        """
+        A method that allows changing the lower and upper searching bounds
+
+        :param new_boudns: A dictionary with the parameter name and its new bounds
+
+        """
+
+        # Update the internal object stored dict
+        self.pbounds.update(new_bounds)
+
+        # Loop through the all bounds and reset the min-max bound matrix
+        for row, key in enumerate(self.pbounds.keys()):
+
+            # Reset all entries, even if the same.
+            self.bounds[row] = self.pbounds[key]
 
 
     # ----------------------- // ----------------------- # ----------------------- // ----------------------- #
