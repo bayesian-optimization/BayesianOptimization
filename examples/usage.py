@@ -5,8 +5,9 @@ Example of how to use this bayesian optimization package.
 
 # Lets find the maximum of a simple quadratic function of two variables
 # We create the bayes_opt object and pass the function to be maximized
-# together with the paraters names and their bounds.
-bo = BayesianOptimization(lambda x, y: -x**2 -(y-1)**2 + 1, {'x': (-4, 4), 'y': (-3, 3)})
+# together with the parameters names and their bounds.
+bo = BayesianOptimization(lambda x, y: -x**2 - (y - 1)**2 + 1,
+                          {'x': (-4, 4), 'y': (-3, 3)})
 
 # One of the things we can do with this object is pass points
 # which we want the algorithm to probe. A dictionary with the
@@ -24,7 +25,7 @@ bo.initialize({-2: {'x': 1, 'y': 0}, -1.251: {'x': 1, 'y': 1.5}})
 # Once we are satisfied with the initialization conditions
 # we let the algorithm do its magic by calling the maximize()
 # method.
-bo.maximize(n_iter=15)
+bo.maximize(init_points=15, n_iter=25)
 
 # The output values can be accessed with self.res
 print(bo.res['max'])
