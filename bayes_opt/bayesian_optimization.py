@@ -41,7 +41,7 @@ def acq_max(ac, gp, ymax, restarts, bounds):
         x_try = numpy.asarray([numpy.random.uniform(x[0], x[1], size=1) for x in bounds]).T
 
         #Find the minimum of minus the acquisition function
-        res = minimize(lambda x: -ac(x, gp=gp, ymax=ymax), x_try, bounds=bounds, method='L-BFGS-B')
+        res = minimize(lambda x: -ac(x.reshape(-1, 1), gp=gp, ymax=ymax), x_try, bounds=bounds, method='L-BFGS-B')
 
         #Store it if better than previous minimum(maximum).
         if -res.fun >= ei_max:
