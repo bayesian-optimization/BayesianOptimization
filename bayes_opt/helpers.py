@@ -1,10 +1,8 @@
 from __future__ import print_function
 from __future__ import division
-
 import numpy as np
 from datetime import datetime
 from scipy.stats import norm
-from math import exp, fabs, log, pi
 
 
 class UtilityFunction(object):
@@ -26,13 +24,13 @@ class UtilityFunction(object):
         else:
             self.kind = kind
 
-    def utility(self, x, gp, ymax):
+    def utility(self, x, gp, y_max):
         if self.kind == 'ucb':
             return self._ucb(x, gp, self.kappa)
         if self.kind == 'ei':
-            return self._ei(x, gp, ymax)
+            return self._ei(x, gp, y_max)
         if self.kind == 'poi':
-            return self._ucb(x, gp, ymax)
+            return self._ucb(x, gp, y_max)
 
     @staticmethod
     def _ucb(x, gp, kappa):
@@ -40,64 +38,54 @@ class UtilityFunction(object):
         return mean + kappa * np.sqrt(var)
 
     @staticmethod
-    def _ei(x, gp, ymax):
+    def _ei(x, gp, y_max):
         mean, var = gp.predict(x, eval_MSE=True)
         if var == 0:
             return 0
         else:
-            Z = (mean - ymax)/np.sqrt(var)
-            return (mean - ymax) * norm.cdf(Z) + np.sqrt(var) * norm.pdf(Z)
+            z = (mean - y_max)/np.sqrt(var)
+            return (mean - y_max) * norm.cdf(z) + np.sqrt(var) * norm.pdf(z)
 
     @staticmethod
-    def _poi(x, gp, ymax):
+    def _poi(x, gp, y_max):
         mean, var = gp.predict(x, eval_MSE=True)
         if var == 0:
             return 1
         else:
-            Z = (mean - ymax)/np.sqrt(var)
-            return norm.cdf(Z)
+            z = (mean - y_max)/np.sqrt(var)
+            return norm.cdf(z)
 
 
-class PrintInfo(object):
+def unique_rows(a):
     """
-    A class to take care of the verbosity of the other classes.
+    A functions to trim repeated rows that may appear when optimizing.
+    This is necessary to avoid the sklearn GP object from breaking
+
+    :param a: array to trim repeated rows from
+
+    :return: mask of unique rows
     """
 
-    def __init__(self, level=0):
+    # Sort array and kep track of where things should go back to
+    order = np.lexsort(a.T)
+    reorder = np.argsort(order)
 
-        self.lvl = level
-        self.timer = 0
+    a = a[order]
+    diff = np.diff(a, axis=0)
+    ui = np.ones(len(a), 'bool')
+    ui[1:] = (diff != 0).any(axis=1)
 
-    def print_info(self, op_start, i, x_max, ymax, xtrain, ytrain, keys):
+    return ui[reorder]
 
-        if self.lvl:
-            np.set_printoptions(precision=4, suppress=True)
-            print('Iteration: %3i | Last sampled value: %11f' % ((i+1), ytrain[-1]), '| with parameters: ', dict(zip(keys, xtrain[-1])))
-            print('               | Current maximum: %14f | with parameters: ' % ymax, dict(zip(keys, xtrain[np.argmax(ytrain)])))
-            
-            minutes, seconds = divmod((datetime.now() - op_start).total_seconds(), 60)
-            print('               | Time taken: %i minutes and %s seconds' % (minutes, seconds))
-            print('')
 
-        else:
-            pass
+def print_info(op_start, i, y_max, x_train, y_train, keys):
 
-    def print_log(self, op_start, i, x_max, xmins, min_max_ratio, ymax, xtrain, ytrain, keys):
+    np.set_printoptions(precision=4, suppress=True)
+    print('Iteration: %3i | Last sampled value: %11f' % ((i+1), y_train[-1]),
+          '| with parameters: ', dict(zip(keys, x_train[-1])))
+    print('               | Current maximum: %14f | with parameters: ' % y_max,
+          dict(zip(keys, x_train[np.argmax(y_train)])))
 
-        def return_log(x):
-            return xmins * (10 ** (x * min_max_ratio))
-
-        dict_len = len(keys)
-
-        if self.lvl:
-                
-            np.set_printoptions(precision=4, suppress=True)
-            print('Iteration: %3i | Last sampled value: %8f' % ((i+1), ytrain[-1]), '| with parameters: ',  dict(zip(keys, return_log(xtrain[-1])) ))
-            print('               | Current maximum: %11f | with parameters: ' % ymax, dict(zip(keys, return_log(xtrain[np.argmax(ytrain)]))))
-
-            minutes, seconds = divmod((datetime.now() - op_start).total_seconds(), 60)
-            print('               | Time taken: %i minutes and %s seconds' % (minutes, seconds))
-            print('')
-
-        else:
-            pass
+    minutes, seconds = divmod((datetime.now() - op_start).total_seconds(), 60)
+    print('               | Time taken: %i minutes and %s seconds' % (minutes, seconds))
+    print('')
