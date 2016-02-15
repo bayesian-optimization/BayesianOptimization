@@ -38,16 +38,17 @@ def acq_max(ac, gp, y_max, restarts, bounds):
     :return: x_max, The arg max of the acquisition function.
     """
 
+    # Start with the lower bound as the argmax
     x_max = bounds[:, 0]
     ei_max = 0
 
-    for i in range(restarts):
-        # Sample some points at random.
-        x_try = np.asarray([np.random.uniform(x[0], x[1], size=1) for x in bounds]).T
+    x_tries = np.random.uniform(bounds[:, 0], bounds[:, 1],
+                                size=(restarts, bounds.shape[0]))
 
+    for x_try in x_tries:
         # Find the minimum of minus the acquisition function
         res = minimize(lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max),
-                       x_try,
+                       x_try.reshape(1, -1),
                        bounds=bounds,
                        method="L-BFGS-B")
 
