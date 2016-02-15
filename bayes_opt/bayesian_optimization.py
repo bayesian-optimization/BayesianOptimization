@@ -129,7 +129,6 @@ class BayesianOptimization(object):
         self.gp = GP(theta0=numpy.random.uniform(0.001, 0.05, self.dim),
                      thetaL=1e-4 * numpy.ones(self.dim),
                      thetaU=1e-1 * numpy.ones(self.dim),
-                     corr='cubic',
                      random_start=25)
 
         # Utility Function placeholder
