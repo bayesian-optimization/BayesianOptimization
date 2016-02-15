@@ -1,7 +1,5 @@
 from bayes_opt import BayesianOptimization
-'''
-Example of how to use this bayesian optimization package.
-'''
+# Example of how to use this bayesian optimization package.
 
 # Lets find the maximum of a simple quadratic function of two variables
 # We create the bayes_opt object and pass the function to be maximized
