@@ -4,7 +4,11 @@ Pure Python implementation of bayesian global optimization with gaussian process
 
 This is a constrained global optimization package built upon bayesian inference and gaussian process, that attempts to find the maximum value of an unknown function in as few iterations as possible. This technique is particularly suited for optimization of high cost functions, situations where the balance between exploration and exploitation is important.
 
-Checkout the [examples](https://github.com/fmfn/BayesianOptimization/tree/master/examples) folder for simple scripts indicating how to use this package.
+Checkout this [notebook](https://github.com/fmfn/BayesianOptimization/blob/master/examples/visualization.ipynb) with a step by step visualization of how this method works.
+
+![BayesianOptimization in action](https://github.com/fmfn/BayesianOptimization/blob/master/examples/bo_example.png)
+
+Checkout the [examples](https://github.com/fmfn/BayesianOptimization/tree/master/examples) folder for more scripts with examples of how to use this package.
 
 Installation
 ============
