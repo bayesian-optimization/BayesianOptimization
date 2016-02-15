@@ -7,7 +7,7 @@ import numpy
 from datetime import datetime
 from sklearn.gaussian_process import GaussianProcess as GP
 from scipy.optimize import minimize
-from .helpers import AcquisitionFunction, PrintInfo
+from .helpers import UtilityFunction, PrintInfo
 
 
 def acq_max(ac, gp, ymax, restarts, bounds):
@@ -37,13 +37,16 @@ def acq_max(ac, gp, ymax, restarts, bounds):
     ei_max = 0
 
     for i in range(restarts):
-        #Sample some points at random.
+        # Sample some points at random.
         x_try = numpy.asarray([numpy.random.uniform(x[0], x[1], size=1) for x in bounds]).T
 
-        #Find the minimum of minus the acquisition function
-        res = minimize(lambda x: -ac(x.reshape(1, -1), gp=gp, ymax=ymax), x_try, bounds=bounds, method='L-BFGS-B')
+        # Find the minimum of minus the acquisition function
+        res = minimize(lambda x: -ac(x.reshape(1, -1), gp=gp, ymax=ymax),
+                       x_try,
+                       bounds=bounds,
+                       method='L-BFGS-B')
 
-        #Store it if better than previous minimum(maximum).
+        # Store it if better than previous minimum(maximum).
         if -res.fun >= ei_max:
             x_max = res.x
             ei_max = -res.fun
@@ -118,6 +121,19 @@ class BayesianOptimization(object):
         self.init_points = []
         self.x_init = []
         self.y_init = []
+
+        # Since scipy 0.16 passing lower and upper bound to theta seems to be
+        # broken. However, there is a lot of development going on around GP
+        # is scikit-learn. So I'll pick the easy route here and simple specify
+        # only theta0.
+        self.gp = GP(theta0=numpy.random.uniform(0.001, 0.05, self.dim),
+                     thetaL=1e-4 * numpy.ones(self.dim),
+                     thetaU=1e-1 * numpy.ones(self.dim),
+                     corr='cubic',
+                     random_start=25)
+
+        # Utility Function placeholder
+        self.util = None
 
         # Verbose
         self.verbose = verbose
@@ -238,7 +254,7 @@ class BayesianOptimization(object):
             # Reset all entries, even if the same.
             self.bounds[row] = self.pbounds[key]
 
-    def maximize(self, init_points=5, restarts=50, n_iter=25, acq='ei', **gp_params):
+    def maximize(self, init_points=5, restarts=50, n_iter=25, acq='ucb', kappa=1.96, **gp_params):
         """
         Main optimization method.
 
@@ -268,9 +284,7 @@ class BayesianOptimization(object):
         printI = PrintInfo(self.verbose)
 
         # Set acquisition function
-        AC = AcquisitionFunction()
-        ac_types = {'ei': AC.EI, 'pi': AC.PoI, 'ucb': AC.UCB}
-        ac = ac_types[acq]
+        self.util = UtilityFunction(kind=acq, kappa=kappa)
 
         # Initialize x, y and find current ymax
         if not self.initialized:
@@ -278,23 +292,15 @@ class BayesianOptimization(object):
 
         ymax = self.Y.max()
 
-        # ------------------------------ // ------------------------------ // ------------------------------ #
-        # Fitting the gaussian process.
-        # Since scipy 0.16 passing lower and upper bound to theta seems to be
-        # broken. However, there is a lot of development going on around GP
-        # is scikit-learn. So I'll pick the easy route here and simple specify
-        # only theta0.
-        gp = GP(theta0=numpy.random.uniform(0.001, 0.05, self.dim),
-                random_start=25)
-
-        gp.set_params(**gp_params)
+        # Set parameters if any was passed
+        self.gp.set_params(**gp_params)
 
         # Find unique rows of X to avoid GP from breaking
         ur = unique_rows(self.X)
-        gp.fit(self.X[ur], self.Y[ur])
+        self.gp.fit(self.X[ur], self.Y[ur])
 
         # Finding argmax of the acquisition function.
-        x_max = acq_max(ac, gp, ymax, restarts, self.bounds)
+        x_max = acq_max(self.util.utility, self.gp, ymax, restarts, self.bounds)
 
         # ------------------------------ // ------------------------------ // ------------------------------ #
         # Iterative process of searching for the maximum. At each round the most recent x and y values
@@ -311,14 +317,14 @@ class BayesianOptimization(object):
 
             # Updating the GP.
             ur = unique_rows(self.X)
-            gp.fit(self.X[ur], self.Y[ur])
+            self.gp.fit(self.X[ur], self.Y[ur])
 
             # Update maximum value to search for next probe point.
             if self.Y[-1] > ymax:
                 ymax = self.Y[-1]
 
             # Maximize acquisition function to find next probing point
-            x_max = acq_max(ac, gp, ymax, restarts, self.bounds)
+            x_max = acq_max(self.util.utility, self.gp, ymax, restarts, self.bounds)
 
             # Print stuff
             printI.print_info(op_start, i, x_max, ymax, self.X, self.Y, self.keys)

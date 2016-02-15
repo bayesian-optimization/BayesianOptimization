@@ -35,7 +35,7 @@ print(bo.res['max'])
 # where we left, maybe pass some more exploration points to the algorithm
 # change any parameters we may choose, and the let it run again.
 bo.explore({'x': [0.6], 'y': [-0.23]})
-bo.maximize(n_iter=5, acq='pi')
+bo.maximize(n_iter=5, acq='ei')
 
 # Finally, we take a look at the final results.
 print(bo.res['max'])
