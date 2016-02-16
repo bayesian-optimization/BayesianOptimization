@@ -2,7 +2,7 @@
 
 Pure Python implementation of bayesian global optimization with gaussian processes.
 
-    pip install git+https://github.com/fmfn/UnbalancedDataset
+    pip install git+https://github.com/fmfn/BayesianOptimization.git
 
 This is a constrained global optimization package built upon bayesian inference and gaussian process, that attempts to find the maximum value of an unknown function in as few iterations as possible. This technique is particularly suited for optimization of high cost functions, situations where the balance between exploration and exploitation is important.
 
@@ -20,7 +20,7 @@ Installation
 BayesianOptimization is not currently available on the PyPi's reporitories, 
 however you can install it via `pip`:
 
-    pip install git+https://github.com/fmfn/UnbalancedDataset
+    pip install git+https://github.com/fmfn/BayesianOptimization.git
 
 If you prefer, you can clone it and run the setup.py file. Use the following commands to get a 
 copy from Github and install all dependencies:
