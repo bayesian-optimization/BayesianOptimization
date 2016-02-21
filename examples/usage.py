@@ -23,7 +23,7 @@ bo.initialize({-2: {'x': 1, 'y': 0}, -1.251: {'x': 1, 'y': 1.5}})
 # Once we are satisfied with the initialization conditions
 # we let the algorithm do its magic by calling the maximize()
 # method.
-bo.maximize(init_points=15, n_iter=25)
+bo.maximize(init_points=5, n_iter=15, kappa=3.29)
 
 # The output values can be accessed with self.res
 print(bo.res['max'])
@@ -33,7 +33,14 @@ print(bo.res['max'])
 # where we left, maybe pass some more exploration points to the algorithm
 # change any parameters we may choose, and the let it run again.
 bo.explore({'x': [0.6], 'y': [-0.23]})
-bo.maximize(n_iter=5, acq='ei')
+
+# Making changes to the gaussian process can impact the algorithm
+# dramatically.
+gp_params = {'corr': 'absolute_exponential',
+             'nugget': 1e-5}
+
+# Run it again with different acquisition function
+bo.maximize(n_iter=5, acq='ei', **gp_params)
 
 # Finally, we take a look at the final results.
 print(bo.res['max'])

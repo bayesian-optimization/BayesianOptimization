@@ -4,12 +4,12 @@ import numpy as np
 from datetime import datetime
 from sklearn.gaussian_process import GaussianProcess
 from scipy.optimize import minimize
-from .helpers import UtilityFunction, unique_rows, print_info
+from .helpers import UtilityFunction, unique_rows, PrintLog
 
 __author__ = 'fmfn'
 
 
-def acq_max(ac, gp, y_max, restarts, bounds):
+def acq_max(ac, gp, y_max, bounds):
     """
     A function to find the maximum of the acquisition function using
     the 'L-BFGS-B' method.
@@ -25,10 +25,6 @@ def acq_max(ac, gp, y_max, restarts, bounds):
     :param y_max:
         The current maximum known value of the target function.
 
-    :param restarts:
-        The number of times minimization if to be repeated. Larger number of
-        restarts improves the chances of finding the true maxima.
-
     :param bounds:
         The variables bounds to limit the search of the acq max.
 
@@ -43,7 +39,7 @@ def acq_max(ac, gp, y_max, restarts, bounds):
     ei_max = 0
 
     x_tries = np.random.uniform(bounds[:, 0], bounds[:, 1],
-                                size=(restarts, bounds.shape[0]))
+                                size=(250, bounds.shape[0]))
 
     for x_try in x_tries:
         # Find the minimum of minus the acquisition function
@@ -57,7 +53,9 @@ def acq_max(ac, gp, y_max, restarts, bounds):
             x_max = res.x
             ei_max = -res.fun
 
-    return x_max
+    # Clip output to make sure it lies within the bounds. Due to floating
+    # point technicalities this is not always the case.
+    return np.clip(x_max, bounds[:, 0], bounds[:, 1])
 
 
 class BayesianOptimization(object):
@@ -105,6 +103,9 @@ class BayesianOptimization(object):
         self.X = None
         self.Y = None
 
+        # Counter of iterations
+        self.i = 0
+
         # Since scipy 0.16 passing lower and upper bound to theta seems to be
         # broken. However, there is a lot of development going on around GP
         # is scikit-learn. So I'll pick the easy route here and simple specify
@@ -117,8 +118,15 @@ class BayesianOptimization(object):
         # Utility Function placeholder
         self.util = None
 
+        # PrintLog object
+        self.plog = PrintLog(self.keys)
+
         # Output dictionary
         self.res = {}
+        # Output dictionary
+        self.res['max'] = {'max_val': None,
+                           'max_params': None}
+        self.res['all'] = {'values': [], 'params': []}
 
         # Verbose
         self.verbose = verbose
@@ -146,14 +154,10 @@ class BayesianOptimization(object):
         # points (random + explore)
         for x in self.init_points:
 
-            if self.verbose:
-                print('Initializing function at point: ',
-                      dict(zip(self.keys, x)), end='')
-
             y_init.append(self.f(**dict(zip(self.keys, x))))
 
             if self.verbose:
-                print(' | result: %f' % y_init[-1])
+                self.plog.print_step(x, y_init[-1])
 
         # Append any other points passed by the self.initialize method (these
         # also have a corresponding target value passed by the user).
@@ -239,7 +243,6 @@ class BayesianOptimization(object):
                  n_iter=25,
                  acq='ucb',
                  kappa=1.96,
-                 restarts=50,
                  **gp_params):
         """
         Main optimization method.
@@ -249,10 +252,6 @@ class BayesianOptimization(object):
         :param init_points:
             Number of randomly chosen points to sample the
             target function before fitting the gp.
-
-        :param restarts:
-            The number of times minimation if to be repeated. Larger number
-            of restarts improves the chances of finding the true maxima.
 
         :param n_iter:
             Total number of times the process is to repeated. Note that
@@ -270,14 +269,16 @@ class BayesianOptimization(object):
         -------
         :return: Nothing
         """
-        # Start a timer
-        total_time = datetime.now()
+        # Reset timer
+        self.plog.reset_timer()
 
         # Set acquisition function
         self.util = UtilityFunction(kind=acq, kappa=kappa)
 
         # Initialize x, y and find current y_max
         if not self.initialized:
+            if self.verbose:
+                self.plog.print_header()
             self.init(init_points)
 
         y_max = self.Y.max()
@@ -293,9 +294,11 @@ class BayesianOptimization(object):
         x_max = acq_max(ac=self.util.utility,
                         gp=self.gp,
                         y_max=y_max,
-                        restarts=restarts,
                         bounds=self.bounds)
 
+        # Print new header
+        if self.verbose:
+            self.plog.print_header(initialization=False)
         # Iterative process of searching for the maximum. At each round the
         # most recent x and y values probed are added to the X and Y arrays
         # used to train the Gaussian Process. Next the maximum known value
@@ -303,8 +306,6 @@ class BayesianOptimization(object):
         # The arg_max of the acquisition function is found and this will be
         # the next probed value of the target function in the next round.
         for i in range(n_iter):
-            op_start = datetime.now()
-
             # Append most recently generated values to X and Y arrays
             self.X = np.vstack((self.X, x_max.reshape((1, -1))))
             self.Y = np.append(self.Y, self.f(**dict(zip(self.keys, x_max))))
@@ -321,29 +322,22 @@ class BayesianOptimization(object):
             x_max = acq_max(ac=self.util.utility,
                             gp=self.gp,
                             y_max=y_max,
-                            restarts=restarts,
                             bounds=self.bounds)
 
             # Print stuff
             if self.verbose:
-                print_info(op_start, i, y_max, self.X, self.Y, self.keys)
+                self.plog.print_step(self.X[-1], self.Y[-1])
 
-        # Output dictionary
-        self.res['max'] = {'max_val': self.Y.max(),
-                           'max_params': dict(zip(self.keys,
-                                                  self.X[self.Y.argmax()]))
-                           }
-        self.res['all'] = {'values': [], 'params': []}
+            # Keep track of total number of iterations
+            self.i += 1
 
-        # Fill values
-        for t, p in zip(self.Y, self.X):
-            self.res['all']['values'].append(t)
-            self.res['all']['params'].append(dict(zip(self.keys, p)))
+            self.res['max'] = {'max_val': self.Y.max(),
+                               'max_params': dict(zip(self.keys,
+                                                      self.X[self.Y.argmax()]))
+                               }
+            self.res['all']['values'].append(self.Y[-1])
+            self.res['all']['params'].append(dict(zip(self.keys, self.X[-1])))
 
         # Print a final report if verbose active.
         if self.verbose:
-            t_min, t_sec = divmod((datetime.now() - total_time).total_seconds(), 60)
-            print('Optimization finished with maximum: '
-                  '{0}, at position: {1}.'.format(self.res['max']['max_val'],
-                                                  self.res['max']['max_params']))
-            print('Time taken: %i minutes and %s seconds.' % (t_min, t_sec))
+            self.plog.print_summary()
