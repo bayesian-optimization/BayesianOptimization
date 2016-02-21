@@ -305,6 +305,17 @@ class BayesianOptimization(object):
         # The arg_max of the acquisition function is found and this will be
         # the next probed value of the target function in the next round.
         for i in range(n_iter):
+            # Test if x_max is repeated, if it is, draw another one at random
+            # If it is repeated, print a warning
+            pwarning = False
+            if np.any((self.X - x_max).sum(axis=1) == 0):
+
+                x_max = np.random.uniform(self.bounds[:, 0],
+                                          self.bounds[:, 1],
+                                          size=self.bounds.shape[0])
+
+                pwarning = True
+
             # Append most recently generated values to X and Y arrays
             self.X = np.vstack((self.X, x_max.reshape((1, -1))))
             self.Y = np.append(self.Y, self.f(**dict(zip(self.keys, x_max))))
@@ -325,7 +336,7 @@ class BayesianOptimization(object):
 
             # Print stuff
             if self.verbose:
-                self.plog.print_step(self.X[-1], self.Y[-1])
+                self.plog.print_step(self.X[-1], self.Y[-1], warning=pwarning)
 
             # Keep track of total number of iterations
             self.i += 1

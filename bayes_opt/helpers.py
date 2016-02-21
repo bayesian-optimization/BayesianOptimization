@@ -115,9 +115,11 @@ class PrintLog(object):
     def print_header(self, initialization=True):
 
         if initialization:
-            print("{}Initialization{}".format(BColours.RED, BColours.ENDC))
+            print("{}Initialization{}".format(BColours.RED,
+                                              BColours.ENDC))
         else:
-            print("{}Bayesian Optimization{}".format(BColours.RED, BColours.ENDC))
+            print("{}Bayesian Optimization{}".format(BColours.RED,
+                                                     BColours.ENDC))
 
         print(BColours.BLUE + "-" * (29 + sum([s + 5 for s in self.sizes])) + BColours.ENDC)
 
@@ -126,10 +128,12 @@ class PrintLog(object):
         print("{0:>{1}}".format("Value", 10), end=" | ")
 
         for index in self.sorti:
-            print("{0:>{1}}".format(self.params[index], self.sizes[index] + 2), end=" | ")
+            print("{0:>{1}}".format(self.params[index],
+                                    self.sizes[index] + 2),
+                  end=" | ")
         print('')
 
-    def print_step(self, x, y):
+    def print_step(self, x, y, warning=False):
 
         print("{:>5d}".format(self.ite), end=" | ")
 
@@ -139,7 +143,10 @@ class PrintLog(object):
         if self.ymax is None or self.ymax < y:
             self.ymax = y
             self.xmax = x
-            print("{0}{2: >10.5f}{1}".format(BColours.MAGENTA, BColours.ENDC, y), end=" | ")
+            print("{0}{2: >10.5f}{1}".format(BColours.MAGENTA,
+                                             BColours.ENDC,
+                                             y),
+                  end=" | ")
 
             for index in self.sorti:
                 print("{0}{2: >{3}.{4}f}{1}".format(BColours.GREEN, BColours.ENDC,
@@ -154,6 +161,11 @@ class PrintLog(object):
                                               self.sizes[index] + 2,
                                               min(self.sizes[index] - 3, 6 - 2)),
                       end=" | ")
+
+        if warning:
+            print("{}Warning: Test point chose at "
+                  "random due to repeated sample.{}".format(BColours.RED,
+                                                            BColours.ENDC))
 
         print()
 

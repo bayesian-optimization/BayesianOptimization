@@ -12,6 +12,8 @@ Checkout this [notebook](https://github.com/fmfn/BayesianOptimization/blob/maste
 
 Checkout the [examples](https://github.com/fmfn/BayesianOptimization/tree/master/examples) folder for more scripts with examples of how to use this package.
 
+![BayesianOptimization in action](https://github.com/fmfn/BayesianOptimization/blob/3d_notebook/examples/bayesian_optimization.gif)
+
 Installation
 ============
 
