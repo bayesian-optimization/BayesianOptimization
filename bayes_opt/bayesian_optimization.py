@@ -1,7 +1,6 @@
 from __future__ import print_function
 from __future__ import division
 import numpy as np
-from datetime import datetime
 from sklearn.gaussian_process import GaussianProcess
 from scipy.optimize import minimize
 from .helpers import UtilityFunction, unique_rows, PrintLog
@@ -36,10 +35,10 @@ def acq_max(ac, gp, y_max, bounds):
 
     # Start with the lower bound as the argmax
     x_max = bounds[:, 0]
-    ei_max = 0
+    max_acq = None
 
     x_tries = np.random.uniform(bounds[:, 0], bounds[:, 1],
-                                size=(250, bounds.shape[0]))
+                                size=(100, bounds.shape[0]))
 
     for x_try in x_tries:
         # Find the minimum of minus the acquisition function
@@ -49,9 +48,9 @@ def acq_max(ac, gp, y_max, bounds):
                        method="L-BFGS-B")
 
         # Store it if better than previous minimum(maximum).
-        if -res.fun >= ei_max:
+        if max_acq is None or -res.fun >= max_acq:
             x_max = res.x
-            ei_max = -res.fun
+            max_acq = -res.fun
 
     # Clip output to make sure it lies within the bounds. Due to floating
     # point technicalities this is not always the case.
@@ -111,9 +110,9 @@ class BayesianOptimization(object):
         # is scikit-learn. So I'll pick the easy route here and simple specify
         # only theta0.
         self.gp = GaussianProcess(theta0=np.random.uniform(0.001, 0.05, self.dim),
-                                  thetaL=1e-4 * np.ones(self.dim),
-                                  thetaU=1e-1 * np.ones(self.dim),
-                                  random_start=25)
+                                  thetaL=1e-5 * np.ones(self.dim),
+                                  thetaU=1e0 * np.ones(self.dim),
+                                  random_start=30)
 
         # Utility Function placeholder
         self.util = None
@@ -242,7 +241,7 @@ class BayesianOptimization(object):
                  init_points=5,
                  n_iter=25,
                  acq='ucb',
-                 kappa=1.96,
+                 kappa=2.576,
                  **gp_params):
         """
         Main optimization method.

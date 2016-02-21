@@ -19,7 +19,7 @@ class UtilityFunction(object):
         if kind not in ['ucb', 'ei', 'poi']:
             err = "The utility function " \
                   "{} has not been implemented, " \
-                  "please choose one of ucb, ui, or poi.".format(kind)
+                  "please choose one of ucb, ei, or poi.".format(kind)
             raise NotImplementedError(err)
         else:
             self.kind = kind
@@ -40,20 +40,22 @@ class UtilityFunction(object):
     @staticmethod
     def _ei(x, gp, y_max):
         mean, var = gp.predict(x, eval_MSE=True)
-        if var == 0:
-            return 0
-        else:
-            z = (mean - y_max)/np.sqrt(var)
-            return (mean - y_max) * norm.cdf(z) + np.sqrt(var) * norm.pdf(z)
+
+        # Avoid points with zero variance
+        var = np.maximum(var, 1e-9 + 0 * var)
+
+        z = (mean - y_max)/np.sqrt(var)
+        return (mean - y_max) * norm.cdf(z) + np.sqrt(var) * norm.pdf(z)
 
     @staticmethod
     def _poi(x, gp, y_max):
         mean, var = gp.predict(x, eval_MSE=True)
-        if var == 0:
-            return 1
-        else:
-            z = (mean - y_max)/np.sqrt(var)
-            return norm.cdf(z)
+
+        # Avoid points with zero variance
+        var = np.maximum(var, 1e-9 + 0 * var)
+
+        z = (mean - y_max)/np.sqrt(var)
+        return norm.cdf(z)
 
 
 def unique_rows(a):
@@ -78,7 +80,7 @@ def unique_rows(a):
     return ui[reorder]
 
 
-class BColours:
+class BColours(object):
     BLUE = '\033[94m'
     CYAN = '\033[36m'
     GREEN = '\033[32m'
