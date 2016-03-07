@@ -242,7 +242,7 @@ class BayesianOptimization(object):
                  n_iter=25,
                  acq='ucb',
                  kappa=2.576,
-                 xi=0.01,
+                 xi=0.0,
                  **gp_params):
         """
         Main optimization method.
