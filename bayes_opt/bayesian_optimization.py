@@ -8,7 +8,7 @@ from .helpers import UtilityFunction, unique_rows, PrintLog
 __author__ = 'fmfn'
 
 
-def acq_max(ac, gp, y_max, bounds):
+def acq_max(ac, gp, y_max, bounds, test_random_points):
     """
     A function to find the maximum of the acquisition function using
     the 'L-BFGS-B' method.
@@ -33,24 +33,33 @@ def acq_max(ac, gp, y_max, bounds):
     :return: x_max, The arg max of the acquisition function.
     """
 
-    # Start with the lower bound as the argmax
-    x_max = bounds[:, 0]
-    max_acq = None
+    if test_random_points:
+        x_tries = np.random.uniform(bounds[:, 0], bounds[:, 1],
+                                    size=(100000, bounds.shape[0]))
+                                    
+        ys = ac(x_tries, gp=gp, y_max=y_max)
 
-    x_tries = np.random.uniform(bounds[:, 0], bounds[:, 1],
-                                size=(100, bounds.shape[0]))
+        
+        x_max = x_tries[ys.argmax()]
+    else:
+        # Start with the lower bound as the argmax
+        x_max = bounds[:, 0]
+        max_acq = None
+        
+        x_tries = np.random.uniform(bounds[:, 0], bounds[:, 1],
+                                    size=(100, bounds.shape[0]))
 
-    for x_try in x_tries:
-        # Find the minimum of minus the acquisition function
-        res = minimize(lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max),
-                       x_try.reshape(1, -1),
-                       bounds=bounds,
-                       method="L-BFGS-B")
+        for x_try in x_tries:
+            # Find the minimum of minus the acquisition function
+            res = minimize(lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max),
+                           x_try.reshape(1, -1),
+                           bounds=bounds,
+                           method="L-BFGS-B")
 
-        # Store it if better than previous minimum(maximum).
-        if max_acq is None or -res.fun >= max_acq:
-            x_max = res.x
-            max_acq = -res.fun
+            # Store it if better than previous minimum(maximum).
+            if max_acq is None or -res.fun >= max_acq:
+                x_max = res.x
+                max_acq = -res.fun
 
     # Clip output to make sure it lies within the bounds. Due to floating
     # point technicalities this is not always the case.
@@ -242,6 +251,7 @@ class BayesianOptimization(object):
                  n_iter=25,
                  acq='ucb',
                  kappa=2.576,
+                 test_random_points=False,
                  **gp_params):
         """
         Main optimization method.
@@ -293,7 +303,8 @@ class BayesianOptimization(object):
         x_max = acq_max(ac=self.util.utility,
                         gp=self.gp,
                         y_max=y_max,
-                        bounds=self.bounds)
+                        bounds=self.bounds,
+                        test_random_points=test_random_points)
 
         # Print new header
         if self.verbose:
@@ -332,7 +343,8 @@ class BayesianOptimization(object):
             x_max = acq_max(ac=self.util.utility,
                             gp=self.gp,
                             y_max=y_max,
-                            bounds=self.bounds)
+                            bounds=self.bounds,
+                            test_random_points=test_random_points)
 
             # Print stuff
             if self.verbose:

@@ -15,7 +15,7 @@ class UtilityFunction(object):
         If UCB is to be used, a constant kappa is needed.
         """
         self.kappa = kappa
-
+        
         if kind not in ['ucb', 'ei', 'poi']:
             err = "The utility function " \
                   "{} has not been implemented, " \
@@ -39,7 +39,17 @@ class UtilityFunction(object):
 
     @staticmethod
     def _ei(x, gp, y_max):
-        mean, var = gp.predict(x, eval_MSE=True)
+        #mean, var = gp.predict(x, eval_MSE=True)
+
+        cuts = list(range(0, len(x), 1000)) + [len(x)]
+
+        mean, var = [], []
+        for a, b in zip(cuts, cuts[1:]):
+            m, v = gp.predict(x[a:b], eval_MSE=True)
+            mean += m
+            var  += v
+        mean = np.concatenate(mean)
+        var  = np.concatenate(var)
 
         # Avoid points with zero variance
         var = np.maximum(var, 1e-9 + 0 * var)
