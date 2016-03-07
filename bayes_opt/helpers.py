@@ -34,12 +34,12 @@ class UtilityFunction(object):
 
     @staticmethod
     def _ucb(x, gp, kappa):
-        mean, var = self._gp_predict(gp, x)
+        mean, var = UtilityFunction._gp_predict(gp, x)
         return mean + kappa * np.sqrt(var)
 
     @staticmethod
     def _ei(x, gp, y_max):
-        mean, var = self._gp_predict(gp, x)
+        mean, var = UtilityFunction._gp_predict(gp, x)
 
         # Avoid points with zero variance
         var = np.maximum(var, 1e-9 + 0 * var)
@@ -49,7 +49,7 @@ class UtilityFunction(object):
 
     @staticmethod
     def _poi(x, gp, y_max):
-        mean, var = self._gp_predict(gp, x)
+        mean, var = UtilityFunction._gp_predict(gp, x)
 
         # Avoid points with zero variance
         var = np.maximum(var, 1e-9 + 0 * var)
@@ -59,20 +59,21 @@ class UtilityFunction(object):
 
     @staticmethod
     def _gp_predict(gp, x):
-        # gp.predict takes a lot of memory, so we feed batches to it.
-        # gp.predict(x, batch_size=1000) would be preferable, but that
-        # doesn't work with python 3 as of sklearn 0.17.1.
-        cuts = list(range(0, len(x), 1000)) + [len(x)]
+        if len(x) == 1:
+            return gp.predict(x, eval_MSE=True)
+        else:
+            # gp.predict takes a lot of memory, so we feed batches to it.
+            # gp.predict(x, batch_size=1000) would be preferable, but that
+            # doesn't work with python 3 as of sklearn 0.17.1.
+            cuts = list(range(0, len(x), 1000)) + [len(x)]
+            
+            mean, var = [], []
+            for a, b in zip(cuts, cuts[1:]):
+                m, v = gp.predict(x[a:b], eval_MSE=True)
+                mean.append(m)
+                var.append(v)
 
-        mean, var = [], []
-        for a, b in zip(cuts, cuts[1:]):
-            m, v = gp.predict(x[a:b], eval_MSE=True)
-            mean += m
-            var  += v
-        mean = np.concatenate(mean)
-        var  = np.concatenate(var)
-        
-        return mean, var
+            return np.concatenate(mean), np.concatenate(var)
 
 
 def unique_rows(a):
