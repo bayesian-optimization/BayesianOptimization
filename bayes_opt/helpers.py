@@ -32,7 +32,7 @@ class UtilityFunction(object):
         if self.kind == 'ei':
             return self._ei(x, gp, y_max, self.xi)
         if self.kind == 'poi':
-            return self._ucb(x, gp, y_max)
+            return self._ucb(x, gp, y_max, self.xi)
 
     @staticmethod
     def _ucb(x, gp, kappa):
@@ -50,13 +50,13 @@ class UtilityFunction(object):
         return (mean - y_max - xi) * norm.cdf(z) + np.sqrt(var) * norm.pdf(z)
 
     @staticmethod
-    def _poi(x, gp, y_max):
+    def _poi(x, gp, y_max, xi):
         mean, var = gp.predict(x, eval_MSE=True)
 
         # Avoid points with zero variance
         var = np.maximum(var, 1e-9 + 0 * var)
 
-        z = (mean - y_max)/np.sqrt(var)
+        z = (mean - y_max - xi)/np.sqrt(var)
         return norm.cdf(z)
 
 
