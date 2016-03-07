@@ -10,11 +10,13 @@ class UtilityFunction(object):
     An object to compute the acquisition functions.
     """
 
-    def __init__(self, kind='ucb', kappa=1.96):
+    def __init__(self, kind, kappa, xi):
         """
         If UCB is to be used, a constant kappa is needed.
         """
         self.kappa = kappa
+        
+        self.xi = xi
 
         if kind not in ['ucb', 'ei', 'poi']:
             err = "The utility function " \
@@ -28,7 +30,7 @@ class UtilityFunction(object):
         if self.kind == 'ucb':
             return self._ucb(x, gp, self.kappa)
         if self.kind == 'ei':
-            return self._ei(x, gp, y_max)
+            return self._ei(x, gp, y_max, self.xi)
         if self.kind == 'poi':
             return self._ucb(x, gp, y_max)
 
@@ -38,14 +40,14 @@ class UtilityFunction(object):
         return mean + kappa * np.sqrt(var)
 
     @staticmethod
-    def _ei(x, gp, y_max):
+    def _ei(x, gp, y_max, xi):
         mean, var = gp.predict(x, eval_MSE=True)
 
         # Avoid points with zero variance
         var = np.maximum(var, 1e-9 + 0 * var)
 
-        z = (mean - y_max)/np.sqrt(var)
-        return (mean - y_max) * norm.cdf(z) + np.sqrt(var) * norm.pdf(z)
+        z = (mean - y_max - xi)/np.sqrt(var)
+        return (mean - y_max - xi) * norm.cdf(z) + np.sqrt(var) * norm.pdf(z)
 
     @staticmethod
     def _poi(x, gp, y_max):

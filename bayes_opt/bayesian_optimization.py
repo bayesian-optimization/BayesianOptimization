@@ -242,6 +242,7 @@ class BayesianOptimization(object):
                  n_iter=25,
                  acq='ucb',
                  kappa=2.576,
+                 xi=0.01,
                  **gp_params):
         """
         Main optimization method.
@@ -272,7 +273,7 @@ class BayesianOptimization(object):
         self.plog.reset_timer()
 
         # Set acquisition function
-        self.util = UtilityFunction(kind=acq, kappa=kappa)
+        self.util = UtilityFunction(kind=acq, kappa=kappa, xi=xi)
 
         # Initialize x, y and find current y_max
         if not self.initialized:
