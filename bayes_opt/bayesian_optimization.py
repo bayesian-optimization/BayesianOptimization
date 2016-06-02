@@ -355,7 +355,7 @@ class BayesianOptimization(object):
             # Maximize acquisition function to find next probing point
             x_max = np.asarray([acq_max(ac=self.util.utility, gp=self.gp, y_max=y_max, bounds=self.bounds) for x in
                                 range(n_evals)])
-            x_max = x_max[unique_rows(x_max)]  # prevent duplicates (this may mean less than nevals bought forward)
+            x_max = x_max[unique_rows(x_max)]  # prevent duplicates (this may mean less than n_evals bought forward)
 
             # Spit the results into the .res strucure.
             self.res['max'] = {'max_val': self.Y.max(),
