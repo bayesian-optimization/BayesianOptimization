@@ -56,6 +56,51 @@ def acq_max(ac, gp, y_max, bounds):
     # point technicalities this is not always the case.
     return np.clip(x_max, bounds[:, 0], bounds[:, 1])
 
+def matern52(theta, d):
+    """
+    Matern 5/2 correlation model.::
+    
+        theta, d --> r(theta, d) = (1+sqrt(5)*r + 5/3*r^2)*exp(-sqrt(5)*r)
+        
+                               n
+            where r = sqrt(   sum  (d_i)^2 / (theta_i)^2 )
+                             i = 1
+                             
+    Parameters
+    ----------
+    theta : array_like
+        An array with shape 1 (isotropic) or n (anisotropic) giving the 
+        autocorrelation parameter(s).
+        
+    d : array_like
+        An array with shape (n_eval, n_features) giving the componentwise
+        distances between locations x and x' at which the correlation model
+        should be evaluated.
+        
+    Returns
+    -------
+    r : array_like
+        An array with shape (n_eval, ) containing the values of the
+        autocorrelation modle.
+    """
+
+    theta = np.asarray(theta, dtype=np.float)
+    d = np.asarray(d, dtype=np.float)
+    
+    if d.ndim > 1:
+        n_features = d.shape[1]
+    else:
+        n_features = 1
+        
+    if theta.size == 1:
+        r = np.sqrt(np.sum(d ** 2, axis=1)) / theta[0]
+    elif theta.size != n_features:
+        raise ValueError("Length of theta must be 1 or %s" % n_features)
+    else:
+        r = np.sqrt(np.sum(d ** 2 / theta.reshape(1,n_features) ** 2 , axis=1))
+        
+    return (1 + np.sqrt(5)*r + 5/3.*r ** 2) * np.exp(-np.sqrt(5)*r)
+        
 
 class BayesianOptimization(object):
 
@@ -109,7 +154,8 @@ class BayesianOptimization(object):
         # broken. However, there is a lot of development going on around GP
         # is scikit-learn. So I'll pick the easy route here and simple specify
         # only theta0.
-        self.gp = GaussianProcess(theta0=np.random.uniform(0.001, 0.05, self.dim),
+        self.gp = GaussianProcess(corr=matern52,
+                                  theta0=np.random.uniform(0.001, 0.05, self.dim),
                                   thetaL=1e-5 * np.ones(self.dim),
                                   thetaU=1e0 * np.ones(self.dim),
                                   random_start=30)
@@ -240,7 +286,7 @@ class BayesianOptimization(object):
     def maximize(self,
                  init_points=5,
                  n_iter=25,
-                 acq='ucb',
+                 acq='ei',
                  kappa=2.576,
                  xi=0.0,
                  **gp_params):
