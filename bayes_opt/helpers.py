@@ -3,6 +3,56 @@ from __future__ import division
 import numpy as np
 from datetime import datetime
 from scipy.stats import norm
+from scipy.optimize import minimize
+
+
+def acq_max(ac, gp, y_max, bounds):
+    """
+    A function to find the maximum of the acquisition function using
+    the 'L-BFGS-B' method.
+
+    Parameters
+    ----------
+    :param ac:
+        The acquisition function object that return its point-wise value.
+
+    :param gp:
+        A gaussian process fitted to the relevant data.
+
+    :param y_max:
+        The current maximum known value of the target function.
+
+    :param bounds:
+        The variables bounds to limit the search of the acq max.
+
+
+    Returns
+    -------
+    :return: x_max, The arg max of the acquisition function.
+    """
+
+    # Start with the lower bound as the argmax
+    x_max = bounds[:, 0]
+    max_acq = None
+
+    x_tries = np.random.uniform(bounds[:, 0], bounds[:, 1],
+                                size=(100, bounds.shape[0]))
+
+    for x_try in x_tries:
+        # Find the minimum of minus the acquisition function
+        res = minimize(lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max),
+                       x_try.reshape(1, -1),
+                       bounds=bounds,
+                       method="L-BFGS-B")
+
+        # Store it if better than previous minimum(maximum).
+        if max_acq is None or -res.fun >= max_acq:
+            x_max = res.x
+            max_acq = -res.fun
+
+    # Clip output to make sure it lies within the bounds. Due to floating
+    # point technicalities this is not always the case.
+    return np.clip(x_max, bounds[:, 0], bounds[:, 1])
 
 
 class UtilityFunction(object):
@@ -15,7 +65,7 @@ class UtilityFunction(object):
         If UCB is to be used, a constant kappa is needed.
         """
         self.kappa = kappa
-        
+
         self.xi = xi
 
         if kind not in ['ucb', 'ei', 'poi']:
@@ -36,12 +86,12 @@ class UtilityFunction(object):
 
     @staticmethod
     def _ucb(x, gp, kappa):
-        mean, var = gp.predict(x, eval_MSE=True)
+        mean, var = gp.predict(x, return_cov=True)
         return mean + kappa * np.sqrt(var)
 
     @staticmethod
     def _ei(x, gp, y_max, xi):
-        mean, var = gp.predict(x, eval_MSE=True)
+        mean, var = gp.predict(x, return_cov=True)
 
         # Avoid points with zero variance
         var = np.maximum(var, 1e-9 + 0 * var)
@@ -51,7 +101,7 @@ class UtilityFunction(object):
 
     @staticmethod
     def _poi(x, gp, y_max, xi):
-        mean, var = gp.predict(x, eval_MSE=True)
+        mean, var = gp.predict(x, return_cov=True)
 
         # Avoid points with zero variance
         var = np.maximum(var, 1e-9 + 0 * var)

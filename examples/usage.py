@@ -1,3 +1,5 @@
+import sys
+sys.path.append("./")
 from bayes_opt import BayesianOptimization
 # Example of how to use this bayesian optimization package.
 
@@ -36,8 +38,8 @@ bo.explore({'x': [0.6], 'y': [-0.23]})
 
 # Making changes to the gaussian process can impact the algorithm
 # dramatically.
-gp_params = {'corr': 'absolute_exponential',
-             'nugget': 1e-5}
+gp_params = {'kernel': None,
+             'alpha': 1e-5}
 
 # Run it again with different acquisition function
 bo.maximize(n_iter=5, acq='ei', **gp_params)
