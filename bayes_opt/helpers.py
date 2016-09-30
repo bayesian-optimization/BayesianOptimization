@@ -86,27 +86,19 @@ class UtilityFunction(object):
 
     @staticmethod
     def _ucb(x, gp, kappa):
-        mean, var = gp.predict(x, return_cov=True)
-        return mean + kappa * np.sqrt(var)
+        mean, std = gp.predict(x, return_std=True)
+        return mean + kappa * std
 
     @staticmethod
     def _ei(x, gp, y_max, xi):
-        mean, var = gp.predict(x, return_cov=True)
-
-        # Avoid points with zero variance
-        var = np.maximum(var, 1e-9 + 0 * var)
-
-        z = (mean - y_max - xi)/np.sqrt(var)
-        return (mean - y_max - xi) * norm.cdf(z) + np.sqrt(var) * norm.pdf(z)
+        mean, std = gp.predict(x, return_std=True)
+        z = (mean - y_max - xi)/std
+        return (mean - y_max - xi) * norm.cdf(z) + std * norm.pdf(z)
 
     @staticmethod
     def _poi(x, gp, y_max, xi):
-        mean, var = gp.predict(x, return_cov=True)
-
-        # Avoid points with zero variance
-        var = np.maximum(var, 1e-9 + 0 * var)
-
-        z = (mean - y_max - xi)/np.sqrt(var)
+        mean, std = gp.predict(x, return_std=True)
+        z = (mean - y_max - xi)/std
         return norm.cdf(z)
 
 
