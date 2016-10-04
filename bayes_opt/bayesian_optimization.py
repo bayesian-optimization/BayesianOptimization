@@ -9,8 +9,7 @@ __author__ = 'fmfn'
 
 
 class BayesianOptimization(object):
-
-    def __init__(self, f, pbounds, verbose=1):
+    def __init__(self, f, pbounds, verbose=1, mapf=map):
         """
         :param f:
             Function to be maximized.
@@ -22,6 +21,8 @@ class BayesianOptimization(object):
         :param verbose:
             Whether or not to print progress.
 
+        :param mapf:
+            Use a custom map function for function evaluation.
         """
         # Store the original dictionary
         self.pbounds = pbounds
@@ -75,8 +76,26 @@ class BayesianOptimization(object):
                            'max_params': None}
         self.res['all'] = {'values': [], 'params': []}
 
+        # Initialise the map function to use for evaluation of f.
+        self.mapf = mapf
+
         # Verbose
         self.verbose = verbose
+
+    def _evalpoint(self, x):
+        """
+        Simply evaluates the objective function for x (private)
+
+        :param x: model parameters
+
+        :return: y
+        """
+        y = self.f(**dict(zip(self.keys, x)))
+
+        if self.verbose:
+            self.plog.print_step(x, y)
+
+        return y
 
     def init(self, init_points):
         """
@@ -94,17 +113,14 @@ class BayesianOptimization(object):
         # points from self.explore method.
         self.init_points += list(map(list, zip(*l)))
 
-        # Create empty list to store the new values of the function
-        y_init = []
+        # store init_points as self.X
+        self.X = np.asarray(self.init_points)
 
-        # Evaluate target function at all initialization
-        # points (random + explore)
-        for x in self.init_points:
+        # there are no warnings for the initialisation, but we must keep track
+        self.warnings = np.zeros(len(self.X))
 
-            y_init.append(self.f(**dict(zip(self.keys, x))))
-
-            if self.verbose:
-                self.plog.print_step(x, y_init[-1])
+        # Evaluate target function at all initialization points
+        y_init = list(self.mapf(self._evalpoint, self.X))
 
         # Append any other points passed by the self.initialize method (these
         # also have a corresponding target value passed by the user).
@@ -113,9 +129,8 @@ class BayesianOptimization(object):
         # Append the target value of self.initialize method.
         y_init += self.y_init
 
-        # Turn it into np array and store.
-        self.X = np.asarray(self.init_points)
-        self.Y = np.asarray(y_init)
+        # save out target function values.
+        self.Y = np.asarray(np.squeeze(y_init))
 
         # Updates the flag
         self.initialized = True
@@ -181,7 +196,6 @@ class BayesianOptimization(object):
 
         # Loop through the all bounds and reset the min-max bound matrix
         for row, key in enumerate(self.pbounds.keys()):
-
             # Reset all entries, even if the same.
             self.bounds[row] = self.pbounds[key]
 
@@ -191,6 +205,7 @@ class BayesianOptimization(object):
                  acq='ei',
                  kappa=2.576,
                  xi=0.0,
+                 n_evals=1,
                  **gp_params):
         """
         Main optimization method.
@@ -210,8 +225,12 @@ class BayesianOptimization(object):
         :param acq:
             Acquisition function to be used, defaults to Expected Improvement.
 
+        :param n_evals:
+            Maximum number of evaluations to run per tuning iteration (actual number depends on xi)
+
         :param gp_params:
             Parameters to be passed to the Scikit-learn Gaussian Process object
+
 
         Returns
         -------
@@ -239,10 +258,10 @@ class BayesianOptimization(object):
         self.gp.fit(self.X[ur], self.Y[ur])
 
         # Finding argmax of the acquisition function.
-        x_max = acq_max(ac=self.util.utility,
-                        gp=self.gp,
-                        y_max=y_max,
-                        bounds=self.bounds)
+
+        x_max = np.asarray(
+            [acq_max(ac=self.util.utility, gp=self.gp, y_max=y_max, bounds=self.bounds) for x in range(n_evals)])
+        x_max = x_max[unique_rows(x_max)]  # prevent duplicates (this may mean less than n_evals bought forward)
 
         # Print new header
         if self.verbose:
@@ -254,49 +273,47 @@ class BayesianOptimization(object):
         # The arg_max of the acquisition function is found and this will be
         # the next probed value of the target function in the next round.
         for i in range(n_iter):
+            act_evals = len(x_max)  # record the actual number of evaluations in this round.
+
             # Test if x_max is repeated, if it is, draw another one at random
             # If it is repeated, print a warning
-            pwarning = False
-            if np.any((self.X - x_max).sum(axis=1) == 0):
+            pwarning = np.zeros(act_evals)
+            for k in range(act_evals):
+                if np.any((self.X - x_max[k, :]).sum(axis=1) == 0):
+                    x_max[k, :] = np.random.uniform(self.bounds[:, 0],
+                                                    self.bounds[:, 1],
+                                                    size=self.bounds.shape[0])
 
-                x_max = np.random.uniform(self.bounds[:, 0],
-                                          self.bounds[:, 1],
-                                          size=self.bounds.shape[0])
-
-                pwarning = True
+                    pwarning[k] = True
 
             # Append most recently generated values to X and Y arrays
-            self.X = np.vstack((self.X, x_max.reshape((1, -1))))
-            self.Y = np.append(self.Y, self.f(**dict(zip(self.keys, x_max))))
 
+            self.warnings = np.append(self.warnings, pwarning) # keep warnings for later..
+            self.X = np.asarray(np.vstack((self.X, x_max)))
+            new_y = list(self.mapf(self._evalpoint, x_max))
+            self.Y = np.append(self.Y, np.asarray(new_y))
             # Updating the GP.
             ur = unique_rows(self.X)
             self.gp.fit(self.X[ur], self.Y[ur])
 
             # Update maximum value to search for next probe point.
-            if self.Y[-1] > y_max:
-                y_max = self.Y[-1]
+            if any(self.Y > y_max):
+                y_max = self.Y.max()
 
             # Maximize acquisition function to find next probing point
-            x_max = acq_max(ac=self.util.utility,
-                            gp=self.gp,
-                            y_max=y_max,
-                            bounds=self.bounds)
+            x_max = np.asarray([acq_max(ac=self.util.utility, gp=self.gp, y_max=y_max, bounds=self.bounds) for x in
+                                range(n_evals)])
+            x_max = x_max[unique_rows(x_max)]  # prevent duplicates (this may mean less than n_evals bought forward)
 
-            # Print stuff
-            if self.verbose:
-                self.plog.print_step(self.X[-1], self.Y[-1], warning=pwarning)
-
-            # Keep track of total number of iterations
-            self.i += 1
-
+            # Spit the results into the .res strucure.
             self.res['max'] = {'max_val': self.Y.max(),
                                'max_params': dict(zip(self.keys,
                                                       self.X[self.Y.argmax()]))
                                }
-            self.res['all']['values'].append(self.Y[-1])
-            self.res['all']['params'].append(dict(zip(self.keys, self.X[-1])))
+            for k in range(len(self.X) - act_evals, len(self.X)):
+                self.res['all']['values'].append(self.Y[k])
+            self.res['all']['params'].append(dict(zip(self.keys, self.X[k])))
 
-        # Print a final report if verbose active.
-        if self.verbose:
-            self.plog.print_summary()
+            # Print a final report if verbose active.
+            if self.verbose:
+                self.plog.print_summary()
