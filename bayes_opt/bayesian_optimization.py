@@ -337,7 +337,7 @@ class BayesianOptimization(object):
 
         :return: None
         """
-        import pandas as pd
-        points_df = pd.DataFrame(self.X, columns=self.keys)
-        points_df['target'] = self.Y
-        points_df.to_csv(file_name, index=False)
+
+        points = np.hstack((self.X, np.expand_dims(self.Y, axis=1)))
+        header = ', '.join(self.keys + ['target'])
+        np.savetxt(file_name, points, header=header, delimiter=',')
