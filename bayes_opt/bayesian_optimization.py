@@ -167,6 +167,33 @@ class BayesianOptimization(object):
 
             self.x_init.append(all_points)
 
+    def initialize_df(self, points_df):
+        """
+        Method to introduce point for which the target function
+        value is known from pandas dataframe file
+
+        :param points_df: pandas dataframe with columns (target, {list of columns matching self.keys})
+
+        ex:
+              target        alpha      colsample_bytree        gamma
+        -1166.19102       7.0034                0.6849       8.3673
+        -1142.71370       6.6186                0.7314       3.5455
+        -1138.68293       6.0798                0.9540       2.3281
+        -1146.65974       2.4566                0.9290       0.3456
+        -1160.32854       1.9821                0.5298       8.7863
+
+        :return:
+        """
+
+        for i in points_df.index:
+            self.y_init.append(points_df.loc[i, 'target'])
+
+            all_points = []
+            for key in self.keys:
+                all_points.append(points_df.loc[i, key])
+
+            self.x_init.append(all_points)
+
     def set_bounds(self, new_bounds):
         """
         A method that allows changing the lower and upper searching bounds
