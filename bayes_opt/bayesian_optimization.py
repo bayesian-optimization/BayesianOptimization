@@ -327,3 +327,17 @@ class BayesianOptimization(object):
         # Print a final report if verbose active.
         if self.verbose:
             self.plog.print_summary()
+
+    def points_to_csv(self, file_name):
+        """
+        After training all points for which we know target variable
+        (both from initialization and optimization) are saved
+
+        :param file_name: name of the file where points will be saved in the csv format
+
+        :return: None
+        """
+
+        points = np.hstack((self.X, np.expand_dims(self.Y, axis=1)))
+        header = ', '.join(self.keys + ['target'])
+        np.savetxt(file_name, points, header=header, delimiter=',')
