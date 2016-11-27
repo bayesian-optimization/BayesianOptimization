@@ -4,6 +4,8 @@ from __future__ import division
 import numpy as np
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 from .helpers import UtilityFunction, unique_rows, PrintLog, acq_max
 __author__ = 'fmfn'
 
@@ -57,10 +59,13 @@ class BayesianOptimization(object):
         self.i = 0
 
         # Internal GP regressor
-        self.gp = GaussianProcessRegressor(
-            kernel=Matern(),
-            n_restarts_optimizer=25,
-        )
+        self.gp = Pipeline(steps=[
+            ('scaler', StandardScaler()),
+            ('svc', GaussianProcessRegressor(
+                kernel=Matern(),
+                n_restarts_optimizer=25,
+            ))
+        ])
 
         # Utility Function placeholder
         self.util = None
