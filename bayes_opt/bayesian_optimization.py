@@ -2,6 +2,7 @@ from __future__ import print_function
 from __future__ import division
 
 import numpy as np
+from functools import partial
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.pipeline import Pipeline
@@ -61,11 +62,19 @@ class BayesianOptimization(object):
         # Internal GP regressor
         self.gp = Pipeline(steps=[
             ('scaler', StandardScaler()),
-            ('svc', GaussianProcessRegressor(
+            ('gp', GaussianProcessRegressor(
                 kernel=Matern(),
                 n_restarts_optimizer=25,
             ))
         ])
+
+        def gp_predict(X, return_std=False):
+            return self.gp.named_steps['gp'].predict(
+                X = self.gp.named_steps['scaler'].transform(X),
+                return_std = return_std
+            )
+
+        self.gp.predict = gp_predict
 
         # Utility Function placeholder
         self.util = None
