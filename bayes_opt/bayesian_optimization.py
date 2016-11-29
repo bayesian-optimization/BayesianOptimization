@@ -59,7 +59,7 @@ class BayesianOptimization(object):
         self.i = 0
 
         # Internal GP regressor
-        self.gp = GaussianProcessRegressor(kernel=Matern(), n_restarts_optimizer=25)
+        self.gp = GaussianProcessRegressor(kernel=Matern(), n_restarts_optimizer=25, normalize_y=True)
 
         # Utility Function placeholder
         self.util = None
@@ -214,7 +214,7 @@ class BayesianOptimization(object):
     def maximize(self,
                  init_points=5,
                  n_iter=25,
-                 acq='ei',
+                 acq='ucb',
                  kappa=2.576,
                  xi=0.0,
                  scaler=False,
