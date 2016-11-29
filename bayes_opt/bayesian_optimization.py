@@ -215,7 +215,7 @@ class BayesianOptimization(object):
     def maximize(self,
                  init_points=5,
                  n_iter=25,
-                 acq='ei',
+                 acq='ucb',
                  kappa=2.576,
                  xi=0.0,
                  **gp_params):
