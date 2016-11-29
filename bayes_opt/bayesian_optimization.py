@@ -273,10 +273,12 @@ class BayesianOptimization(object):
             ])
 
         def pipeline_predict(X, return_std=False):
-            return self.pipeline.named_steps['gp'].predict(
-                X = self.pipeline.named_steps['scaler'].transform(X),
-                return_std = return_std
-            )
+            try:
+                X = self.pipeline.named_steps['scaler'].transform(X)
+            except KeyError:
+                pass
+
+            return self.pipeline.named_steps['gp'].predict(X=X, return_std=return_std)
 
         # implements custom predict to allow return_std flag
         self.pipeline.predict = pipeline_predict
