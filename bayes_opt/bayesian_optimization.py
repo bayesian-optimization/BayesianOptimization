@@ -59,7 +59,7 @@ class BayesianOptimization(object):
         self.i = 0
 
         # Internal GP regressor
-        self.gp = GaussianProcessRegressor(kernel=Matern(), n_restarts_optimizer=25, normalize_y=True)
+        self.gp = GaussianProcessRegressor(kernel=Matern(), n_restarts_optimizer=25)
 
         # Utility Function placeholder
         self.util = None
