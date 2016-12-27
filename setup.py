@@ -2,9 +2,10 @@ from setuptools import setup, find_packages
 
 setup(
     name='bayesian-optimization',
-    version='0.3.0',
+    version='0.4.0',
     url='https://github.com/fmfn/BayesianOptimization',
     packages=find_packages(),
+    author='Fernando Nogueira',
     description='Bayesian Optimization package',
     install_requires=[
         "numpy >= 1.9.0",

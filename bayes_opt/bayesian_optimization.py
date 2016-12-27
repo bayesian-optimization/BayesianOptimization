@@ -5,7 +5,6 @@ import numpy as np
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
 from .helpers import UtilityFunction, unique_rows, PrintLog, acq_max
-__author__ = 'fmfn'
 
 
 class BayesianOptimization(object):
@@ -88,7 +87,8 @@ class BayesianOptimization(object):
         """
 
         # Generate random points
-        l = [np.random.uniform(x[0], x[1], size=init_points) for x in self.bounds]
+        l = [np.random.uniform(x[0], x[1], size=init_points)
+             for x in self.bounds]
 
         # Concatenate new random points to possible existing
         # points from self.explore method.
@@ -172,7 +172,9 @@ class BayesianOptimization(object):
         Method to introduce point for which the target function
         value is known from pandas dataframe file
 
-        :param points_df: pandas dataframe with columns (target, {list of columns matching self.keys})
+        :param points_df:
+            pandas dataframe with columns (target, {list of columns matching
+            self.keys})
 
         ex:
               target        alpha      colsample_bytree        gamma
@@ -333,7 +335,8 @@ class BayesianOptimization(object):
         After training all points for which we know target variable
         (both from initialization and optimization) are saved
 
-        :param file_name: name of the file where points will be saved in the csv format
+        :param file_name: name of the file where points will be saved in the csv
+            format
 
         :return: None
         """

@@ -6,7 +6,9 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
 import sys
 sys.path.append("./")
-from bayes_opt.helpers import UtilityFunction, acq_max
+sys.path.append("../bayes_opt/")
+# from bayes_opt.helpers import UtilityFunction, acq_max
+from helpers import UtilityFunction, acq_max
 
 
 def get_globals():

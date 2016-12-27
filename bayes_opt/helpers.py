@@ -8,8 +8,11 @@ from scipy.optimize import minimize
 
 def acq_max(ac, gp, y_max, bounds):
     """
-    A function to find the maximum of the acquisition function using
-    the 'L-BFGS-B' method.
+    A function to find the maximum of the acquisition function
+
+    It uses a combination of random sampling (cheap) and the 'L-BFGS-B'
+    optimization method. First by sampling 1e5 points at random, and then
+    running L-BFGS-B from 250 random starting points.
 
     Parameters
     ----------
@@ -31,14 +34,17 @@ def acq_max(ac, gp, y_max, bounds):
     :return: x_max, The arg max of the acquisition function.
     """
 
-    # Start with the lower bound as the argmax
-    x_max = bounds[:, 0]
-    max_acq = None
-
+    # Warm up with random points
     x_tries = np.random.uniform(bounds[:, 0], bounds[:, 1],
-                                size=(100, bounds.shape[0]))
+                                 size=(100000, bounds.shape[0]))
+    ys = ac(x_tries, gp=gp, y_max=y_max)
+    x_max = x_tries[ys.argmax()]
+    max_acq = ys.max()
 
-    for x_try in x_tries:
+    # Explore the parameter space more throughly
+    x_seeds = np.random.uniform(bounds[:, 0], bounds[:, 1],
+                                size=(250, bounds.shape[0]))
+    for x_try in x_seeds:
         # Find the minimum of minus the acquisition function
         res = minimize(lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max),
                        x_try.reshape(1, -1),
@@ -46,9 +52,9 @@ def acq_max(ac, gp, y_max, bounds):
                        method="L-BFGS-B")
 
         # Store it if better than previous minimum(maximum).
-        if max_acq is None or -res.fun >= max_acq:
+        if max_acq is None or -res.fun[0] >= max_acq:
             x_max = res.x
-            max_acq = -res.fun
+            max_acq = -res.fun[0]
 
     # Clip output to make sure it lies within the bounds. Due to floating
     # point technicalities this is not always the case.
@@ -165,7 +171,8 @@ class PrintLog(object):
             print("{}Bayesian Optimization{}".format(BColours.RED,
                                                      BColours.ENDC))
 
-        print(BColours.BLUE + "-" * (29 + sum([s + 5 for s in self.sizes])) + BColours.ENDC)
+        print(BColours.BLUE + "-" * (29 + sum([s + 5 for s in self.sizes])) +
+            BColours.ENDC)
 
         print("{0:>{1}}".format("Step", 5), end=" | ")
         print("{0:>{1}}".format("Time", 6), end=" | ")
@@ -193,10 +200,12 @@ class PrintLog(object):
                   end=" | ")
 
             for index in self.sorti:
-                print("{0}{2: >{3}.{4}f}{1}".format(BColours.GREEN, BColours.ENDC,
-                                                    x[index],
-                                                    self.sizes[index] + 2,
-                                                    min(self.sizes[index] - 3, 6 - 2)),
+                print("{0}{2: >{3}.{4}f}{1}".format(
+                            BColours.GREEN, BColours.ENDC,
+                            x[index],
+                            self.sizes[index] + 2,
+                            min(self.sizes[index] - 3, 6 - 2)
+                        ),
                       end=" | ")
         else:
             print("{: >10.5f}".format(y), end=" | ")
