@@ -20,12 +20,18 @@ bo.explore({'x': [-1, 3], 'y': [-2, 2]})
 # tell that to the optimizer.
 # Here we pass a dictionary with target values as keys of another
 # dictionary with parameters names and their corresponding value.
-bo.initialize({-2: {'x': 1, 'y': 0}, -1.251: {'x': 1, 'y': 1.5}})
+bo.initialize(
+    {
+        'target': [-1, -1],
+        'x': [1, 1],
+        'y': [0, 2]
+    }
+)
 
 # Once we are satisfied with the initialization conditions
 # we let the algorithm do its magic by calling the maximize()
 # method.
-bo.maximize(init_points=5, n_iter=15, kappa=3.29)
+bo.maximize(init_points=5, n_iter=15, kappa=2)
 
 # The output values can be accessed with self.res
 print(bo.res['max'])

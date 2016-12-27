@@ -157,15 +157,9 @@ class BayesianOptimization(object):
         :return:
         """
 
-        for target in points_dict:
-
-            self.y_init.append(target)
-
-            all_points = []
-            for key in self.keys:
-                all_points.append(points_dict[target][key])
-
-            self.x_init.append(all_points)
+        for points in zip(*(points_dict[k] for k in sorted(points_dict))):
+            self.y_init.append(points[0])
+            self.x_init.append(list(points[1:]))
 
     def initialize_df(self, points_df):
         """
