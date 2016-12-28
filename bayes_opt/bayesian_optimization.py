@@ -121,11 +121,9 @@ class BayesianOptimization(object):
         self.initialized = True
 
     def explore(self, points_dict):
-        """
-        Method to explore user defined points
+        """Method to explore user defined points
 
         :param points_dict:
-        :return:
         """
 
         # Consistency check
@@ -150,11 +148,9 @@ class BayesianOptimization(object):
 
     def initialize(self, points_dict):
         """
-        Method to introduce point for which the target function
-        value is known
+        Method to introduce points for which the target function value is known
 
         :param points_dict:
-        :return:
         """
 
         for points in zip(*(points_dict[k] for k in sorted(points_dict))):

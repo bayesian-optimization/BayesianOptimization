@@ -12,16 +12,18 @@ suited for optimization of high cost functions, situations where the balance
 between exploration and exploitation is important.
 
 ## Quick Start
-To get a grip of how this method and package works in the [examples](https://github.com/fmfn/BayesianOptimization/tree/master/examples)
-folder you can:
-- Checkout this [notebook](https://github.com/fmfn/BayesianOptimization/blob/master/examples/visualization.ipynb)
+In the [examples](https://github.com/fmfn/BayesianOptimization/tree/master/examples)
+folder you can get a grip of how the method and this package work by:
+- Checking out this
+[notebook](https://github.com/fmfn/BayesianOptimization/blob/master/examples/visualization.ipynb)
 with a step by step visualization of how this method works.
-- Go over this [script](https://github.com/fmfn/BayesianOptimization/blob/master/examples/usage.py)
+- Going over this
+[script](https://github.com/fmfn/BayesianOptimization/blob/master/examples/usage.py)
 to become familiar with this packages basic functionalities.
-- Explore this [notebook](https://github.com/fmfn/BayesianOptimization/blob/master/examples/exploitation%20vs%20exploration.ipynb)
+- Exploring this [notebook](https://github.com/fmfn/BayesianOptimization/blob/master/examples/exploitation%20vs%20exploration.ipynb)
 exemplifying the balance between exploration and exploitation and how to
 control it.
-- Checkout these scripts ([sklearn](https://github.com/fmfn/BayesianOptimization/blob/master/examples/sklearn_example.py),
+- Checking out these scripts ([sklearn](https://github.com/fmfn/BayesianOptimization/blob/master/examples/sklearn_example.py),
 [xgboost](https://github.com/fmfn/BayesianOptimization/blob/master/examples/xgboost_example.py))
 for examples of how to use this package to tune parameters of ML estimators
 using cross validation and bayesian optimization.
