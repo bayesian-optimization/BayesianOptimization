@@ -227,7 +227,7 @@ class BayesianOptimization(object):
             sampled must be specified.
 
         :param acq:
-            Acquisition function to be used, defaults to Expected Improvement.
+            Acquisition function to be used, defaults to Upper Confidence Bound.
 
         :param gp_params:
             Parameters to be passed to the Scikit-learn Gaussian Process object
