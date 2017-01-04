@@ -7,6 +7,7 @@ setup(
     packages=find_packages(),
     author='Fernando Nogueira',
     description='Bayesian Optimization package',
+    download_url = 'https://github.com/fmfn/BayesianOptimization/tarball/0.4',
     install_requires=[
         "numpy >= 1.9.0",
         "scipy >= 0.14.0",
