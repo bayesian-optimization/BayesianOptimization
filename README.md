@@ -3,7 +3,7 @@
 Pure Python implementation of bayesian global optimization with gaussian
 processes.
 
-    pip install git+https://github.com/fmfn/BayesianOptimization.git
+    pip install bayesian-optimization
 
 This is a constrained global optimization package built upon bayesian inference
 and gaussian process, that attempts to find the maximum value of an unknown
@@ -49,8 +49,11 @@ Installation
 
 ### Installation
 
-BayesianOptimization is not currently available on the PyPi's reporitories,
-however you can install it via `pip`:
+For the latest release, run:
+
+    pip install bayesian-optimization
+
+The bleeding edge version can be installed with:
 
     pip install git+https://github.com/fmfn/BayesianOptimization.git
 

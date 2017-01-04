@@ -6,6 +6,7 @@ setup(
     url='https://github.com/fmfn/BayesianOptimization',
     packages=find_packages(),
     author='Fernando Nogueira',
+    author_email="fmfnogueira@gmail.com",
     description='Bayesian Optimization package',
     download_url = 'https://github.com/fmfn/BayesianOptimization/tarball/0.4',
     install_requires=[
