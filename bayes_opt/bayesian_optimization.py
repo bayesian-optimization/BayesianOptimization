@@ -4,6 +4,8 @@ from __future__ import division
 import numpy as np
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 from .helpers import UtilityFunction, unique_rows, PrintLog, acq_max
 
 
@@ -56,10 +58,7 @@ class BayesianOptimization(object):
         self.i = 0
 
         # Internal GP regressor
-        self.gp = GaussianProcessRegressor(
-            kernel=Matern(),
-            n_restarts_optimizer=25,
-        )
+        self.gp = GaussianProcessRegressor(kernel=Matern(), n_restarts_optimizer=25)
 
         # Utility Function placeholder
         self.util = None
@@ -210,6 +209,7 @@ class BayesianOptimization(object):
                  acq='ucb',
                  kappa=2.576,
                  xi=0.0,
+                 scaler=False,
                  **gp_params):
         """
         Main optimization method.
@@ -253,13 +253,35 @@ class BayesianOptimization(object):
         # Set parameters if any was passed
         self.gp.set_params(**gp_params)
 
+        # Add scaler
+        if scaler:
+            self.pipeline = Pipeline(steps=[
+                ('scaler', StandardScaler()),
+                ('gp', self.gp)
+            ])
+        else:
+            self.pipeline = Pipeline(steps=[
+                ('gp', self.gp)
+            ])
+
+        def pipeline_predict(X, return_std=False):
+            try:
+                X = self.pipeline.named_steps['scaler'].transform(X)
+            except KeyError:
+                pass
+
+            return self.pipeline.named_steps['gp'].predict(X=X, return_std=return_std)
+
+        # implements custom predict to allow return_std flag
+        self.pipeline.predict = pipeline_predict
+
         # Find unique rows of X to avoid GP from breaking
         ur = unique_rows(self.X)
-        self.gp.fit(self.X[ur], self.Y[ur])
+        self.pipeline.fit(self.X[ur], self.Y[ur])
 
         # Finding argmax of the acquisition function.
         x_max = acq_max(ac=self.util.utility,
-                        gp=self.gp,
+                        gp=self.pipeline,
                         y_max=y_max,
                         bounds=self.bounds)
 
@@ -290,7 +312,7 @@ class BayesianOptimization(object):
 
             # Updating the GP.
             ur = unique_rows(self.X)
-            self.gp.fit(self.X[ur], self.Y[ur])
+            self.pipeline.fit(self.X[ur], self.Y[ur])
 
             # Update maximum value to search for next probe point.
             if self.Y[-1] > y_max:
@@ -298,7 +320,7 @@ class BayesianOptimization(object):
 
             # Maximize acquisition function to find next probing point
             x_max = acq_max(ac=self.util.utility,
-                            gp=self.gp,
+                            gp=self.pipeline,
                             y_max=y_max,
                             bounds=self.bounds)
 
