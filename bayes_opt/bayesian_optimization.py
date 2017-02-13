@@ -57,7 +57,7 @@ class BayesianOptimization(object):
 
         # Internal GP regressor
         self.gp = GaussianProcessRegressor(
-            kernel=Matern(),
+            kernel=Matern(nu=2.5),
             n_restarts_optimizer=25,
         )
 
