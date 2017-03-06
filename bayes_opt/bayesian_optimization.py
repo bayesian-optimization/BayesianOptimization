@@ -19,7 +19,8 @@ class BayesianOptimization(object):
             and maximum values.
         
         :param constraints:
-            Tuple containing constraint dictionaries.
+            Tuple containing constraint dictionaries, each of the form {'type':x, 'fun':y} 
+            where x is one of "eq" or "ineq" and y is a functinal form of the constraint.
 
         :param verbose:
             Whether or not to print progress.

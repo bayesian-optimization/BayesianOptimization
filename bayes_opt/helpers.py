@@ -29,7 +29,7 @@ def acq_max(ac, gp, y_max, bounds, constraints):
         The variables bounds to limit the search of the acq max.
         
     :param constraints:
-        The tuple of constraints dictionaries, each of the form {'type':x, 'fun':y} where x is in ['ineq', 'eq'] and y is a functional representation of the constraint.
+        The tuple of constraints dictionaries.
 
 
     Returns
