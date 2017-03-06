@@ -9,7 +9,7 @@ from .helpers import UtilityFunction, unique_rows, PrintLog, acq_max
 
 class BayesianOptimization(object):
 
-    def __init__(self, f, pbounds, verbose=1):
+    def __init__(self, f, pbounds, constraints=({}), verbose=1):
         """
         :param f:
             Function to be maximized.
@@ -17,6 +17,9 @@ class BayesianOptimization(object):
         :param pbounds:
             Dictionary with parameters names as keys and a tuple with minimum
             and maximum values.
+        
+        :param constraints:
+            Tuple containing constraint dictionaries.
 
         :param verbose:
             Whether or not to print progress.
@@ -24,6 +27,9 @@ class BayesianOptimization(object):
         """
         # Store the original dictionary
         self.pbounds = pbounds
+        
+        # Store the constraints dictionary
+        self.constraints = constraints
 
         # Get the name of the parameters
         self.keys = list(pbounds.keys())
@@ -261,7 +267,8 @@ class BayesianOptimization(object):
         x_max = acq_max(ac=self.util.utility,
                         gp=self.gp,
                         y_max=y_max,
-                        bounds=self.bounds)
+                        bounds=self.bounds,
+                        constraints=self.constraints)
 
         # Print new header
         if self.verbose:
@@ -300,8 +307,8 @@ class BayesianOptimization(object):
             x_max = acq_max(ac=self.util.utility,
                             gp=self.gp,
                             y_max=y_max,
-                            bounds=self.bounds)
-
+                            bounds=self.bounds,
+                            constraints=self.constraints)
             # Print stuff
             if self.verbose:
                 self.plog.print_step(self.X[-1], self.Y[-1], warning=pwarning)
