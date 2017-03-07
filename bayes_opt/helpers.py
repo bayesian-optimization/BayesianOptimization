@@ -45,7 +45,7 @@ def acq_max(ac, gp, y_max, bounds, constraints):
                                 size=(250, bounds.shape[0]))
     for x_try in x_seeds:
         # Find the minimum of minus the acquisition function
-        if len(constraints)>0:
+        if constraints:
             res = minimize(lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max),
                        x_try.reshape(1, -1),
                        bounds=bounds,

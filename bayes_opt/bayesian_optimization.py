@@ -9,7 +9,7 @@ from .helpers import UtilityFunction, unique_rows, PrintLog, acq_max
 
 class BayesianOptimization(object):
 
-    def __init__(self, f, pbounds, constraints=({}), verbose=1):
+    def __init__(self, f, pbounds, constraints=None, verbose=1):
         """
         :param f:
             Function to be maximized.
