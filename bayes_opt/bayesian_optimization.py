@@ -151,11 +151,26 @@ class BayesianOptimization(object):
         Method to introduce points for which the target function value is known
 
         :param points_dict:
+            dictionary with self.keys and 'target' as keys, and list of
+            corresponding values as values.
+
+        ex:
+            {
+                'target': [-1166.19102, -1142.71370, -1138.68293],
+                'alpha': [7.0034, 6.6186, 6.0798],
+                'colsample_bytree': [0.6849, 0.7314, 0.9540],
+                'gamma': [8.3673, 3.5455, 2.3281],
+            }
+
+        :return:
         """
 
-        for points in zip(*(points_dict[k] for k in sorted(points_dict))):
-            self.y_init.append(points[0])
-            self.x_init.append(list(points[1:]))
+        self.y_init.extend(points_dict['target'])
+        for i in range(len(points_dict['target'])):
+            all_points = []
+            for key in self.keys:
+                all_points.append(points_dict[key][i])
+            self.x_init.append(all_points)
 
     def initialize_df(self, points_df):
         """
