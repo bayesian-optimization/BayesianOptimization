@@ -35,7 +35,7 @@ bo.initialize(
 bo.maximize(init_points=5, n_iter=15, kappa=2)
 
 # The output values can be accessed with self.res
-print(bo.res['max'])
+print((bo.res['max']))
 
 # If we are not satisfied with the current results we can pickup from
 # where we left, maybe pass some more exploration points to the algorithm
@@ -51,5 +51,5 @@ gp_params = {'kernel': None,
 bo.maximize(n_iter=5, acq='ei', **gp_params)
 
 # Finally, we take a look at the final results.
-print(bo.res['max'])
-print(bo.res['all'])
+print((bo.res['max']))
+print((bo.res['all']))
