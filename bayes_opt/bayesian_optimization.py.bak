@@ -1,5 +1,5 @@
-
-
+from __future__ import print_function
+from __future__ import division
 
 import numpy as np
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -33,7 +33,7 @@ class BayesianOptimization(object):
 
         # Create an array with parameters bounds
         self.bounds = []
-        for key in list(self.pbounds.keys()):
+        for key in self.pbounds.keys():
             self.bounds.append(self.pbounds[key])
         self.bounds = np.asarray(self.bounds)
 
@@ -92,7 +92,7 @@ class BayesianOptimization(object):
 
         # Concatenate new random points to possible existing
         # points from self.explore method.
-        self.init_points += list(map(list, list(zip(*l))))
+        self.init_points += list(map(list, zip(*l)))
 
         # Create empty list to store the new values of the function
         y_init = []
@@ -101,7 +101,7 @@ class BayesianOptimization(object):
         # points (random + explore)
         for x in self.init_points:
 
-            y_init.append(self.f(**dict(list(zip(self.keys, x)))))
+            y_init.append(self.f(**dict(zip(self.keys, x))))
 
             if self.verbose:
                 self.plog.print_step(x, y_init[-1])
@@ -144,7 +144,7 @@ class BayesianOptimization(object):
             all_points.append(points_dict[key])
 
         # Take transpose of list
-        self.init_points = list(map(list, list(zip(*all_points))))
+        self.init_points = list(map(list, zip(*all_points)))
 
     def initialize(self, points_dict):
         """
@@ -214,7 +214,7 @@ class BayesianOptimization(object):
         self.pbounds.update(new_bounds)
 
         # Loop through the all bounds and reset the min-max bound matrix
-        for row, key in enumerate(list(self.pbounds.keys())):
+        for row, key in enumerate(self.pbounds.keys()):
 
             # Reset all entries, even if the same.
             self.bounds[row] = self.pbounds[key]
@@ -301,7 +301,7 @@ class BayesianOptimization(object):
 
             # Append most recently generated values to X and Y arrays
             self.X = np.vstack((self.X, x_max.reshape((1, -1))))
-            self.Y = np.append(self.Y, self.f(**dict(list(zip(self.keys, x_max)))))
+            self.Y = np.append(self.Y, self.f(**dict(zip(self.keys, x_max))))
 
             # Updating the GP.
             ur = unique_rows(self.X)
@@ -325,11 +325,11 @@ class BayesianOptimization(object):
             self.i += 1
 
             self.res['max'] = {'max_val': self.Y.max(),
-                               'max_params': dict(list(zip(self.keys,
-                                                      self.X[self.Y.argmax()])))
+                               'max_params': dict(zip(self.keys,
+                                                      self.X[self.Y.argmax()]))
                                }
             self.res['all']['values'].append(self.Y[-1])
-            self.res['all']['params'].append(dict(list(zip(self.keys, self.X[-1]))))
+            self.res['all']['params'].append(dict(zip(self.keys, self.X[-1])))
 
         # Print a final report if verbose active.
         if self.verbose:

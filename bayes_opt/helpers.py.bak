@@ -1,5 +1,5 @@
-
-
+from __future__ import print_function
+from __future__ import division
 import numpy as np
 from datetime import datetime
 from scipy.stats import norm
@@ -155,7 +155,7 @@ class PrintLog(object):
         self.sizes = [max(len(ps), 7) for ps in params]
 
         # Sorted indexes to access parameters
-        self.sorti = sorted(list(range(len(self.params))),
+        self.sorti = sorted(range(len(self.params)),
                             key=self.params.__getitem__)
 
     def reset_timer(self):
