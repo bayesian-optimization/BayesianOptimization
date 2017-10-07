@@ -6,7 +6,7 @@ from scipy.stats import norm
 from scipy.optimize import minimize
 
 
-def acq_max(ac, gp, y_max, bounds):
+def acq_max(ac, gp, y_max, bounds, random_state):
     """
     A function to find the maximum of the acquisition function
 
@@ -35,14 +35,14 @@ def acq_max(ac, gp, y_max, bounds):
     """
 
     # Warm up with random points
-    x_tries = np.random.uniform(bounds[:, 0], bounds[:, 1],
+    x_tries = random_state.uniform(bounds[:, 0], bounds[:, 1],
                                  size=(100000, bounds.shape[0]))
     ys = ac(x_tries, gp=gp, y_max=y_max)
     x_max = x_tries[ys.argmax()]
     max_acq = ys.max()
 
     # Explore the parameter space more throughly
-    x_seeds = np.random.uniform(bounds[:, 0], bounds[:, 1],
+    x_seeds = random_state.uniform(bounds[:, 0], bounds[:, 1],
                                 size=(250, bounds.shape[0]))
     for x_try in x_seeds:
         # Find the minimum of minus the acquisition function
