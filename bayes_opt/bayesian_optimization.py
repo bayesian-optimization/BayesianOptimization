@@ -94,14 +94,15 @@ class BayesianOptimization(object):
         # points from self.explore method.
         self.init_points += list(map(list, zip(*l)))
 
-        # Create empty list to store the new values of the function
-        y_init = []
+        # Create empty arrays to store the new points and values of the function.
+        self.X = np.empty((0, self.bounds.shape[0]))
+        self.Y = np.empty(0)
 
         # Evaluate target function at all initialization
         # points (random + explore)
         for x in self.init_points:
-
-            y_init.append(self.f(**dict(zip(self.keys, x))))
+            self.X = np.vstack((self.X, np.asarray(x).reshape((1, -1))))
+            self.Y = np.append(self.Y, self.f(**dict(zip(self.keys, x))))
 
             if self.verbose:
                 self.plog.print_step(x, y_init[-1])
@@ -109,13 +110,10 @@ class BayesianOptimization(object):
         # Append any other points passed by the self.initialize method (these
         # also have a corresponding target value passed by the user).
         self.init_points += self.x_init
+        self.X = np.vstack((self.X, np.asarray(self.x_init).reshape(-1, self.X.shape[1])))
 
         # Append the target value of self.initialize method.
-        y_init += self.y_init
-
-        # Turn it into np array and store.
-        self.X = np.asarray(self.init_points)
-        self.Y = np.asarray(y_init)
+        self.Y = np.concatenate((self.Y, self.y_init))
 
         # Updates the flag
         self.initialized = True
