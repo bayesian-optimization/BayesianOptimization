@@ -105,7 +105,7 @@ class BayesianOptimization(object):
             self.Y = np.append(self.Y, self.f(**dict(zip(self.keys, x))))
 
             if self.verbose:
-                self.plog.print_step(x, y_init[-1])
+                self.plog.print_step(x, self.Y[-1])
 
         # Append any other points passed by the self.initialize method (these
         # also have a corresponding target value passed by the user).
