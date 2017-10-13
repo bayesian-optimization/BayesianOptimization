@@ -6,7 +6,7 @@ from scipy.stats import norm
 from scipy.optimize import minimize
 
 
-def acq_max(ac, gp, y_max, bounds):
+def acq_max(ac, gp, y_max, bounds, constraints):
     """
     A function to find the maximum of the acquisition function
 
@@ -27,6 +27,9 @@ def acq_max(ac, gp, y_max, bounds):
 
     :param bounds:
         The variables bounds to limit the search of the acq max.
+        
+    :param constraints:
+        The tuple of constraints dictionaries.
 
 
     Returns
@@ -34,28 +37,29 @@ def acq_max(ac, gp, y_max, bounds):
     :return: x_max, The arg max of the acquisition function.
     """
 
-    # Warm up with random points
-    x_tries = np.random.uniform(bounds[:, 0], bounds[:, 1],
-                                 size=(100000, bounds.shape[0]))
-    ys = ac(x_tries, gp=gp, y_max=y_max)
-    x_max = x_tries[ys.argmax()]
-    max_acq = ys.max()
+    x_max = None
+    max_acq = -float("Inf")
 
     # Explore the parameter space more throughly
     x_seeds = np.random.uniform(bounds[:, 0], bounds[:, 1],
                                 size=(250, bounds.shape[0]))
     for x_try in x_seeds:
         # Find the minimum of minus the acquisition function
-        res = minimize(lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max),
+        if constraints:
+            res = minimize(lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max),
+                       x_try.reshape(1, -1),
+                       bounds=bounds,
+                       method="SLSQP",
+                       constraints=constraints)
+        else:
+            res = minimize(lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max),
                        x_try.reshape(1, -1),
                        bounds=bounds,
                        method="L-BFGS-B")
-
         # Store it if better than previous minimum(maximum).
         if max_acq is None or -res.fun[0] >= max_acq:
             x_max = res.x
             max_acq = -res.fun[0]
-
     # Clip output to make sure it lies within the bounds. Due to floating
     # point technicalities this is not always the case.
     return np.clip(x_max, bounds[:, 0], bounds[:, 1])
