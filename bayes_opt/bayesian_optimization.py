@@ -9,7 +9,7 @@ from .helpers import UtilityFunction, unique_rows, PrintLog, acq_max
 
 class BayesianOptimization(object):
 
-    def __init__(self, f, pbounds, verbose=1):
+    def __init__(self, f, pbounds, random_state=None, verbose=1):
         """
         :param f:
             Function to be maximized.
@@ -24,6 +24,13 @@ class BayesianOptimization(object):
         """
         # Store the original dictionary
         self.pbounds = pbounds
+
+        if random_state is None:
+            self.random_state = np.random.RandomState()
+        elif isinstance(random_state, int):
+            self.random_state = np.random.RandomState(random_state)
+        else:
+            self.random_state = random_state
 
         # Get the name of the parameters
         self.keys = list(pbounds.keys())
@@ -59,6 +66,7 @@ class BayesianOptimization(object):
         self.gp = GaussianProcessRegressor(
             kernel=Matern(nu=2.5),
             n_restarts_optimizer=25,
+            random_state=self.random_state
         )
 
         # Utility Function placeholder
@@ -87,7 +95,7 @@ class BayesianOptimization(object):
         """
 
         # Generate random points
-        l = [np.random.uniform(x[0], x[1], size=init_points)
+        l = [self.random_state.uniform(x[0], x[1], size=init_points)
              for x in self.bounds]
 
         # Concatenate new random points to possible existing
@@ -274,7 +282,8 @@ class BayesianOptimization(object):
         x_max = acq_max(ac=self.util.utility,
                         gp=self.gp,
                         y_max=y_max,
-                        bounds=self.bounds)
+                        bounds=self.bounds,
+                        random_state=self.random_state)
 
         # Print new header
         if self.verbose:
@@ -291,7 +300,7 @@ class BayesianOptimization(object):
             pwarning = False
             if np.any((self.X - x_max).sum(axis=1) == 0):
 
-                x_max = np.random.uniform(self.bounds[:, 0],
+                x_max = self.random_state.uniform(self.bounds[:, 0],
                                           self.bounds[:, 1],
                                           size=self.bounds.shape[0])
 
@@ -313,7 +322,8 @@ class BayesianOptimization(object):
             x_max = acq_max(ac=self.util.utility,
                             gp=self.gp,
                             y_max=y_max,
-                            bounds=self.bounds)
+                            bounds=self.bounds,
+                            random_state=self.random_state)
 
             # Print stuff
             if self.verbose:
