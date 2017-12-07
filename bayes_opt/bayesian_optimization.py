@@ -7,6 +7,93 @@ from sklearn.gaussian_process.kernels import Matern
 from .helpers import UtilityFunction, unique_rows, PrintLog, acq_max
 
 
+class TargetSpace(object):
+    """
+    Holds the param-space coordinates (X) and target values (Y)
+    """
+    def __init__(self, f, pbounds, random_state):
+
+        self.random_state = random_state
+
+        # Function to be evaluate
+        self.f = f
+
+        # Initialize bounds
+        self.keys = list(pbounds.keys())
+        self.bounds = np.array(list(pbounds.values()), dtype=np.float)
+        self.dim = len(pbounds)
+
+        # Place to constant-time append new values
+        self.new_Xs = []
+        self.new_Ys = []
+
+        # Place to consolidate and concatanate all values
+        self.X_arr = None
+        self.Y_arr = None
+
+        self.plog = PrintLog(self.keys)
+
+    @property
+    def X(self):
+        self._consolidate()
+        return self.X_arr
+
+    @property
+    def Y(self):
+        self._consolidate()
+        return self.Y_arr
+
+    def unique_XY(self):
+        X = self.X
+        Y = self.Y
+        ur = unique_rows(X)
+        return X[ur], Y[ur]
+
+    def _consolidate(self):
+        """
+        If there are any new values appends them to the contiguous array
+        """
+        if self.new_Xs:
+            assert len(self.new_Xs) == len(self.new_Ys)
+            if self.X is None and self.Y is None:
+                self.X = np.empty((0, self.bounds.shape[0]))
+                self.Y = np.empty(0)
+            self.new_Xs = np.vstack([self.X_arr] + self.new_Xs)
+            self.new_Ys = np.hstack([self.Y_arr] + self.new_Ys)
+
+    def set_bounds(self, new_bounds):
+        # Loop through the all bounds and reset the min-max bound matrix
+        for row, key in enumerate(self.keys):
+            if key in new_bounds:
+                self.bounds[row] = new_bounds[key]
+
+    def add_observation(self, x, y, pwarning=False):
+        np.asarray(x).reshape((1, -1))
+        self.new_Xs.append(x)
+        self.new_Ys.append(y)
+        if self.verbose:
+            self.plog.print_step(x, y, pwarning)
+
+    def observe_point(self, x, pwarning=False):
+        """
+        Evaulates a single point x, to obtain the value y and then records them
+        as observations.
+        """
+        x = np.asarray(x).reshape((1, -1))
+        y = self.f(**dict(zip(self.keys, x)))
+        self.add_observation(x, y, pwarning)
+
+    def random_points(self, num):
+        l = [self.random_state.uniform(x[0], x[1], size=num)
+             for x in self.bounds]
+        return list(map(list, zip(*l)))
+
+    def max_point(self):
+        return {'max_val': self.Y.max(),
+                'max_params': dict(zip(self.keys,
+                                       self.X[self.Y.argmax()]))}
+
+
 class BayesianOptimization(object):
 
     def __init__(self, f, pbounds, random_state=None, verbose=1):
@@ -55,9 +142,7 @@ class BayesianOptimization(object):
         self.x_init = []
         self.y_init = []
 
-        # Numpy array place holders
-        self.X = None
-        self.Y = None
+        self.space = TargetSpace(f, pbounds, random_state)
 
         # Counter of iterations
         self.i = 0
@@ -73,7 +158,7 @@ class BayesianOptimization(object):
         self.util = None
 
         # PrintLog object
-        self.plog = PrintLog(self.keys)
+        self.plog = self.space.plog
 
         # Output dictionary
         self.res = {}
@@ -92,69 +177,35 @@ class BayesianOptimization(object):
 
         :param init_points:
             Number of random points to probe.
+
+        Example:
+            pbounds = {'p1': (0, 1), 'p2': (1, 100)}
+            bounds = np.array(list(pbounds.values()))
+            init_points = 10
         """
-
         # Generate random points
-        l = [self.random_state.uniform(x[0], x[1], size=init_points)
-             for x in self.bounds]
-
         # Concatenate new random points to possible existing
         # points from self.explore method.
-        self.init_points += list(map(list, zip(*l)))
+        rand_points = self.space.random_points(init_points)
+        self.init_points += rand_points
 
-        # Create empty arrays to store the new points and values of the function.
-        self.X = np.empty((0, self.bounds.shape[0]))
-        self.Y = np.empty(0)
+        x_init = np.vstack(self.x_init)
+        y_init = np.hstack(self.y_init)
+        for x, y in zip(x_init, y_init):
+            self.space.add_observation(x, y)
 
         # Evaluate target function at all initialization
         # points (random + explore)
         for x in self.init_points:
-            self.X = np.vstack((self.X, np.asarray(x).reshape((1, -1))))
-            self.Y = np.append(self.Y, self.f(**dict(zip(self.keys, x))))
-
-            if self.verbose:
-                self.plog.print_step(x, self.Y[-1])
-
-        # Append any other points passed by the self.initialize method (these
-        # also have a corresponding target value passed by the user).
-        self.init_points += self.x_init
-        self.X = np.vstack((self.X, np.asarray(self.x_init).reshape(-1, self.X.shape[1])))
-
-        # Append the target value of self.initialize method.
-        self.Y = np.concatenate((self.Y, self.y_init))
+            self.space.observe_point(x)
 
         # Updates the flag
         self.initialized = True
 
-    def eval_points(self, points):
-        """
-        Evaulates specific points and adds them to the set of known
-        observations self.X and self.Y
-        """
-        if self.X is None and self.Y is None:
-            self.X = np.empty((0, self.bounds.shape[0]))
-            self.Y = np.empty(0)
-
-        new_Xs = []
-        new_Ys = []
-
-        for x in points:
-            x = np.asarray(x).reshape((1, -1))
-            y = self.f(**dict(zip(self.keys, x)))
-
-            new_Xs.append(x)
-            new_Ys.append(y)
-
-            if self.verbose:
-                self.plog.print_step(x, self.Y[-1])
-
-        # Append the evaluated points
-        self.X = np.vstack([self.X] + new_Xs)
-        self.Y = np.hstack([self.Y] + new_Ys)
-
-
     def explore(self, points_dict):
         """Method to explore user defined points
+
+        This is executed lazily.
 
         :param points_dict:
         """
@@ -242,15 +293,14 @@ class BayesianOptimization(object):
             A dictionary with the parameter name and its new bounds
 
         """
+        self.space.set_bounds(new_bounds)
 
         # Update the internal object stored dict
         self.pbounds.update(new_bounds)
-
-        # Loop through the all bounds and reset the min-max bound matrix
-        for row, key in enumerate(self.pbounds.keys()):
-
-            # Reset all entries, even if the same.
-            self.bounds[row] = self.pbounds[key]
+        # # Loop through the all bounds and reset the min-max bound matrix
+        # for row, key in enumerate(self.pbounds.keys()):
+        #     # Reset all entries, even if the same.
+        #     self.bounds[row] = self.pbounds[key]
 
     def maximize(self,
                  init_points=5,
@@ -296,14 +346,13 @@ class BayesianOptimization(object):
                 self.plog.print_header()
             self.init(init_points)
 
-        y_max = self.Y.max()
+        y_max = self.space.Y.max()
 
         # Set parameters if any was passed
         self.gp.set_params(**gp_params)
 
         # Find unique rows of X to avoid GP from breaking
-        ur = unique_rows(self.X)
-        self.gp.fit(self.X[ur], self.Y[ur])
+        self.gp.fit(*self.space.unique_XY())
 
         # Finding argmax of the acquisition function.
         x_max = acq_max(ac=self.util.utility,
@@ -325,25 +374,19 @@ class BayesianOptimization(object):
             # Test if x_max is repeated, if it is, draw another one at random
             # If it is repeated, print a warning
             pwarning = False
-            if np.any((self.X - x_max).sum(axis=1) == 0):
-
-                x_max = self.random_state.uniform(self.bounds[:, 0],
-                                          self.bounds[:, 1],
-                                          size=self.bounds.shape[0])
-
+            if np.any((self.space.X - x_max).sum(axis=1) == 0):
+                x_max = self.space.random_points(1)[0]
                 pwarning = True
 
             # Append most recently generated values to X and Y arrays
-            self.X = np.vstack((self.X, x_max.reshape((1, -1))))
-            self.Y = np.append(self.Y, self.f(**dict(zip(self.keys, x_max))))
+            self.space.observe_point(x_max, pwarning)
 
             # Updating the GP.
-            ur = unique_rows(self.X)
-            self.gp.fit(self.X[ur], self.Y[ur])
+            self.gp.fit(*self.space.unique_XY())
 
             # Update maximum value to search for next probe point.
-            if self.Y[-1] > y_max:
-                y_max = self.Y[-1]
+            if self.space.Y[-1] > y_max:
+                y_max = self.space.Y[-1]
 
             # Maximize acquisition function to find next probing point
             x_max = acq_max(ac=self.util.utility,
@@ -352,19 +395,12 @@ class BayesianOptimization(object):
                             bounds=self.bounds,
                             random_state=self.random_state)
 
-            # Print stuff
-            if self.verbose:
-                self.plog.print_step(self.X[-1], self.Y[-1], warning=pwarning)
-
             # Keep track of total number of iterations
             self.i += 1
 
-            self.res['max'] = {'max_val': self.Y.max(),
-                               'max_params': dict(zip(self.keys,
-                                                      self.X[self.Y.argmax()]))
-                               }
-            self.res['all']['values'].append(self.Y[-1])
-            self.res['all']['params'].append(dict(zip(self.keys, self.X[-1])))
+            self.res['max'] = self.space.max_point()
+            self.res['all']['values'].append(self.space.Y[-1])
+            self.res['all']['params'].append(dict(zip(self.keys, self.space.X[-1])))
 
         # Print a final report if verbose active.
         if self.verbose:
@@ -381,6 +417,6 @@ class BayesianOptimization(object):
         :return: None
         """
 
-        points = np.hstack((self.X, np.expand_dims(self.Y, axis=1)))
+        points = np.hstack((self.space.X, np.expand_dims(self.space.Y, axis=1)))
         header = ', '.join(self.keys + ['target'])
         np.savetxt(file_name, points, header=header, delimiter=',')
