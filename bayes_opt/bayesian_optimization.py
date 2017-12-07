@@ -23,7 +23,7 @@ class TargetSpace(object):
         self.bounds = np.array(list(pbounds.values()), dtype=np.float)
         self.dim = len(pbounds)
 
-        # Place to constant-time append new values
+        # Place append new values in constant-time
         self.new_Xs = []
         self.new_Ys = []
 
