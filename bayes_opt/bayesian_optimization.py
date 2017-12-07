@@ -126,6 +126,33 @@ class BayesianOptimization(object):
         # Updates the flag
         self.initialized = True
 
+    def eval_points(self, points):
+        """
+        Evaulates specific points and adds them to the set of known
+        observations self.X and self.Y
+        """
+        if self.X is None and self.Y is None:
+            self.X = np.empty((0, self.bounds.shape[0]))
+            self.Y = np.empty(0)
+
+        new_Xs = []
+        new_Ys = []
+
+        for x in points:
+            x = np.asarray(x).reshape((1, -1))
+            y = self.f(**dict(zip(self.keys, x)))
+
+            new_Xs.append(x)
+            new_Ys.append(y)
+
+            if self.verbose:
+                self.plog.print_step(x, self.Y[-1])
+
+        # Append the evaluated points
+        self.X = np.vstack([self.X] + new_Xs)
+        self.Y = np.hstack([self.Y] + new_Ys)
+
+
     def explore(self, points_dict):
         """Method to explore user defined points
 
