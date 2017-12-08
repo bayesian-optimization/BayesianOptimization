@@ -2,6 +2,7 @@ from __future__ import print_function
 from __future__ import division
 
 import numpy as np
+import warnings
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
 from .helpers import (UtilityFunction, PrintLog, unique_rows, acq_max,
@@ -317,3 +318,35 @@ class BayesianOptimization(object):
         points = np.hstack((self.space.X, np.expand_dims(self.space.Y, axis=1)))
         header = ', '.join(self.space.keys + ['target'])
         np.savetxt(file_name, points, header=header, delimiter=',')
+
+    # --- API compatibility ---
+
+    @property
+    def X(self):
+        warnings.warn("use self.space.X instead", DeprecationWarning)
+        return self.space.X
+
+    @property
+    def Y(self):
+        warnings.warn("use self.space.Y instead", DeprecationWarning)
+        return self.space.Y
+
+    @property
+    def keys(self):
+        warnings.warn("use self.space.keys instead", DeprecationWarning)
+        return self.space.keys
+
+    @property
+    def f(self):
+        warnings.warn("use self.space.target_func instead", DeprecationWarning)
+        return self.space.target_func
+
+    @property
+    def bounds(self):
+        warnings.warn("use self.space.dim instead", DeprecationWarning)
+        return self.space.bounds
+
+    @property
+    def dim(self):
+        warnings.warn("use self.space.dim instead", DeprecationWarning)
+        return self.space.dim
