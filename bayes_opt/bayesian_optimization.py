@@ -54,14 +54,15 @@ class BayesianOptimization(object):
         # Utility Function placeholder
         self.util = None
 
+        # PrintLog object
+        self.plog = PrintLog(self.space.keys)
+
         # Output dictionary
         self.res = {}
         # Output dictionary
         self.res['max'] = {'max_val': None,
                            'max_params': None}
         self.res['all'] = {'values': [], 'params': []}
-
-        self.plog = PrintLog(self.space.keys)
 
         # Verbose
         self.verbose = verbose
