@@ -117,6 +117,8 @@ def unique_rows(a):
 
     :return: mask of unique rows
     """
+    if a.size == 0:
+        return np.empty((0,))
 
     # Sort array and kep track of where things should go back to
     order = np.lexsort(a.T)
@@ -128,6 +130,21 @@ def unique_rows(a):
     ui[1:] = (diff != 0).any(axis=1)
 
     return ui[reorder]
+
+
+def ensure_rng(random_state=None):
+    """
+    Creates a random number generator based on an optional seed.  This can be
+    an integer or another random state for a seeded rng, or None for an
+    unseeded rng.
+    """
+    if random_state is None:
+        random_state = np.random.RandomState()
+    elif isinstance(random_state, int):
+        random_state = np.random.RandomState(random_state)
+    else:
+        assert isinstance(random_state, np.random.RandomState)
+    return random_state
 
 
 class BColours(object):
