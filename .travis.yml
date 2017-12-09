@@ -17,18 +17,15 @@ before_install:
   - pip install pytest-cov -U
   - pip install codecov -U
   #- pip install xdoctest -U
-#  - pip install delorean
 install:
   #- travis_retry python setup.py build develop
   - travis_retry pip install -e .
 script: 
-  - travis_wait pytest --cov-config .coveragerc --cov-report html --cov=bayes_opt bayes_opt
-    #-p no:doctest --xdoctest --cov=ubelt ubelt
+  - travis_wait pytest --cov-config .coveragerc --cov-report html --cov=bayes_opt
+    #-p no:doctest --xdoctest
 after_success: 
   #- coveralls || echo "Coveralls upload failed"
   - codecov 
-#after_failure: 
-#  - cat failed_doctests.txt
 cache: 
     apt: true
     directories:
