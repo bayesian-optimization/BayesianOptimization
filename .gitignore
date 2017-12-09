@@ -8,5 +8,14 @@ scratch/
 .DS_Store
 bo_eg*.png
 gif/
-htmlcov
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
 .cache
+nosetests.xml
+coverage.xml
+*,cover
+.hypothesis/
