@@ -23,7 +23,7 @@ folder you can get a grip of how the method and this package work by:
 with a step by step visualization of how this method works.
 - Going over this
 [script](https://github.com/fmfn/BayesianOptimization/blob/master/examples/usage.py)
-to become familiar with this packages basic functionalities.
+to become familiar with this package's basic functionalities.
 - Exploring this [notebook](https://github.com/fmfn/BayesianOptimization/blob/master/examples/exploitation%20vs%20exploration.ipynb)
 exemplifying the balance between exploration and exploitation and how to
 control it.
