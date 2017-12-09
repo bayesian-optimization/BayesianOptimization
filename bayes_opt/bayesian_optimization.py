@@ -64,6 +64,10 @@ class BayesianOptimization(object):
                            'max_params': None}
         self.res['all'] = {'values': [], 'params': []}
 
+        # non-public config for maximizing the aquisition function
+        # (used to speedup tests, but generally leave these as is)
+        self._acqkw = {'n_warmup': 100000, 'n_iter': 250}
+
         # Verbose
         self.verbose = verbose
 
@@ -251,7 +255,8 @@ class BayesianOptimization(object):
                         gp=self.gp,
                         y_max=y_max,
                         bounds=self.space.bounds,
-                        random_state=self.random_state)
+                        random_state=self.random_state,
+                        **self._acqkw)
 
         # Print new header
         if self.verbose:
@@ -292,7 +297,8 @@ class BayesianOptimization(object):
                             gp=self.gp,
                             y_max=y_max,
                             bounds=self.space.bounds,
-                            random_state=self.random_state)
+                            random_state=self.random_state,
+                            **self._acqkw)
 
             # Keep track of total number of iterations
             self.i += 1

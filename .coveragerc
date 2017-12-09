@@ -1,0 +1,23 @@
+[run]
+branch = True
+source = bayes_opt
+
+[report]
+exclude_lines =
+    pragma: no cover
+    .*  # pragma: no cover
+    .*  # nocover
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if 0:
+    verbose = .*
+    raise
+    pass
+    if __name__ == .__main__.:
+    print(.*)
+
+omit =
+    */setup.py
+    examples/*
+    tests/*
