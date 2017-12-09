@@ -1,0 +1,35 @@
+language: python
+sudo: false
+
+cache:
+  apt: true
+  directories:
+  - $HOME/.cache/pip
+  - $HOME/download
+python:
+  - "2.7"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+before_install:
+  - pip install pip -U
+  - pip install pytest -U
+  - pip install pytest-cov -U
+  - pip install codecov -U
+  #- pip install xdoctest -U
+#  - pip install delorean
+install:
+  #- travis_retry python setup.py build develop
+  - travis_retry pip install -e .
+script: 
+  - travis_wait pytest --cov-config .coveragerc --cov-report html --cov bayes_opt bayes_opt
+    #-p no:doctest --xdoctest --cov=ubelt ubelt
+after_success: 
+  #- coveralls || echo "Coveralls upload failed"
+  - codecov 
+#after_failure: 
+#  - cat failed_doctests.txt
+cache: 
+    apt: true
+    directories:
+        - $HOME/.pip-cache

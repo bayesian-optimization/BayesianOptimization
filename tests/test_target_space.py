@@ -107,3 +107,12 @@ def test_observe_m_nd_points(m, n):
         space.observe_point(x)
         space._assert_internal_invariants(fast=False)
     space._assert_internal_invariants(fast=False)
+
+
+if __name__ == '__main__':
+    r"""
+    CommandLine:
+        python tests/test_target_space.py
+    """
+    import pytest
+    pytest.main([__file__])

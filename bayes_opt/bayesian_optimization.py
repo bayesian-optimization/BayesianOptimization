@@ -5,8 +5,7 @@ import numpy as np
 import warnings
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
-from .helpers import (UtilityFunction, PrintLog, unique_rows, acq_max,
-                      ensure_rng)
+from .helpers import (UtilityFunction, PrintLog, acq_max, ensure_rng)
 from .target_space import TargetSpace
 
 
@@ -86,12 +85,13 @@ class BayesianOptimization(object):
             y = self._observe_point(x)
 
         # Add the points from `self.initialize` to the observations
-        x_init = np.vstack(self.x_init)
-        y_init = np.hstack(self.y_init)
-        for x, y in zip(x_init, y_init):
-            self.space.add_observation(x, y)
-            if self.verbose:
-                self.plog.print_step(x, y)
+        if self.x_init:
+            x_init = np.vstack(self.x_init)
+            y_init = np.hstack(self.y_init)
+            for x, y in zip(x_init, y_init):
+                self.space.add_observation(x, y)
+                if self.verbose:
+                    self.plog.print_step(x, y)
 
         # Updates the flag
         self.initialized = True
@@ -102,26 +102,23 @@ class BayesianOptimization(object):
             self.plog.print_step(x, y)
         return y
 
-    def explore(self, points_dict):
-        """Method to lazy explore user defined points.
+    def explore(self, points_dict, eager=False):
+        """Method to explore user defined points.
 
         :param points_dict:
+        :param eager: if True, these points are evaulated immediately
         """
-        points = self.space._dict_to_points(points_dict)
-        self.init_points = points
+        if eager:
+            self.plog.reset_timer()
+            if self.verbose:
+                self.plog.print_header(initialization=True)
 
-    def explore_eager(self, points_dict):
-        """Method to eagerly explore more points
-
-        :param points_dict:
-        """
-        self.plog.reset_timer()
-        if self.verbose:
-            self.plog.print_header(initialization=True)
-
-        points = self.space._dict_to_points(points_dict)
-        for x in points:
-            self._observe_point(x)
+            points = self.space._dict_to_points(points_dict)
+            for x in points:
+                self._observe_point(x)
+        else:
+            points = self.space._dict_to_points(points_dict)
+            self.init_points = points
 
     def initialize(self, points_dict):
         """
