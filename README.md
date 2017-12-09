@@ -2,7 +2,6 @@
 
 [![Travis](https://img.shields.io/travis/fmfn/BayesianOptimization/master.svg?label=Travis%20CI)](https://travis-ci.org/fmfn/BayesianOptimization)
 [![Codecov](https://codecov.io/github/fmfn/BayesianOptimization/badge.svg?branch=master&service=github)](https://codecov.io/github/fmfn/BayesianOptimization?branch=master)
-[![Appveyor](https://ci.appveyor.com/api/projects/status/github/fmfn/BayesianOptimization?svg=True)](https://ci.appveyor.com/project/fmfn/BayesianOptimization/branch/master)
 [![Pypi](https://img.shields.io/pypi/v/bayesian-optimization.svg)](https://pypi.python.org/pypi/bayesian-optimization)
 
 Pure Python implementation of bayesian global optimization with gaussian

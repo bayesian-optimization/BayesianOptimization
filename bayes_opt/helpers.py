@@ -6,13 +6,13 @@ from scipy.stats import norm
 from scipy.optimize import minimize
 
 
-def acq_max(ac, gp, y_max, bounds, random_state):
+def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=100000, n_iter=250):
     """
     A function to find the maximum of the acquisition function
 
     It uses a combination of random sampling (cheap) and the 'L-BFGS-B'
-    optimization method. First by sampling 1e5 points at random, and then
-    running L-BFGS-B from 250 random starting points.
+    optimization method. First by sampling `n_warmup` (1e5) points at random,
+    and then running L-BFGS-B from `n_iter` (250) random starting points.
 
     Parameters
     ----------
@@ -28,6 +28,14 @@ def acq_max(ac, gp, y_max, bounds, random_state):
     :param bounds:
         The variables bounds to limit the search of the acq max.
 
+    :param random_state:
+        instance of np.RandomState random number generator
+
+    :param n_warmup:
+        number of times to randomly sample the aquisition function
+
+    :param n_iter:
+        number of times to run scipy.minimize
 
     Returns
     -------
@@ -36,14 +44,14 @@ def acq_max(ac, gp, y_max, bounds, random_state):
 
     # Warm up with random points
     x_tries = random_state.uniform(bounds[:, 0], bounds[:, 1],
-                                 size=(100000, bounds.shape[0]))
+                                   size=(n_warmup, bounds.shape[0]))
     ys = ac(x_tries, gp=gp, y_max=y_max)
     x_max = x_tries[ys.argmax()]
     max_acq = ys.max()
 
     # Explore the parameter space more throughly
     x_seeds = random_state.uniform(bounds[:, 0], bounds[:, 1],
-                                size=(250, bounds.shape[0]))
+                                   size=(n_iter, bounds.shape[0]))
     for x_try in x_seeds:
         # Find the minimum of minus the acquisition function
         res = minimize(lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max),

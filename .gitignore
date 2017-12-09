@@ -8,3 +8,5 @@ scratch/
 .DS_Store
 bo_eg*.png
 gif/
+htmlcov
+.cache

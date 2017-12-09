@@ -63,7 +63,7 @@ class TestMaximizationOfAcquisitionFunction(unittest.TestCase):
         self.setUp(kind='ucb', kappa=1.0, xi=1.0)
         max_arg = acq_max(
             self.util.utility, GP, self.y_max, bounds=np.array([[0, 1], [0, 1]]),
-            random_state=self.random_state
+            random_state=self.random_state, n_iter=20
         )
         _, brute_max_arg = brute_force_maximum(MESH, GP)
 
@@ -73,7 +73,7 @@ class TestMaximizationOfAcquisitionFunction(unittest.TestCase):
         self.setUp(kind='ei', kappa=1.0, xi=1e-6)
         max_arg = acq_max(
             self.util.utility, GP, self.y_max, bounds=np.array([[0, 1], [0, 1]]),
-            random_state=self.random_state
+            random_state=self.random_state, n_iter=20
         )
         _, brute_max_arg = brute_force_maximum(MESH, GP, kind='ei')
 
