@@ -4,11 +4,7 @@ import unittest
 import numpy as np
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
-import sys
-sys.path.append("./")
-sys.path.append("../bayes_opt/")
-# from bayes_opt.helpers import UtilityFunction, acq_max
-from helpers import UtilityFunction, acq_max
+from bayes_opt.helpers import UtilityFunction, acq_max, ensure_rng
 
 
 def get_globals():
@@ -61,11 +57,13 @@ class TestMaximizationOfAcquisitionFunction(unittest.TestCase):
         self.util = UtilityFunction(kind=kind, kappa=kappa, xi=xi)
         self.episilon = 1e-2
         self.y_max = 2.0
+        self.random_state = ensure_rng(0)
 
     def test_acq_max_function_with_ucb_algo(self):
         self.setUp(kind='ucb', kappa=1.0, xi=1.0)
         max_arg = acq_max(
-            self.util.utility, GP, self.y_max, bounds=np.array([[0, 1], [0, 1]])
+            self.util.utility, GP, self.y_max, bounds=np.array([[0, 1], [0, 1]]),
+            random_state=self.random_state
         )
         _, brute_max_arg = brute_force_maximum(MESH, GP)
 
@@ -74,7 +72,8 @@ class TestMaximizationOfAcquisitionFunction(unittest.TestCase):
     def test_ei_max_function_with_ucb_algo(self):
         self.setUp(kind='ei', kappa=1.0, xi=1e-6)
         max_arg = acq_max(
-            self.util.utility, GP, self.y_max, bounds=np.array([[0, 1], [0, 1]])
+            self.util.utility, GP, self.y_max, bounds=np.array([[0, 1], [0, 1]]),
+            random_state=self.random_state
         )
         _, brute_max_arg = brute_force_maximum(MESH, GP, kind='ei')
 
@@ -82,4 +81,10 @@ class TestMaximizationOfAcquisitionFunction(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    r"""
+    CommandLine:
+        python tests/test_target_space.py
+    """
+    # unittest.main()
+    import pytest
+    pytest.main([__file__])

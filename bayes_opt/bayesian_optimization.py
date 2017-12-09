@@ -2,9 +2,11 @@ from __future__ import print_function
 from __future__ import division
 
 import numpy as np
+import warnings
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
-from .helpers import UtilityFunction, unique_rows, PrintLog, acq_max
+from .helpers import (UtilityFunction, PrintLog, acq_max, ensure_rng)
+from .target_space import TargetSpace
 
 
 class BayesianOptimization(object):
@@ -25,27 +27,11 @@ class BayesianOptimization(object):
         # Store the original dictionary
         self.pbounds = pbounds
 
-        if random_state is None:
-            self.random_state = np.random.RandomState()
-        elif isinstance(random_state, int):
-            self.random_state = np.random.RandomState(random_state)
-        else:
-            self.random_state = random_state
+        self.random_state = ensure_rng(random_state)
 
-        # Get the name of the parameters
-        self.keys = list(pbounds.keys())
-
-        # Find number of parameters
-        self.dim = len(pbounds)
-
-        # Create an array with parameters bounds
-        self.bounds = []
-        for key in self.pbounds.keys():
-            self.bounds.append(self.pbounds[key])
-        self.bounds = np.asarray(self.bounds)
-
-        # Some function to be optimized
-        self.f = f
+        # Data structure containing the function to be optimized, the bounds of
+        # its domain, and a record of the evaluations we have done so far
+        self.space = TargetSpace(f, pbounds, random_state)
 
         # Initialization flag
         self.initialized = False
@@ -54,10 +40,6 @@ class BayesianOptimization(object):
         self.init_points = []
         self.x_init = []
         self.y_init = []
-
-        # Numpy array place holders
-        self.X = None
-        self.Y = None
 
         # Counter of iterations
         self.i = 0
@@ -73,7 +55,7 @@ class BayesianOptimization(object):
         self.util = None
 
         # PrintLog object
-        self.plog = PrintLog(self.keys)
+        self.plog = PrintLog(self.space.keys)
 
         # Output dictionary
         self.res = {}
@@ -93,64 +75,50 @@ class BayesianOptimization(object):
         :param init_points:
             Number of random points to probe.
         """
-
-        # Generate random points
-        l = [self.random_state.uniform(x[0], x[1], size=init_points)
-             for x in self.bounds]
-
         # Concatenate new random points to possible existing
         # points from self.explore method.
-        self.init_points += list(map(list, zip(*l)))
+        rand_points = self.space.random_points(init_points)
+        self.init_points.extend(rand_points)
 
-        # Create empty arrays to store the new points and values of the function.
-        self.X = np.empty((0, self.bounds.shape[0]))
-        self.Y = np.empty(0)
-
-        # Evaluate target function at all initialization
-        # points (random + explore)
+        # Evaluate target function at all initialization points
         for x in self.init_points:
-            self.X = np.vstack((self.X, np.asarray(x).reshape((1, -1))))
-            self.Y = np.append(self.Y, self.f(**dict(zip(self.keys, x))))
+            y = self._observe_point(x)
 
-            if self.verbose:
-                self.plog.print_step(x, self.Y[-1])
-
-        # Append any other points passed by the self.initialize method (these
-        # also have a corresponding target value passed by the user).
-        self.init_points += self.x_init
-        self.X = np.vstack((self.X, np.asarray(self.x_init).reshape(-1, self.X.shape[1])))
-
-        # Append the target value of self.initialize method.
-        self.Y = np.concatenate((self.Y, self.y_init))
+        # Add the points from `self.initialize` to the observations
+        if self.x_init:
+            x_init = np.vstack(self.x_init)
+            y_init = np.hstack(self.y_init)
+            for x, y in zip(x_init, y_init):
+                self.space.add_observation(x, y)
+                if self.verbose:
+                    self.plog.print_step(x, y)
 
         # Updates the flag
         self.initialized = True
 
-    def explore(self, points_dict):
-        """Method to explore user defined points
+    def _observe_point(self, x):
+        y = self.space.observe_point(x)
+        if self.verbose:
+            self.plog.print_step(x, y)
+        return y
+
+    def explore(self, points_dict, eager=False):
+        """Method to explore user defined points.
 
         :param points_dict:
+        :param eager: if True, these points are evaulated immediately
         """
+        if eager:
+            self.plog.reset_timer()
+            if self.verbose:
+                self.plog.print_header(initialization=True)
 
-        # Consistency check
-        param_tup_lens = []
-
-        for key in self.keys:
-            param_tup_lens.append(len(list(points_dict[key])))
-
-        if all([e == param_tup_lens[0] for e in param_tup_lens]):
-            pass
+            points = self.space._dict_to_points(points_dict)
+            for x in points:
+                self._observe_point(x)
         else:
-            raise ValueError('The same number of initialization points '
-                             'must be entered for every parameter.')
-
-        # Turn into list of lists
-        all_points = []
-        for key in self.keys:
-            all_points.append(points_dict[key])
-
-        # Take transpose of list
-        self.init_points = list(map(list, zip(*all_points)))
+            points = self.space._dict_to_points(points_dict)
+            self.init_points = points
 
     def initialize(self, points_dict):
         """
@@ -174,7 +142,7 @@ class BayesianOptimization(object):
         self.y_init.extend(points_dict['target'])
         for i in range(len(points_dict['target'])):
             all_points = []
-            for key in self.keys:
+            for key in self.space.keys:
                 all_points.append(points_dict[key][i])
             self.x_init.append(all_points)
 
@@ -202,7 +170,7 @@ class BayesianOptimization(object):
             self.y_init.append(points_df.loc[i, 'target'])
 
             all_points = []
-            for key in self.keys:
+            for key in self.space.keys:
                 all_points.append(points_df.loc[i, key])
 
             self.x_init.append(all_points)
@@ -215,15 +183,9 @@ class BayesianOptimization(object):
             A dictionary with the parameter name and its new bounds
 
         """
-
         # Update the internal object stored dict
         self.pbounds.update(new_bounds)
-
-        # Loop through the all bounds and reset the min-max bound matrix
-        for row, key in enumerate(self.pbounds.keys()):
-
-            # Reset all entries, even if the same.
-            self.bounds[row] = self.pbounds[key]
+        self.space.set_bounds(new_bounds)
 
     def maximize(self,
                  init_points=5,
@@ -256,6 +218,13 @@ class BayesianOptimization(object):
         Returns
         -------
         :return: Nothing
+
+        Example:
+        >>> xs = np.linspace(-2, 10, 10000)
+        >>> f = np.exp(-(xs - 2)**2) + np.exp(-(xs - 6)**2/10) + 1/ (xs**2 + 1)
+        >>> bo = BayesianOptimization(f=lambda x: f[int(x)],
+        >>>                           pbounds={"x": (0, len(f)-1)})
+        >>> bo.maximize(init_points=2, n_iter=25, acq="ucb", kappa=1)
         """
         # Reset timer
         self.plog.reset_timer()
@@ -269,20 +238,19 @@ class BayesianOptimization(object):
                 self.plog.print_header()
             self.init(init_points)
 
-        y_max = self.Y.max()
+        y_max = self.space.Y.max()
 
         # Set parameters if any was passed
         self.gp.set_params(**gp_params)
 
         # Find unique rows of X to avoid GP from breaking
-        ur = unique_rows(self.X)
-        self.gp.fit(self.X[ur], self.Y[ur])
+        self.gp.fit(self.space.X, self.space.Y)
 
         # Finding argmax of the acquisition function.
         x_max = acq_max(ac=self.util.utility,
                         gp=self.gp,
                         y_max=y_max,
-                        bounds=self.bounds,
+                        bounds=self.space.bounds,
                         random_state=self.random_state)
 
         # Print new header
@@ -298,46 +266,36 @@ class BayesianOptimization(object):
             # Test if x_max is repeated, if it is, draw another one at random
             # If it is repeated, print a warning
             pwarning = False
-            if np.any((self.X - x_max).sum(axis=1) == 0):
-
-                x_max = self.random_state.uniform(self.bounds[:, 0],
-                                          self.bounds[:, 1],
-                                          size=self.bounds.shape[0])
-
+            while x_max in self.space:
+                x_max = self.space.random_points(1)[0]
                 pwarning = True
 
             # Append most recently generated values to X and Y arrays
-            self.X = np.vstack((self.X, x_max.reshape((1, -1))))
-            self.Y = np.append(self.Y, self.f(**dict(zip(self.keys, x_max))))
+            y = self.space.observe_point(x_max)
+            if self.verbose:
+                self.plog.print_step(x_max, y, pwarning)
 
             # Updating the GP.
-            ur = unique_rows(self.X)
-            self.gp.fit(self.X[ur], self.Y[ur])
+            self.gp.fit(self.space.X, self.space.Y)
+
+            # Update the best params seen so far
+            self.res['max'] = self.space.max_point()
+            self.res['all']['values'].append(y)
+            self.res['all']['params'].append(dict(zip(self.space.keys, x_max)))
 
             # Update maximum value to search for next probe point.
-            if self.Y[-1] > y_max:
-                y_max = self.Y[-1]
+            if self.space.Y[-1] > y_max:
+                y_max = self.space.Y[-1]
 
             # Maximize acquisition function to find next probing point
             x_max = acq_max(ac=self.util.utility,
                             gp=self.gp,
                             y_max=y_max,
-                            bounds=self.bounds,
+                            bounds=self.space.bounds,
                             random_state=self.random_state)
-
-            # Print stuff
-            if self.verbose:
-                self.plog.print_step(self.X[-1], self.Y[-1], warning=pwarning)
 
             # Keep track of total number of iterations
             self.i += 1
-
-            self.res['max'] = {'max_val': self.Y.max(),
-                               'max_params': dict(zip(self.keys,
-                                                      self.X[self.Y.argmax()]))
-                               }
-            self.res['all']['values'].append(self.Y[-1])
-            self.res['all']['params'].append(dict(zip(self.keys, self.X[-1])))
 
         # Print a final report if verbose active.
         if self.verbose:
@@ -354,6 +312,38 @@ class BayesianOptimization(object):
         :return: None
         """
 
-        points = np.hstack((self.X, np.expand_dims(self.Y, axis=1)))
-        header = ', '.join(self.keys + ['target'])
+        points = np.hstack((self.space.X, np.expand_dims(self.space.Y, axis=1)))
+        header = ', '.join(self.space.keys + ['target'])
         np.savetxt(file_name, points, header=header, delimiter=',')
+
+    # --- API compatibility ---
+
+    @property
+    def X(self):
+        warnings.warn("use self.space.X instead", DeprecationWarning)
+        return self.space.X
+
+    @property
+    def Y(self):
+        warnings.warn("use self.space.Y instead", DeprecationWarning)
+        return self.space.Y
+
+    @property
+    def keys(self):
+        warnings.warn("use self.space.keys instead", DeprecationWarning)
+        return self.space.keys
+
+    @property
+    def f(self):
+        warnings.warn("use self.space.target_func instead", DeprecationWarning)
+        return self.space.target_func
+
+    @property
+    def bounds(self):
+        warnings.warn("use self.space.dim instead", DeprecationWarning)
+        return self.space.bounds
+
+    @property
+    def dim(self):
+        warnings.warn("use self.space.dim instead", DeprecationWarning)
+        return self.space.dim
