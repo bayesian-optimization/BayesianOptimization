@@ -22,7 +22,7 @@ install:
   #- travis_retry python setup.py build develop
   - travis_retry pip install -e .
 script: 
-  - travis_wait pytest --cov-config .coveragerc --cov-report html --cov bayes_opt bayes_opt
+  - travis_wait pytest --cov-config .coveragerc --cov-report html --cov=bayes_opt bayes_opt
     #-p no:doctest --xdoctest --cov=ubelt ubelt
 after_success: 
   #- coveralls || echo "Coveralls upload failed"
