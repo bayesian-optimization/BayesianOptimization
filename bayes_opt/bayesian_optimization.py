@@ -319,8 +319,8 @@ class BayesianOptimization(object):
         """
 
         points = np.hstack((self.space.X, np.expand_dims(self.space.Y, axis=1)))
-        header = ', '.join(self.space.keys + ['target'])
-        np.savetxt(file_name, points, header=header, delimiter=',')
+        header = ','.join(self.space.keys + ['target'])
+        np.savetxt(file_name, points, header=header, delimiter=',', comments='')
 
     # --- API compatibility ---
 
