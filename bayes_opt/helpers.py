@@ -59,6 +59,10 @@ def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=100000, n_iter=250):
                        bounds=bounds,
                        method="L-BFGS-B")
 
+        # See if success
+        if res.success==False:
+            continue
+           
         # Store it if better than previous minimum(maximum).
         if max_acq is None or -res.fun[0] >= max_acq:
             x_max = res.x
