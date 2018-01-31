@@ -60,7 +60,7 @@ def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=100000, n_iter=250):
                        method="L-BFGS-B")
 
         # See if success
-        if res.success==False:
+        if not res.success:
             continue
            
         # Store it if better than previous minimum(maximum).
