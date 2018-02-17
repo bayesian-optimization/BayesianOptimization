@@ -33,7 +33,7 @@ def test_db_manager_dimension():
     bo.init_db('sqlite:///target_space.db')
     bo.maximize(init_points=2, n_iter=2, acq='ucb', kappa=5, **gp_params)
     bo.save()
-    for i in range(1):
+    for i in range(5):
         bo = BayesianOptimization(target,
                                   pbounds={'x': (-2, 10), 'y': (-2, 10), 'z': (-2, 10)},
                                   random_state=random_state,
@@ -42,13 +42,14 @@ def test_db_manager_dimension():
         bo._acqkw['n_warmup'] = 1000
         bo.init_db('sqlite:///target_space.db')
         bo.load()
+        assert bo.space.Y.shape[0] == 4 + 2 * i, 'should increase by 2'
         bo.maximize(init_points=0, n_iter=2, acq='ucb', kappa=5, **gp_params)
         bo.save()
         bo.print_summary()
 
 
 if __name__ == '__main__':
-    r"""
+    """
     CommandLine:
         python tests/test_bayesian_optimization.py
     """
