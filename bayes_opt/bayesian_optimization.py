@@ -7,6 +7,7 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
 from .helpers import (UtilityFunction, PrintLog, acq_max, ensure_rng)
 from .target_space import TargetSpace
+from .db_manager import DBManager
 
 
 class BayesianOptimization(object):
@@ -70,6 +71,9 @@ class BayesianOptimization(object):
 
         # Verbose
         self.verbose = verbose
+
+        # Database manager
+        self.dbm = None
 
     def init(self, init_points):
         """
@@ -305,7 +309,7 @@ class BayesianOptimization(object):
 
         # Print a final report if verbose active.
         if self.verbose:
-            self.plog.print_summary()
+            self.plog.print_summary(self.space.X, self.space.Y)
 
     def points_to_csv(self, file_name):
         """
@@ -321,6 +325,40 @@ class BayesianOptimization(object):
         points = np.hstack((self.space.X, np.expand_dims(self.space.Y, axis=1)))
         header = ','.join(self.space.keys + ['target'])
         np.savetxt(file_name, points, header=header, delimiter=',', comments='')
+
+    # --- Database Interactions ---
+
+    def init_db(self, conn_str):
+        try:
+            self.dbm = DBManager(conn_str)
+        except RuntimeError as e:
+            print(e)
+
+    def save(self):
+        try:
+            self.dbm.save(self.space.keys, self.space.X, self.space.Y)
+        except RuntimeError as e:
+            print(e)
+
+    def load(self):
+        try:
+            init_points = self.dbm.load()
+            if init_points is not None:
+                self.initialize(init_points)
+
+                # make sure that everything is already in target space
+                self.maximize(init_points=0, n_iter=0)
+            else:
+                print('Database is empty, nothing to load.')
+        except RuntimeError as e:
+            print(e)
+
+    def clear(self):
+        self.dbm.clear()
+
+    # --- Print Summary ---
+    def print_summary(self):
+        self.plog.print_summary(self.space.X, self.space.Y)
 
     # --- API compatibility ---
 

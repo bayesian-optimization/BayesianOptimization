@@ -254,5 +254,28 @@ class PrintLog(object):
         self.last_round = datetime.now()
         self.ite += 1
 
-    def print_summary(self):
-        pass
+    def print_summary(self, X, Y):
+        idx = np.argsort(-Y)
+        X = X[idx]
+        Y = Y[idx]
+
+        print("{}Summary{}".format(BColours.RED,
+                                   BColours.ENDC))
+        print(BColours.BLUE + "-" * (12 + sum([s + 5 for s in self.sizes])) +
+              BColours.ENDC)
+
+        print("{0:>{1}}".format("Value", 10), end=" | ")
+        for index in self.sorti:
+            print("{0:>{1}}".format(self.params[index],
+                                    self.sizes[index] + 2),
+                  end=" | ")
+        print()
+
+        for i in range(Y.shape[0]):
+            print("{: >10.5f}".format(Y[i]), end=" | ")
+            for index in self.sorti:
+                print("{0: >{1}.{2}f}".format(X[i][index],
+                                              self.sizes[index] + 2,
+                                              min(self.sizes[index] - 3, 4)),
+                      end=" | ")
+            print()
