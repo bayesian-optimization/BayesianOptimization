@@ -13,5 +13,6 @@ setup(
         "numpy >= 1.9.0",
         "scipy >= 0.14.0",
         "scikit-learn >= 0.18.0",
+        "sqlalchemy >= 1.2"
     ],
 )
