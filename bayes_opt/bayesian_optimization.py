@@ -249,6 +249,15 @@ class BayesianOptimization(object):
         >>> bo = BayesianOptimization(f=lambda x: f[int(x)],
         >>>                           pbounds={"x": (0, len(f)-1)})
         >>> bo.maximize(init_points=2, n_iter=25, acq="ucb", kappa=1)
+        
+        Example with constraints:
+        >>> xs = np.linspace(-2, 10, 10000)
+        >>> f = np.exp(-(xs - 2)**2) + np.exp(-(xs - 6)**2/10) + 1/ (xs**2 + 1)
+        >>> bo = BayesianOptimization(f=lambda x: f[int(x)],
+                                      pbounds={'x': (0, len(f)-1)},
+                                      constraints={'type': 'ineq',
+                                                   'fun': lambda x: 5 - x})
+        >>> bo.maximize(init_points=2, n_iter=25, acq='ucb', kappa=1)
         """
         # Reset timer
         self.plog.reset_timer()
