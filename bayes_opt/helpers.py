@@ -6,7 +6,8 @@ from scipy.stats import norm
 from scipy.optimize import minimize
 
 
-def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=100000, n_iter=250):
+def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=100000, n_iter=250,
+            constraints=None):
     """
     A function to find the maximum of the acquisition function
 
@@ -54,10 +55,20 @@ def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=100000, n_iter=250):
                                    size=(n_iter, bounds.shape[0]))
     for x_try in x_seeds:
         # Find the minimum of minus the acquisition function
-        res = minimize(lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max),
-                       x_try.reshape(1, -1),
-                       bounds=bounds,
-                       method="L-BFGS-B")
+        if constraints is None:
+            res = minimize(lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max),
+                           x_try.reshape(1, -1),
+                           bounds=bounds,
+                           method="L-BFGS-B")
+        else:
+            # Using constraints. Note the optimizer can be 'SLSQP', 'COBYLA', or 'trust-constr'.
+            # The first two use a dictionary defining constraints, the last one uses a list of
+            # constraint objects from scipy. Choosing 'SLSQP' for now.
+            res = minimize(lambda x: -ac(x.reshape(1, -1), gp=gp, ymax=ymax),
+                           x_try.reshape(1, -1),
+                           bounds=bounds,
+                           method='SLSQP',
+                           constraints=constraints)
 
         # See if success
         if not res.success:
