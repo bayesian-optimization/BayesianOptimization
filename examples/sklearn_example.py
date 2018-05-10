@@ -49,11 +49,23 @@ if __name__ == "__main__":
         'max_features': (0.1, 0.999)}
     )
 
+    # Add a constraint that we have five times as many estimators as features.
+    rfcBO_constr = BayesianOptimization(
+        rfccv,
+        {'n_estimators': (10, 250),
+        'min_samples_split': (2, 25),
+        'max_features': (0.1, 0.999)},
+        constraints=[{'type': 'ineq',
+                      'fun': lambda x: int(x[0]) - 5*int(x[2] * 45)}]
+    )
+
     svcBO.maximize(n_iter=10, **gp_params)
     print('-' * 53)
     rfcBO.maximize(n_iter=10, **gp_params)
-
+    print('-' * 53)
+    rfcBO_constr.maximize(n_iter=10, **gp_params)
     print('-' * 53)
     print('Final Results')
     print('SVC: %f' % svcBO.res['max']['max_val'])
     print('RFC: %f' % rfcBO.res['max']['max_val'])
+    print(f"RFC with constraints: {rfcBO_constr.res['max']['max_val']}")
