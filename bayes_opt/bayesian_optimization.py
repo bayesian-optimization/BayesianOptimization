@@ -11,7 +11,7 @@ from .target_space import TargetSpace
 
 class BayesianOptimization(object):
 
-    def __init__(self, f, pbounds, random_state=None, verbose=1):
+    def __init__(self, f, pbounds, constraints=None, random_state=None, verbose=1):
         """
         :param f:
             Function to be maximized.
@@ -19,6 +19,23 @@ class BayesianOptimization(object):
         :param pbounds:
             Dictionary with parameters names as keys and a tuple with minimum
             and maximum values.
+            
+        :param constraints:
+            List of dictionaries defining constraints for parameters for COBYLA
+            and SLSQP optimizers. Each dictionary has the fields:
+            
+            - type : str
+              Constraint type: ‘eq’ for equality, ‘ineq’ for inequality.
+            - fun : callable
+              The function defining the constraint.
+            - jac : callable, optional
+              The Jacobian of fun (only for SLSQP).
+            - args : sequence, optional
+              Extra arguments to be passed to the function and Jacobian.
+              
+            Equality constraint means that the constraint function result is to be
+            zero whereas inequality means that it is to be non-negative. Note that
+            COBYLA only supports inequality constraints.
 
         :param verbose:
             Whether or not to print progress.
@@ -26,6 +43,9 @@ class BayesianOptimization(object):
         """
         # Store the original dictionary
         self.pbounds = pbounds
+        
+        # Store the constraints
+        self.constraints = constraints
 
         self.random_state = ensure_rng(random_state)
 
@@ -255,6 +275,7 @@ class BayesianOptimization(object):
                         gp=self.gp,
                         y_max=y_max,
                         bounds=self.space.bounds,
+                        constraints=self.constraints,
                         random_state=self.random_state,
                         **self._acqkw)
 
@@ -297,6 +318,7 @@ class BayesianOptimization(object):
                             gp=self.gp,
                             y_max=y_max,
                             bounds=self.space.bounds,
+                            constraints=self.constraints,
                             random_state=self.random_state,
                             **self._acqkw)
 
