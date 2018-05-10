@@ -28,9 +28,15 @@ def get_globals():
         np.meshgrid(np.arange(0, 1, 0.01), np.arange(0, 1, 0.01))
     ).reshape(-1, 2)
 
-    mesh_t = np.dstack(
+    mesh_lt = np.dstack(
         np.tril(np.meshgrid(np.arange(0, 1, 0.01), np.arange(0, 1, 0.01)))
     ).reshape(-1, 2)
+    mesh_lt = mesh_lt[~np.all(mesh == 0, axis=1)]
+
+    mesh_ut = np.dstack(
+        np.triu(np.meshgrid(np.arange(0, 1, 0.01), np.arange(0, 1, 0.01)), k=1)
+    ).reshape(-1, 2)
+    mesh_ut = mesh_ut[~np.all(mesh == 0, axis=1)]
 
     GP = GaussianProcessRegressor(
         kernel=Matern(),
@@ -38,7 +44,8 @@ def get_globals():
     )
     GP.fit(X, y)
 
-    return {'x': X, 'y': y, 'gp': GP, 'mesh': mesh, 'mesh_t': mesh_t}
+    return {'x': X, 'y': y, 'gp': GP, 'mesh': mesh, 'mesh_lt': mesh_lt,
+            'mesh_ut': mesh_ut}
 
 
 def brute_force_maximum(MESH, GP, kind='ucb', kappa=1.0, xi=1e-6):
@@ -52,7 +59,8 @@ def brute_force_maximum(MESH, GP, kind='ucb', kappa=1.0, xi=1e-6):
 
 
 GLOB = get_globals()
-X, Y, GP, MESH, MESH_T = GLOB['x'], GLOB['y'], GLOB['gp'], GLOB['mesh'], GLOB['mesh_t']
+X, Y, GP, MESH = GLOB['x'], GLOB['y'], GLOB['gp'], GLOB['mesh']
+MESH_LT, MESH_UT = GLOB['mesh_lt'], GLOB['mesh_ut']
 
 
 class TestMaximizationOfAcquisitionFunction(unittest.TestCase):
@@ -82,9 +90,12 @@ class TestMaximizationOfAcquisitionFunction(unittest.TestCase):
             random_state=self.random_state, n_iter=20,
             constraints=self.constraints
         )
-        _, brute_max_arg = brute_force_maximum(MESH_T, GP)
+        _, brute_max_arg = brute_force_maximum(MESH_LT, GP)
         self.assertTrue(all(abs(brute_max_arg - max_arg) < self.epsilon),
                         msg='Constrained maximization failed with ucb!')
+        _, brute_max_arg = brute_force_maximum(MESH_UT, GP)
+        self.assertTrue(all(abs(brute_max_arg - max_arg) > self.epsilon),
+                        msg='Unexpectedly similar values with constraints!')
 
     def test_ei_max_function_with_ucb_algo(self):
         self.setUp(kind='ei', kappa=1.0, xi=1e-6)
@@ -104,9 +115,12 @@ class TestMaximizationOfAcquisitionFunction(unittest.TestCase):
             random_state=self.random_state, n_iter=20,
             constraints=self.constraints
         )
-        _, brute_max_arg = brute_force_maximum(MESH_T, GP)
+        _, brute_max_arg = brute_force_maximum(MESH_LT, GP)
         self.assertTrue(all(abs(brute_max_arg - max_arg) < self.epsilon),
                         msg='Constrained maximization failed with ei!')
+        _, brute_max_arg = brute_force_maximum(MESH_UT, GP)
+        self.assertTrue(all(abs(brute_max_arg - max_arg) > self.epsilon),
+                        msg='Unexpectedly similar values with constraints!')
 
 
 if __name__ == '__main__':
