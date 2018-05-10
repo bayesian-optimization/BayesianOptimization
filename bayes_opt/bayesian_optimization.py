@@ -256,7 +256,7 @@ class BayesianOptimization(object):
         >>> bo = BayesianOptimization(f=lambda x: f[int(x)],
                                       pbounds={'x': (0, len(f)-1)},
                                       constraints={'type': 'ineq',
-                                                   'fun': lambda x: 5 - x})
+                                                   'fun': lambda x: x - 5000})
         >>> bo.maximize(init_points=2, n_iter=25, acq='ucb', kappa=1)
         """
         # Reset timer
