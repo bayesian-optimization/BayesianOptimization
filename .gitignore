@@ -8,6 +8,8 @@ scratch/
 .DS_Store
 bo_eg*.png
 gif/
+__pycache__
+.pytest_cache
 
 # Unit test / coverage reports
 htmlcov/

@@ -64,7 +64,7 @@ def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=100000, n_iter=250,
             # Using constraints. Note the optimizer can be 'SLSQP', 'COBYLA', or 'trust-constr'.
             # The first two use a dictionary defining constraints, the last one uses a list of
             # constraint objects from scipy. Choosing 'SLSQP' for now.
-            res = minimize(lambda x: -ac(x.reshape(1, -1), gp=gp, ymax=ymax),
+            res = minimize(lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max),
                            x_try.reshape(1, -1),
                            bounds=bounds,
                            method='SLSQP',
@@ -75,6 +75,8 @@ def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=100000, n_iter=250,
             continue
            
         # Store it if better than previous minimum(maximum).
+        if not isinstance(res.fun, list):
+            res.fun = [res.fun]
         if max_acq is None or -res.fun[0] >= max_acq:
             x_max = res.x
             max_acq = -res.fun[0]

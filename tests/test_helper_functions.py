@@ -28,13 +28,17 @@ def get_globals():
         np.meshgrid(np.arange(0, 1, 0.01), np.arange(0, 1, 0.01))
     ).reshape(-1, 2)
 
+    mesh_t = np.dstack(
+        np.tril(np.meshgrid(np.arange(0, 1, 0.01), np.arange(0, 1, 0.01)))
+    ).reshape(-1, 2)
+
     GP = GaussianProcessRegressor(
         kernel=Matern(),
         n_restarts_optimizer=25,
     )
     GP.fit(X, y)
 
-    return {'x': X, 'y': y, 'gp': GP, 'mesh': mesh}
+    return {'x': X, 'y': y, 'gp': GP, 'mesh': mesh, 'mesh_t': mesh_t}
 
 
 def brute_force_maximum(MESH, GP, kind='ucb', kappa=1.0, xi=1e-6):
@@ -48,16 +52,18 @@ def brute_force_maximum(MESH, GP, kind='ucb', kappa=1.0, xi=1e-6):
 
 
 GLOB = get_globals()
-X, Y, GP, MESH = GLOB['x'], GLOB['y'], GLOB['gp'], GLOB['mesh']
+X, Y, GP, MESH, MESH_T = GLOB['x'], GLOB['y'], GLOB['gp'], GLOB['mesh'], GLOB['mesh_t']
 
 
 class TestMaximizationOfAcquisitionFunction(unittest.TestCase):
 
     def setUp(self, kind='ucb', kappa=1.0, xi=1e-6):
         self.util = UtilityFunction(kind=kind, kappa=kappa, xi=xi)
-        self.episilon = 1e-2
+        self.epsilon = 1e-2
         self.y_max = 2.0
         self.random_state = ensure_rng(0)
+        self.constraints = [{'type': 'ineq',
+                             'fun': lambda x: x[0] - x[1]}]
 
     def test_acq_max_function_with_ucb_algo(self):
         self.setUp(kind='ucb', kappa=1.0, xi=1.0)
@@ -67,7 +73,18 @@ class TestMaximizationOfAcquisitionFunction(unittest.TestCase):
         )
         _, brute_max_arg = brute_force_maximum(MESH, GP)
 
-        self.assertTrue( all(abs(brute_max_arg - max_arg) < self.episilon))
+        self.assertTrue( all(abs(brute_max_arg - max_arg) < self.epsilon))
+
+        # Define an inequality constraint such that x[0] > x[1]. Inequality
+        # constraints must evaluate to >0.
+        max_arg = acq_max(
+            self.util.utility, GP, self.y_max, bounds=np.array([[0, 1], [0, 1]]),
+            random_state=self.random_state, n_iter=20,
+            constraints=self.constraints
+        )
+        _, brute_max_arg = brute_force_maximum(MESH_T, GP)
+        self.assertTrue(all(abs(brute_max_arg - max_arg) < self.epsilon),
+                        msg='Constrained maximization failed with ucb!')
 
     def test_ei_max_function_with_ucb_algo(self):
         self.setUp(kind='ei', kappa=1.0, xi=1e-6)
@@ -77,7 +94,19 @@ class TestMaximizationOfAcquisitionFunction(unittest.TestCase):
         )
         _, brute_max_arg = brute_force_maximum(MESH, GP, kind='ei')
 
-        self.assertTrue( all(abs(brute_max_arg - max_arg) < self.episilon))
+        self.assertTrue( all(abs(brute_max_arg - max_arg) < self.epsilon))
+        # Define an inequality constraint such that x[0] > x[1]. Inequality
+        # constraints must evaluate to >0.
+        constraints = [{'type': 'ineq',
+                        'fun': lambda x: x[0] - x[1]}]
+        max_arg = acq_max(
+            self.util.utility, GP, self.y_max, bounds=np.array([[0, 1], [0, 1]]),
+            random_state=self.random_state, n_iter=20,
+            constraints=self.constraints
+        )
+        _, brute_max_arg = brute_force_maximum(MESH_T, GP)
+        self.assertTrue(all(abs(brute_max_arg - max_arg) < self.epsilon),
+                        msg='Constrained maximization failed with ei!')
 
 
 if __name__ == '__main__':
