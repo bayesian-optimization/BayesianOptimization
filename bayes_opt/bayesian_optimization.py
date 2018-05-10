@@ -25,7 +25,7 @@ class BayesianOptimization(object):
             and SLSQP optimizers. Each dictionary has the fields:
             
             - type : str
-              Constraint type: ‘eq’ for equality, ‘ineq’ for inequality.
+              Constraint type: 'eq' for equality, 'ineq' for inequality.
             - fun : callable
               The function defining the constraint.
             - jac : callable, optional
