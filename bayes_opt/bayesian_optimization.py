@@ -11,7 +11,7 @@ from .target_space import TargetSpace
 
 class BayesianOptimization(object):
 
-    def __init__(self, f, pbounds, random_state=None, verbose=1):
+    def __init__(self, f, pbounds, random_state=None, verbose=1, callbacks=None):
         """
         :param f:
             Function to be maximized.
@@ -71,6 +71,12 @@ class BayesianOptimization(object):
         # Verbose
         self.verbose = verbose
 
+        # Callback
+        if(callbacks is None):
+            self.callbacks = []
+        else:
+            self.callbacks = callbacks
+
     def init(self, init_points):
         """
         Initialization method to kick start the optimization process. It is a
@@ -104,6 +110,9 @@ class BayesianOptimization(object):
         y = self.space.observe_point(x)
         if self.verbose:
             self.plog.print_step(x, y)
+        # Callback
+        for c in self.callbacks:
+            c()
         return y
 
     def explore(self, points_dict, eager=False):
