@@ -100,10 +100,16 @@ class BayesianOptimization(object):
         # Updates the flag
         self.initialized = True
 
-    def _observe_point(self, x):
+    def _observe_point(self, x, pwarning=False):
         y = self.space.observe_point(x)
+
+        # Update the best params seen so far
+        self.res['max'] = self.space.max_point()
+        self.res['all']['values'].append(y)
+        self.res['all']['params'].append(dict(zip(self.space.keys, x)))
+
         if self.verbose:
-            self.plog.print_step(x, y)
+            self.plog.print_step(x, y, pwarning)
         return y
 
     def explore(self, points_dict, eager=False):
@@ -276,17 +282,10 @@ class BayesianOptimization(object):
                 pwarning = True
 
             # Append most recently generated values to X and Y arrays
-            y = self.space.observe_point(x_max)
-            if self.verbose:
-                self.plog.print_step(x_max, y, pwarning)
+            y = self._observe_point(x_max, pwarning=pwarning)
 
             # Updating the GP.
             self.gp.fit(self.space.X, self.space.Y)
-
-            # Update the best params seen so far
-            self.res['max'] = self.space.max_point()
-            self.res['all']['values'].append(y)
-            self.res['all']['params'].append(dict(zip(self.space.keys, x_max)))
 
             # Update maximum value to search for next probe point.
             if self.space.Y[-1] > y_max:
