@@ -11,11 +11,8 @@ from .target_space import TargetSpace
 
 class BayesianOptimization(object):
 
-    def __init__(self, f, pbounds, random_state=None, verbose=1):
+    def __init__(self, pbounds, random_state=None, verbose=1):
         """
-        :param f:
-            Function to be maximized.
-
         :param pbounds:
             Dictionary with parameters names as keys and a tuple with minimum
             and maximum values.
@@ -31,7 +28,7 @@ class BayesianOptimization(object):
 
         # Data structure containing the function to be optimized, the bounds of
         # its domain, and a record of the evaluations we have done so far
-        self.space = TargetSpace(f, pbounds, random_state)
+        self.space = TargetSpace(pbounds, random_state)
 
         # Initialization flag
         self.initialized = False
@@ -71,23 +68,16 @@ class BayesianOptimization(object):
         # Verbose
         self.verbose = verbose
 
-    def init(self, init_points):
-        """
-        Initialization method to kick start the optimization process. It is a
-        combination of points passed by the user, and randomly sampled ones.
-
-        :param init_points:
-            Number of random points to probe.
-        """
+    def acquire_init(self, init_points):
         # Concatenate new random points to possible existing
         # points from self.explore method.
         rand_points = self.space.random_points(init_points)
         self.init_points.extend(rand_points)
+        return self.init_points
 
-        # Evaluate target function at all initialization points
-        for x in self.init_points:
-            y = self._observe_point(x)
-
+    def init(self, init_xs, init_ys):
+        for x,y in zip(init_xs, init_ys):
+            self.space.observe_point(x, y)
         # Add the points from `self.initialize` to the observations
         if self.x_init:
             x_init = np.vstack(self.x_init)
@@ -191,45 +181,13 @@ class BayesianOptimization(object):
         self.pbounds.update(new_bounds)
         self.space.set_bounds(new_bounds)
 
-    def maximize(self,
-                 init_points=5,
-                 n_iter=25,
-                 acq='ucb',
-                 kappa=2.576,
-                 xi=0.0,
-                 **gp_params):
-        """
-        Main optimization method.
-
-        Parameters
-        ----------
-        :param init_points:
-            Number of randomly chosen points to sample the
-            target function before fitting the gp.
-
-        :param n_iter:
-            Total number of times the process is to repeated. Note that
-            currently this methods does not have stopping criteria (due to a
-            number of reasons), therefore the total number of points to be
-            sampled must be specified.
-
-        :param acq:
-            Acquisition function to be used, defaults to Upper Confidence Bound.
-
-        :param gp_params:
-            Parameters to be passed to the Scikit-learn Gaussian Process object
-
-        Returns
-        -------
-        :return: Nothing
-
-        Example:
-        >>> xs = np.linspace(-2, 10, 10000)
-        >>> f = np.exp(-(xs - 2)**2) + np.exp(-(xs - 6)**2/10) + 1/ (xs**2 + 1)
-        >>> bo = BayesianOptimization(f=lambda x: f[int(x)],
-        >>>                           pbounds={"x": (0, len(f)-1)})
-        >>> bo.maximize(init_points=2, n_iter=25, acq="ucb", kappa=1)
-        """
+    def acquire(self,
+            init_points=5,
+            n_iter=25,
+            acq='ucb',
+            kappa=2.576,
+            xi=0.0,
+            **gp_params):
         # Reset timer
         self.plog.reset_timer()
 
@@ -261,47 +219,35 @@ class BayesianOptimization(object):
         # Print new header
         if self.verbose:
             self.plog.print_header(initialization=False)
-        # Iterative process of searching for the maximum. At each round the
-        # most recent x and y values probed are added to the X and Y arrays
-        # used to train the Gaussian Process. Next the maximum known value
-        # of the target function is found and passed to the acq_max function.
-        # The arg_max of the acquisition function is found and this will be
-        # the next probed value of the target function in the next round.
-        for i in range(n_iter):
-            # Test if x_max is repeated, if it is, draw another one at random
-            # If it is repeated, print a warning
-            pwarning = False
-            while x_max in self.space:
-                x_max = self.space.random_points(1)[0]
-                pwarning = True
 
-            # Append most recently generated values to X and Y arrays
-            y = self.space.observe_point(x_max)
-            if self.verbose:
-                self.plog.print_step(x_max, y, pwarning)
+        # Test if x_max is repeated, if it is, draw another one at random
+        # If it is repeated, print a warning
+        pwarning = False
+        while x_max in self.space:
+            x_max = self.space.random_points(1)[0]
+            pwarning = True
+        return x_max
 
-            # Updating the GP.
-            self.gp.fit(self.space.X, self.space.Y)
+    def observe(self, x, y):
+        # Append most recently generated values to X and Y arrays
+        y_max = self.space.observe_point(x, y)
+        if self.verbose:
+            self.plog.print_step(x, y, False)
 
-            # Update the best params seen so far
-            self.res['max'] = self.space.max_point()
-            self.res['all']['values'].append(y)
-            self.res['all']['params'].append(dict(zip(self.space.keys, x_max)))
+        # Updating the GP.
+        self.gp.fit(self.space.X, self.space.Y)
 
-            # Update maximum value to search for next probe point.
-            if self.space.Y[-1] > y_max:
-                y_max = self.space.Y[-1]
+        # Update the best params seen so far
+        self.res['max'] = self.space.max_point()
+        self.res['all']['values'].append(y)
+        self.res['all']['params'].append(dict(zip(self.space.keys, x)))
 
-            # Maximize acquisition function to find next probing point
-            x_max = acq_max(ac=self.util.utility,
-                            gp=self.gp,
-                            y_max=y_max,
-                            bounds=self.space.bounds,
-                            random_state=self.random_state,
-                            **self._acqkw)
+        # Update maximum value to search for next probe point.
+        if self.space.Y[-1] > y_max:
+            y_max = self.space.Y[-1]
 
-            # Keep track of total number of iterations
-            self.i += 1
+        # Keep track of total number of iterations
+        self.i += 1
 
         # Print a final report if verbose active.
         if self.verbose:

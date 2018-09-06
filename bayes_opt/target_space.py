@@ -23,13 +23,10 @@ class TargetSpace(object):
     >>> y = space.observe_point(x)
     >>> assert self.max_point()['max_val'] == y
     """
-    def __init__(self, target_func, pbounds, random_state=None):
+    def __init__(self, pbounds, random_state=None):
         """
         Parameters
         ----------
-        target_func : function
-            Function to be maximized.
-
         pbounds : dict
             Dictionary with parameters names as keys and a tuple with minimum
             and maximum values.
@@ -39,9 +36,6 @@ class TargetSpace(object):
         """
 
         self.random_state = ensure_rng(random_state)
-
-        # Some function to be optimized
-        self.target_func = target_func
 
         # Get the name of the parameters
         self.keys = list(pbounds.keys())
@@ -108,7 +102,7 @@ class TargetSpace(object):
         points = list(map(list, zip(*all_points)))
         return points
 
-    def observe_point(self, x):
+    def observe_point(self, x, y):
         """
         Evaulates a single point x, to obtain the value y and then records them
         as observations.
@@ -136,7 +130,6 @@ class TargetSpace(object):
         else:
             # measure the target function
             params = dict(zip(self.keys, x))
-            y = self.target_func(**params)
             self.add_observation(x, y)
         return y
 
