@@ -23,7 +23,7 @@ class TargetSpace(object):
     >>> y = space.observe_point(x)
     >>> assert self.max_point()['max_val'] == y
     """
-    def __init__(self, target_func, pbounds, random_state=None):
+    def __init__(self, target_func, pbounds, random_state=None, fixed_args={}):
         """
         Parameters
         ----------
@@ -36,6 +36,9 @@ class TargetSpace(object):
 
         random_state : int, RandomState, or None
             optionally specify a seed for a random number generator
+
+        :param fixed_args: 
+            Dictionary with parameters which are fixed
         """
 
         self.random_state = ensure_rng(random_state)
@@ -43,12 +46,16 @@ class TargetSpace(object):
         # Some function to be optimized
         self.target_func = target_func
 
+        # fixed arguments
+        self.fixed_args = fixed_args
+        
         # Get the name of the parameters
         self.keys = list(pbounds.keys())
         # Create an array with parameters bounds
         self.bounds = np.array(list(pbounds.values()), dtype=np.float)
         # Find number of parameters
         self.dim = len(self.keys)
+
 
         # preallocated memory for X and Y points
         self._Xarr = None
@@ -136,6 +143,7 @@ class TargetSpace(object):
         else:
             # measure the target function
             params = dict(zip(self.keys, x))
+            params.update(self.fixed_args)
             y = self.target_func(**params)
             self.add_observation(x, y)
         return y

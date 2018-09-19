@@ -11,7 +11,7 @@ from .target_space import TargetSpace
 
 class BayesianOptimization(object):
 
-    def __init__(self, f, pbounds, random_state=None, verbose=1):
+    def __init__(self, f, pbounds, random_state=None, verbose=1 ,fixed_args={}):
         """
         :param f:
             Function to be maximized.
@@ -19,7 +19,10 @@ class BayesianOptimization(object):
         :param pbounds:
             Dictionary with parameters names as keys and a tuple with minimum
             and maximum values.
-
+        
+        :param fixed_args: 
+            Dictionary with parameters which are fixed
+        
         :param verbose:
             Whether or not to print progress.
 
@@ -31,7 +34,7 @@ class BayesianOptimization(object):
 
         # Data structure containing the function to be optimized, the bounds of
         # its domain, and a record of the evaluations we have done so far
-        self.space = TargetSpace(f, pbounds, random_state)
+        self.space = TargetSpace(f, pbounds, random_state, fixed_args)
 
         # Initialization flag
         self.initialized = False
