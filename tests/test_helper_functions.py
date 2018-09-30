@@ -6,7 +6,6 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
 from bayes_opt.helpers import UtilityFunction, acq_max, ensure_rng
 
-
 def get_globals():
     X = np.array([
         [0.00, 0.00],

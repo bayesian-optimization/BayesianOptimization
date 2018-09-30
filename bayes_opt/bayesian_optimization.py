@@ -7,9 +7,10 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
 from .helpers import (UtilityFunction, PrintLog, acq_max, ensure_rng)
 from .target_space import TargetSpace
+from .observer import Observable
 
 
-class BayesianOptimization(object):
+class BayesianOptimization(Observable):
 
     def __init__(self, f, pbounds, random_state=None, verbose=1):
         """
@@ -71,6 +72,10 @@ class BayesianOptimization(object):
         # Verbose
         self.verbose = verbose
 
+        # Event initialization
+        events = [Events.INIT_DONE, Events.FIT_STEP_DONE, Events.FIT_DONE]
+        super(BayesianOptimization, self).__init__(events)
+
     def init(self, init_points):
         """
         Initialization method to kick start the optimization process. It is a
@@ -99,6 +104,9 @@ class BayesianOptimization(object):
 
         # Updates the flag
         self.initialized = True
+
+        # Notify about finished init method
+        self.dispatch(Events.INIT_DONE)
 
     def _observe_point(self, x):
         y = self.space.observe_point(x)
@@ -303,9 +311,15 @@ class BayesianOptimization(object):
             # Keep track of total number of iterations
             self.i += 1
 
+            # Notify about finished iteration
+            self.dispatch(Events.FIT_STEP_DONE)
+
         # Print a final report if verbose active.
         if self.verbose:
             self.plog.print_summary()
+
+        # Notify about finished optimization
+        self.dispatch(Events.FIT_DONE)
 
     def points_to_csv(self, file_name):
         """
@@ -353,3 +367,9 @@ class BayesianOptimization(object):
     def dim(self):
         warnings.warn("use self.space.dim instead", DeprecationWarning)
         return self.space.dim
+
+
+class Events(object):
+    INIT_DONE = 'initialized'
+    FIT_STEP_DONE = 'fit_step_done'
+    FIT_DONE = 'fit_done'
