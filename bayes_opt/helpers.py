@@ -1,5 +1,6 @@
 from __future__ import print_function
 from __future__ import division
+import warnings
 import numpy as np
 from datetime import datetime
 from scipy.stats import norm
@@ -62,7 +63,7 @@ def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=100000, n_iter=250):
         # See if success
         if not res.success:
             continue
-           
+
         # Store it if better than previous minimum(maximum).
         if max_acq is None or -res.fun[0] >= max_acq:
             x_max = res.x
@@ -104,25 +105,34 @@ class UtilityFunction(object):
 
     @staticmethod
     def _ucb(x, gp, kappa):
-        mean, std = gp.predict(x, return_std=True)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            mean, std = gp.predict(x, return_std=True)
+
         return mean + kappa * std
 
     @staticmethod
     def _ei(x, gp, y_max, xi):
-        mean, std = gp.predict(x, return_std=True)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            mean, std = gp.predict(x, return_std=True)
+
         z = (mean - y_max - xi)/std
         return (mean - y_max - xi) * norm.cdf(z) + std * norm.pdf(z)
 
     @staticmethod
     def _poi(x, gp, y_max, xi):
-        mean, std = gp.predict(x, return_std=True)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            mean, std = gp.predict(x, return_std=True)
+
         z = (mean - y_max - xi)/std
         return norm.cdf(z)
 
 
 def unique_rows(a):
     """
-    A functions to trim repeated rows that may appear when optimizing.
+    A function to trim repeated rows that may appear when optimizing.
     This is necessary to avoid the sklearn GP object from breaking
 
     :param a: array to trim repeated rows from
