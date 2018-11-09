@@ -2,8 +2,9 @@ import warnings
 import numpy as np
 
 from .target_space import TargetSpace
-from .observer import Observable, Events
-from .helpers import UtilityFunction, acq_max, ensure_rng
+from .event import Events, DEFAULT_EVENTS
+from .observer import _get_default_logger
+from .util import UtilityFunction, acq_max, ensure_rng
 
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -22,7 +23,7 @@ class Queue:
 
     def __next__(self):
         if self.empty:
-            raise ValueError("Cannot retrieve next object from empty queue.")
+            raise StopIteration("Queue is empty, no more objects to retrieve.")
         obj = self._queue[0]
         self._queue = self._queue[1:]
         return obj
@@ -30,6 +31,33 @@ class Queue:
     def add(self, obj):
         """Add object to end of queue."""
         self._queue.append(obj)
+
+
+class Observable:
+    """
+
+    Inspired/Taken from
+        https://www.protechtraining.com/blog/post/879#simple-observer
+    """
+    def __init__(self, events):
+        # maps event names to subscribers
+        # str -> dict
+        self._events = {event: dict() for event in events}
+
+    def get_subscribers(self, event):
+        return self._events[event]
+
+    def subscribe(self, event, subscriber, callback=None):
+        if callback == None:
+            callback = getattr(subscriber, 'update')
+        self.get_subscribers(event)[subscriber] = callback
+
+    def unsubscribe(self, event, subscriber):
+        del self.get_subscribers(event)[subscriber]
+
+    def dispatch(self, event):
+        for _, callback in self.get_subscribers(event).items():
+            callback(event, self)
 
 
 class BayesianOptimization(Observable):
@@ -53,7 +81,8 @@ class BayesianOptimization(Observable):
             random_state=self._random_state,
         )
 
-        super(BayesianOptimization, self).__init__(events=None)
+        self._verbose = verbose
+        super(BayesianOptimization, self).__init__(events=DEFAULT_EVENTS)
 
     @property
     def space(self):
@@ -80,6 +109,9 @@ class BayesianOptimization(Observable):
 
     def suggest(self, utility_function):
         """Most promissing point to probe next"""
+        if len(self._space) == 0:
+            return self._space.array_to_params(self._space.random_sample())
+
         # Sklearn's GP throws a large number of warnings at times, but
         # we don't really need to see them here.
         with warnings.catch_warnings():
@@ -105,6 +137,13 @@ class BayesianOptimization(Observable):
         for _ in range(init_points):
             self._queue.add(self._space.random_sample())
 
+    def _prime_subscriptions(self):
+        if not any([len(subs) for subs in self._events.values()]):
+            _logger = _get_default_logger(self._verbose)
+            self.subscribe(Events.OPTMIZATION_START, _logger)
+            self.subscribe(Events.OPTMIZATION_STEP, _logger)
+            self.subscribe(Events.OPTMIZATION_END, _logger)
+
     def maximize(self,
                  init_points: int=5,
                  n_iter: int=25,
@@ -113,6 +152,8 @@ class BayesianOptimization(Observable):
                  xi: float=0.0,
                  **gp_params):
         """Mazimize your function"""
+        self._prime_subscriptions()
+        self.dispatch(Events.OPTMIZATION_START)
         self._prime_queue(init_points)
 
         util = UtilityFunction(kind=acq, kappa=kappa, xi=xi)
@@ -120,14 +161,15 @@ class BayesianOptimization(Observable):
         while not self._queue.empty or iteration < n_iter:
             try:
                 x_probe = next(self._queue)
-            except ValueError:
+            except StopIteration:
                 x_probe = self.suggest(util)
                 iteration += 1
 
             self.probe(x_probe, lazy=False)
+            self.dispatch(Events.OPTMIZATION_STEP)
 
         # Notify about finished optimization
-        self.dispatch(Events.FIT_DONE)
+        self.dispatch(Events.OPTMIZATION_END)
 
     def set_bounds(self, new_bounds):
         """

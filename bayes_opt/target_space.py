@@ -1,6 +1,5 @@
-from __future__ import print_function, division
 import numpy as np
-from .helpers import ensure_rng, unique_rows
+from .util import ensure_rng, unique_rows
 
 
 def _hashable(x):
@@ -226,7 +225,7 @@ class TargetSpace(object):
         params = [dict(zip(self.keys, p)) for p in self.x]
 
         return [
-            {"target": target, "param": param}
+            {"target": target, "params": param}
             for target, param in zip(self.target, params)
         ]
 

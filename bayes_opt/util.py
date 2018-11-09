@@ -2,7 +2,6 @@ from __future__ import print_function
 from __future__ import division
 import warnings
 import numpy as np
-from datetime import datetime
 from scipy.stats import norm
 from scipy.optimize import minimize
 
@@ -169,100 +168,70 @@ def ensure_rng(random_state=None):
     return random_state
 
 
-class BColours(object):
+class Colours:
+    """Print in nice colours."""
+
     BLUE = '\033[94m'
-    CYAN = '\033[36m'
-    GREEN = '\033[32m'
-    MAGENTA = '\033[35m'
-    RED = '\033[31m'
-    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    CYAN = '\033[96m'
+    DARKCYAN = '\033[36m'
+    END = '\033[0m'
+    GREEN = '\033[92m'
+    PURPLE = '\033[95m'
+    RED = '\033[91m'
+    UNDERLINE = '\033[4m'
+    YELLOW = '\033[93m'
 
+    @classmethod
+    def _wrap_colour(cls, s, colour):
+        return colour + s + cls.END
 
-class PrintLog(object):
+    @classmethod
+    def black(cls, s):
+        """Wrap text in blue."""
+        return cls._wrap_colour(s, cls.END)
 
-    def __init__(self, params):
+    @classmethod
+    def blue(cls, s):
+        """Wrap text in blue."""
+        return cls._wrap_colour(s, cls.BLUE)
 
-        self.ymax = None
-        self.xmax = None
-        self.params = params
-        self.ite = 1
+    @classmethod
+    def bold(cls, s):
+        """Wrap text in bold."""
+        return cls._wrap_colour(s, cls.BOLD)
 
-        self.start_time = datetime.now()
-        self.last_round = datetime.now()
+    @classmethod
+    def cyan(cls, s):
+        """Wrap text in cyan."""
+        return cls._wrap_colour(s, cls.CYAN)
 
-        # sizes of parameters name and all
-        self.sizes = [max(len(ps), 7) for ps in params]
+    @classmethod
+    def darkcyan(cls, s):
+        """Wrap text in darkcyan."""
+        return cls._wrap_colour(s, cls.DARKCYAN)
 
-        # Sorted indexes to access parameters
-        self.sorti = sorted(range(len(self.params)),
-                            key=self.params.__getitem__)
+    @classmethod
+    def green(cls, s):
+        """Wrap text in green."""
+        return cls._wrap_colour(s, cls.GREEN)
 
-    def reset_timer(self):
-        self.start_time = datetime.now()
-        self.last_round = datetime.now()
+    @classmethod
+    def purple(cls, s):
+        """Wrap text in purple."""
+        return cls._wrap_colour(s, cls.PURPLE)
 
-    def print_header(self, initialization=True):
+    @classmethod
+    def red(cls, s):
+        """Wrap text in red."""
+        return cls._wrap_colour(s, cls.RED)
 
-        if initialization:
-            print("{}Initialization{}".format(BColours.RED,
-                                              BColours.ENDC))
-        else:
-            print("{}Bayesian Optimization{}".format(BColours.RED,
-                                                     BColours.ENDC))
+    @classmethod
+    def underline(cls, s):
+        """Wrap text in underline."""
+        return cls._wrap_colour(s, cls.UNDERLINE)
 
-        print(BColours.BLUE + "-" * (29 + sum([s + 5 for s in self.sizes])) +
-            BColours.ENDC)
-
-        print("{0:>{1}}".format("Step", 5), end=" | ")
-        print("{0:>{1}}".format("Time", 6), end=" | ")
-        print("{0:>{1}}".format("Value", 10), end=" | ")
-
-        for index in self.sorti:
-            print("{0:>{1}}".format(self.params[index],
-                                    self.sizes[index] + 2),
-                  end=" | ")
-        print('')
-
-    def print_step(self, x, y, warning=False):
-
-        print("{:>5d}".format(self.ite), end=" | ")
-
-        m, s = divmod((datetime.now() - self.last_round).total_seconds(), 60)
-        print("{:>02d}m{:>02d}s".format(int(m), int(s)), end=" | ")
-
-        if self.ymax is None or self.ymax < y:
-            self.ymax = y
-            self.xmax = x
-            print("{0}{2: >10.5f}{1}".format(BColours.MAGENTA,
-                                             BColours.ENDC,
-                                             y),
-                  end=" | ")
-
-            for index in self.sorti:
-                print("{0}{2: >{3}.{4}f}{1}".format(
-                            BColours.GREEN, BColours.ENDC,
-                            x[index],
-                            self.sizes[index] + 2,
-                            min(self.sizes[index] - 3, 6 - 2)
-                        ),
-                      end=" | ")
-        else:
-            print("{: >10.5f}".format(y), end=" | ")
-            for index in self.sorti:
-                print("{0: >{1}.{2}f}".format(x[index],
-                                              self.sizes[index] + 2,
-                                              min(self.sizes[index] - 3, 6 - 2)),
-                      end=" | ")
-
-        if warning:
-            print("{}Warning: Test point chose at "
-                  "random due to repeated sample.{}".format(BColours.RED,
-                                                            BColours.ENDC))
-
-        print()
-
-        self.last_round = datetime.now()
-        self.ite += 1
-
-    def print_summary(self):
-        pass
+    @classmethod
+    def yellow(cls, s):
+        """Wrap text in yellow."""
+        return cls._wrap_colour(s, cls.YELLOW)
