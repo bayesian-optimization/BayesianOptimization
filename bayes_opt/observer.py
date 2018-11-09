@@ -1,57 +1,163 @@
 """
-
-
-Inspired/Taken from https://www.protechtraining.com/blog/post/879#simple-observer
+observers...
 """
+import os
+import json
+from datetime import datetime
+
+from .event import Events
+from .util import Colours
 
 
-class Events(object):
-    INIT_DONE = 'initialized'
-    FIT_STEP_DONE = 'fit_step_done'
-    FIT_DONE = 'fit_done'
+class _Tracker:
+    def __init__(self):
+        self._iterations = 0
+
+        self._previous_max = None
+        self._previous_max_params = None
+
+        self._start_time = None
+        self._previous_time = None
+
+    def _update_tracker(self, event, instance):
+        if event == Events.OPTMIZATION_STEP:
+            self._iterations += 1
+
+            current_max = instance.max
+            if (self._previous_max is None or
+                current_max["target"] > self._previous_max):
+                self._previous_max = current_max["target"]
+                self._previous_max_params = current_max["params"]
+
+    def _time_metrics(self):
+        now = datetime.now()
+        if self._start_time is None:
+            self._start_time = now
+        if self._previous_time is None:
+            self._previous_time = now
+
+        time_elapsed = now - self._start_time
+        time_delta = now - self._previous_time
+
+        self._previous_time = now
+        return (
+            now.strftime("%Y-%m-%d %H:%M:%S"),
+            time_elapsed.total_seconds(),
+            time_delta.total_seconds()
+        )
 
 
-DEFAULT_EVENTS = [
-    Events.INIT_DONE,
-    Events.FIT_STEP_DONE,
-    Events.FIT_DONE
-]
+def _get_default_logger(verbose):
+    return ScreenLogger(verbose=verbose)
 
 
-class Observable(object):
-    def __init__(self, events=None):
-        # maps event names to subscribers
-        # str -> dict
-        if events is None:
-            events = DEFAULT_EVENTS
+class ScreenLogger(_Tracker):
+    _default_cell_size = 9
+    _default_precision = 4
 
-        self.events = {event: dict() for event in events}
+    def __init__(self, verbose=0):
+        self._verbose = verbose
+        self._header_length = None
+        super(ScreenLogger, self).__init__()
 
-    def get_subscribers(self, event):
-        return self.events[event]
+    @property
+    def verbose(self):
+        return self._verbose
 
-    def register(self, event, who, callback=None):
-        if callback == None:
-            callback = getattr(who, 'update')
-        self.get_subscribers(event)[who] = callback
+    @verbose.setter
+    def verbose(self, v):
+        self._verbose = v
 
-    def unregister(self, event, who):
-        del self.get_subscribers(event)[who]
+    def _format_number(self, x):
+        if isinstance(x, int):
+                s = "{x:< {s}}".format(
+                    x=x,
+                    s=self._default_cell_size,
+                )
+        else:
+            s = "{x:< {s}.{p}}".format(
+                x=x,
+                s=self._default_cell_size,
+                p=self._default_precision,
+            )
 
-    def dispatch(self, event):
-        for subscriber, callback in self.get_subscribers(event).items():
-            callback(event, self)
+        if len(s) > self._default_cell_size:
+            if "." in s:
+                return s[:self._default_cell_size]
+            else:
+                return s[:self._default_cell_size - 3] + "..."
+        return s
 
+    def _format_key(self, key):
+        s = "{key:^{s}}".format(
+            key=key,
+            s=self._default_cell_size
+        )
+        if len(s) > self._default_cell_size:
+            return s[:self._default_cell_size - 3] + "..."
+        return s
 
-class Observer:
+    def _step(self, instance, colour=Colours.black):
+        res = instance.res[-1]
+        cells = []
+
+        cells.append(self._format_number(self._iterations))
+        cells.append(self._format_number(res["target"]))
+
+        for val in res["params"].values():
+            cells.append(self._format_number(val))
+
+        return "| " + " | ".join(map(colour, cells)) + " |"
+
+    def _header(self, instance):
+        cells = []
+        cells.append(self._format_key("iter"))
+        cells.append(self._format_key("target"))
+        for key in instance.space.keys:
+            cells.append(self._format_key(key))
+
+        line = "| " + " | ".join(cells) + " |"
+        self._header_length = len(line)
+        return line + "\n" + ("-" * self._header_length)
+
     def update(self, event, instance):
-        # Avoid circular import
-        from .bayesian_optimization import Events
-        if event is Events.INIT_DONE:
-            print("Initialization completed")
-        elif event is Events.FIT_STEP_DONE:
-            print("Optimization step finished, current max: ",
-                  instance.res['max'])
-        elif event is Events.FIT_DONE:
-            print("Optimization finished, maximum value at: ",
-                  instance.res['max'])
+        if event == Events.OPTMIZATION_START:
+            line = self._header(instance)
+        elif event == Events.OPTMIZATION_STEP:
+            colour = (
+                Colours.purple if
+                self._previous_max is None or
+                instance.max["target"] > self._previous_max else
+                Colours.black
+            )
+            line = self._step(instance, colour=colour)
+        elif event == Events.OPTMIZATION_END:
+            line = "=" * self._header_length
+
+        print(line)
+        self._update_tracker(event, instance)
+
+class JSONLogger(_Tracker):
+    def __init__(self, path):
+        self._path = path if path[-5:] == ".json" else path + ".json"
+        try:
+            os.remove(self._path)
+        except OSError:
+            pass
+        super(JSONLogger, self).__init__()
+
+    def update(self, event, instance):
+        if event == Events.OPTMIZATION_STEP:
+            data = dict(instance.res[-1])
+
+            now, time_elapsed, time_delta = self._time_metrics()
+            data["datetime"] = {
+                "datetime": now,
+                "elapsed": time_elapsed,
+                "delta": time_delta,
+            }
+
+            with open(self._path, "a") as f:
+                f.write(json.dumps(data) + "\n")
+
+        self._update_tracker(event, instance)
