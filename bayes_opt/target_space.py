@@ -182,7 +182,7 @@ class TargetSpace(object):
         x = self._as_array(x)
 
         try:
-            y = self._cache[_hashable(x)]
+            target = self._cache[_hashable(x)]
         except KeyError:
             params = dict(zip(self._keys, x))
             target = self.target_func(**params)
