@@ -44,7 +44,10 @@ class TargetSpace(object):
         # Get the name of the parameters
         self._keys = sorted(pbounds)
         # Create an array with parameters bounds
-        self._bounds = np.array(list(pbounds.values()), dtype=np.float)
+        self._bounds = np.array(
+            [item[1] for item in sorted(pbounds.items(), key=lambda x: x[0])],
+            dtype=np.float
+        )
 
         # preallocated memory for X and Y points
         self._x = np.empty(shape=(0, self.dim))
