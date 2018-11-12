@@ -101,7 +101,7 @@ class ScreenLogger(_Tracker):
         res = instance.res[-1]
         cells = []
 
-        cells.append(self._format_number(self._iterations))
+        cells.append(self._format_number(self._iterations + 1))
         cells.append(self._format_number(res["target"]))
 
         for val in res["params"].values():
