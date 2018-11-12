@@ -1,5 +1,5 @@
 from bayes_opt import BayesianOptimization
-from bayes_opt.helpers import ensure_rng
+from bayes_opt.util import ensure_rng
 import numpy as np
 
 

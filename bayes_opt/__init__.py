@@ -1,5 +1,5 @@
 from .bayesian_optimization import BayesianOptimization, Events
-from .helpers import UtilityFunction
-from .observer import Observer
+from .util import UtilityFunction
+from .observer import ScreenLogger
 
-__all__ = ["BayesianOptimization", "UtilityFunction", "Events", "Observer"]
+__all__ = ["BayesianOptimization", "UtilityFunction", "Events", "ScreenLogger"]
