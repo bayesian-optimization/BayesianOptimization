@@ -1,5 +1,3 @@
-from __future__ import print_function
-from __future__ import division
 import warnings
 import numpy as np
 from scipy.stats import norm
@@ -127,6 +125,35 @@ class UtilityFunction(object):
 
         z = (mean - y_max - xi)/std
         return norm.cdf(z)
+
+
+def load_logs(optimizer, logs):
+    """Load previous ...
+
+    """
+    import json
+
+    if isinstance(logs, str):
+        logs = [logs]
+
+    for log in logs:
+        with open(log, "r") as j:
+            while True:
+                try:
+                    iteration = next(j)
+                except StopIteration:
+                    break
+
+                iteration = json.loads(iteration)
+                try:
+                    optimizer.register(
+                        x=iteration["params"],
+                        target=iteration["target"],
+                    )
+                except KeyError:
+                    pass
+
+    return optimizer
 
 
 def unique_rows(a):

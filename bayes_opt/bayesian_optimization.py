@@ -61,7 +61,7 @@ class Observable:
 
 
 class BayesianOptimization(Observable):
-    def __init__(self, f, pbounds, random_state=None, verbose=1):
+    def __init__(self, f, pbounds, random_state=None, verbose=2):
         """"""
         self._random_state = ensure_rng(random_state)
 
@@ -96,16 +96,18 @@ class BayesianOptimization(Observable):
     def res(self):
         return self._space.res()
 
-    def register(self, x, target):
+    def register(self, params, target):
         """Expect observation with known target"""
-        self._space.register(x, target)
+        self._space.register(params, target)
+        self.dispatch(Events.OPTMIZATION_STEP)
 
-    def probe(self, x, lazy=True):
+    def probe(self, params, lazy=True):
         """Probe target of x"""
         if lazy:
-            self._queue.add(x)
+            self._queue.add(params)
         else:
-            self._space.probe(x)
+            self._space.probe(params)
+            self.dispatch(Events.OPTMIZATION_STEP)
 
     def suggest(self, utility_function):
         """Most promissing point to probe next"""
@@ -166,9 +168,7 @@ class BayesianOptimization(Observable):
                 iteration += 1
 
             self.probe(x_probe, lazy=False)
-            self.dispatch(Events.OPTMIZATION_STEP)
 
-        # Notify about finished optimization
         self.dispatch(Events.OPTMIZATION_END)
 
     def set_bounds(self, new_bounds):

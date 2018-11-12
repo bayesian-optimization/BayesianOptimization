@@ -55,7 +55,7 @@ class ScreenLogger(_Tracker):
     _default_cell_size = 9
     _default_precision = 4
 
-    def __init__(self, verbose=0):
+    def __init__(self, verbose=2):
         self._verbose = verbose
         self._header_length = None
         super(ScreenLogger, self).__init__()
@@ -101,11 +101,11 @@ class ScreenLogger(_Tracker):
         res = instance.res[-1]
         cells = []
 
-        cells.append(self._format_number(self._iterations))
+        cells.append(self._format_number(self._iterations + 1))
         cells.append(self._format_number(res["target"]))
 
-        for val in res["params"].values():
-            cells.append(self._format_number(val))
+        for key in instance.space.keys:
+            cells.append(self._format_number(res["params"][key]))
 
         return "| " + " | ".join(map(colour, cells)) + " |"
 
@@ -120,21 +120,26 @@ class ScreenLogger(_Tracker):
         self._header_length = len(line)
         return line + "\n" + ("-" * self._header_length)
 
+    def _is_new_max(self, instance):
+        if self._previous_max is None:
+            self._previous_max = instance.max["target"]
+        return instance.max["target"] > self._previous_max
+
     def update(self, event, instance):
         if event == Events.OPTMIZATION_START:
-            line = self._header(instance)
+            line = self._header(instance) + "\n"
         elif event == Events.OPTMIZATION_STEP:
-            colour = (
-                Colours.purple if
-                self._previous_max is None or
-                instance.max["target"] > self._previous_max else
-                Colours.black
-            )
-            line = self._step(instance, colour=colour)
+            is_new_max = self._is_new_max(instance)
+            if self._verbose == 1 and not is_new_max:
+                line = ""
+            else:
+                colour = Colours.purple if is_new_max else Colours.black
+                line = self._step(instance, colour=colour) + "\n"
         elif event == Events.OPTMIZATION_END:
-            line = "=" * self._header_length
+            line = "=" * self._header_length + "\n"
 
-        print(line)
+        if self._verbose:
+            print(line, end="")
         self._update_tracker(event, instance)
 
 class JSONLogger(_Tracker):
