@@ -15,7 +15,7 @@ def test_bayes_opt_demo():
     xs = np.linspace(-2, 10, 1000)
     f = np.exp(-(xs - 2)**2) + np.exp(-(xs - 6)**2 / 10) + 1 / (xs**2 + 1)
     bo = BayesianOptimization(f=lambda x: f[int(x)],
-                              pbounds={'x': (0, len(f) - 1)},
+                              pbounds={'x': [float,(0, len(f) - 1)]},
                               random_state=random_state,
                               verbose=0)
     gp_params = {'alpha': 1e-5, 'n_restarts_optimizer': 2}
@@ -40,7 +40,7 @@ def test_only_random():
     xs = np.linspace(-2, 10, 1000)
     f = np.exp(-(xs - 2)**2) + np.exp(-(xs - 6)**2 / 10) + 1 / (xs**2 + 1)
     bo = BayesianOptimization(f=lambda x: f[int(x)],
-                              pbounds={'x': (0, len(f) - 1)},
+                              pbounds={'x': [float, (0, len(f) - 1)]},
                               random_state=random_state,
                               verbose=0)
     bo.init(20)
@@ -60,7 +60,7 @@ def test_explore_lazy():
     xs = np.linspace(-2, 10, 1000)
     f = np.exp(-(xs - 2)**2) + np.exp(-(xs - 6)**2 / 10) + 1 / (xs**2 + 1)
     bo = BayesianOptimization(f=lambda x: f[int(x)],
-                              pbounds={'x': (0, len(f) - 1)},
+                              pbounds={'x': [float, (0, len(f) - 1)]},
                               random_state=random_state,
                               verbose=0)
     bo.explore({'x': [f.argmin()]}, eager=False)
@@ -88,7 +88,7 @@ def test_explore_eager():
     xs = np.linspace(-2, 10, 1000)
     f = np.exp(-(xs - 2)**2) + np.exp(-(xs - 6)**2 / 10) + 1 / (xs**2 + 1)
     bo = BayesianOptimization(f=lambda x: f[int(x)],
-                              pbounds={'x': (0, len(f) - 1)},
+                              pbounds={'x': [float, (0, len(f) - 1)]},
                               random_state=random_state,
                               verbose=0)
     bo.explore({'x': [f.argmin()]}, eager=True)
