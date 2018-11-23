@@ -17,7 +17,7 @@ class TargetSpace(object):
     -------
     >>> def target_func(p1, p2):
     >>>     return p1 + p2
-    >>> pbounds = {'p1': (0, 1), 'p2': (1, 100)}
+    >>> pbounds = {'p1': [int,(0, 1)], 'p2': [float,(1, 100)]}
     >>> space = TargetSpace(target_func, pbounds, random_state=0)
     >>> x = space.random_points(1)[0]
     >>> y = space.observe_point(x)
@@ -46,7 +46,9 @@ class TargetSpace(object):
         # Get the name of the parameters
         self.keys = list(pbounds.keys())
         # Create an array with parameters bounds
-        self.bounds = np.array(list(pbounds.values()), dtype=np.float)
+        self.bounds = np.array([b for t,b in pbounds.values()], dtype=np.float)
+        # Create array with types of bounds
+        self.btypes = np.array([t for t,b in pbounds.values()], dtype=type)
         # Find number of parameters
         self.dim = len(self.keys)
 
@@ -81,11 +83,11 @@ class TargetSpace(object):
         """
         Example:
         -------
-        >>> pbounds = {'p1': (0, 1), 'p2': (1, 100)}
+        >>> pbounds = {'p1': [int,[0, 1]], 'p2': [float,[1, 100]]}
         >>> space = TargetSpace(lambda p1, p2: p1 + p2, pbounds)
-        >>> points_dict = {'p1': [0, .5, 1], 'p2': [0, 1, 2]}
+        >>> points_dict ={'p1': [int,[3, 5, 7]], 'p2': [float,[0, 0.5, 1]]}
         >>> space._dict_to_points(points_dict)
-        [[0, 0], [1, 0.5], [2, 1]]
+        [[3, 0], [5, 0.5], [7, 1]]
         """
         # Consistency check
         param_tup_lens = []
@@ -102,7 +104,7 @@ class TargetSpace(object):
         # Turn into list of lists
         all_points = []
         for key in self.keys:
-            all_points.append(points_dict[key])
+            all_points.append(points_dict[key][1])
 
         # Take transpose of list
         points = list(map(list, zip(*all_points)))
@@ -163,7 +165,7 @@ class TargetSpace(object):
 
         Example
         -------
-        >>> pbounds = {'p1': (0, 1), 'p2': (1, 100)}
+        >>> pbounds = {'p1': [int,[0, 1]], 'p2': [float,[1, 100]]}
         >>> space = TargetSpace(lambda p1, p2: p1 + p2, pbounds)
         >>> len(space)
         0
@@ -240,7 +242,7 @@ class TargetSpace(object):
         Example
         -------
         >>> target_func = lambda p1, p2: p1 + p2
-        >>> pbounds = {'p1': (0, 1), 'p2': (1, 100)}
+        >>> pbounds = {'p1': [int,(0, 1)], 'p2': [float,(1, 100)]}
         >>> space = TargetSpace(target_func, pbounds, random_state=0)
         >>> space.random_points(3)
         array([[ 55.33253689,   0.54488318],
@@ -249,8 +251,12 @@ class TargetSpace(object):
         """
         # TODO: support integer, category, and basic scipy.optimize constraints
         data = np.empty((num, self.dim))
-        for col, (lower, upper) in enumerate(self.bounds):
-            data.T[col] = self.random_state.uniform(lower, upper, size=num)
+        for col, name in enumerate(self.bounds):
+            lower, upper = name
+            if self.btypes[col] != int:
+                data.T[col] = self.random_state.uniform(lower, upper, size=num)
+            if self.btypes[col] == int:
+                data.T[col] = self.random_state.randint(int(lower), int(upper), size=num)
         return data
 
     def max_point(self):

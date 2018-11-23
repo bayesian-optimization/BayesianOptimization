@@ -65,7 +65,7 @@ class BayesianOptimization(Observable):
                            'max_params': None}
         self.res['all'] = {'values': [], 'params': []}
 
-        # non-public config for maximizing the aquisition function
+        # non-public config for maximizing the acquisition function
         # (used to speedup tests, but generally leave these as is)
         self._acqkw = {'n_warmup': 100000, 'n_iter': 250}
 
@@ -118,7 +118,7 @@ class BayesianOptimization(Observable):
         """Method to explore user defined points.
 
         :param points_dict:
-        :param eager: if True, these points are evaulated immediately
+        :param eager: if True, these points are evaluated immediately
         """
         if eager:
             self.plog.reset_timer()
@@ -263,6 +263,7 @@ class BayesianOptimization(Observable):
                         gp=self.gp,
                         y_max=y_max,
                         bounds=self.space.bounds,
+                        btypes=self.space.btypes,
                         random_state=self.random_state,
                         **self._acqkw)
 
@@ -305,6 +306,7 @@ class BayesianOptimization(Observable):
                             gp=self.gp,
                             y_max=y_max,
                             bounds=self.space.bounds,
+                            btypes=self.space.btypes,
                             random_state=self.random_state,
                             **self._acqkw)
 
