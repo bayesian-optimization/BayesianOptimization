@@ -9,6 +9,11 @@ from .event import Events
 from .util import Colours
 
 
+class Observer:
+    def update(self, event, instance):
+        raise NotImplementedError
+
+
 class _Tracker:
     def __init__(self):
         self._iterations = 0
