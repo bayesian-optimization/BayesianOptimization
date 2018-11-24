@@ -75,7 +75,7 @@ class BayesianOptimization(Observable):
         # Internal GP regressor
         self._gp = GaussianProcessRegressor(
             kernel=Matern(nu=2.5),
-            alpha=1e-5,
+            alpha=1e-6,
             normalize_y=True,
             n_restarts_optimizer=25,
             random_state=self._random_state,
@@ -118,7 +118,7 @@ class BayesianOptimization(Observable):
         # we don't really need to see them here.
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            self._gp.fit(self._space.x, self._space.target)
+            self._gp.fit(self._space.params, self._space.target)
 
         # Finding argmax of the acquisition function.
         suggestion = acq_max(
@@ -157,6 +157,7 @@ class BayesianOptimization(Observable):
         self._prime_subscriptions()
         self.dispatch(Events.OPTMIZATION_START)
         self._prime_queue(init_points)
+        self.set_gp_params(**gp_params)
 
         util = UtilityFunction(kind=acq, kappa=kappa, xi=xi)
         iteration = 0
@@ -181,3 +182,6 @@ class BayesianOptimization(Observable):
             A dictionary with the parameter name and its new bounds
         """
         self._space.set_bounds(new_bounds)
+
+    def set_gp_params(self, **params):
+        self._gp.set_params(**params)
