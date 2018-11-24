@@ -147,7 +147,7 @@ def load_logs(optimizer, logs):
                 iteration = json.loads(iteration)
                 try:
                     optimizer.register(
-                        x=iteration["params"],
+                        params=iteration["params"],
                         target=iteration["target"],
                     )
                 except KeyError:

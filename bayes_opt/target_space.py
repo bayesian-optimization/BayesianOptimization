@@ -50,7 +50,7 @@ class TargetSpace(object):
         )
 
         # preallocated memory for X and Y points
-        self._x = np.empty(shape=(0, self.dim))
+        self._params = np.empty(shape=(0, self.dim))
         self._target = np.empty(shape=(0))
 
         # keep track of unique points we have seen so far
@@ -60,7 +60,7 @@ class TargetSpace(object):
         return _hashable(x) in self._cache
 
     def __len__(self):
-        assert len(self._x) == len(self._target)
+        assert len(self._params) == len(self._target)
         return len(self._target)
 
     @property
@@ -68,8 +68,8 @@ class TargetSpace(object):
         return len(self) == 0
 
     @property
-    def x(self):
-        return self._x
+    def params(self):
+        return self._params
 
     @property
     def target(self):
@@ -117,7 +117,7 @@ class TargetSpace(object):
             assert x.size == self.dim, 'x must have the same dimensions'
         return x
 
-    def register(self, x, target):
+    def register(self, params, target):
         """
         Append a point and its target value to the known data.
 
@@ -150,17 +150,17 @@ class TargetSpace(object):
         >>> len(space)
         1
         """
-        x = self._as_array(x)
+        x = self._as_array(params)
         if x in self:
             raise KeyError('Data point {} is not unique'.format(x))
 
         # Insert data into unique dictionary
         self._cache[_hashable(x.ravel())] = target
 
-        self._x = np.concatenate([self._x, x.reshape(1, -1)])
+        self._params = np.concatenate([self._params, x.reshape(1, -1)])
         self._target = np.concatenate([self._target, [target]])
 
-    def probe(self, x):
+    def probe(self, params):
         """
         Evaulates a single point x, to obtain the value y and then records them
         as observations.
@@ -179,7 +179,7 @@ class TargetSpace(object):
         y : float
             target function value.
         """
-        x = self._as_array(x)
+        x = self._as_array(params)
 
         try:
             target = self._cache[_hashable(x)]
@@ -217,7 +217,9 @@ class TargetSpace(object):
         try:
             res = {
                 'target': self.target.max(),
-                'params': dict(zip(self.keys, self.x[self.target.argmax()]))
+                'params': dict(
+                    zip(self.keys, self.params[self.target.argmax()])
+                )
             }
         except ValueError:
             res = {}
@@ -225,7 +227,7 @@ class TargetSpace(object):
 
     def res(self):
         """Get all target values found and corresponding parametes."""
-        params = [dict(zip(self.keys, p)) for p in self.x]
+        params = [dict(zip(self.keys, p)) for p in self.params]
 
         return [
             {"target": target, "params": param}
