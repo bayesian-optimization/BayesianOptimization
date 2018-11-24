@@ -1,6 +1,7 @@
 """
 observers...
 """
+from __future__ import print_function
 import os
 import json
 from datetime import datetime
@@ -14,7 +15,7 @@ class Observer:
         raise NotImplementedError
 
 
-class _Tracker:
+class _Tracker(object):
     def __init__(self):
         self._iterations = 0
 
