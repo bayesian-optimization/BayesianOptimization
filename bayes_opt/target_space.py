@@ -1,5 +1,5 @@
 import numpy as np
-from .util import ensure_rng, unique_rows
+from .util import ensure_rng
 
 
 def _hashable(x):
@@ -22,7 +22,7 @@ class TargetSpace(object):
     >>> y = space.register_point(x)
     >>> assert self.max_point()['max_val'] == y
     """
-    def __init__(self, target_func, pbounds: dict, random_state=None):
+    def __init__(self, target_func, pbounds, random_state=None):
         """
         Parameters
         ----------
@@ -112,9 +112,15 @@ class TargetSpace(object):
             x = np.asarray(x, dtype=float)
         except TypeError:
             x = self.params_to_array(x)
-        finally:
-            x = x.ravel()
-            assert x.size == self.dim, 'x must have the same dimensions'
+
+        x = x.ravel()
+        try:
+            assert x.size == self.dim
+        except AssertionError:
+            raise ValueError(
+                "Size of array ({}) is different than the ".format(len(x)) +
+                "expected number of parameters ({}).".format(len(self.keys))
+            )
         return x
 
     def register(self, params, target):
@@ -243,6 +249,6 @@ class TargetSpace(object):
         new_bounds : dict
             A dictionary with the parameter name and its new bounds
         """
-        for row, key in enumerate(self._keys):
+        for row, key in enumerate(self.keys):
             if key in new_bounds:
                 self._bounds[row] = new_bounds[key]

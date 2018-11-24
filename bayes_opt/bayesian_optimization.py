@@ -28,12 +28,15 @@ class Queue:
         self._queue = self._queue[1:]
         return obj
 
+    def next(self):
+        return self.__next__()
+
     def add(self, obj):
         """Add object to end of queue."""
         self._queue.append(obj)
 
 
-class Observable:
+class Observable(object):
     """
 
     Inspired/Taken from
@@ -147,11 +150,11 @@ class BayesianOptimization(Observable):
             self.subscribe(Events.OPTMIZATION_END, _logger)
 
     def maximize(self,
-                 init_points: int=5,
-                 n_iter: int=25,
-                 acq: str='ucb',
-                 kappa: float=2.576,
-                 xi: float=0.0,
+                 init_points=5,
+                 n_iter=25,
+                 acq='ucb',
+                 kappa=2.576,
+                 xi=0.0,
                  **gp_params):
         """Mazimize your function"""
         self._prime_subscriptions()
