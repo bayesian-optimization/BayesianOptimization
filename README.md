@@ -16,7 +16,7 @@ suited for optimization of high cost functions, situations where the balance
 between exploration and exploitation is important.
 
 ## Important notice
-With the release of version 1.0.0 a number of breaking API changes were introduced. I understand this can be a headache for some, but these were necessary changes that needed to be done and ultimately made the package better. If you have used this package in the past I suggest you take the basic and advanced tours (found in the examples folder) in order to familiarize yourself with the new API.
+With the release of version 1.0.0 a number of API breaking changes were introduced. I understand this can be a headache for some, but these were necessary changes that needed to be done and ultimately made the package better. If you have used this package in the past I suggest you take the basic and advanced tours (found in the examples folder) in order to familiarize yourself with the new API.
 
 ## Quick Start
 See below for a quick tour over the basics of the Bayesian Optimization package. More detailed information, other advanced features, and tips on usage/implementation can be found in the [examples](https://github.com/fmfn/BayesianOptimization/tree/master/examples) folder. I suggest that you:
@@ -29,7 +29,7 @@ to learn how to make the package more flexible, how to deal with categorical par
 - Check out this
 [notebook](https://github.com/fmfn/BayesianOptimization/blob/master/examples/visualization.ipynb)
 with a step by step visualization of how this method works.
-- Explore this [notebook](https://github.com/fmfn/BayesianOptimization/blob/master/examples/exploitation%20vs%20exploration.ipynb)
+- Explore this [notebook](https://github.com/fmfn/BayesianOptimization/blob/master/examples/exploitation_vs_exploration.ipynb)
 exemplifying the balance between exploration and exploitation and how to
 control it.
 - Go over this [script](https://github.com/fmfn/BayesianOptimization/blob/master/examples/sklearn_example.py)
@@ -93,7 +93,7 @@ optimizer = BayesianOptimization(
 )
 ```
 
-The BayesianOptimization object will work all of the box without much tuning needed. The main method you should be aware of is `maximize`, which does exactly what you think it does.
+The BayesianOptimization object will work out of the box without much tuning needed. The main method you should be aware of is `maximize`, which does exactly what you think it does.
 
 There are many parameters you can pass to maximize, nonetheless, the most important ones are:
 - `n_iter`: How many steps of bayesian optimization you want to perform. The more steps the more likely to find a good maximum you are.
@@ -172,7 +172,7 @@ optimizer.maximize(
 
 ## 3. Guiding the optimization
 
-It is often the case that we have an idea of regions of the parameter space where the maximum of our function might lie. For these situations the `BayesianOptimization` object allows the user to specify specific points to be probed. By default these will be explored lazily (`lazy=True`), meaning these points will be evaluated only the next time you call `maximize`. This probing process happens before the gaussian process takes over.
+It is often the case that we have an idea of regions of the parameter space where the maximum of our function might lie. For these situations the `BayesianOptimization` object allows the user to specify points to be probed. By default these will be explored lazily (`lazy=True`), meaning these points will be evaluated only the next time you call `maximize`. This probing process happens before the gaussian process takes over.
 
 Parameters can be passed as dictionaries or as an iterable.
 
