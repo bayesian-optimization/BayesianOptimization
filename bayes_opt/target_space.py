@@ -16,7 +16,7 @@ class TargetSpace(object):
     -------
     >>> def target_func(p1, p2):
     >>>     return p1 + p2
-    >>> pbounds = {'p1': (0, 1), 'p2': (1, 100)}
+    >>> pbounds = {'p1': [float, (0, 1)], 'p2': [int, (1, 100)]}
     >>> space = TargetSpace(target_func, pbounds, random_state=0)
     >>> x = space.random_points(1)[0]
     >>> y = space.register_point(x)
@@ -30,7 +30,7 @@ class TargetSpace(object):
             Function to be maximized.
 
         pbounds : dict
-            Dictionary with parameters names as keys and a tuple with minimum
+            Dictionary with parameters names as keys and list with the parameter type first and a tuple with minimum
             and maximum values.
 
         random_state : int, RandomState, or None
@@ -44,10 +44,9 @@ class TargetSpace(object):
         # Get the name of the parameters
         self._keys = sorted(pbounds)
         # Create an array with parameters bounds
-        self._bounds = np.array(
-            [item[1] for item in sorted(pbounds.items(), key=lambda x: x[0])],
-            dtype=np.float
-        )
+        self._bounds = np.array([list(pbounds[item][1]) for item in self._keys], dtype=float)
+        # Create an array with the parameters type
+        self._btypes = np.array([pbounds[item][0] for item in self._keys], dtype=type)
 
         # preallocated memory for X and Y points
         self._params = np.empty(shape=(0, self.dim))
@@ -86,6 +85,10 @@ class TargetSpace(object):
     @property
     def bounds(self):
         return self._bounds
+
+    @property
+    def btypes(self):
+        return self._btypes
 
     def params_to_array(self, params):
         try:
@@ -207,15 +210,21 @@ class TargetSpace(object):
         Example
         -------
         >>> target_func = lambda p1, p2: p1 + p2
-        >>> pbounds = {'p1': (0, 1), 'p2': (1, 100)}
+        >>> pbounds = {'p1': [float, (0, 1)], 'p2': [int, (1, 100)]}
         >>> space = TargetSpace(target_func, pbounds, random_state=0)
         >>> space.random_points(1)
-        array([[ 55.33253689,   0.54488318]])
+        array([[ 0.54488318, 55]])
         """
-        # TODO: support integer, category, and basic scipy.optimize constraints
+        # TODO: support category, and basic scipy.optimize constraints
+        # data = np.empty((1, self.dim))
+        # for col, (lower, upper) in enumerate(self._bounds):
+        #     data.T[col] = self.random_state.uniform(lower, upper, size=1)
         data = np.empty((1, self.dim))
         for col, (lower, upper) in enumerate(self._bounds):
-            data.T[col] = self.random_state.uniform(lower, upper, size=1)
+            if self.btypes[col] != int:
+                data.T[col] = self.random_state.uniform(lower, upper, size=1)
+            if self.btypes[col] == int:
+                data.T[col] = self.random_state.randint(int(lower), int(upper), size=1)
         return data.ravel()
 
     def max(self):

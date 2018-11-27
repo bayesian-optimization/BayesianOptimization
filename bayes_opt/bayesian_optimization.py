@@ -129,6 +129,7 @@ class BayesianOptimization(Observable):
             gp=self._gp,
             y_max=self._space.target.max(),
             bounds=self._space.bounds,
+            btypes=self._space.btypes,
             random_state=self._random_state
         )
 

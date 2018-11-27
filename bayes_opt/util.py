@@ -4,7 +4,7 @@ from scipy.stats import norm
 from scipy.optimize import minimize
 
 
-def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=100000, n_iter=250):
+def acq_max(ac, gp, y_max, bounds, btypes, random_state, n_warmup=100000, n_iter=250):
     """
     A function to find the maximum of the acquisition function
 
@@ -26,6 +26,9 @@ def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=100000, n_iter=250):
     :param bounds:
         The variables bounds to limit the search of the acq max.
 
+    :param btypes:
+        The types of the variables.
+
     :param random_state:
         instance of np.RandomState random number generator
 
@@ -41,18 +44,34 @@ def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=100000, n_iter=250):
     """
 
     # Warm up with random points
-    x_tries = random_state.uniform(bounds[:, 0], bounds[:, 1],
-                                   size=(n_warmup, bounds.shape[0]))
+    x_tries = np.empty((n_warmup, bounds.shape[0]))
+    for col, name in enumerate(bounds):
+        # print(col, name)
+        lower, upper = name
+        if btypes[col] != int:
+            x_tries[:, col] = random_state.uniform(lower, upper, size=n_warmup)
+        if btypes[col] == int:
+            x_tries[:, col] = random_state.randint(int(lower), int(upper), size=n_warmup)
+    # x_tries = random_state.uniform(bounds[:, 0], bounds[:, 1],
+    #                                size=(n_warmup, bounds.shape[0]))
     ys = ac(x_tries, gp=gp, y_max=y_max)
     x_max = x_tries[ys.argmax()]
     max_acq = ys.max()
 
     # Explore the parameter space more throughly
-    x_seeds = random_state.uniform(bounds[:, 0], bounds[:, 1],
-                                   size=(n_iter, bounds.shape[0]))
+    x_seeds = np.empty((n_iter, bounds.shape[0]))
+    for col, name in enumerate(bounds):
+        lower, upper = name
+        if btypes[col] != int:
+            x_seeds[:, col] = random_state.uniform(lower, upper, size=n_iter)
+        if btypes[col] == int:
+            x_seeds[:, col] = random_state.randint(int(lower), int(upper), size=n_iter)
+    # x_seeds = random_state.uniform(bounds[:, 0], bounds[:, 1],
+    #                                size=(n_iter, bounds.shape[0]))
     for x_try in x_seeds:
         # Find the minimum of minus the acquisition function
-        res = minimize(lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max),
+        ac_op = lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max)
+        res = minimize(ac_op,
                        x_try.reshape(1, -1),
                        bounds=bounds,
                        method="L-BFGS-B")
@@ -61,10 +80,31 @@ def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=100000, n_iter=250):
         if not res.success:
             continue
 
+        # If integer in list of bounds
+        # search minimum between surroundings integers of the detected extremal point
+        if int in btypes :
+            x_inf = res.x.copy()
+            x_sup = res.x.copy()
+            for i, (val, t) in enumerate(zip(res.x, btypes)):
+                x_inf[i] = t(val)
+                x_sup[i] = t(val + 1) if t == int else t(val)
+            # Store it if better than previous minimum(maximum).
+            x_ext = [x_inf, x_sup]
+            if max_acq is None or -res.fun[0] >= max_acq:
+                max_acq = -1*np.minimum(ac_op(x_inf), ac_op(x_sup))
+                x_argmax = np.argmin((ac_op(x_inf), ac_op(x_sup)))
+                x_max = x_ext[x_argmax]
+        # If only float in bounds
+        # store it if better than previous minimum(maximum).
+        else:
+            if max_acq is None or -res.fun[0] >= max_acq:
+                x_max = res.x
+                max_acq = -res.fun[0]
+
         # Store it if better than previous minimum(maximum).
-        if max_acq is None or -res.fun[0] >= max_acq:
-            x_max = res.x
-            max_acq = -res.fun[0]
+        # if max_acq is None or -res.fun[0] >= max_acq:
+        #     x_max = res.x
+        #     max_acq = -res.fun[0]
 
     # Clip output to make sure it lies within the bounds. Due to floating
     # point technicalities this is not always the case.
