@@ -8,21 +8,22 @@ def target_func(**kwargs):
     return sum(kwargs.values())
 
 
-PBOUNDS = {'p1': (0, 1), 'p2': (1, 100)}
+PBOUNDS = {'p1': [float, (0, 10)], 'p2': [int, (1, 100)]}
 
 
 def test_keys_and_bounds_in_same_order():
     pbounds = {
-        'p1': (0, 1),
-        'p3': (0, 3),
-        'p2': (0, 2),
-        'p4': (0, 4),
+        'p1': [int, (0, 1)],
+        'p3': [int, (0, 3)],
+        'p2': [float, (0, 2)],
+        'p4': [float, (0, 4)]
     }
     space = TargetSpace(target_func, pbounds)
 
     assert space.dim == len(pbounds)
     assert space.empty
     assert space.keys == ["p1", "p2",  "p3",  "p4"]
+    assert list(space.btypes) == [int, float, int, float]
     assert all(space.bounds[:, 0] == np.array([0, 0, 0, 0]))
     assert all(space.bounds[:, 1] == np.array([1, 2, 3, 4]))
 
@@ -124,10 +125,10 @@ def test_probe():
 
 def test_random_sample():
     pbounds = {
-        'p1': (0, 1),
-        'p3': (0, 3),
-        'p2': (0, 2),
-        'p4': (0, 4),
+        'p1': [int, (0, 1)],
+        'p3': [int, (0, 3)],
+        'p2': [float, (0, 2)],
+        'p4': [float, (0, 4)]
     }
     space = TargetSpace(target_func, pbounds, random_state=8)
 
@@ -139,6 +140,7 @@ def test_random_sample():
 
 
 def test_max():
+    print(PBOUNDS)
     space = TargetSpace(target_func, PBOUNDS)
 
     assert space.max() == {}
@@ -170,10 +172,10 @@ def test_res():
 
 def test_set_bounds():
     pbounds = {
-        'p1': (0, 1),
-        'p3': (0, 3),
-        'p2': (0, 2),
-        'p4': (0, 4),
+        'p1': [int, (0, 1)],
+        'p3': [int, (0, 3)],
+        'p2': [float, (0, 2)],
+        'p4': [float, (0, 4)]
     }
     space = TargetSpace(target_func, pbounds)
 
@@ -183,9 +185,10 @@ def test_set_bounds():
     assert all(space.bounds[:, 1] == np.array([1, 2, 3, 4]))
 
     # Update bounds accordingly
-    space.set_bounds({"p2": (1, 8)})
-    assert all(space.bounds[:, 0] == np.array([0, 1, 0, 0]))
-    assert all(space.bounds[:, 1] == np.array([1, 8, 3, 4]))
+    space.set_bounds({"p3": (1.1, 8.7)})
+    print(space.bounds)
+    assert all(space.bounds[:, 0] == np.array([0, 0, 1, 0]))
+    assert all(space.bounds[:, 1] == np.array([1, 2, 9, 4]))
 
 
 if __name__ == '__main__':

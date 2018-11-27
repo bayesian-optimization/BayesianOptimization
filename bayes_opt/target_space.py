@@ -145,11 +145,11 @@ class TargetSpace(object):
 
         Notes
         -----
-        runs in ammortized constant time
+        runs in amortized constant time
 
         Example
         -------
-        >>> pbounds = {'p1': (0, 1), 'p2': (1, 100)}
+        >>> pbounds = {'p1': [float, (0, 1)], 'p2': [int, (1, 100)]}
         >>> space = TargetSpace(lambda p1, p2: p1 + p2, pbounds)
         >>> len(space)
         0
@@ -228,7 +228,7 @@ class TargetSpace(object):
         return data.ravel()
 
     def max(self):
-        """Get maximum target value found and corresponding parametes."""
+        """Get maximum target value found and corresponding parameters."""
         try:
             res = {
                 'target': self.target.max(),
@@ -257,7 +257,17 @@ class TargetSpace(object):
         ----------
         new_bounds : dict
             A dictionary with the parameter name and its new bounds
+
+        Returns
+        ----------
+        if type of modified parameter is int, then return rounded integer value
+        Example : new_bounds = {"p1", (1.2, 8.7)} and "p1" is integer
+        then new_bounds are (1,9)
         """
         for row, key in enumerate(self.keys):
             if key in new_bounds:
-                self._bounds[row] = new_bounds[key]
+                if self._btypes[row]==int:
+                    lbound = self._btypes[row](np.round(new_bounds[key][0], 0))
+                    ubound = self._btypes[row](np.round(new_bounds[key][1], 0))
+                    new_bounds[key] = (lbound, ubound)
+                self._bounds[row] = list(new_bounds[key])
