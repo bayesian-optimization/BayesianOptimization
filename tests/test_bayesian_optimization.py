@@ -9,7 +9,7 @@ def target_func(**kwargs):
     return sum(kwargs.values())
 
 
-PBOUNDS = {'p1': (0, 10), 'p2': (0, 10)}
+PBOUNDS = {'p1': [float, (0, 10)], 'p2': [int, (0, 10)]}
 
 
 def test_register():
