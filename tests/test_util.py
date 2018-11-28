@@ -61,6 +61,7 @@ def test_acq_with_ucb():
         GP,
         y_max,
         bounds=np.array([[0, 1], [0, 1]]),
+        btypes=[float, float],
         random_state=ensure_rng(0),
         n_iter=20
     )
@@ -79,6 +80,7 @@ def test_acq_with_ei():
         GP,
         y_max,
         bounds=np.array([[0, 1], [0, 1]]),
+        btypes=[float, float],
         random_state=ensure_rng(0),
         n_iter=200,
     )
@@ -97,6 +99,7 @@ def test_acq_with_poi():
         GP,
         y_max,
         bounds=np.array([[0, 1], [0, 1]]),
+        btypes=[float, float],
         random_state=ensure_rng(0),
         n_iter=200,
     )
@@ -112,22 +115,22 @@ def test_logs():
 
     optimizer = BayesianOptimization(
         f=f,
-        pbounds={"x": (-2, 2), "y": (-2, 2)}
+        pbounds={"x": [float, (-2, 2)], "y": [float, (-2, 2)]}
     )
     assert len(optimizer.space) == 0
 
-    load_logs(optimizer, "./tests/test_logs.json")
+    load_logs(optimizer, "./test_logs.json")
     assert len(optimizer.space) == 5
 
-    load_logs(optimizer, ["./tests/test_logs.json"])
+    load_logs(optimizer, ["./test_logs.json"])
     assert len(optimizer.space) == 5
 
     other_optimizer = BayesianOptimization(
         f=lambda x: -x ** 2,
-        pbounds={"x": (-2, 2)}
+        pbounds={"x": [float, (-2, 2)]}
     )
     with pytest.raises(ValueError):
-        load_logs(other_optimizer, ["./tests/test_logs.json"])
+        load_logs(other_optimizer, ["./test_logs.json"])
 
 
 if __name__ == '__main__':
