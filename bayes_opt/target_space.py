@@ -266,7 +266,7 @@ class TargetSpace(object):
         """
         for row, key in enumerate(self.keys):
             if key in new_bounds:
-                if self._btypes[row]==int:
+                if self._btypes[row] == int:
                     lbound = self._btypes[row](np.round(new_bounds[key][0], 0))
                     ubound = self._btypes[row](np.round(new_bounds[key][1], 0))
                     new_bounds[key] = (lbound, ubound)

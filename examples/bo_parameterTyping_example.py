@@ -7,9 +7,9 @@ targetFunction = lambda x, y: -(x-0.5) ** 2 - (y - 10) ** 2 + 1
 bounds = {'y': [int, (5, 15)], 'x': [float, (-3, 3)]}
 bo = BayesianOptimization(targetFunction, bounds)
 
-bo.probe({"x":1.4, "y":6})
-bo.probe({"x":2.4, "y":12})
-bo.probe({"x":-2.4, "y":13})
+bo.probe({"x": 1.4, "y": 6})
+bo.probe({"x": 2.4, "y": 12})
+bo.probe({"x": -2.4, "y": 13})
 
 bo.maximize(init_points=10, n_iter=20, kappa=2)
 
