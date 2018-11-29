@@ -71,6 +71,7 @@ def optimize_svc(data, targets):
     optimizer = BayesianOptimization(
         f=svc_crossval,
         pbounds={"expC": [float, (-3, 2)], "expGamma": [float, (-4, -1)]},
+        ptypes={"expC": float, "expGamma":float},
         random_state=1234,
         verbose=2
     )
@@ -100,9 +101,13 @@ def optimize_rfc(data, targets):
     optimizer = BayesianOptimization(
         f=rfc_crossval,
         pbounds={
-            "n_estimators": [int, (10, 250)],
-            "min_samples_split": [int, (2, 25)],
-            "max_features": [float, (0.1, 0.999)]
+            "n_estimators": (10, 250),
+            "min_samples_split": (2, 25),
+            "max_features": (0.1, 0.999)
+        },
+        ptypes={"n_estimators": int,
+            "min_samples_split": int,
+            "max_features": float
         },
         random_state=1234,
         verbose=2

@@ -8,17 +8,19 @@ def target_func(**kwargs):
     return sum(kwargs.values())
 
 
-PBOUNDS = {'p1': [float, (0, 10)], 'p2': [int, (1, 100)]}
+PBOUNDS = {'p1': (0, 10), 'p2': (1, 100)}
+PTYPES = {'p1': float, 'p2':int}
 
 
 def test_keys_and_bounds_in_same_order():
     pbounds = {
-        'p1': [int, (0, 1)],
-        'p3': [int, (0, 3)],
-        'p2': [float, (0, 2)],
-        'p4': [float, (0, 4)]
+        'p1': (0, 1),
+        'p3': (0, 3),
+        'p2': (0, 2),
+        'p4': (0, 4)
     }
-    space = TargetSpace(target_func, pbounds)
+    ptypes = {'p1':int, 'p2':float, 'p3':int, 'p4':float}
+    space = TargetSpace(target_func, pbounds, ptypes)
 
     assert space.dim == len(pbounds)
     assert space.empty
@@ -29,7 +31,7 @@ def test_keys_and_bounds_in_same_order():
 
 
 def test_params_to_array():
-    space = TargetSpace(target_func, PBOUNDS)
+    space = TargetSpace(target_func, PBOUNDS, PTYPES)
 
     assert all(space.params_to_array({"p1": 2, "p2": 3}) == np.array([2, 3]))
     assert all(space.params_to_array({"p2": 2, "p1": 9}) == np.array([9, 2]))
@@ -42,7 +44,7 @@ def test_params_to_array():
 
 
 def test_array_to_params():
-    space = TargetSpace(target_func, PBOUNDS)
+    space = TargetSpace(target_func, PBOUNDS, PTYPES)
 
     assert space.array_to_params(np.array([2, 3])) == {"p1": 2, "p2": 3}
     with pytest.raises(ValueError):
@@ -52,7 +54,7 @@ def test_array_to_params():
 
 
 def test_as_array():
-    space = TargetSpace(target_func, PBOUNDS)
+    space = TargetSpace(target_func, PBOUNDS, PTYPES)
 
     x = space._as_array([0, 1])
     assert x.shape == (2,)
@@ -73,7 +75,7 @@ def test_as_array():
 
 
 def test_register():
-    space = TargetSpace(target_func, PBOUNDS)
+    space = TargetSpace(target_func, PBOUNDS, PTYPES)
 
     assert len(space) == 0
     # registering with dict
@@ -95,7 +97,7 @@ def test_register():
 
 
 def test_probe():
-    space = TargetSpace(target_func, PBOUNDS)
+    space = TargetSpace(target_func, PBOUNDS, PTYPES)
 
     assert len(space) == 0
     # probing with dict
@@ -125,12 +127,13 @@ def test_probe():
 
 def test_random_sample():
     pbounds = {
-        'p1': [int, (0, 1)],
-        'p3': [int, (0, 3)],
-        'p2': [float, (0, 2)],
-        'p4': [float, (0, 4)]
+        'p1': (0, 1),
+        'p3': (0, 3),
+        'p2': (0, 2),
+        'p4': (0, 4)
     }
-    space = TargetSpace(target_func, pbounds, random_state=8)
+    ptypes = {'p1': int, 'p2': float, 'p3': int, 'p4': float}
+    space = TargetSpace(target_func, pbounds, ptypes, random_state=8)
 
     for _ in range(50):
         random_sample = space.random_sample()
@@ -141,7 +144,7 @@ def test_random_sample():
 
 def test_max():
     print(PBOUNDS)
-    space = TargetSpace(target_func, PBOUNDS)
+    space = TargetSpace(target_func, PBOUNDS, PTYPES)
 
     assert space.max() == {}
     space.probe(params={"p1": 1, "p2": 2})
@@ -152,7 +155,7 @@ def test_max():
 
 
 def test_res():
-    space = TargetSpace(target_func, PBOUNDS)
+    space = TargetSpace(target_func, PBOUNDS, PTYPES)
 
     assert space.res() == []
     space.probe(params={"p1": 1, "p2": 2})
@@ -172,12 +175,13 @@ def test_res():
 
 def test_set_bounds():
     pbounds = {
-        'p1': [int, (0, 1)],
-        'p3': [int, (0, 3)],
-        'p2': [float, (0, 2)],
-        'p4': [float, (0, 4)]
+        'p1': (0, 1),
+        'p3': (0, 3),
+        'p2': (0, 2),
+        'p4': (0, 4)
     }
-    space = TargetSpace(target_func, pbounds)
+    ptypes = {'p1':int, 'p2':float, 'p3':int, 'p4':float}
+    space = TargetSpace(target_func, pbounds, ptypes)
 
     # Ignore unknown keys
     space.set_bounds({"other": (7, 8)})
@@ -189,6 +193,13 @@ def test_set_bounds():
     print(space.bounds)
     assert all(space.bounds[:, 0] == np.array([0, 0, 1, 0]))
     assert all(space.bounds[:, 1] == np.array([1, 2, 9, 4]))
+
+    ptypes = None
+    space = TargetSpace(target_func, pbounds, ptypes)
+    space.set_bounds({"p3": (1.1, 8.7)})
+    print(space.bounds)
+    assert all(space.bounds[:, 0] == np.array([0, 0, 1.1, 0]))
+    assert all(space.bounds[:, 1] == np.array([1, 2, 8.7, 4]))
 
 
 if __name__ == '__main__':

@@ -115,7 +115,8 @@ def test_logs():
 
     optimizer = BayesianOptimization(
         f=f,
-        pbounds={"x": [float, (-2, 2)], "y": [float, (-2, 2)]}
+        pbounds={"x": (-2, 2), "y": (-2, 2)},
+        ptypes={'x':float, 'y':float}
     )
     assert len(optimizer.space) == 0
 
@@ -127,7 +128,7 @@ def test_logs():
 
     other_optimizer = BayesianOptimization(
         f=lambda x: -x ** 2,
-        pbounds={"x": [float, (-2, 2)]}
+        pbounds={"x": (-2, 2)}
     )
     with pytest.raises(ValueError):
         load_logs(other_optimizer, ["./test_logs.json"])
