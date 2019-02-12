@@ -1,7 +1,9 @@
+import pytest
 import numpy as np
 
 from bayes_opt import BayesianOptimization
-from bayes_opt.util import UtilityFunction, acq_max, load_logs, ensure_rng
+from bayes_opt.util import UtilityFunction, Colours
+from bayes_opt.util import acq_max, load_logs, ensure_rng
 
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -49,6 +51,20 @@ def brute_force_maximum(MESH, GP, kind='ucb', kappa=1.0, xi=1.0):
 
 GLOB = get_globals()
 X, Y, GP, MESH = GLOB['x'], GLOB['y'], GLOB['gp'], GLOB['mesh']
+
+
+def test_utility_fucntion():
+    util = UtilityFunction(kind="ucb", kappa=1.0, xi=1.0)
+    assert util.kind == "ucb"
+
+    util = UtilityFunction(kind="ei", kappa=1.0, xi=1.0)
+    assert util.kind == "ei"
+
+    util = UtilityFunction(kind="poi", kappa=1.0, xi=1.0)
+    assert util.kind == "poi"
+
+    with pytest.raises(NotImplementedError):
+        util = UtilityFunction(kind="other", kappa=1.0, xi=1.0)
 
 
 def test_acq_with_ucb():
@@ -128,6 +144,27 @@ def test_logs():
     )
     with pytest.raises(ValueError):
         load_logs(other_optimizer, ["./tests/test_logs.json"])
+
+
+def test_colours():
+    colour_wrappers = [
+        (Colours.BLUE, Colours.blue),
+        (Colours.BOLD, Colours.bold),
+        (Colours.CYAN, Colours.cyan),
+        (Colours.DARKCYAN, Colours.darkcyan),
+        (Colours.GREEN, Colours.green),
+        (Colours.PURPLE, Colours.purple),
+        (Colours.RED, Colours.red),
+        (Colours.UNDERLINE, Colours.underline),
+        (Colours.YELLOW, Colours.yellow),
+    ]
+
+    for colour, wrapper in colour_wrappers:
+        text1 = Colours._wrap_colour("test", colour)
+        text2 = wrapper("test")
+
+        assert text1.split("test") == [colour, Colours.END]
+        assert text2.split("test") == [colour, Colours.END]
 
 
 if __name__ == '__main__':
