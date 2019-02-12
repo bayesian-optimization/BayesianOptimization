@@ -252,7 +252,7 @@ load_logs(new_optimizer, logs=["./logs.json"]);
 
 ## Next Steps
 
-This introduction covered the most basic functionality of the package. Checkout the `basic-tour` and `advanced-tour` notebooks in the example folder, yhere you will more detailed explanations and other more advanced functionality. Also, browse the examples folder for implementation tips and ideas.
+This introduction covered the most basic functionality of the package. Checkout the [basic-tour](https://github.com/fmfn/BayesianOptimization/blob/master/examples/basic-tour.ipynb) and [advanced-tour](https://github.com/fmfn/BayesianOptimization/blob/master/examples/advanced-tour.ipynb) notebooks in the example folder, where you will find detailed explanations and other more advanced functionality. Also, browse the examples folder for implementation tips and ideas.
 
 Installation
 ============
