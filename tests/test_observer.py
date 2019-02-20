@@ -1,5 +1,5 @@
 from bayes_opt.bayesian_optimization import Observable
-from bayes_opt.observer import ScreenLogger, _Tracker, _get_default_logger
+from bayes_opt.observer import _Tracker
 from bayes_opt.event import Events
 
 
@@ -110,15 +110,6 @@ def test_tracker():
     tracker._time_metrics()
     assert start_time == tracker._start_time
     assert previous_time < tracker._previous_time
-
-
-def test_get_default_logger():
-    logger = _get_default_logger(verbose=1)
-    assert isinstance(logger, ScreenLogger)
-    assert logger._verbose == 1
-
-    logger = _get_default_logger(verbose=2)
-    assert logger._verbose == 2
 
 
 if __name__ == '__main__':

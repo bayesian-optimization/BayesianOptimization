@@ -191,7 +191,7 @@ class Colours:
 
     @classmethod
     def black(cls, s):
-        """Wrap text in blue."""
+        """Wrap text in black."""
         return cls._wrap_colour(s, cls.END)
 
     @classmethod
