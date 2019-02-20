@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 from bayes_opt import UtilityFunction
 from bayes_opt import BayesianOptimization
-from bayes_opt.observer import ScreenLogger
+from bayes_opt.logger import ScreenLogger
 from bayes_opt.event import Events, DEFAULT_EVENTS
 
 
@@ -71,7 +71,7 @@ def test_probe_eager():
 
 
 def test_suggest_at_random():
-    util = UtilityFunction(kind="ucb", kappa=5, xi=0)
+    util = UtilityFunction(kind="poi", kappa=5, xi=0)
     optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
 
     for _ in range(50):
@@ -248,7 +248,8 @@ def test_maximize():
         def reset(self):
             self.__init__()
 
-    optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
+    optimizer = BayesianOptimization(target_func, PBOUNDS,
+                                     random_state=np.random.RandomState(1))
 
     tracker = Tracker()
     optimizer.subscribe(
@@ -281,6 +282,13 @@ def test_maximize():
     assert tracker.start_count == 2
     assert tracker.step_count == 3
     assert tracker.end_count == 2
+
+    optimizer.maximize(init_points=0, n_iter=2)
+    assert optimizer._queue.empty
+    assert len(optimizer.space) == 5
+    assert tracker.start_count == 3
+    assert tracker.step_count == 5
+    assert tracker.end_count == 3
 
 
 if __name__ == '__main__':

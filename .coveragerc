@@ -21,3 +21,4 @@ omit =
     */setup.py
     examples/*
     tests/*
+    bayes_opt/logger.py

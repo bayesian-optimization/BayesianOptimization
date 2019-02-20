@@ -3,7 +3,7 @@ import numpy as np
 
 from .target_space import TargetSpace
 from .event import Events, DEFAULT_EVENTS
-from .observer import _get_default_logger
+from .logger import _get_default_logger
 from .util import UtilityFunction, acq_max, ensure_rng
 
 from sklearn.gaussian_process.kernels import Matern

@@ -148,6 +148,7 @@ def test_logs():
 
 def test_colours():
     colour_wrappers = [
+        (Colours.END, Colours.black),
         (Colours.BLUE, Colours.blue),
         (Colours.BOLD, Colours.bold),
         (Colours.CYAN, Colours.cyan),
