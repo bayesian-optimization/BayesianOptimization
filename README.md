@@ -1,3 +1,7 @@
+<div align="center">
+  <img src=""https://github.com/fmfn/BayesianOptimization/blob/master/examples/func.png><br><br>
+</div>
+
 # Bayesian Optimization
 
 [![Travis](https://img.shields.io/travis/fmfn/BayesianOptimization/master.svg?label=Travis%20CI)](https://travis-ci.org/fmfn/BayesianOptimization)
