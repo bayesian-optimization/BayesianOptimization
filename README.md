@@ -63,7 +63,7 @@ Basic tour of the Bayesian Optimization package
 
 ## 1. Specifying the function to be optimized
 
-This is a function optimization package, therefore the first and most important ingreedient is, of course, the function to be optimized.
+This is a function optimization package, therefore the first and most important ingredient is, of course, the function to be optimized.
 
 **DISCLAIMER:** We know exactly how the output of the function below depends on its parameter. Obviously this is just an example, and you shouldn't expect to know it in a real scenario. However, it should be clear that you don't need to. All you need in order to use this package (and more generally, this technique) is a function `f` that takes a known set of parameters and outputs a real number.
 
@@ -81,7 +81,7 @@ def black_box_function(x, y):
 
 ## 2. Getting Started
 
-All we need to get started is to instanciate a `BayesianOptimization` object specifying a function to be optimized `f`, and its parameters with their corresponding bounds, `pbounds`. This is a constrained optimization technique, so you must specify the minimum and maximum values that can be probed for each parameter in order for it to work
+All we need to get started is to instantiate a `BayesianOptimization` object specifying a function to be optimized `f`, and its parameters with their corresponding bounds, `pbounds`. This is a constrained optimization technique, so you must specify the minimum and maximum values that can be probed for each parameter in order for it to work
 
 
 ```python
@@ -204,7 +204,7 @@ optimizer.maximize(init_points=0, n_iter=0)
 
 ## 4. Saving, loading and restarting
 
-By default you can follow the progress of your optimization by setting `verbose>0` when instanciating the `BayesianOptimization` object. If you need more control over logging/alerting you will need to use an observer. For more information about observers checkout the advanced tour notebook. Here we will only see how to use the native `JSONLogger` object to save to and load progress from files.
+By default you can follow the progress of your optimization by setting `verbose>0` when instantiating the `BayesianOptimization` object. If you need more control over logging/alerting you will need to use an observer. For more information about observers checkout the advanced tour notebook. Here we will only see how to use the native `JSONLogger` object to save to and load progress from files.
 
 ### 4.1 Saving progress
 
