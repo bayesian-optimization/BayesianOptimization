@@ -12,10 +12,10 @@ def target_func(**kwargs):
 
 
 PBOUNDS = {'p1': (0, 10), 'p2': (0, 10)}
-
+PTYPES = {'p1': float, 'p2': int}
 
 def test_register():
-    optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
+    optimizer = BayesianOptimization(target_func, PBOUNDS, PTYPES, random_state=1)
     assert len(optimizer.space) == 0
 
     optimizer.register(params={"p1": 1, "p2": 2}, target=3)
@@ -33,7 +33,7 @@ def test_register():
 
 
 def test_probe_lazy():
-    optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
+    optimizer = BayesianOptimization(target_func, PBOUNDS, PTYPES, random_state=1)
 
     optimizer.probe(params={"p1": 1, "p2": 2}, lazy=True)
     assert len(optimizer.space) == 0
@@ -49,7 +49,7 @@ def test_probe_lazy():
 
 
 def test_probe_eager():
-    optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
+    optimizer = BayesianOptimization(target_func, PBOUNDS, PTYPES, random_state=1)
 
     optimizer.probe(params={"p1": 1, "p2": 2}, lazy=False)
     assert len(optimizer.space) == 1
@@ -71,8 +71,8 @@ def test_probe_eager():
 
 
 def test_suggest_at_random():
-    util = UtilityFunction(kind="poi", kappa=5, xi=0)
-    optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
+    optimizer = BayesianOptimization(target_func, PBOUNDS, PTYPES, random_state=1)
+    util = UtilityFunction(kind="ucb", kappa=5, xi=0)
 
     for _ in range(50):
         sample = optimizer.space.params_to_array(optimizer.suggest(util))
@@ -83,7 +83,7 @@ def test_suggest_at_random():
 
 def test_suggest_with_one_observation():
     util = UtilityFunction(kind="ucb", kappa=5, xi=0)
-    optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
+    optimizer = BayesianOptimization(target_func, PBOUNDS, PTYPES, random_state=1)
 
     optimizer.register(params={"p1": 1, "p2": 2}, target=3)
 
@@ -100,7 +100,7 @@ def test_suggest_with_one_observation():
 
 
 def test_prime_queue_all_empty():
-    optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
+    optimizer = BayesianOptimization(target_func, PBOUNDS, PTYPES, random_state=1)
     assert len(optimizer._queue) == 0
     assert len(optimizer.space) == 0
 
@@ -110,7 +110,7 @@ def test_prime_queue_all_empty():
 
 
 def test_prime_queue_empty_with_init():
-    optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
+    optimizer = BayesianOptimization(target_func, PBOUNDS, PTYPES, random_state=1)
     assert len(optimizer._queue) == 0
     assert len(optimizer.space) == 0
 
@@ -120,7 +120,7 @@ def test_prime_queue_empty_with_init():
 
 
 def test_prime_queue_with_register():
-    optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
+    optimizer = BayesianOptimization(target_func, PBOUNDS, PTYPES, random_state=1)
     assert len(optimizer._queue) == 0
     assert len(optimizer.space) == 0
 
@@ -131,7 +131,7 @@ def test_prime_queue_with_register():
 
 
 def test_prime_queue_with_register_and_init():
-    optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
+    optimizer = BayesianOptimization(target_func, PBOUNDS, PTYPES, random_state=1)
     assert len(optimizer._queue) == 0
     assert len(optimizer.space) == 0
 

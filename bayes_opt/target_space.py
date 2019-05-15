@@ -17,12 +17,13 @@ class TargetSpace(object):
     >>> def target_func(p1, p2):
     >>>     return p1 + p2
     >>> pbounds = {'p1': (0, 1), 'p2': (1, 100)}
-    >>> space = TargetSpace(target_func, pbounds, random_state=0)
+    >>> ptypes = {'p1': float, 'p2': int}
+    >>> space = TargetSpace(target_func, pbounds, ptypes, random_state=0)
     >>> x = space.random_points(1)[0]
     >>> y = space.register_point(x)
     >>> assert self.max_point()['max_val'] == y
     """
-    def __init__(self, target_func, pbounds, random_state=None):
+    def __init__(self, target_func, pbounds, ptypes=None,random_state=None):
         """
         Parameters
         ----------
@@ -30,8 +31,11 @@ class TargetSpace(object):
             Function to be maximized.
 
         pbounds : dict
-            Dictionary with parameters names as keys and a tuple with minimum
+            Dictionary with parameter names and list of the minimum and maximum boundaries
             and maximum values.
+
+        ptypes : dict
+            Dictionnary with parameter names and their type
 
         random_state : int, RandomState, or None
             optionally specify a seed for a random number generator
@@ -44,10 +48,19 @@ class TargetSpace(object):
         # Get the name of the parameters
         self._keys = sorted(pbounds)
         # Create an array with parameters bounds
-        self._bounds = np.array(
-            [item[1] for item in sorted(pbounds.items(), key=lambda x: x[0])],
-            dtype=np.float
-        )
+        self._bounds = np.array([list(pbounds[item]) for item in self._keys], dtype=float)
+        # Create an array with the parameters type if declared
+        if ptypes is None:
+            self._btypes = None
+        else:
+            ## TODO: add exception if parameter names in btypes and ptypes do not have the same length and content
+            ## TODO: or store pbounds and ptypes has dictionnaries
+            try:
+                assert (len(ptypes) == len(pbounds))
+            except AssertionError:
+                raise AssertionError("ptypes and pbounds do not have same content."+\
+                                     "ptypes and pbounds must list exact same parameters")
+            self._btypes = np.array([ptypes[item] for item in self._keys], dtype=type)
 
         # preallocated memory for X and Y points
         self._params = np.empty(shape=(0, self.dim))
@@ -86,6 +99,10 @@ class TargetSpace(object):
     @property
     def bounds(self):
         return self._bounds
+
+    @property
+    def btypes(self):
+        return self._btypes
 
     def params_to_array(self, params):
         try:
@@ -142,11 +159,12 @@ class TargetSpace(object):
 
         Notes
         -----
-        runs in ammortized constant time
+        runs in amortized constant time
 
         Example
         -------
         >>> pbounds = {'p1': (0, 1), 'p2': (1, 100)}
+        >>> ptypes = {'p1': float, 'p2':int}
         >>> space = TargetSpace(lambda p1, p2: p1 + p2, pbounds)
         >>> len(space)
         0
@@ -208,18 +226,26 @@ class TargetSpace(object):
         -------
         >>> target_func = lambda p1, p2: p1 + p2
         >>> pbounds = {'p1': (0, 1), 'p2': (1, 100)}
+        >>> ptypes = {'p1': float, 'p2':int}
         >>> space = TargetSpace(target_func, pbounds, random_state=0)
         >>> space.random_points(1)
-        array([[ 55.33253689,   0.54488318]])
+        array([[ 0.54488318, 55]])
         """
-        # TODO: support integer, category, and basic scipy.optimize constraints
+        # TODO: support category, and basic scipy.optimize constraints
         data = np.empty((1, self.dim))
-        for col, (lower, upper) in enumerate(self._bounds):
-            data.T[col] = self.random_state.uniform(lower, upper, size=1)
+        if self.btypes is None:
+            for col, (lower, upper) in enumerate(self._bounds):
+                data.T[col] = self.random_state.uniform(lower, upper, size=1)
+        else:
+            for col, (lower, upper) in enumerate(self._bounds):
+                if self.btypes[col] != int:
+                    data.T[col] = self.random_state.uniform(lower, upper, size=1)
+                if self.btypes[col] == int:
+                    data.T[col] = self.random_state.randint(int(lower), int(upper), size=1)
         return data.ravel()
 
     def max(self):
-        """Get maximum target value found and corresponding parametes."""
+        """Get maximum target value found and corresponding parameters."""
         try:
             res = {
                 'target': self.target.max(),
@@ -248,7 +274,19 @@ class TargetSpace(object):
         ----------
         new_bounds : dict
             A dictionary with the parameter name and its new bounds
+
+        Returns
+        ----------
+        if type of modified parameter is int, then return rounded integer value
+        Example : new_bounds = {"p1", (1.2, 8.7)} and "p1" is integer
+        then new_bounds are (1,9)
         """
         for row, key in enumerate(self.keys):
             if key in new_bounds:
-                self._bounds[row] = new_bounds[key]
+                if self._btypes is not None:
+                    if self._btypes[row] == int:
+                        lbound = self._btypes[row](np.round(new_bounds[key][0], 0))
+                        ubound = self._btypes[row](np.round(new_bounds[key][1], 0))
+                        new_bounds[key] = (lbound, ubound)
+                    self._bounds[row] = list(new_bounds[key])
+                self._bounds[row] = list(new_bounds[key])

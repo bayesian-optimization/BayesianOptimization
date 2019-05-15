@@ -77,6 +77,7 @@ def test_acq_with_ucb():
         GP,
         y_max,
         bounds=np.array([[0, 1], [0, 1]]),
+        btypes=[float, float],
         random_state=ensure_rng(0),
         n_iter=20
     )
@@ -95,6 +96,7 @@ def test_acq_with_ei():
         GP,
         y_max,
         bounds=np.array([[0, 1], [0, 1]]),
+        btypes=[float, float],
         random_state=ensure_rng(0),
         n_iter=200,
     )
@@ -113,6 +115,7 @@ def test_acq_with_poi():
         GP,
         y_max,
         bounds=np.array([[0, 1], [0, 1]]),
+        btypes=[float, float],
         random_state=ensure_rng(0),
         n_iter=200,
     )
@@ -128,7 +131,8 @@ def test_logs():
 
     optimizer = BayesianOptimization(
         f=f,
-        pbounds={"x": (-2, 2), "y": (-2, 2)}
+        pbounds={"x": (-2, 2), "y": (-2, 2)},
+        ptypes={'x':float, 'y':float}
     )
     assert len(optimizer.space) == 0
 
