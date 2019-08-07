@@ -4,7 +4,7 @@ from scipy.stats import norm
 from scipy.optimize import minimize
 
 
-def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=100000, n_iter=250):
+def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=10000, n_iter=10):
     """
     A function to find the maximum of the acquisition function
 
