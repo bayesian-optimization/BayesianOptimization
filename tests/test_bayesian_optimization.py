@@ -217,11 +217,11 @@ def test_set_bounds():
 def test_set_gp_params():
     optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
     assert optimizer._gp.alpha == 1e-6
-    assert optimizer._gp.n_restarts_optimizer == 25
+    assert optimizer._gp.n_restarts_optimizer == 5
 
     optimizer.set_gp_params(alpha=1e-2)
     assert optimizer._gp.alpha == 1e-2
-    assert optimizer._gp.n_restarts_optimizer == 25
+    assert optimizer._gp.n_restarts_optimizer == 5
 
     optimizer.set_gp_params(n_restarts_optimizer=7)
     assert optimizer._gp.alpha == 1e-2
