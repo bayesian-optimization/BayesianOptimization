@@ -220,7 +220,7 @@ By default you can follow the progress of your optimization by setting `verbose>
 
 
 ```python
-from bayes_opt.observer import JSONLogger
+from bayes_opt.logger import JSONLogger
 from bayes_opt.event import Events
 ```
 
