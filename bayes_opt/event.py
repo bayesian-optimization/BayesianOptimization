@@ -1,11 +1,11 @@
 class Events:
-    OPTMIZATION_START = 'optmization:start'
-    OPTMIZATION_STEP = 'optmization:step'
-    OPTMIZATION_END = 'optmization:end'
+    OPTIMIZATION_START = 'optimization:start'
+    OPTIMIZATION_STEP = 'optimization:step'
+    OPTIMIZATION_END = 'optimization:end'
 
 
 DEFAULT_EVENTS = [
-    Events.OPTMIZATION_START,
-    Events.OPTMIZATION_STEP,
-    Events.OPTMIZATION_END,
+    Events.OPTIMIZATION_START,
+    Events.OPTIMIZATION_STEP,
+    Events.OPTIMIZATION_END,
 ]

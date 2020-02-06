@@ -21,7 +21,7 @@ class _Tracker(object):
         self._previous_time = None
 
     def _update_tracker(self, event, instance):
-        if event == Events.OPTMIZATION_STEP:
+        if event == Events.OPTIMIZATION_STEP:
             self._iterations += 1
 
             current_max = instance.max

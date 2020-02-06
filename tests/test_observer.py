@@ -86,19 +86,19 @@ def test_tracker():
     assert tracker._previous_max is None
     assert tracker._previous_max_params is None
 
-    tracker._update_tracker(Events.OPTMIZATION_STEP, test_instance)
+    tracker._update_tracker(Events.OPTIMIZATION_STEP, test_instance)
     assert tracker._iterations == 1
     assert tracker._previous_max == 1
     assert tracker._previous_max_params == [1, 1]
 
     new_instance = MockInstance(max_target=7, max_params=[7, 7])
-    tracker._update_tracker(Events.OPTMIZATION_STEP, new_instance)
+    tracker._update_tracker(Events.OPTIMIZATION_STEP, new_instance)
     assert tracker._iterations == 2
     assert tracker._previous_max == 7
     assert tracker._previous_max_params == [7, 7]
 
     other_instance = MockInstance(max_target=2, max_params=[2, 2])
-    tracker._update_tracker(Events.OPTMIZATION_STEP, other_instance)
+    tracker._update_tracker(Events.OPTIMIZATION_STEP, other_instance)
     assert tracker._iterations == 3
     assert tracker._previous_max == 7
     assert tracker._previous_max_params == [7, 7]

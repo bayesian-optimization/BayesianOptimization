@@ -86,16 +86,16 @@ class ScreenLogger(_Tracker):
         return instance.max["target"] > self._previous_max
 
     def update(self, event, instance):
-        if event == Events.OPTMIZATION_START:
+        if event == Events.OPTIMIZATION_START:
             line = self._header(instance) + "\n"
-        elif event == Events.OPTMIZATION_STEP:
+        elif event == Events.OPTIMIZATION_STEP:
             is_new_max = self._is_new_max(instance)
             if self._verbose == 1 and not is_new_max:
                 line = ""
             else:
                 colour = Colours.purple if is_new_max else Colours.black
                 line = self._step(instance, colour=colour) + "\n"
-        elif event == Events.OPTMIZATION_END:
+        elif event == Events.OPTIMIZATION_END:
             line = "=" * self._header_length + "\n"
 
         if self._verbose:
@@ -113,7 +113,7 @@ class JSONLogger(_Tracker):
         super(JSONLogger, self).__init__()
 
     def update(self, event, instance):
-        if event == Events.OPTMIZATION_STEP:
+        if event == Events.OPTIMIZATION_STEP:
             data = dict(instance.res[-1])
 
             now, time_elapsed, time_delta = self._time_metrics()

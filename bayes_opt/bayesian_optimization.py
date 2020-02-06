@@ -102,7 +102,7 @@ class BayesianOptimization(Observable):
     def register(self, params, target):
         """Expect observation with known target"""
         self._space.register(params, target)
-        self.dispatch(Events.OPTMIZATION_STEP)
+        self.dispatch(Events.OPTIMIZATION_STEP)
 
     def probe(self, params, lazy=True):
         """Probe target of x"""
@@ -110,7 +110,7 @@ class BayesianOptimization(Observable):
             self._queue.add(params)
         else:
             self._space.probe(params)
-            self.dispatch(Events.OPTMIZATION_STEP)
+            self.dispatch(Events.OPTIMIZATION_STEP)
 
     def suggest(self, utility_function):
         """Most promissing point to probe next"""
@@ -145,9 +145,9 @@ class BayesianOptimization(Observable):
     def _prime_subscriptions(self):
         if not any([len(subs) for subs in self._events.values()]):
             _logger = _get_default_logger(self._verbose)
-            self.subscribe(Events.OPTMIZATION_START, _logger)
-            self.subscribe(Events.OPTMIZATION_STEP, _logger)
-            self.subscribe(Events.OPTMIZATION_END, _logger)
+            self.subscribe(Events.OPTIMIZATION_START, _logger)
+            self.subscribe(Events.OPTIMIZATION_STEP, _logger)
+            self.subscribe(Events.OPTIMIZATION_END, _logger)
 
     def maximize(self,
                  init_points=5,
@@ -158,7 +158,7 @@ class BayesianOptimization(Observable):
                  **gp_params):
         """Mazimize your function"""
         self._prime_subscriptions()
-        self.dispatch(Events.OPTMIZATION_START)
+        self.dispatch(Events.OPTIMIZATION_START)
         self._prime_queue(init_points)
         self.set_gp_params(**gp_params)
 
@@ -173,7 +173,7 @@ class BayesianOptimization(Observable):
 
             self.probe(x_probe, lazy=False)
 
-        self.dispatch(Events.OPTMIZATION_END)
+        self.dispatch(Events.OPTIMIZATION_END)
 
     def set_bounds(self, new_bounds):
         """
