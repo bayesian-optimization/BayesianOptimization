@@ -162,33 +162,33 @@ def test_prime_subscriptions():
 
     optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
     optimizer.subscribe(
-        event=Events.OPTMIZATION_START,
+        event=Events.OPTIMIZATION_START,
         subscriber=test_subscriber,
         callback=test_callback,
     )
     # Test that the desired observer is subscribed
     assert all([
         k == test_subscriber for k in
-        optimizer._events[Events.OPTMIZATION_START].keys()
+        optimizer._events[Events.OPTIMIZATION_START].keys()
     ])
     assert all([
         v == test_callback for v in
-        optimizer._events[Events.OPTMIZATION_START].values()
+        optimizer._events[Events.OPTIMIZATION_START].values()
     ])
 
     # Check that prime subscriptions won't overight manual subscriptions
     optimizer._prime_subscriptions()
     assert all([
         k == test_subscriber for k in
-        optimizer._events[Events.OPTMIZATION_START].keys()
+        optimizer._events[Events.OPTIMIZATION_START].keys()
     ])
     assert all([
         v == test_callback for v in
-        optimizer._events[Events.OPTMIZATION_START].values()
+        optimizer._events[Events.OPTIMIZATION_START].values()
     ])
 
-    assert optimizer._events[Events.OPTMIZATION_STEP] == {}
-    assert optimizer._events[Events.OPTMIZATION_END] == {}
+    assert optimizer._events[Events.OPTIMIZATION_STEP] == {}
+    assert optimizer._events[Events.OPTIMIZATION_END] == {}
 
     with pytest.raises(KeyError):
         optimizer._events["other"]
@@ -253,17 +253,17 @@ def test_maximize():
 
     tracker = Tracker()
     optimizer.subscribe(
-        event=Events.OPTMIZATION_START,
+        event=Events.OPTIMIZATION_START,
         subscriber=tracker,
         callback=tracker.update_start,
     )
     optimizer.subscribe(
-        event=Events.OPTMIZATION_STEP,
+        event=Events.OPTIMIZATION_STEP,
         subscriber=tracker,
         callback=tracker.update_step,
     )
     optimizer.subscribe(
-        event=Events.OPTMIZATION_END,
+        event=Events.OPTIMIZATION_END,
         subscriber=tracker,
         callback=tracker.update_end,
     )
