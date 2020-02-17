@@ -15,22 +15,19 @@ processes.
 
 ```console
 $ pip install bayesian-optimization
-```    
+```
 
 * Conda from conda-forge channel:
 
 ```console
 $ conda install -c conda-forge bayesian-optimization
-```    
+```
 
 This is a constrained global optimization package built upon bayesian inference
 and gaussian process, that attempts to find the maximum value of an unknown
 function in as few iterations as possible. This technique is particularly
 suited for optimization of high cost functions, situations where the balance
 between exploration and exploitation is important.
-
-## Important notice
-With the release of version 1.0.0 a number of API breaking changes were introduced. I understand this can be a headache for some, but these were necessary changes that needed to be done and ultimately made the package better. If you have used this package in the past I suggest you take the basic and advanced tours (found in the examples folder) in order to familiarize yourself with the new API.
 
 ## Quick Start
 See below for a quick tour over the basics of the Bayesian Optimization package. More detailed information, other advanced features, and tips on usage/implementation can be found in the [examples](https://github.com/fmfn/BayesianOptimization/tree/master/examples) folder. I suggest that you:
@@ -220,7 +217,7 @@ By default you can follow the progress of your optimization by setting `verbose>
 
 
 ```python
-from bayes_opt.logger import JSONLogger
+from bayes_opt.observer import JSONLogger
 from bayes_opt.event import Events
 ```
 
@@ -278,7 +275,7 @@ The latest release can be obtained by two ways:
 * With PyPI (pip):
 
       pip install bayesian-optimization
-    
+
 * With conda (from conda-forge channel):
 
       conda install -c conda-forge bayesian-optimization
@@ -294,12 +291,26 @@ commands to get a copy from Github and install all dependencies:
     cd BayesianOptimization
     python setup.py install
 
-### Dependencies
+Citation
+============
+
+If you used this package in your research and is interested in citing it here's how you do it:
+
+```
+@Misc{,
+    author = {Fernando Nogueira},
+    title = {{Bayesian Optimization}: Open source constrained global optimization tool for {Python}},
+    year = {2014--},
+    url = " https://github.com/fmfn/BayesianOptimization"
+}
+```
+
+# Dependencies
 * Numpy
 * Scipy
 * Scikit-learn
 
-### References:
+# References:
 * http://papers.nips.cc/paper/4522-practical-bayesian-optimization-of-machine-learning-algorithms.pdf
 * http://arxiv.org/pdf/1012.2599v1.pdf
 * http://www.gaussianprocess.org/gpml/
