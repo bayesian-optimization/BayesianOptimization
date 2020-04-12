@@ -113,9 +113,10 @@ class UtilityFunction(object):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             mean, std = gp.predict(x, return_std=True)
-
-        z = (mean - y_max - xi)/std
-        return (mean - y_max - xi) * norm.cdf(z) + std * norm.pdf(z)
+  
+        a = (mean - y_max - xi)
+        z = a / std
+        return a * norm.cdf(z) + std * norm.pdf(z)
 
     @staticmethod
     def _poi(x, gp, y_max, xi):
