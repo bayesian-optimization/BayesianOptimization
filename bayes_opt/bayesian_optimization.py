@@ -153,7 +153,8 @@ class BayesianOptimization(Observable):
                  init_points=5,
                  n_iter=25,
                  acq='ucb',
-                 kappa=2.576,
+                 init_kappa=2.576,
+                 kappa_decay=1,
                  xi=0.0,
                  **gp_params):
         """Mazimize your function"""
@@ -162,9 +163,16 @@ class BayesianOptimization(Observable):
         self._prime_queue(init_points)
         self.set_gp_params(**gp_params)
 
-        util = UtilityFunction(kind=acq, kappa=kappa, xi=xi)
+        def decay_kappa(kappa, iters, decay):
+            for x in range(iters):
+                kappa *= decay
+            return kappa
+
         iteration = 0
         while not self._queue.empty or iteration < n_iter:
+            bo_iters = max(0, len(self.res) - init_points)
+            decayed_kappa = decay_kappa(init_kappa, bo_iters, kappa_decay)
+            util = UtilityFunction(kind=acq, kappa=decayed_kappa, xi=xi)
             try:
                 x_probe = next(self._queue)
             except StopIteration:
