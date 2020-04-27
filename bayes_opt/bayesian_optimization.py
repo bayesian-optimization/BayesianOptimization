@@ -64,13 +64,13 @@ class Observable(object):
 
 
 class BayesianOptimization(Observable):
-    def __init__(self, f, pbounds, random_state=None, verbose=2):
+    def __init__(self, f, pbounds, random_state=None, data=None, verbose=2):
         """"""
         self._random_state = ensure_rng(random_state)
 
         # Data structure containing the function to be optimized, the bounds of
         # its domain, and a record of the evaluations we have done so far
-        self._space = TargetSpace(f, pbounds, random_state)
+        self._space = TargetSpace(f, pbounds, random_state, data)
 
         # queue
         self._queue = Queue()
@@ -111,6 +111,40 @@ class BayesianOptimization(Observable):
         else:
             self._space.probe(params)
             self.dispatch(Events.OPTIMIZATION_STEP)
+
+    def show_gp(self):
+        """Most promissing point to probe next"""
+        if len(self._space) == 0:
+            return self._space.array_to_params(self._space.random_sample())
+
+        # Sklearn's GP throws a large number of warnings at times, but
+        # we don't really need to see them here.
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            self._gp.fit(self._space.params, self._space.target)
+
+
+        best = list(self.max['params'].values())
+        sample = np.array(best).reshape(1, -1)
+
+        import copy
+        from matplotlib import pyplot
+
+        steps = 1000
+        for idx, param in enumerate(self._space.bounds):
+            inputs = []
+            vals = []
+            for x in range(int(steps * param[0]), int(steps * param[1])):
+                input = x / steps
+                sample = copy.deepcopy(best)
+                sample[idx] = input
+                sample = np.array(sample).reshape(1, -1)
+                pred = self._gp.predict(sample)
+                vals.append(pred)
+                inputs.append(input)
+
+            pyplot.plot(inputs, vals)
+            pyplot.show()
 
     def suggest(self, utility_function):
         """Most promissing point to probe next"""
@@ -153,8 +187,9 @@ class BayesianOptimization(Observable):
                  init_points=5,
                  n_iter=25,
                  acq='ucb',
-                 init_kappa=2.576,
+                 kappa=2.576,
                  kappa_decay=1,
+                 kappa_decay_delay=0,
                  xi=0.0,
                  **gp_params):
         """Mazimize your function"""
@@ -163,16 +198,13 @@ class BayesianOptimization(Observable):
         self._prime_queue(init_points)
         self.set_gp_params(**gp_params)
 
-        def decay_kappa(kappa, iters, decay):
-            for x in range(iters):
-                kappa *= decay
-            return kappa
-
+        util = UtilityFunction(kind=acq, kappa=kappa, xi=xi)
         iteration = 0
         while not self._queue.empty or iteration < n_iter:
-            bo_iters = max(0, len(self.res) - init_points)
-            decayed_kappa = decay_kappa(init_kappa, bo_iters, kappa_decay)
-            util = UtilityFunction(kind=acq, kappa=decayed_kappa, xi=xi)
+            # decay kappa by decay factor if BO iters exceeds kappa_decay_delay
+            if max(0, len(self.res) - init_points) - kappa_decay_delay > 0:
+                util.decay_kappa(kappa_decay)
+
             try:
                 x_probe = next(self._queue)
             except StopIteration:
