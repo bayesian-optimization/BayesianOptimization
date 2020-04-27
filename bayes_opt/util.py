@@ -99,6 +99,9 @@ class UtilityFunction(object):
             return self._ei(x, gp, y_max, self.xi)
         if self.kind == 'poi':
             return self._poi(x, gp, y_max, self.xi)
+        
+    def decay_kappa(self, decay_factor):
+        self.kappa *= decay_factor
 
     @staticmethod
     def _ucb(x, gp, kappa):
