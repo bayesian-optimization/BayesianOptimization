@@ -168,7 +168,7 @@ class BayesianOptimization(Observable):
         iteration = 0
         while not self._queue.empty or iteration < n_iter:
             # decay kappa by decay factor if BO iters exceeds kappa_decay_delay
-            if max(0, len(self.res) - init_points) - kappa_decay_delay > 0:
+            if kappa_decay != 1 and max(0, len(self.res) - init_points) - kappa_decay_delay > 0:
                 util.decay_kappa(kappa_decay)
 
             try:
