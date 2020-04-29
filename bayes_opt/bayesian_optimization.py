@@ -164,7 +164,7 @@ class BayesianOptimization(Observable):
         self._prime_queue(init_points)
         self.set_gp_params(**gp_params)
 
-       util = UtilityFunction(kind=acq,
+        util = UtilityFunction(kind=acq,
                                kappa=kappa,
                                xi=xi,
                                kappa_decay=kappa_decay,
