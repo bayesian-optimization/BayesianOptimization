@@ -79,8 +79,8 @@ class UtilityFunction(object):
     def __init__(self, kind, kappa, xi, kappa_decay=1, kappa_decay_delay=0):
 
         self.kappa = kappa
-        self.kappa_decay = kappa_decay
-        self.kappa_decay_delay = kappa_decay_delay
+        self._kappa_decay = kappa_decay
+        self._kappa_decay_delay = kappa_decay_delay
 
         self.xi = xi
 
@@ -101,8 +101,8 @@ class UtilityFunction(object):
             return self._poi(x, gp, y_max, self.xi)
 
     def update_params(self, bo_iters):
-        if self.kappa_decay < 1 and bo_iters - self.kappa_decay_delay > 0:
-            self.kappa *= self.kappa_decay
+        if self._kappa_decay < 1 and bo_iters - self._kappa_decay_delay > 0:
+            self.kappa *= self._kappa_decay
 
     @staticmethod
     def _ucb(x, gp, kappa):
