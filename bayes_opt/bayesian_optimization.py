@@ -172,11 +172,10 @@ class BayesianOptimization(Observable):
         iteration = 0
         while not self._queue.empty or iteration < n_iter:
             
-            util.update_params(max(0, len(self.res) - init_points))
-
             try:
                 x_probe = next(self._queue)
             except StopIteration:
+                util.update_params()
                 x_probe = self.suggest(util)
                 iteration += 1
 
