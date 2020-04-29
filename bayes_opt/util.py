@@ -82,6 +82,8 @@ class UtilityFunction(object):
         self._kappa_decay = kappa_decay
         self._kappa_decay_delay = kappa_decay_delay
 
+        self._iters_counter = 0
+
         self.xi = xi
 
         if kind not in ['ucb', 'ei', 'poi']:
@@ -100,10 +102,12 @@ class UtilityFunction(object):
         if self.kind == 'poi':
             return self._poi(x, gp, y_max, self.xi)
 
-    def update_params(self, bo_iters):
-        if self._kappa_decay < 1 and bo_iters - self._kappa_decay_delay > 0:
-            self.kappa *= self._kappa_decay
+    def update_params(self):
+        self._iters_counter += 1
 
+        if self._kappa_decay < 1 and self._iters_counter > self._kappa_decay_delay:
+            self.kappa *= self._kappa_decay
+            
     @staticmethod
     def _ucb(x, gp, kappa):
         with warnings.catch_warnings():
