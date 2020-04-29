@@ -101,7 +101,7 @@ class UtilityFunction(object):
             return self._poi(x, gp, y_max, self.xi)
 
     def update_params(self, bo_iters):
-        if bo_iters - self.kappa_decay_delay > 0:
+        if self.kappa_decay < 1 and bo_iters - self.kappa_decay_delay > 0:
             self.kappa *= self.kappa_decay
 
     @staticmethod
