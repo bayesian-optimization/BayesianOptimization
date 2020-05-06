@@ -120,9 +120,8 @@ class UtilityFunction(object):
             warnings.simplefilter("ignore")
             mean, std = gp.predict(x, return_std=True)
 
-        a = (mean - y_max - xi)
-        z = a / std
-        return a * norm.cdf(z) + std * norm.pdf(z)
+        z = (mean - y_max - xi)/std
+        return (mean - y_max - xi) * norm.cdf(z) + std * norm.pdf(z)
 
     @staticmethod
     def _poi(x, gp, y_max, xi):
@@ -130,7 +129,7 @@ class UtilityFunction(object):
             warnings.simplefilter("ignore")
             mean, std = gp.predict(x, return_std=True)
 
-        z = (mean - y_max - xi) / std
+        z = (mean - y_max - xi)/std
         return norm.cdf(z)
 
 
