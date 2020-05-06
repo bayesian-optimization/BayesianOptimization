@@ -195,4 +195,3 @@ class BayesianOptimization(Observable):
 
     def set_gp_params(self, **params):
         self._gp.set_params(**params)
-        
