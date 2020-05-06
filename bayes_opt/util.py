@@ -76,13 +76,15 @@ class UtilityFunction(object):
     An object to compute the acquisition functions.
     """
 
-    def __init__(self, kind, kappa, xi):
-        """
-        If UCB is to be used, a constant kappa is needed.
-        """
+    def __init__(self, kind, kappa, xi, kappa_decay=1, kappa_decay_delay=0):
+
         self.kappa = kappa
+        self._kappa_decay = kappa_decay
+        self._kappa_decay_delay = kappa_decay_delay
 
         self.xi = xi
+        
+        self._iters_counter = 0
 
         if kind not in ['ucb', 'ei', 'poi']:
             err = "The utility function " \
@@ -91,6 +93,12 @@ class UtilityFunction(object):
             raise NotImplementedError(err)
         else:
             self.kind = kind
+
+    def update_params(self):
+        self._iters_counter += 1
+
+        if self._kappa_decay < 1 and self._iters_counter > self._kappa_decay_delay:
+            self.kappa *= self._kappa_decay
 
     def utility(self, x, gp, y_max):
         if self.kind == 'ucb':
