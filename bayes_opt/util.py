@@ -76,6 +76,7 @@ class UtilityFunction(object):
     An object to compute the acquisition functions.
     """
 
+<<<<<<< HEAD
     def __init__(self, kind, kappa, xi, kappa_decay=1, kappa_decay_delay=0):
 
         self.kappa = kappa
@@ -83,6 +84,13 @@ class UtilityFunction(object):
         self._kappa_decay_delay = kappa_decay_delay
 
         self._iters_counter = 0
+=======
+       def __init__(self, kind, kappa, xi, kappa_decay=1, kappa_decay_delay=0):
+
+        self.kappa = kappa
+        self.kappa_decay = kappa_decay
+        self.kappa_decay_delay = kappa_decay_delay
+>>>>>>> c6d7943... Update util.py
 
         self.xi = xi
 
@@ -101,9 +109,10 @@ class UtilityFunction(object):
             return self._ei(x, gp, y_max, self.xi)
         if self.kind == 'poi':
             return self._poi(x, gp, y_max, self.xi)
-        
-    def decay_kappa(self, decay_factor):
-        self.kappa *= decay_factor
+
+    def update_params(self, bo_iters):
+        if bo_iters - self.kappa_decay_delay > 0:
+            self.kappa *= self.kappa_decay
 
     def update_params(self):
         self._iters_counter += 1
