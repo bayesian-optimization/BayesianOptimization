@@ -76,21 +76,11 @@ class UtilityFunction(object):
     An object to compute the acquisition functions.
     """
 
-<<<<<<< HEAD
     def __init__(self, kind, kappa, xi, kappa_decay=1, kappa_decay_delay=0):
 
         self.kappa = kappa
         self._kappa_decay = kappa_decay
         self._kappa_decay_delay = kappa_decay_delay
-
-        self._iters_counter = 0
-=======
-       def __init__(self, kind, kappa, xi, kappa_decay=1, kappa_decay_delay=0):
-
-        self.kappa = kappa
-        self.kappa_decay = kappa_decay
-        self.kappa_decay_delay = kappa_decay_delay
->>>>>>> c6d7943... Update util.py
 
         self.xi = xi
 
@@ -102,6 +92,12 @@ class UtilityFunction(object):
         else:
             self.kind = kind
 
+    def update_params(self):
+        self._iters_counter += 1
+
+        if self._kappa_decay < 1 and self._iters_counter > self._kappa_decay_delay:
+            self.kappa *= self._kappa_decay
+
     def utility(self, x, gp, y_max):
         if self.kind == 'ucb':
             return self._ucb(x, gp, self.kappa)
@@ -110,16 +106,6 @@ class UtilityFunction(object):
         if self.kind == 'poi':
             return self._poi(x, gp, y_max, self.xi)
 
-    def update_params(self, bo_iters):
-        if bo_iters - self.kappa_decay_delay > 0:
-            self.kappa *= self.kappa_decay
-
-    def update_params(self):
-        self._iters_counter += 1
-
-        if self._kappa_decay < 1 and self._iters_counter > self._kappa_decay_delay:
-            self.kappa *= self._kappa_decay
-            
     @staticmethod
     def _ucb(x, gp, kappa):
         with warnings.catch_warnings():
@@ -134,8 +120,9 @@ class UtilityFunction(object):
             warnings.simplefilter("ignore")
             mean, std = gp.predict(x, return_std=True)
 
-        z = (mean - y_max - xi)/std
-        return (mean - y_max - xi) * norm.cdf(z) + std * norm.pdf(z)
+        a = (mean - y_max - xi)
+        z = a / std
+        return a * norm.cdf(z) + std * norm.pdf(z)
 
     @staticmethod
     def _poi(x, gp, y_max, xi):
@@ -143,7 +130,7 @@ class UtilityFunction(object):
             warnings.simplefilter("ignore")
             mean, std = gp.predict(x, return_std=True)
 
-        z = (mean - y_max - xi)/std
+        z = (mean - y_max - xi) / std
         return norm.cdf(z)
 
 

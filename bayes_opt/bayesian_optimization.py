@@ -164,27 +164,13 @@ class BayesianOptimization(Observable):
         self._prime_queue(init_points)
         self.set_gp_params(**gp_params)
 
-<<<<<<< HEAD
-<<<<<<< HEAD
         util = UtilityFunction(kind=acq,
-=======
-       util = UtilityFunction(kind=acq,
->>>>>>> af90c23... Update bayesian_optimization.py
-=======
-        util = UtilityFunction(kind=acq,
->>>>>>> 4c2be8b... Update bayesian_optimization.py
                                kappa=kappa,
                                xi=xi,
                                kappa_decay=kappa_decay,
                                kappa_decay_delay=kappa_decay_delay)
         iteration = 0
         while not self._queue.empty or iteration < n_iter:
-<<<<<<< HEAD
-=======
-            
-            util.update_params(max(0, len(self.res) - init_points))
-
->>>>>>> af90c23... Update bayesian_optimization.py
             try:
                 x_probe = next(self._queue)
             except StopIteration:
