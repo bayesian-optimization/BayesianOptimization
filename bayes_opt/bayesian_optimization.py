@@ -165,10 +165,14 @@ class BayesianOptimization(Observable):
         self.set_gp_params(**gp_params)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         util = UtilityFunction(kind=acq,
 =======
        util = UtilityFunction(kind=acq,
 >>>>>>> af90c23... Update bayesian_optimization.py
+=======
+        util = UtilityFunction(kind=acq,
+>>>>>>> 4c2be8b... Update bayesian_optimization.py
                                kappa=kappa,
                                xi=xi,
                                kappa_decay=kappa_decay,
