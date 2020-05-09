@@ -261,6 +261,14 @@ new_optimizer = BayesianOptimization(
 load_logs(new_optimizer, logs=["./logs.json"]);
 ```
 
+### 4.3 Sequential Domain Reduction
+
+Using the `SequentialDomainReductionTransformer` the bounds of the problem can be panned and zoomed in an attempt to improve convergence. Sometimes the initial boundaries specified for a problem are too wide, and adding points to improve the response surface in regions of the solution domain is extraneous. Other times the cost function is very expensive to compute, and minimizing the number of calls is extremely beneficial. 
+
+![sequential domain reduction](https://github.com/fmfn/BayesianOptimization/blob/master/examples/sdr.png)
+
+An example of using the `SequentialDomainReductionTransformer` is shown in the [domain reduction notebook](https://github.com/fmfn/BayesianOptimization/blob/master/examples/domain_reduction.ipynb)
+
 ## Next Steps
 
 This introduction covered the most basic functionality of the package. Checkout the [basic-tour](https://github.com/fmfn/BayesianOptimization/blob/master/examples/basic-tour.ipynb) and [advanced-tour](https://github.com/fmfn/BayesianOptimization/blob/master/examples/advanced-tour.ipynb) notebooks in the example folder, where you will find detailed explanations and other more advanced functionality. Also, browse the examples folder for implementation tips and ideas.
