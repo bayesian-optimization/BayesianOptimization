@@ -1,5 +1,4 @@
 import warnings
-import numpy as np
 
 from .target_space import TargetSpace
 from .event import Events, DEFAULT_EVENTS
@@ -51,7 +50,7 @@ class Observable(object):
         return self._events[event]
 
     def subscribe(self, event, subscriber, callback=None):
-        if callback == None:
+        if callback is None:
             callback = getattr(subscriber, 'update')
         self.get_subscribers(event)[subscriber] = callback
 
@@ -64,7 +63,8 @@ class Observable(object):
 
 
 class BayesianOptimization(Observable):
-    def __init__(self, f, pbounds, random_state=None, verbose=2):
+    def __init__(self, f, pbounds, random_state=None, verbose=2,
+                 bounds_transformer=None):
         """"""
         self._random_state = ensure_rng(random_state)
 
@@ -85,6 +85,10 @@ class BayesianOptimization(Observable):
         )
 
         self._verbose = verbose
+        self._bounds_transformer = bounds_transformer
+        if self._bounds_transformer:
+            self._bounds_transformer.initialize(self._space)
+
         super(BayesianOptimization, self).__init__(events=DEFAULT_EVENTS)
 
     @property
@@ -179,6 +183,10 @@ class BayesianOptimization(Observable):
                 iteration += 1
 
             self.probe(x_probe, lazy=False)
+
+            if self._bounds_transformer:
+                self.set_bounds(
+                    self._bounds_transformer.transform(self._space))
 
         self.dispatch(Events.OPTIMIZATION_END)
 
