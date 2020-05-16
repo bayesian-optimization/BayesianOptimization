@@ -11,6 +11,7 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
+  - "3.7"
 before_install:
   - pip install pip -U
   - pip install pytest -U
@@ -20,13 +21,13 @@ before_install:
 install:
   #- travis_retry python setup.py build develop
   - travis_retry pip install -e .
-script: 
+script:
   - travis_wait pytest --cov-config .coveragerc --cov-report html --cov=bayes_opt
     #-p no:doctest --xdoctest
-after_success: 
+after_success:
   #- coveralls || echo "Coveralls upload failed"
-  - codecov 
-cache: 
+  - codecov
+cache:
     apt: true
     directories:
         - $HOME/.pip-cache
