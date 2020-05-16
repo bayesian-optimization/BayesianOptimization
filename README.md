@@ -45,6 +45,7 @@ exemplifying the balance between exploration and exploitation and how to
 control it.
 - Go over this [script](https://github.com/fmfn/BayesianOptimization/blob/master/examples/sklearn_example.py)
 for examples of how to tune parameters of Machine Learning models using cross validation and bayesian optimization.
+- Explore the [domain reduction notebook](https://github.com/fmfn/BayesianOptimization/blob/master/examples/domain_reduction.ipynb) to learn more about how search can be sped up by dynamically changing parameters' bounds.
 - Finally, take a look at this [script](https://github.com/fmfn/BayesianOptimization/blob/master/examples/async_optimization.py)
 for ideas on how to implement bayesian optimization in a distributed fashion using this package.
 
@@ -53,11 +54,11 @@ for ideas on how to implement bayesian optimization in a distributed fashion usi
 
 Bayesian optimization works by constructing a posterior distribution of functions (gaussian process) that best describes the function you want to optimize. As the number of observations grows, the posterior distribution improves, and the algorithm becomes more certain of which regions in parameter space are worth exploring and which are not, as seen in the picture below.
 
-![BayesianOptimization in action](https://github.com/fmfn/BayesianOptimization/blob/master/examples/bo_example.png)
+![BayesianOptimization in action](./examples/bo_example.png)
 
 As you iterate over and over, the algorithm balances its needs of exploration and exploitation taking into account what it knows about the target function. At each step a Gaussian Process is fitted to the known samples (points previously explored), and the posterior distribution, combined with a exploration strategy (such as UCB (Upper Confidence Bound), or EI (Expected Improvement)), are used to determine the next point that should be explored (see the gif below).
 
-![BayesianOptimization in action](https://github.com/fmfn/BayesianOptimization/blob/master/examples/bayesian_optimization.gif)
+![BayesianOptimization in action](./examples/bayesian_optimization.gif)
 
 This process is designed to minimize the number of steps required to find a combination of parameters that are close to the optimal combination. To do so, this method uses a proxy optimization problem (finding the maximum of the acquisition function) that, albeit still a hard problem, is cheaper (in the computational sense) and common tools can be employed. Therefore Bayesian Optimization is most adequate for situations where sampling the function to be optimized is a very expensive endeavor. See the references for a proper discussion of this method.
 
@@ -180,6 +181,15 @@ optimizer.maximize(
     |  10       | -1.762    |  1.442    |  0.1735   |
     =================================================
 
+### 2.2 Sequential Domain Reduction
+
+Sometimes the initial boundaries specified for a problem are too wide, and adding points to improve the response surface in regions of the solution domain is extraneous. Other times the cost function is very expensive to compute, and minimizing the number of calls is extremely beneficial.
+
+When it's worthwhile to converge on an optimal point quickly rather than try to find the optimal point, contracting the domain around the current optimal value as the search progresses can speed up the search progress considerably. Using the `SequentialDomainReductionTransformer` the bounds of the problem can be panned and zoomed dynamically in an attempt to improve convergence.
+
+![sequential domain reduction](./examples/sdr.png)
+
+An example of using the `SequentialDomainReductionTransformer` is shown in the [domain reduction notebook](https://github.com/fmfn/BayesianOptimization/blob/master/examples/domain_reduction.ipynb). More information about this method can be found in the paper ["On the robustness of a simple domain reduction scheme for simulation‐based optimization"](http://www.truegrid.com/srsm_revised.pdf).
 
 ## 3. Guiding the optimization
 
@@ -260,14 +270,6 @@ new_optimizer = BayesianOptimization(
 # New optimizer is loaded with previously seen points
 load_logs(new_optimizer, logs=["./logs.json"]);
 ```
-
-### 4.3 Sequential Domain Reduction
-
-Using the `SequentialDomainReductionTransformer` the bounds of the problem can be panned and zoomed in an attempt to improve convergence. Sometimes the initial boundaries specified for a problem are too wide, and adding points to improve the response surface in regions of the solution domain is extraneous. Other times the cost function is very expensive to compute, and minimizing the number of calls is extremely beneficial. 
-
-![sequential domain reduction](https://github.com/fmfn/BayesianOptimization/blob/master/examples/sdr.png)
-
-An example of using the `SequentialDomainReductionTransformer` is shown in the [domain reduction notebook](https://github.com/fmfn/BayesianOptimization/blob/master/examples/domain_reduction.ipynb)
 
 ## Next Steps
 
