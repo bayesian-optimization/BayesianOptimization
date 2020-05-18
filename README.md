@@ -251,6 +251,8 @@ optimizer.maximize(
 )
 ```
 
+By default the previous data in the json file is removed. If you want to keep working with the same logger, the `reset` paremeter in `JSONLogger` should be set to False.
+
 ### 4.2 Loading progress
 
 Naturally, if you stored progress you will be able to load that onto a new instance of `BayesianOptimization`. The easiest way to do it is by invoking the `load_logs` function, from the `util` submodule.
