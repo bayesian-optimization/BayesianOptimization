@@ -96,7 +96,8 @@ class BayesianOptimization(Observable):
 
         # Data structure containing the function to be optimized, the bounds of
         # its domain, and a record of the evaluations we have done so far
-        self._space = TargetSpace(f, pbounds, random_state)
+        self._space = TargetSpace(f, pbounds, random_state,
+                                  use_only_unique_points)
 
         # queue
         self._queue = Queue()

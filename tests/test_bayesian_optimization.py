@@ -32,6 +32,19 @@ def test_register():
         optimizer.register(params={"p1": 5, "p2": 4}, target=9)
 
 
+def test_use_only_unique_points():
+    optimizer = BayesianOptimization(target_func, PBOUNDS,
+                                     use_only_unique_points=False)
+    optimizer.register(params={"p1": 1, "p2": 2}, target=3)
+    with pytest.raises(KeyError):
+        optimizer.register(params={"p1": 1, "p2": 2}, target=9)
+
+    optimizer = BayesianOptimization(target_func, PBOUNDS,
+                                     use_only_unique_points=True)
+    optimizer.register(params={"p1": 1, "p2": 2}, target=3)
+    optimizer.register(params={"p1": 1, "p2": 2}, target=9)
+
+
 def test_probe_lazy():
     optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
 
@@ -157,6 +170,7 @@ def test_prime_subscriptions():
         ])
 
     test_subscriber = "test_subscriber"
+
     def test_callback(event, instance):
         pass
 
@@ -230,6 +244,7 @@ def test_set_gp_params():
 
 def test_maximize():
     from sklearn.exceptions import NotFittedError
+
     class Tracker:
         def __init__(self):
             self.start_count = 0
