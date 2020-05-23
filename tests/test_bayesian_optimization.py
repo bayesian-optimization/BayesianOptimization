@@ -97,7 +97,7 @@ def test_suggest_at_random():
 def test_suggest_with_one_observation():
     util = UtilityFunction(kind="ucb", kappa=5, xi=0)
     optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
-
+    
     optimizer.register(params={"p1": 1, "p2": 2}, target=3)
 
     for _ in range(5):
