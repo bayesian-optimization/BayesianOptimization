@@ -93,6 +93,17 @@ def test_register():
         space.register(params={"p1": 5, "p2": 4}, target=9)
 
 
+def test_use_only_unique_points():
+    space = TargetSpace(target_func, PBOUNDS, use_only_unique_points=False)
+    space.register(params={"p1": 1, "p2": 2}, target=3)
+    with pytest.raises(KeyError):
+        space.register(params={"p1": 1, "p2": 2}, target=9)
+
+    space = TargetSpace(target_func, PBOUNDS, use_only_unique_points=True)
+    space.register(params={"p1": 1, "p2": 2}, target=3)
+    space.register(params={"p1": 1, "p2": 2}, target=9)
+
+
 def test_probe():
     space = TargetSpace(target_func, PBOUNDS)
 
