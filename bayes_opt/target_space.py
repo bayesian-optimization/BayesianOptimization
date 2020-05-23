@@ -22,7 +22,8 @@ class TargetSpace(object):
     >>> y = space.register_point(x)
     >>> assert self.max_point()['max_val'] == y
     """
-    def __init__(self, target_func, pbounds, random_state=None):
+    def __init__(self, target_func, pbounds, random_state=None,
+                 use_only_unique_points=False):
         """
         Parameters
         ----------
@@ -35,8 +36,14 @@ class TargetSpace(object):
 
         random_state : int, RandomState, or None
             optionally specify a seed for a random number generator
+
+        use_only_unique_points : bool
+            Wethever to only explore unique points or allow duplicates.
+            By default, the parameter is False.
+            When in convergence to some (local) maxima, points may be repeated.
         """
         self.random_state = ensure_rng(random_state)
+        self._use_only_unique_points = use_only_unique_points
 
         # The function to be optimized
         self.target_func = target_func
@@ -157,7 +164,10 @@ class TargetSpace(object):
         1
         """
         x = self._as_array(params)
-        if x in self:
+        # If the point in the space was already explored and no duplicated
+        # points are allowed to be explored. This can happen in convergence or
+        # when hot-swapping the function to optimize for transfer learning. 
+        if x in self and not self._use_only_unique_points:
             raise KeyError('Data point {} is not unique'.format(x))
 
         # Insert data into unique dictionary

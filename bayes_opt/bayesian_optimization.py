@@ -64,9 +64,35 @@ class Observable(object):
 
 class BayesianOptimization(Observable):
     def __init__(self, f, pbounds, random_state=None, verbose=2,
-                 bounds_transformer=None):
-        """"""
+                 bounds_transformer=None, use_only_unique_points=False):
+        """Create new BayesianOptimization object.
+        
+        Parameters
+        -------------------------
+        f : Callable
+            The function to be optimized.
+            If None is given, you will need to
+            use suggest and register to advance the BO process.
+
+        pbounds : Dict
+            Space of parameters to optimize.
+
+        random_state : int or None
+            The initial random state to use for reproducibility of results.
+
+        verbose : int
+            Wethever to have a verbose output, by default 2.
+
+        bounds_transformer : DomainTransformer or None
+            A base transformer for the given space of parameters.
+
+        use_only_unique_points : bool
+            Wethever to only explore unique points or allow duplicates.
+            By default, the parameter is False.
+            When in convergence to some (local) maxima, points may be repeated.
+        """
         self._random_state = ensure_rng(random_state)
+        self._use_only_unique_points = use_only_unique_points
 
         # Data structure containing the function to be optimized, the bounds of
         # its domain, and a record of the evaluations we have done so far
@@ -127,15 +153,20 @@ class BayesianOptimization(Observable):
             warnings.simplefilter("ignore")
             self._gp.fit(self._space.params, self._space.target)
 
-        # Finding argmax of the acquisition function.
-        suggestion = acq_max(
-            ac=utility_function.utility,
-            gp=self._gp,
-            y_max=self._space.target.max(),
-            bounds=self._space.bounds,
-            random_state=self._random_state
-        )
-
+        while True:
+            # Finding argmax of the acquisition function.
+            suggestion = acq_max(
+                ac=utility_function.utility,
+                gp=self._gp,
+                y_max=self._space.target.max(),
+                bounds=self._space.bounds,
+                random_state=self._random_state
+            )
+            # If the points can be non unique or the point was not already
+            # explored within the space.
+            if not (self._use_only_unique_points and suggestion in self._space):
+                break
+        # Convert given suggestion to the space of parameters
         return self._space.array_to_params(suggestion)
 
     def _prime_queue(self, init_points):
