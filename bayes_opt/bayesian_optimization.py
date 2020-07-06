@@ -70,15 +70,18 @@ class BayesianOptimization(Observable):
     Parameters
     ----------
     f: function
-        The function to optimize.
+        Function to be maximized.
+
     pbounds: dict
-        The dictionary with the bounds for the parameters to use in the optimization. The dictionary contains the lower
-        and upper boundaries.
+        Dictionary with parameters names as keys and a tuple with minimum and maximum values.
+
     random_state: int or numpy.random.RandomState, optional(default=None)
         If the value is an integer, it is used as the seed for creating a numpy.random.RandomState.
         Otherwise the random state provieded it is used. When set to None, an unseeded random state is generated.
+
     verbose: int, optional(default=2)
         The level of verbosity.
+
     bounds_transformer: DomainTransformer, optional(default=None)
         If provided, the transformation is applied to the bounds.
 
@@ -89,6 +92,9 @@ class BayesianOptimization(Observable):
 
     maximize()
         Tries to find the parameters that yield the maximum value for the given function.
+
+    set_bounds()
+        Allows changing the lower and upper searching bounds
     """
     def __init__(self, f, pbounds, random_state=None, verbose=2,
                  bounds_transformer=None):
@@ -143,6 +149,7 @@ class BayesianOptimization(Observable):
         ----------
         params: dict or list
             The parameters where the optimizer will evaluate the function.
+
         lazy: bool, optional(default=True)
             If True, the optimizer will evaluate the points when calling maximize().
             Otherwise it will evaluate it at the moment.
@@ -206,21 +213,27 @@ class BayesianOptimization(Observable):
         ----------
         init_points : int, optional(default=5)
             Number of iterations before the explorations starts the exploration for the maximum.
+
         n_iter: int, optional(default=25)
             Number of iterations where the method attempts to find the maximum value.
+
         acq: {'ucb', 'ei', 'poi'}
             The acquisition method used.
                 * 'ucb' stands for the Upper Confidence Bounds method
                 * 'ei' is the Expected Improvement method
                 * 'poi' is the Probability Of Improvement criterion.
+
         kappa: float, optional(default=2.576)
             Parameter to indicate how closed are the next parameters sampled.
                 Higher value = favors spaces that are least explored.
                 Lower value = favors spaces where the regression function is the highest.
+
         kappa_decay: float, optional(default=1)
             `kappa` is multiplied by this factor every iteration.
+
         kappa_decay_delay: int, optional(default=0)
             Number of iterations that must have passed before applying the decay to `kappa`.
+
         xi: float, optional(default=0.0)
             [unused]
         """
