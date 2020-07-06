@@ -104,12 +104,13 @@ class ScreenLogger(_Tracker):
 
 
 class JSONLogger(_Tracker):
-    def __init__(self, path):
+    def __init__(self, path, reset=True):
         self._path = path if path[-5:] == ".json" else path + ".json"
-        try:
-            os.remove(self._path)
-        except OSError:
-            pass
+        if reset:
+            try:
+                os.remove(self._path)
+            except OSError:
+                pass
         super(JSONLogger, self).__init__()
 
     def update(self, event, instance):
