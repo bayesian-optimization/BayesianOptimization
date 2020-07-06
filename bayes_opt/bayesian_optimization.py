@@ -63,6 +63,33 @@ class Observable(object):
 
 
 class BayesianOptimization(Observable):
+    """
+    This class takes the function to optimize as well as the parameters bounds in order to
+    find which values for the parameters yield the maximum value using bayesian optimization.
+
+    Parameters
+    ----------
+    f: function
+        The function to optimize.
+    pbounds: dict
+        The dictionary with the bounds for the parameters to use in the optimization. The dictionary contains the lower
+        and upper boundaries.
+    random_state: int or numpy.random.RandomState, optional(default=None)
+        If the value is an integer, it is used as the seed for creating a numpy.random.RandomState.
+        Otherwise the random state provieded it is used. When set to None, an unseeded random state is generated.
+    verbose: int, optional(default=2)
+        The level of verbosity.
+    bounds_transformer: DomainTransformer, optional(default=None)
+        If provided, the transformation is applied to the bounds.
+
+    Methods
+    -------
+    probe()
+        Evaluates the function on the given points. Can be used to guide the optimizer.
+
+    maximize()
+        Tries to find the parameters that yield the maximum value for the given function.
+    """
     def __init__(self, f, pbounds, random_state=None, verbose=2,
                  bounds_transformer=None):
         """"""
@@ -109,7 +136,17 @@ class BayesianOptimization(Observable):
         self.dispatch(Events.OPTIMIZATION_STEP)
 
     def probe(self, params, lazy=True):
-        """Probe target of x"""
+        """
+        Evaluates the function on the given points. Useful to guide the optimizer.
+
+        Parameters
+        ----------
+        params: dict or list
+            The parameters where the optimizer will evaluate the function.
+        lazy: bool, optional(default=True)
+            If True, the optimizer will evaluate the points when calling maximize().
+            Otherwise it will evaluate it at the moment.
+        """
         if lazy:
             self._queue.add(params)
         else:
@@ -117,7 +154,7 @@ class BayesianOptimization(Observable):
             self.dispatch(Events.OPTIMIZATION_STEP)
 
     def suggest(self, utility_function):
-        """Most promissing point to probe next"""
+        """Most promising point to probe next"""
         if len(self._space) == 0:
             return self._space.array_to_params(self._space.random_sample())
 
@@ -162,7 +199,31 @@ class BayesianOptimization(Observable):
                  kappa_decay_delay=0,
                  xi=0.0,
                  **gp_params):
-        """Mazimize your function"""
+        """
+        Probes the target space to find the parameters that yield the maximum value for the given function.
+
+        Parameters
+        ----------
+        init_points : int, optional(default=5)
+            Number of iterations before the explorations starts the exploration for the maximum.
+        n_iter: int, optional(default=25)
+            Number of iterations where the method attempts to find the maximum value.
+        acq: {'ucb', 'ei', 'poi'}
+            The acquisition method used.
+                * 'ucb' stands for the Upper Confidence Bounds method
+                * 'ei' is the Expected Improvement method
+                * 'poi' is the Probability Of Improvement criterion.
+        kappa: float, optional(default=2.576)
+            Parameter to indicate how closed are the next parameters sampled.
+                Higher value = favors spaces that are least explored.
+                Lower value = favors spaces where the regression function is the highest.
+        kappa_decay: float, optional(default=1)
+            `kappa` is multiplied by this factor every iteration.
+        kappa_decay_delay: int, optional(default=0)
+            Number of iterations that must have passed before applying the decay to `kappa`.
+        xi: float, optional(default=0.0)
+            [unused]
+        """
         self._prime_subscriptions()
         self.dispatch(Events.OPTIMIZATION_START)
         self._prime_queue(init_points)
