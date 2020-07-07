@@ -64,8 +64,9 @@ class Observable(object):
 
 class BayesianOptimization(Observable):
     """
-    This class takes the function to optimize as well as the parameters bounds in order to
-    find which values for the parameters yield the maximum value using bayesian optimization.
+    This class takes the function to optimize as well as the parameters bounds
+    in order to find which values for the parameters yield the maximum value
+    using bayesian optimization.
 
     Parameters
     ----------
@@ -73,11 +74,13 @@ class BayesianOptimization(Observable):
         Function to be maximized.
 
     pbounds: dict
-        Dictionary with parameters names as keys and a tuple with minimum and maximum values.
+        Dictionary with parameters names as keys and a tuple with minimum
+        and maximum values.
 
     random_state: int or numpy.random.RandomState, optional(default=None)
-        If the value is an integer, it is used as the seed for creating a numpy.random.RandomState.
-        Otherwise the random state provieded it is used. When set to None, an unseeded random state is generated.
+        If the value is an integer, it is used as the seed for creating a
+        numpy.random.RandomState. Otherwise the random state provieded it is used.
+        When set to None, an unseeded random state is generated.
 
     verbose: int, optional(default=2)
         The level of verbosity.
@@ -88,24 +91,24 @@ class BayesianOptimization(Observable):
     Methods
     -------
     probe()
-        Evaluates the function on the given points. Can be used to guide the optimizer.
+        Evaluates the function on the given points.
+        Can be used to guide the optimizer.
 
     maximize()
-        Tries to find the parameters that yield the maximum value for the given function.
+        Tries to find the parameters that yield the maximum value for the
+        given function.
 
     set_bounds()
         Allows changing the lower and upper searching bounds
     """
     def __init__(self, f, pbounds, random_state=None, verbose=2,
                  bounds_transformer=None):
-        """"""
         self._random_state = ensure_rng(random_state)
 
         # Data structure containing the function to be optimized, the bounds of
         # its domain, and a record of the evaluations we have done so far
         self._space = TargetSpace(f, pbounds, random_state)
 
-        # queue
         self._queue = Queue()
 
         # Internal GP regressor
@@ -151,8 +154,8 @@ class BayesianOptimization(Observable):
             The parameters where the optimizer will evaluate the function.
 
         lazy: bool, optional(default=True)
-            If True, the optimizer will evaluate the points when calling maximize().
-            Otherwise it will evaluate it at the moment.
+            If True, the optimizer will evaluate the points when calling
+            maximize(). Otherwise it will evaluate it at the moment.
         """
         if lazy:
             self._queue.add(params)
@@ -207,15 +210,18 @@ class BayesianOptimization(Observable):
                  xi=0.0,
                  **gp_params):
         """
-        Probes the target space to find the parameters that yield the maximum value for the given function.
+        Probes the target space to find the parameters that yield the maximum
+        value for the given function.
 
         Parameters
         ----------
         init_points : int, optional(default=5)
-            Number of iterations before the explorations starts the exploration for the maximum.
+            Number of iterations before the explorations starts the exploration
+            for the maximum.
 
         n_iter: int, optional(default=25)
-            Number of iterations where the method attempts to find the maximum value.
+            Number of iterations where the method attempts to find the maximum
+            value.
 
         acq: {'ucb', 'ei', 'poi'}
             The acquisition method used.
@@ -226,13 +232,15 @@ class BayesianOptimization(Observable):
         kappa: float, optional(default=2.576)
             Parameter to indicate how closed are the next parameters sampled.
                 Higher value = favors spaces that are least explored.
-                Lower value = favors spaces where the regression function is the highest.
+                Lower value = favors spaces where the regression function is the
+                highest.
 
         kappa_decay: float, optional(default=1)
             `kappa` is multiplied by this factor every iteration.
 
         kappa_decay_delay: int, optional(default=0)
-            Number of iterations that must have passed before applying the decay to `kappa`.
+            Number of iterations that must have passed before applying the decay
+            to `kappa`.
 
         xi: float, optional(default=0.0)
             [unused]
@@ -276,4 +284,5 @@ class BayesianOptimization(Observable):
         self._space.set_bounds(new_bounds)
 
     def set_gp_params(self, **params):
+        """Set parameters to the internal Gaussian Process Regressor"""
         self._gp.set_params(**params)
