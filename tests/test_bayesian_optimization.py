@@ -157,6 +157,7 @@ def test_prime_subscriptions():
         ])
 
     test_subscriber = "test_subscriber"
+
     def test_callback(event, instance):
         pass
 
@@ -289,6 +290,13 @@ def test_maximize():
     assert tracker.start_count == 3
     assert tracker.step_count == 5
     assert tracker.end_count == 3
+
+
+def test_define_wrong_transformer():
+    with pytest.raises(AssertionError):
+        optimizer = BayesianOptimization(target_func, PBOUNDS,
+                                         random_state=np.random.RandomState(1),
+                                         bounds_transformer=3)
 
 
 if __name__ == '__main__':
