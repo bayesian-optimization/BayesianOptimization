@@ -126,8 +126,8 @@ class BayesianOptimization(Observable):
             try:
                 self._bounds_transformer.initialize(self._space)
             except (AttributeError, TypeError):
-                raise AssertionError('The transformer must be instance of'
-                                     'DomainTransformer')
+                raise TypeError('The transformer must be an instance of '
+                                'DomainTransformer')
 
         super(BayesianOptimization, self).__init__(events=DEFAULT_EVENTS)
 
