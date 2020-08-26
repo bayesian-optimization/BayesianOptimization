@@ -83,7 +83,7 @@ class UtilityFunction(object):
         self._kappa_decay_delay = kappa_decay_delay
 
         self.xi = xi
-        
+
         self._iters_counter = 0
 
         if kind not in ['ucb', 'ei', 'poi']:
