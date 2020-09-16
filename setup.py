@@ -15,4 +15,7 @@ setup(
         "scipy >= 0.14.0",
         "scikit-learn >= 0.18.0",
     ],
+    classifiers=[
+        'License :: OSI Approved :: MIT License',
+    ]
 )
