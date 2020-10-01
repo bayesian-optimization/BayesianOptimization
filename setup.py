@@ -1,3 +1,5 @@
+#python setup with package finder
+
 from setuptools import setup, find_packages
 
 setup(
