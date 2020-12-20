@@ -115,7 +115,7 @@ class BayesianOptimization(Observable):
         self._gp = GaussianProcessRegressor(
             kernel=Matern(nu=2.5),
             alpha=1e-6,
-            normalize_y=True,
+            normalize_y=False,
             n_restarts_optimizer=5,
             random_state=self._random_state,
         )
