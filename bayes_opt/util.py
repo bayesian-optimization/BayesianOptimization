@@ -1,7 +1,9 @@
 import warnings
 import numpy as np
+from enum import Enum
 from scipy.stats import norm
 from scipy.optimize import minimize
+
 
 
 def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=10000, n_iter=10):
@@ -71,6 +73,11 @@ def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=10000, n_iter=10):
     return np.clip(x_max, bounds[:, 0], bounds[:, 1])
 
 
+class ACQ(Enum):
+    ucb = 1 # Upper Confidence Bound
+    ei = 2 # Expected Improvement
+    poi = 3 # Probability of Improvement
+
 class UtilityFunction(object):
     """
     An object to compute the acquisition functions.
@@ -86,13 +93,16 @@ class UtilityFunction(object):
         
         self._iters_counter = 0
 
-        if kind not in ['ucb', 'ei', 'poi']:
-            err = "The utility function " \
-                  "{} has not been implemented, " \
-                  "please choose one of ucb, ei, or poi.".format(kind)
-            raise NotImplementedError(err)
-        else:
-            self.kind = kind
+        if isinstance(kind, str):
+            if kind not in ['ucb', 'ei', 'poi']:
+                err = "The utility function " \
+                    "{} has not been implemented, " \
+                    "please choose one of ucb, ei, or poi.".format(kind)
+                raise NotImplementedError(err)
+            else:
+                kind = ACQ[kind]
+
+        self.kind = kind
 
     def update_params(self):
         self._iters_counter += 1
@@ -101,11 +111,11 @@ class UtilityFunction(object):
             self.kappa *= self._kappa_decay
 
     def utility(self, x, gp, y_max):
-        if self.kind == 'ucb':
+        if self.kind == ACQ.ucb:
             return self._ucb(x, gp, self.kappa)
-        if self.kind == 'ei':
+        if self.kind == ACQ.ei:
             return self._ei(x, gp, y_max, self.xi)
-        if self.kind == 'poi':
+        if self.kind == ACQ.poi:
             return self._poi(x, gp, y_max, self.xi)
 
     @staticmethod

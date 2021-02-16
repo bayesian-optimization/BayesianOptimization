@@ -3,7 +3,7 @@ import numpy as np
 
 from bayes_opt import BayesianOptimization
 from bayes_opt.util import UtilityFunction, Colours
-from bayes_opt.util import acq_max, load_logs, ensure_rng
+from bayes_opt.util import acq_max, load_logs, ensure_rng, ACQ
 
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -39,7 +39,7 @@ def get_globals():
     return {'x': X, 'y': y, 'gp': GP, 'mesh': mesh}
 
 
-def brute_force_maximum(MESH, GP, kind='ucb', kappa=1.0, xi=1.0):
+def brute_force_maximum(MESH, GP, kind=ACQ.ucb, kappa=1.0, xi=1.0):
     uf = UtilityFunction(kind=kind, kappa=kappa, xi=xi)
 
     mesh_vals = uf.utility(MESH, GP, 2)
@@ -54,21 +54,30 @@ X, Y, GP, MESH = GLOB['x'], GLOB['y'], GLOB['gp'], GLOB['mesh']
 
 
 def test_utility_fucntion():
-    util = UtilityFunction(kind="ucb", kappa=1.0, xi=1.0)
-    assert util.kind == "ucb"
+    util = UtilityFunction(kind='ucb', kappa=1.0, xi=1.0)
+    assert util.kind == ACQ.ucb
+    
+    util = UtilityFunction(kind=ACQ.ucb, kappa=1.0, xi=1.0)
+    assert util.kind == ACQ.ucb
 
     util = UtilityFunction(kind="ei", kappa=1.0, xi=1.0)
-    assert util.kind == "ei"
+    assert util.kind == ACQ.ei
+
+    util = UtilityFunction(kind=ACQ.ei, kappa=1.0, xi=1.0)
+    assert util.kind == ACQ.ei
+
+    util = UtilityFunction(kind=ACQ.poi, kappa=1.0, xi=1.0)
+    assert util.kind == ACQ.poi
 
     util = UtilityFunction(kind="poi", kappa=1.0, xi=1.0)
-    assert util.kind == "poi"
+    assert util.kind == ACQ.poi
 
     with pytest.raises(NotImplementedError):
         util = UtilityFunction(kind="other", kappa=1.0, xi=1.0)
 
 
 def test_acq_with_ucb():
-    util = UtilityFunction(kind="ucb", kappa=1.0, xi=1.0)
+    util = UtilityFunction(kind=ACQ.ucb, kappa=1.0, xi=1.0)
     episilon = 1e-2
     y_max = 2.0
 
@@ -80,7 +89,7 @@ def test_acq_with_ucb():
         random_state=ensure_rng(0),
         n_iter=20
     )
-    _, brute_max_arg = brute_force_maximum(MESH, GP, kind='ucb', kappa=1.0, xi=1.0)
+    _, brute_max_arg = brute_force_maximum(MESH, GP, kind=ACQ.ucb, kappa=1.0, xi=1.0)
 
     assert all(abs(brute_max_arg - max_arg) < episilon)
 

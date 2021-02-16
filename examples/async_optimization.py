@@ -37,7 +37,7 @@ class BayesianOptimizationHandler(RequestHandler):
         f=black_box_function,
         pbounds={"x": (-4, 4), "y": (-3, 3)}
     )
-    _uf = UtilityFunction(kind="ucb", kappa=3, xi=1)
+    _uf = UtilityFunction(kind=ACQ.ucb, kappa=3, xi=1)
 
     def post(self):
         """Deal with incoming requests."""

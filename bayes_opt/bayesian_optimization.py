@@ -3,7 +3,7 @@ import warnings
 from .target_space import TargetSpace
 from .event import Events, DEFAULT_EVENTS
 from .logger import _get_default_logger
-from .util import UtilityFunction, acq_max, ensure_rng
+from .util import UtilityFunction, acq_max, ensure_rng, ACQ
 
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -207,7 +207,7 @@ class BayesianOptimization(Observable):
     def maximize(self,
                  init_points=5,
                  n_iter=25,
-                 acq='ucb',
+                 acq=ACQ.ucb,
                  kappa=2.576,
                  kappa_decay=1,
                  kappa_decay_delay=0,
@@ -227,7 +227,7 @@ class BayesianOptimization(Observable):
             Number of iterations where the method attempts to find the maximum
             value.
 
-        acq: {'ucb', 'ei', 'poi'}
+        acq: ACQ {ACQ.ucb, ACQ.ei, ACQ.poi}
             The acquisition method used.
                 * 'ucb' stands for the Upper Confidence Bounds method
                 * 'ei' is the Expected Improvement method
