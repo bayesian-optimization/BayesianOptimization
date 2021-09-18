@@ -30,7 +30,7 @@ def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=10000, n_iter=10):
         instance of np.RandomState random number generator
 
     :param n_warmup:
-        number of times to randomly sample the aquisition function
+        number of times to randomly sample the acquisition function
 
     :param n_iter:
         number of times to run scipy.minimize
