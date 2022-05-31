@@ -1,7 +1,9 @@
 import warnings
+from packaging import version
 import numpy as np
 from scipy.stats import norm
 from scipy.optimize import minimize
+from scipy import __version__ as scipy_version
 
 
 def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=10000, n_iter=10):
@@ -61,10 +63,17 @@ def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=10000, n_iter=10):
         if not res.success:
             continue
 
+        # NOTE The L-BFGS-B minimizer in scipy versions past 1.7.1 returns the
+        # evaluation of a function as a scalar rather than an array.
+        if version.parse(scipy_version) > version.parse("1.7.1"):
+            try_max_acq = -res.fun
+        else:
+            try_max_acq = -res.fun[0]
+
         # Store it if better than previous minimum(maximum).
-        if max_acq is None or -res.fun[0] >= max_acq:
+        if max_acq is None or try_max_acq >= max_acq:
             x_max = res.x
-            max_acq = -res.fun[0]
+            max_acq = try_max_acq
 
     # Clip output to make sure it lies within the bounds. Due to floating
     # point technicalities this is not always the case.
