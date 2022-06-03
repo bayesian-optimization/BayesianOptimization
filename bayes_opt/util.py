@@ -62,9 +62,9 @@ def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=10000, n_iter=10):
             continue
 
         # Store it if better than previous minimum(maximum).
-        if max_acq is None or -res.fun[0] >= max_acq:
+        if max_acq is None or -np.squeeze(res.fun) >= max_acq:
             x_max = res.x
-            max_acq = -res.fun[0]
+            max_acq = -np.squeeze(res.fun)
 
     # Clip output to make sure it lies within the bounds. Due to floating
     # point technicalities this is not always the case.
