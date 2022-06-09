@@ -36,3 +36,4 @@ jobs:
     - name: Test with pytest
       run: |
         pytest --cov-config .coveragerc --cov-report html --cov=bayes_opt
+        codecov 
