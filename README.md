@@ -4,7 +4,7 @@
 
 # Bayesian Optimization
 
-[![Travis](https://img.shields.io/travis/fmfn/BayesianOptimization/master.svg?label=Travis%20CI)](https://travis-ci.org/fmfn/BayesianOptimization)
+![tests](https://github.com/bwheelz36/BayesianOptimization/actions/workflows/run_tests.yml/badge.svg)
 [![Codecov](https://codecov.io/github/fmfn/BayesianOptimization/badge.svg?branch=master&service=github)](https://codecov.io/github/fmfn/BayesianOptimization?branch=master)
 [![Pypi](https://img.shields.io/pypi/v/bayesian-optimization.svg)](https://pypi.python.org/pypi/bayesian-optimization)
 
