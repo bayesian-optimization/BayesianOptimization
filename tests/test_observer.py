@@ -1,6 +1,7 @@
 from bayes_opt.bayesian_optimization import Observable
 from bayes_opt.observer import _Tracker
 from bayes_opt.event import Events
+import os
 
 
 EVENTS = ["a", "b", "c"]
@@ -109,7 +110,8 @@ def test_tracker():
 
     tracker._time_metrics()
     assert start_time == tracker._start_time
-    assert previous_time < tracker._previous_time
+    if not 'win' in os.sys.platform:
+        assert previous_time < tracker._previous_time
 
 
 if __name__ == '__main__':
