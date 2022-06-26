@@ -1,3 +1,5 @@
+from typing import Optional, Union, List
+
 import numpy as np
 from .target_space import TargetSpace
 
@@ -25,17 +27,25 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         self,
         gamma_osc: float = 0.7,
         gamma_pan: float = 1.0,
-        eta: float = 0.9
+        eta: float = 0.9,
+        minimum_window: Optional[Union[List[float], float]] = 0.0
     ) -> None:
         self.gamma_osc = gamma_osc
         self.gamma_pan = gamma_pan
         self.eta = eta
-        pass
+        self.minimum_window_value = minimum_window
 
     def initialize(self, target_space: TargetSpace) -> None:
         """Initialize all of the parameters"""
         self.original_bounds = np.copy(target_space.bounds)
         self.bounds = [self.original_bounds]
+
+        # Set the minimum window to an array of length bounds
+        if isinstance(self.minimum_window_value, list) or isinstance(self.minimum_window_value, np.ndarray):
+            assert len(self.minimum_window_value) == len(target_space.bounds)
+            self.minimum_window = self.minimum_window_value
+        else:
+            self.minimum_window = [self.minimum_window_value] * len(target_space.bounds)
 
         self.previous_optimal = np.mean(target_space.bounds, axis=1)
         self.current_optimal = np.mean(target_space.bounds, axis=1)
@@ -89,6 +99,14 @@ class SequentialDomainReductionTransformer(DomainTransformer):
                 variable[0] = global_bounds[i, 0]
             if variable[1] > global_bounds[i, 1]:
                 variable[1] = global_bounds[i, 1]
+        for i, entry in enumerate(new_bounds):
+            if entry[0] > entry[1]:
+                new_bounds[i, 0] = entry[1]
+                new_bounds[i, 1] = entry[0]
+            window_width = abs(entry[0] - entry[1])
+            if window_width < self.minimum_window[i]:
+                new_bounds[i, 0] -= (self.minimum_window[i] - window_width) / 2.0
+                new_bounds[i, 1] += (self.minimum_window[i] - window_width) / 2.0
 
         return new_bounds
 
