@@ -270,7 +270,9 @@ class BayesianOptimization(Observable):
 
             self.probe(x_probe, lazy=False)
 
-            if self._bounds_transformer:
+            if self._bounds_transformer and iteration > 0:
+                # The bounds transformer should only modify the bounds after the init_points points (only for the true
+                # iterations)
                 self.set_bounds(
                     self._bounds_transformer.transform(self._space))
 
