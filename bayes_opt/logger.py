@@ -30,12 +30,12 @@ class ScreenLogger(_Tracker):
 
     def _format_number(self, x):
         if isinstance(x, int):
-                s = "{x:< {s}}".format(
+                s = "{x:<{s}}".format(
                     x=x,
                     s=self._default_cell_size,
                 )
         else:
-            s = "{x:< {s}.{p}}".format(
+            s = "{x:<{s}.{p}}".format(
                 x=x,
                 s=self._default_cell_size,
                 p=self._default_precision,
