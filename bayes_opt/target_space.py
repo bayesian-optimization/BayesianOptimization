@@ -1,6 +1,6 @@
 import numpy as np
 from .util import ensure_rng
-
+from .constraint import ConstraintModel
 
 def _hashable(x):
     """ ensure that an point is hashable by a python dict """
@@ -119,8 +119,7 @@ class TargetSpace(object):
         except AssertionError:
             raise ValueError(
                 "Size of array ({}) is different than the ".format(len(x)) +
-                "expected number of parameters ({}).".format(len(self.keys))
-            )
+                "expected number of parameters ({}).".format(len(self.keys)))
         return x
 
     def register(self, params, target):
@@ -212,14 +211,13 @@ class TargetSpace(object):
         >>> space.random_points(1)
         array([[ 55.33253689,   0.54488318]])
         """
-        # TODO: support integer, category, and basic scipy.optimize constraints
         data = np.empty((1, self.dim))
         for col, (lower, upper) in enumerate(self._bounds):
             data.T[col] = self.random_state.uniform(lower, upper, size=1)
         return data.ravel()
 
     def max(self):
-        """Get maximum target value found and corresponding parametes."""
+        """Get maximum target value found and corresponding parameters."""
         try:
             res = {
                 'target': self.target.max(),
@@ -252,3 +250,88 @@ class TargetSpace(object):
         for row, key in enumerate(self.keys):
             if key in new_bounds:
                 self._bounds[row] = new_bounds[key]
+
+
+class ConstrainedTargetSpace(TargetSpace):
+    """
+    Expands TargetSpace to incorporate constraints.
+    """
+    def __init__(self,
+                 target_func,
+                 constraint: ConstraintModel,
+                 pbounds,
+                 random_state=None):
+        super().__init__(target_func, pbounds, random_state)
+
+        self._constraint = constraint
+
+        # preallocated memory for constraint fulfillement
+        if constraint.limits.size==1:
+            self._constraint_values = np.empty(shape=(0), dtype=float)
+        else:
+            self._constraint_values = np.empty(shape=(0, constraint.limits.size), dtype=float)
+
+    @property
+    def constraint_values(self):
+        return self._constraint_values
+    
+    def register(self, params, target, constraint_value):
+        x = self._as_array(params)
+        if x in self:
+            raise KeyError('Data point {} is not unique'.format(x))
+
+        # Insert data into unique dictionary
+        self._cache[_hashable(x.ravel())] = (target, constraint_value)
+
+        self._params = np.concatenate([self._params, x.reshape(1, -1)])
+        self._target = np.concatenate([self._target, [target]])
+        self._constraint_values = np.concatenate([self._constraint_values, [constraint_value]])
+
+    def probe(self, params):
+        x = self._as_array(params)
+
+        try:
+            return self._cache[_hashable(x)]
+        except KeyError:
+            params = dict(zip(self._keys, x))
+            target = self.target_func(**params)
+            constraint_value = self._constraint.eval(**params)
+            self.register(x, target, constraint_value)
+        return target, constraint_value
+
+    def max(self):
+        """Get maximum target value found and corresponding parametes provided
+        that they fulfill the constraints."""
+        try:
+            allowed = self._constraint.allowed(self._constraint_values)
+            if allowed.any():
+                # Getting of all points that fulfill the constraints, find the
+                # one with the maximum value for the target function.
+                sorted = np.argsort(self.target)
+                idx = sorted[allowed[sorted]][-1]
+                # there must be a better way to do this, right?
+                res = {
+                    'target': self.target[idx],
+                    'params': dict(
+                        zip(self.keys, self.params[idx])
+                    ),
+                    'constraint': self._constraint_values[idx]
+                }
+            else:
+                res = {
+                    'target': None,
+                    'params': None,
+                    'constraint' : None
+                }
+        except ValueError:
+            res = {}
+        return res
+    
+    def res(self):
+        """Get all target values and constraint fulfillment for all parameters."""
+        params = [dict(zip(self.keys, p)) for p in self.params]
+
+        return [
+            {"target": target, "constraint": constraint_value, "params": param, "allowed": allowed}
+            for target, constraint_value, param, allowed in zip(self.target, self._constraint_values, params, self._constraint.allowed(self._constraint_values))
+        ]

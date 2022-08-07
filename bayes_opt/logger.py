@@ -6,7 +6,6 @@ from .observer import _Tracker
 from .event import Events
 from .util import Colours
 
-
 def _get_default_logger(verbose):
     return ScreenLogger(verbose=verbose)
 
@@ -81,6 +80,11 @@ class ScreenLogger(_Tracker):
         return line + "\n" + ("-" * self._header_length)
 
     def _is_new_max(self, instance):
+        if instance.max["target"] is None:
+            # During constraint optimization, there might not be a maximum
+            # value since the optimizer might've not encountered any points
+            # that fulfill the constraints.
+            return False
         if self._previous_max is None:
             self._previous_max = instance.max["target"]
         return instance.max["target"] > self._previous_max

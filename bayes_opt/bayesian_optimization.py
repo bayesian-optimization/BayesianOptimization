@@ -1,15 +1,18 @@
+from multiprocessing.sharedctypes import Value
 import warnings
 
-from .target_space import TargetSpace
+from .target_space import TargetSpace, ConstrainedTargetSpace
 from .event import Events, DEFAULT_EVENTS
 from .logger import _get_default_logger
 from .util import UtilityFunction, acq_max, ensure_rng
 
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
-
+from copy import deepcopy
+from .constraint import ConstraintModel
 
 class Queue:
+
     def __init__(self):
         self._queue = []
 
@@ -41,6 +44,7 @@ class Observable(object):
     Inspired/Taken from
         https://www.protechtraining.com/blog/post/879#simple-observer
     """
+
     def __init__(self, events):
         # maps event names to subscribers
         # str -> dict
@@ -76,6 +80,9 @@ class BayesianOptimization(Observable):
     pbounds: dict
         Dictionary with parameters names as keys and a tuple with minimum
         and maximum values.
+    
+    constraint: A ConstraintModel. Note that the names of arguments of the
+        constraint function and of f need to be the same. 
 
     random_state: int or numpy.random.RandomState, optional(default=None)
         If the value is an integer, it is used as the seed for creating a
@@ -101,13 +108,15 @@ class BayesianOptimization(Observable):
     set_bounds()
         Allows changing the lower and upper searching bounds
     """
-    def __init__(self, f, pbounds, random_state=None, verbose=2,
+
+    def __init__(self,
+                 f,
+                 pbounds,
+                 constraint=None,
+                 random_state=None,
+                 verbose=2,
                  bounds_transformer=None):
         self._random_state = ensure_rng(random_state)
-
-        # Data structure containing the function to be optimized, the bounds of
-        # its domain, and a record of the evaluations we have done so far
-        self._space = TargetSpace(f, pbounds, random_state)
 
         self._queue = Queue()
 
@@ -119,6 +128,14 @@ class BayesianOptimization(Observable):
             n_restarts_optimizer=5,
             random_state=self._random_state,
         )
+
+        if constraint is None:
+            # Data structure containing the function to be optimized, the bounds of
+            # its domain, and a record of the evaluations we have done so far
+            self._space = TargetSpace(f, pbounds, random_state)
+        else:
+            self._space = ConstrainedTargetSpace(f, constraint, pbounds, random_state)
+        self.constraint = constraint
 
         self._verbose = verbose
         self._bounds_transformer = bounds_transformer
@@ -161,6 +178,7 @@ class BayesianOptimization(Observable):
             If True, the optimizer will evaluate the points when calling
             maximize(). Otherwise it will evaluate it at the moment.
         """
+
         if lazy:
             self._queue.add(params)
         else:
@@ -177,15 +195,17 @@ class BayesianOptimization(Observable):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             self._gp.fit(self._space.params, self._space.target)
+            if self.constraint is not None:
+                self.constraint.fit(self._space.params, self._space._constraint_values)
+                
 
         # Finding argmax of the acquisition function.
-        suggestion = acq_max(
-            ac=utility_function.utility,
-            gp=self._gp,
-            y_max=self._space.target.max(),
-            bounds=self._space.bounds,
-            random_state=self._random_state
-        )
+        suggestion = acq_max(ac=utility_function.utility,
+                             gp=self._gp,
+                             constraint=self.constraint,
+                             y_max=self._space.target.max(),
+                             bounds=self._space.bounds,
+                             random_state=self._random_state)
 
         return self._space.array_to_params(suggestion)
 
@@ -267,7 +287,6 @@ class BayesianOptimization(Observable):
                 util.update_params()
                 x_probe = self.suggest(util)
                 iteration += 1
-
             self.probe(x_probe, lazy=False)
 
             if self._bounds_transformer and iteration > 0:
