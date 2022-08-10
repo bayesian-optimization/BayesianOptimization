@@ -87,10 +87,15 @@ def test_accurate_approximation_when_known():
         n_iter=10,
     )
 
-    params = optimizer.res[0]["params"]
-    x, y = params['x'], params['y']
+    # Exclude the last sampled point, because the constraint is not fitted on that.
+    res = np.array([[r['target'], r['constraint'], r['params']['x'], r['params']['y']] for r in optimizer.res[:-1]])
+
+    xy = res[:, [2, 3]]
+    x = res[:, 2]
+    y = res[:, 3]
     
-    assert constraint_function(x, y) == approx(conmod.approx(np.array([x, y])), rel=1e-5, abs=1e-5)
+    assert constraint_function(x, y) == approx(conmod.approx(xy), rel=1e-5, abs=1e-5)
+    assert constraint_function(x, y) == approx(optimizer.space.constraint_values[:-1], rel=1e-5, abs=1e-5)
 
 
 def test_multiple_constraints():
