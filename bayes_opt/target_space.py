@@ -302,29 +302,26 @@ class ConstrainedTargetSpace(TargetSpace):
     def max(self):
         """Get maximum target value found and corresponding parametes provided
         that they fulfill the constraints."""
-        try:
-            allowed = self._constraint.allowed(self._constraint_values)
-            if allowed.any():
-                # Getting of all points that fulfill the constraints, find the
-                # one with the maximum value for the target function.
-                sorted = np.argsort(self.target)
-                idx = sorted[allowed[sorted]][-1]
-                # there must be a better way to do this, right?
-                res = {
-                    'target': self.target[idx],
-                    'params': dict(
-                        zip(self.keys, self.params[idx])
-                    ),
-                    'constraint': self._constraint_values[idx]
-                }
-            else:
-                res = {
-                    'target': None,
-                    'params': None,
-                    'constraint' : None
-                }
-        except ValueError:
-            res = {}
+        allowed = self._constraint.allowed(self._constraint_values)
+        if allowed.any():
+            # Getting of all points that fulfill the constraints, find the
+            # one with the maximum value for the target function.
+            sorted = np.argsort(self.target)
+            idx = sorted[allowed[sorted]][-1]
+            # there must be a better way to do this, right?
+            res = {
+                'target': self.target[idx],
+                'params': dict(
+                    zip(self.keys, self.params[idx])
+                ),
+                'constraint': self._constraint_values[idx]
+            }
+        else:
+            res = {
+                'target': None,
+                'params': None,
+                'constraint' : None
+            }
         return res
     
     def res(self):
