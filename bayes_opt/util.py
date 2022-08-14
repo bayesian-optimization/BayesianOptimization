@@ -30,6 +30,7 @@ def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000
 
     :param constraint:
         A ConstraintModel.
+
     :param n_warmup:
         number of times to randomly sample the acquisition function
 
