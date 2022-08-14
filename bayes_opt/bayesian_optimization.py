@@ -8,8 +8,6 @@ from .util import UtilityFunction, acq_max, ensure_rng
 
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
-from copy import deepcopy
-from .constraint import ConstraintModel
 
 class Queue:
 
