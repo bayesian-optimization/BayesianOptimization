@@ -1,5 +1,5 @@
-from multiprocessing.sharedctypes import Value
 import warnings
+from queue import Queue, Empty
 
 from .target_space import TargetSpace, ConstrainedTargetSpace
 from .event import Events, DEFAULT_EVENTS
@@ -8,32 +8,6 @@ from .util import UtilityFunction, acq_max, ensure_rng
 
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
-
-class Queue:
-
-    def __init__(self):
-        self._queue = []
-
-    @property
-    def empty(self):
-        return len(self) == 0
-
-    def __len__(self):
-        return len(self._queue)
-
-    def __next__(self):
-        if self.empty:
-            raise StopIteration("Queue is empty, no more objects to retrieve.")
-        obj = self._queue[0]
-        self._queue = self._queue[1:]
-        return obj
-
-    def next(self):
-        return self.__next__()
-
-    def add(self, obj):
-        """Add object to end of queue."""
-        self._queue.append(obj)
 
 
 class Observable(object):
@@ -178,7 +152,7 @@ class BayesianOptimization(Observable):
         """
 
         if lazy:
-            self._queue.add(params)
+            self._queue.put(params)
         else:
             self._space.probe(params)
             self.dispatch(Events.OPTIMIZATION_STEP)
@@ -209,11 +183,11 @@ class BayesianOptimization(Observable):
 
     def _prime_queue(self, init_points):
         """Make sure there's something in the queue at the very beginning."""
-        if self._queue.empty and self._space.empty:
+        if self._queue.empty() and self._space.empty:
             init_points = max(init_points, 1)
 
         for _ in range(init_points):
-            self._queue.add(self._space.random_sample())
+            self._queue.put(self._space.random_sample())
 
     def _prime_subscriptions(self):
         if not any([len(subs) for subs in self._events.values()]):
@@ -278,10 +252,10 @@ class BayesianOptimization(Observable):
                                kappa_decay=kappa_decay,
                                kappa_decay_delay=kappa_decay_delay)
         iteration = 0
-        while not self._queue.empty or iteration < n_iter:
+        while not self._queue.empty() or iteration < n_iter:
             try:
-                x_probe = next(self._queue)
-            except StopIteration:
+                x_probe = self._queue.get(block=False)
+            except Empty:
                 util.update_params()
                 x_probe = self.suggest(util)
                 iteration += 1
