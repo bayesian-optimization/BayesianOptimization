@@ -1,6 +1,6 @@
 import numpy as np
 from .util import ensure_rng
-from .advanced_constraint import ConstraintModel
+from .constraint import ConstraintModel
 
 
 def _hashable(x):
