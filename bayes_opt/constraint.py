@@ -1,6 +1,4 @@
 import numpy as np
-import warnings
-from scipy.linalg import cholesky, cho_solve, solve_triangular
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
 from scipy.stats import norm
@@ -24,20 +22,17 @@ class ConstraintModel():
 
     random_state: int or numpy.random.RandomState, optional(default=None)
         If the value is an integer, it is used as the seed for creating a
-        numpy.random.RandomState. Otherwise the random state provided it is used.
+        numpy.random.RandomState. Otherwise the random state provided is used.
         When set to None, an unseeded random state is generated.
 
     Note
     ----
-    In case of multiple constraints, this model assumes conditional independence.
-    This means that for each constraint, the probability of fulfillment is the
-    cdf of a univariate Gaussian. The overall probability is a simply the product
-    of the individual probabilities.
+    In case of multiple constraints, this model assumes conditional
+    independence. This means that for each constraint, the probability of
+    fulfillment is the cdf of a univariate Gaussian. The overall probability
+    is a simply the product of the individual probabilities.
     """
 
-    # TODO: For the methods attached to this class, is it better to handle a
-    # single constraint function by retaining another dimension, i.e. having
-    # shape `(x, y, n_constraints)` even when `n_constraints` is 1?
     def __init__(self, func, limits, random_state=None):
         self.func = func
 
@@ -66,10 +61,12 @@ class ConstraintModel():
         try:
             return self.func(**kwargs)
         except TypeError as e:
-            msg = ("Encountered TypeError when evaluating constraint " +
+            msg = (
+                "Encountered TypeError when evaluating constraint " +
                 "function. This could be because your constraint function " +
                 "doesn't use the same keyword arguments as the target " +
-                f"function. Original error message:\n\n{e}")
+                f"function. Original error message:\n\n{e}"
+                )
             raise TypeError(msg)
 
     def fit(self, X, Y):

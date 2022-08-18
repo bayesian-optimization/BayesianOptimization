@@ -52,13 +52,13 @@ class BayesianOptimization(Observable):
     pbounds: dict
         Dictionary with parameters names as keys and a tuple with minimum
         and maximum values.
-    
+
     constraint: A ConstraintModel. Note that the names of arguments of the
-        constraint function and of f need to be the same. 
+        constraint function and of f need to be the same.
 
     random_state: int or numpy.random.RandomState, optional(default=None)
         If the value is an integer, it is used as the seed for creating a
-        numpy.random.RandomState. Otherwise the random state provided it is used.
+        numpy.random.RandomState. Otherwise the random state provided is used.
         When set to None, an unseeded random state is generated.
 
     verbose: int, optional(default=2)
@@ -102,11 +102,13 @@ class BayesianOptimization(Observable):
         )
 
         if constraint is None:
-            # Data structure containing the function to be optimized, the bounds of
-            # its domain, and a record of the evaluations we have done so far
+            # Data structure containing the function to be optimized, the
+            # bounds of its domain, and a record of the evaluations we have
+            # done so far
             self._space = TargetSpace(f, pbounds, random_state)
         else:
-            self._space = ConstrainedTargetSpace(f, constraint, pbounds, random_state)
+            self._space = ConstrainedTargetSpace(f, constraint, pbounds,
+                                                 random_state)
         self.constraint = constraint
 
         self._verbose = verbose
@@ -168,8 +170,8 @@ class BayesianOptimization(Observable):
             warnings.simplefilter("ignore")
             self._gp.fit(self._space.params, self._space.target)
             if self.constraint is not None:
-                self.constraint.fit(self._space.params, self._space._constraint_values)
-                
+                self.constraint.fit(self._space.params,
+                                    self._space._constraint_values)
 
         # Finding argmax of the acquisition function.
         suggestion = acq_max(ac=utility_function.utility,
@@ -228,15 +230,15 @@ class BayesianOptimization(Observable):
         kappa: float, optional(default=2.576)
             Parameter to indicate how closed are the next parameters sampled.
                 Higher value = favors spaces that are least explored.
-                Lower value = favors spaces where the regression function is the
-                highest.
+                Lower value = favors spaces where the regression function is
+                the highest.
 
         kappa_decay: float, optional(default=1)
             `kappa` is multiplied by this factor every iteration.
 
         kappa_decay_delay: int, optional(default=0)
-            Number of iterations that must have passed before applying the decay
-            to `kappa`.
+            Number of iterations that must have passed before applying the
+            decay to `kappa`.
 
         xi: float, optional(default=0.0)
             [unused]
@@ -262,8 +264,8 @@ class BayesianOptimization(Observable):
             self.probe(x_probe, lazy=False)
 
             if self._bounds_transformer and iteration > 0:
-                # The bounds transformer should only modify the bounds after the init_points points (only for the true
-                # iterations)
+                # The bounds transformer should only modify the bounds after
+                # the init_points points (only for the true iterations)
                 self.set_bounds(
                     self._bounds_transformer.transform(self._space))
 

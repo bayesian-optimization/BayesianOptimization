@@ -2,6 +2,7 @@ import numpy as np
 from .util import ensure_rng
 from .constraint import ConstraintModel
 
+
 def _hashable(x):
     """ ensure that an point is hashable by a python dict """
     return tuple(map(float, x))
@@ -266,7 +267,7 @@ class ConstrainedTargetSpace(TargetSpace):
         self._constraint = constraint
 
         # preallocated memory for constraint fulfillement
-        if constraint.limits.size==1:
+        if constraint.limits.size == 1:
             self._constraint_values = np.empty(shape=(0), dtype=float)
         else:
             self._constraint_values = np.empty(shape=(0, constraint.limits.size), dtype=float)
@@ -274,7 +275,7 @@ class ConstrainedTargetSpace(TargetSpace):
     @property
     def constraint_values(self):
         return self._constraint_values
-    
+
     def register(self, params, target, constraint_value):
         x = self._as_array(params)
         if x in self:
@@ -285,7 +286,8 @@ class ConstrainedTargetSpace(TargetSpace):
 
         self._params = np.concatenate([self._params, x.reshape(1, -1)])
         self._target = np.concatenate([self._target, [target]])
-        self._constraint_values = np.concatenate([self._constraint_values, [constraint_value]])
+        self._constraint_values = np.concatenate([self._constraint_values,
+                                                 [constraint_value]])
 
     def probe(self, params):
         x = self._as_array(params)
@@ -320,15 +322,26 @@ class ConstrainedTargetSpace(TargetSpace):
             res = {
                 'target': None,
                 'params': None,
-                'constraint' : None
+                'constraint': None
             }
         return res
-    
+
     def res(self):
-        """Get all target values and constraint fulfillment for all parameters."""
+        """Get all target values and constraint fulfillment for all parameters.
+        """
         params = [dict(zip(self.keys, p)) for p in self.params]
 
         return [
-            {"target": target, "constraint": constraint_value, "params": param, "allowed": allowed}
-            for target, constraint_value, param, allowed in zip(self.target, self._constraint_values, params, self._constraint.allowed(self._constraint_values))
+            {
+                "target": target,
+                "constraint": constraint_value,
+                "params": param,
+                "allowed": allowed
+            }
+            for target, constraint_value, param, allowed in zip(
+                self.target,
+                self._constraint_values,
+                params,
+                self._constraint.allowed(self._constraint_values)
+                )
         ]
