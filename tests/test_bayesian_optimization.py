@@ -316,7 +316,7 @@ def test_single_value_objective():
     )
     optimizer.maximize(
         init_points=2,
-        n_iter=10,
+        n_iter=3,
     )
 
 
