@@ -12,12 +12,16 @@ class ConstraintModel():
 
     Parameters
     ----------
-    func: function
+    fun: function
         Constraint function. If multiple constraints are handled, this should
         return a numpy.ndarray of appropriate size.
 
-    limits: numeric or numpy.ndarray
-        Upper limit(s) for the constraints. The return value of `func` should
+    lb: numeric or numpy.ndarray
+        Upper limit(s) for the constraints. The return value of `fun` should
+        have exactly this shape.
+
+    ub: numeric or numpy.ndarray
+        Upper limit(s) for the constraints. The return value of `fun` should
         have exactly this shape.
 
     random_state: int or numpy.random.RandomState, optional(default=None)
@@ -33,14 +37,20 @@ class ConstraintModel():
     is a simply the product of the individual probabilities.
     """
 
-    def __init__(self, func, limits, random_state=None):
-        self.func = func
+    def __init__(self, fun, lb, ub, random_state=None):
+        self.fun = fun
 
-        if isinstance(limits, float):
-            self._limits = np.array([limits])
+        if isinstance(lb, float):
+            self._lb = np.array([lb])
         else:
-            self._limits = limits
-
+            self._lb = lb
+        
+        if isinstance(ub, float):
+            self._ub = np.array([ub])
+        else:
+            self._ub = ub
+        
+        
         basis = lambda: GaussianProcessRegressor(
             kernel=Matern(nu=2.5),
             alpha=1e-6,
@@ -48,18 +58,26 @@ class ConstraintModel():
             n_restarts_optimizer=5,
             random_state=random_state,
         )
-        self._model = [basis() for _ in range(len(self._limits))]
+        self._model = [basis() for _ in range(len(self._lb))]
 
     @property
-    def limits(self):
-        return self._limits
+    def lb(self):
+        return self._lb
+
+    @property
+    def ub(self):
+        return self._ub
+    
+    @property
+    def model(self):
+        return self._model
 
     def eval(self, **kwargs):
         """
         Evaluates the constraint function.
         """
         try:
-            return self.func(**kwargs)
+            return self.fun(**kwargs)
         except TypeError as e:
             msg = (
                 "Encountered TypeError when evaluating constraint " +
@@ -67,7 +85,8 @@ class ConstraintModel():
                 "doesn't use the same keyword arguments as the target " +
                 f"function. Original error message:\n\n{e}"
                 )
-            raise TypeError(msg)
+            e.args = (msg,)
+            raise
 
     def fit(self, X, Y):
         """
@@ -92,14 +111,22 @@ class ConstraintModel():
         X = X.reshape((-1, self._model[0].n_features_in_))
         if len(self._model) == 1:
             y_mean, y_std = self._model[0].predict(X, return_std=True)
-            result = norm(loc=y_mean, scale=y_std).cdf(self._limits[0])
+
+            p_lower = (norm(loc=y_mean, scale=y_std).cdf(self._lb[0])
+                            if self._lb[0] != -np.inf else np.array([0]))
+            p_upper = (norm(loc=y_mean, scale=y_std).cdf(self._ub[0])
+                            if self._lb[0] != np.inf else np.array([1]))
+            result = p_upper - p_lower
             return result.reshape(X_shape[:-1])
         else:
             result = np.ones(X.shape[0])
             for j, gp in enumerate(self._model):
                 y_mean, y_std = gp.predict(X, return_std=True)
-                result = result * norm(loc=y_mean, scale=y_std).cdf(
-                    self._limits[j])
+                p_lower = (norm(loc=y_mean, scale=y_std).cdf(self._lb[j])
+                           if self._lb[j] != -np.inf else np.array([0]))
+                p_upper = (norm(loc=y_mean, scale=y_std).cdf(self._ub[j])
+                           if self._lb[j] != np.inf else np.array([1]))
+                result = result * (p_upper - p_lower)
             return result.reshape(X_shape[:-1])
 
     def approx(self, X):
@@ -113,13 +140,15 @@ class ConstraintModel():
             return self._model[0].predict(X).reshape(X_shape[:-1])
         else:
             result = np.column_stack([gp.predict(X) for gp in self._model])
-            return result.reshape(X_shape[:-1] + (len(self._limits), ))
+            return result.reshape(X_shape[:-1] + (len(self._lb), ))
 
     def allowed(self, constraint_values):
         """
         Checks whether `constraint_values` are below the specified limits.
         """
-        if self._limits.size == 1:
-            return np.less_equal(constraint_values, self._limits)
+        if self._lb.size == 1:
+            return (np.less_equal(self._lb, constraint_values)
+                    & np.less_equal(constraint_values, self._ub))
 
-        return np.all(constraint_values <= self._limits, axis=-1)
+        return (np.all(constraint_values <= self._ub, axis=-1)
+                    & np.all(constraint_values >= self._lb, axis=-1))

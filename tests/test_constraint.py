@@ -1,11 +1,12 @@
 import numpy as np
 from bayes_opt import BayesianOptimization, ConstraintModel
 from pytest import approx, raises
+from scipy.optimize import NonlinearConstraint
 
 np.random.seed(42)
 
 
-def test_single_constraint():
+def test_single_constraint_upper():
 
     def target_function(x, y):
         return np.cos(2 * x) * np.cos(y) + np.sin(x)
@@ -13,14 +14,14 @@ def test_single_constraint():
     def constraint_function(x, y):
         return np.cos(x) * np.cos(y) - np.sin(x) * np.sin(y)
 
-    constraint_limit = 0.5
+    constraint_limit_upper = 0.5
 
-    conmod = ConstraintModel(constraint_function, constraint_limit)
+    constraint = NonlinearConstraint(constraint_function, -np.inf, constraint_limit_upper)
     pbounds = {'x': (0, 6), 'y': (0, 6)}
 
     optimizer = BayesianOptimization(
         f=target_function,
-        constraint=conmod,
+        constraint=constraint,
         pbounds=pbounds,
         verbose=0,
         random_state=1,
@@ -31,8 +32,10 @@ def test_single_constraint():
         n_iter=10,
     )
 
+    assert constraint_function(**optimizer.max["params"]) <= constraint_limit_upper
 
-def test_single_constraint_max_is_allowed():
+
+def test_single_constraint_lower():
 
     def target_function(x, y):
         return np.cos(2 * x) * np.cos(y) + np.sin(x)
@@ -40,14 +43,14 @@ def test_single_constraint_max_is_allowed():
     def constraint_function(x, y):
         return np.cos(x) * np.cos(y) - np.sin(x) * np.sin(y)
 
-    constraint_limit = 0.5
+    constraint_limit_lower = -0.5
 
-    conmod = ConstraintModel(constraint_function, constraint_limit)
+    constraint = NonlinearConstraint(constraint_function, constraint_limit_lower, np.inf)
     pbounds = {'x': (0, 6), 'y': (0, 6)}
 
     optimizer = BayesianOptimization(
         f=target_function,
-        constraint=conmod,
+        constraint=constraint,
         pbounds=pbounds,
         verbose=0,
         random_state=1,
@@ -58,10 +61,10 @@ def test_single_constraint_max_is_allowed():
         n_iter=10,
     )
 
-    assert constraint_function(**optimizer.max["params"]) <= constraint_limit
+    assert constraint_function(**optimizer.max["params"]) >= constraint_limit_lower
 
 
-def test_accurate_approximation_when_known():
+def test_single_constraint_lower_upper():
 
     def target_function(x, y):
         return np.cos(2 * x) * np.cos(y) + np.sin(x)
@@ -69,23 +72,32 @@ def test_accurate_approximation_when_known():
     def constraint_function(x, y):
         return np.cos(x) * np.cos(y) - np.sin(x) * np.sin(y)
 
-    constraint_limit = 0.5
+    constraint_limit_lower = -0.5
+    constraint_limit_upper = 0.5
 
-    conmod = ConstraintModel(constraint_function, constraint_limit)
+    constraint = NonlinearConstraint(constraint_function, constraint_limit_lower, constraint_limit_upper)
     pbounds = {'x': (0, 6), 'y': (0, 6)}
 
     optimizer = BayesianOptimization(
         f=target_function,
-        constraint=conmod,
+        constraint=constraint,
         pbounds=pbounds,
         verbose=0,
         random_state=1,
     )
 
+    assert optimizer.constraint.lb == constraint.lb
+    assert optimizer.constraint.ub == constraint.ub
+
     optimizer.maximize(
         init_points=2,
         n_iter=10,
     )
+
+    # Check limits
+    assert constraint_function(**optimizer.max["params"]) <= constraint_limit_upper
+    assert constraint_function(**optimizer.max["params"]) >= constraint_limit_lower
+
 
     # Exclude the last sampled point, because the constraint is not fitted on that.
     res = np.array([[r['target'], r['constraint'], r['params']['x'], r['params']['y']] for r in optimizer.res[:-1]])
@@ -94,9 +106,10 @@ def test_accurate_approximation_when_known():
     x = res[:, 2]
     y = res[:, 3]
     
-    assert constraint_function(x, y) == approx(conmod.approx(xy), rel=1e-5, abs=1e-5)
+    # Check accuracy of approximation for sampled points
+    assert constraint_function(x, y) == approx(optimizer.constraint.approx(xy), rel=1e-5, abs=1e-5)
     assert constraint_function(x, y) == approx(optimizer.space.constraint_values[:-1], rel=1e-5, abs=1e-5)
-
+    
 
 def test_multiple_constraints():
 
@@ -109,9 +122,10 @@ def test_multiple_constraints():
             -np.cos(x) * np.cos(-y) + np.sin(x) * np.sin(-y)
         ])
 
-    constraint_limit = np.array([0.6, 0.6])
+    constraint_limit_lower = np.array([-np.inf, -np.inf])
+    constraint_limit_upper = np.array([0.6, 0.6])
 
-    conmod = ConstraintModel(constraint_function_2_dim, constraint_limit)
+    conmod = NonlinearConstraint(constraint_function_2_dim, constraint_limit_lower, constraint_limit_upper)
     pbounds = {'x': (0, 6), 'y': (0, 6)}
 
     optimizer = BayesianOptimization(
@@ -127,14 +141,13 @@ def test_multiple_constraints():
         n_iter=10,
     )
 
-    assert np.all(
-        constraint_function_2_dim(
-            **optimizer.max["params"]) <= constraint_limit)
+    constraint_at_max = constraint_function_2_dim(**optimizer.max["params"])
+    assert np.all((constraint_at_max <= constraint_limit_upper) & (constraint_at_max >= constraint_limit_lower))
     
     params = optimizer.res[0]["params"]
     x, y = params['x'], params['y']
 
-    assert constraint_function_2_dim(x, y) == approx(conmod.approx(np.array([x, y])), rel=1e-5, abs=1e-5)
+    assert constraint_function_2_dim(x, y) == approx(optimizer.constraint.approx(np.array([x, y])), rel=1e-5, abs=1e-5)
 
 
 def test_kwargs_not_the_same():
@@ -145,14 +158,14 @@ def test_kwargs_not_the_same():
     def constraint_function(a, b):
         return np.cos(a) * np.cos(b) - np.sin(a) * np.sin(b)
 
-    constraint_limit = 0.5
+    constraint_limit_upper = 0.5
 
-    conmod = ConstraintModel(constraint_function, constraint_limit)
+    constraint = NonlinearConstraint(constraint_function, -np.inf, constraint_limit_upper)
     pbounds = {'x': (0, 6), 'y': (0, 6)}
 
     optimizer = BayesianOptimization(
         f=target_function,
-        constraint=conmod,
+        constraint=constraint,
         pbounds=pbounds,
         verbose=0,
         random_state=1,

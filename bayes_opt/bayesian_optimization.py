@@ -1,6 +1,8 @@
 import warnings
 from queue import Queue, Empty
 
+from bayes_opt.constraint import ConstraintModel
+
 from .target_space import TargetSpace, ConstrainedTargetSpace
 from .event import Events, DEFAULT_EVENTS
 from .logger import _get_default_logger
@@ -106,10 +108,21 @@ class BayesianOptimization(Observable):
             # bounds of its domain, and a record of the evaluations we have
             # done so far
             self._space = TargetSpace(f, pbounds, random_state)
+            self.is_constrained = False
         else:
-            self._space = ConstrainedTargetSpace(f, constraint, pbounds,
-                                                 random_state)
-        self.constraint = constraint
+            constraint_ = ConstraintModel(
+                constraint.fun,
+                constraint.lb,
+                constraint.ub,
+                random_state=random_state
+            )
+            self._space = ConstrainedTargetSpace(
+                f,
+                constraint_,
+                pbounds,
+                random_state
+            )
+            self.is_constrained = True
 
         self._verbose = verbose
         self._bounds_transformer = bounds_transformer
@@ -125,6 +138,12 @@ class BayesianOptimization(Observable):
     @property
     def space(self):
         return self._space
+
+    @property
+    def constraint(self):
+        if self.is_constrained:
+            return self._space.constraint
+        return None
 
     @property
     def max(self):
@@ -169,7 +188,7 @@ class BayesianOptimization(Observable):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             self._gp.fit(self._space.params, self._space.target)
-            if self.constraint is not None:
+            if self.is_constrained:
                 self.constraint.fit(self._space.params,
                                     self._space._constraint_values)
 

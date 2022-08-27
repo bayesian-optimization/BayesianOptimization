@@ -267,10 +267,14 @@ class ConstrainedTargetSpace(TargetSpace):
         self._constraint = constraint
 
         # preallocated memory for constraint fulfillement
-        if constraint.limits.size == 1:
+        if constraint.lb.size == 1:
             self._constraint_values = np.empty(shape=(0), dtype=float)
         else:
-            self._constraint_values = np.empty(shape=(0, constraint.limits.size), dtype=float)
+            self._constraint_values = np.empty(shape=(0, constraint.lb.size), dtype=float)
+
+    @property
+    def constraint(self):
+        return self._constraint
 
     @property
     def constraint_values(self):
