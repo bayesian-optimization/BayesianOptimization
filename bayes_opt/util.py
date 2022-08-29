@@ -53,7 +53,7 @@ def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=10000, n_iter=10):
     for x_try in x_seeds:
         # Find the minimum of minus the acquisition function
         res = minimize(lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max),
-                       x_try.reshape(1, -1),
+                       x_try,
                        bounds=bounds,
                        method="L-BFGS-B")
 
