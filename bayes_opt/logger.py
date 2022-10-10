@@ -128,6 +128,9 @@ class JSONLogger(_Tracker):
                 "delta": time_delta,
             }
 
+            if "allowed" in data: # fix: github.com/fmfn/BayesianOptimization/issues/361
+                data["allowed"] = bool(data["allowed"])
+
             with open(self._path, "a") as f:
                 f.write(json.dumps(data) + "\n")
 
