@@ -1,9 +1,9 @@
 from setuptools import setup, find_packages
-import bayes_opt
+from importlib.resources import Package
 
 setup(
     name='bayesian-optimization',
-    version=bayes_opt.__version__,
+    version="1.3.0",
     url='https://github.com/fmfn/BayesianOptimization',
     packages=find_packages(),
     author='Fernando Nogueira',

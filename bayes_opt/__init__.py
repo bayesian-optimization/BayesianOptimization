@@ -4,8 +4,6 @@ from .util import UtilityFunction
 from .logger import ScreenLogger, JSONLogger
 from .constraint import ConstraintModel
 
-__version__ = '1.3.0'
-
 __all__ = [
     "BayesianOptimization",
     "ConstraintModel",
