@@ -166,6 +166,26 @@ class TargetSpace(object):
         self._params = np.concatenate([self._params, x.reshape(1, -1)])
         self._target = np.concatenate([self._target, [target]])
 
+    def update(self, params, target):
+        """Update an existing point with a new target value."""
+        x = self._as_array(params)
+        if x not in self:
+            raise KeyError("Can't find previous observation for {}, please use register() instead.".format(x))
+        # Get index of the point
+        idx = np.where((self._params == x).all(axis=1))[0][0]
+        self._target[idx] = target
+        self._cache[_hashable(x.ravel())] = target
+
+    def get_closest(self, params, exclude=None):
+        """Return the closest params among already registered."""
+        x = self._as_array(params)
+        registered_params = self._params
+        if exclude:
+            exclude = np.array([self._as_array(e) for e in exclude])
+            registered_params = np.array([param for param in registered_params if param not in exclude])
+        idx = np.argmin(np.linalg.norm(registered_params - x, axis=1))
+        return self._params[idx]
+
     def probe(self, params):
         """
         Evaulates a single point x, to obtain the value y and then records them
