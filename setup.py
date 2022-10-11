@@ -12,7 +12,7 @@ setup(
     long_description="A Python implementation of global optimization with gaussian processes.",
     install_requires=[
         "numpy >= 1.9.0",
-        "scipy >= 1.6.0",
+        "scipy >= 1.0.0",
         "scikit-learn >= 0.18.0",
     ],
     classifiers=[
