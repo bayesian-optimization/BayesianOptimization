@@ -10,7 +10,6 @@ setup(
     author_email="fmfnogueira@gmail.com",
     description='Bayesian Optimization package',
     long_description="A Python implementation of global optimization with gaussian processes.",
-    download_url='https://github.com/fmfn/BayesianOptimization/tarball/0.6',
     install_requires=[
         "numpy >= 1.9.0",
         "scipy >= 1.6.0",
