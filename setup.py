@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-from importlib.resources import Package
+
 
 setup(
     name='bayesian-optimization',
