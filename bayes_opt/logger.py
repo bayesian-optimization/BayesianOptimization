@@ -6,16 +6,17 @@ from .observer import _Tracker
 from .event import Events
 from .util import Colours
 
-def _get_default_logger(verbose):
-    return ScreenLogger(verbose=verbose)
+def _get_default_logger(verbose, is_constrained):
+    return ScreenLogger(verbose=verbose, is_constrained=is_constrained)
 
 
 class ScreenLogger(_Tracker):
     _default_cell_size = 9
     _default_precision = 4
 
-    def __init__(self, verbose=2):
+    def __init__(self, verbose=2, is_constrained=False):
         self._verbose = verbose
+        self._is_constrained = is_constrained
         self._header_length = None
         super(ScreenLogger, self).__init__()
 
@@ -26,6 +27,10 @@ class ScreenLogger(_Tracker):
     @verbose.setter
     def verbose(self, v):
         self._verbose = v
+
+    @property
+    def is_constrained(self):
+        return self._is_constrained
 
     def _format_number(self, x):
         if isinstance(x, int):
@@ -47,6 +52,20 @@ class ScreenLogger(_Tracker):
                 return s[:self._default_cell_size - 3] + "..."
         return s
 
+    def _format_bool(self, x):
+        if 5 > self._default_cell_size:
+            if x == True:
+                x_ = 'T'
+            elif x == False:
+                x_ = 'F'
+        else:
+            x_ = str(x)
+        s = "{x:<{s}}".format(
+            x=x_,
+            s=self._default_cell_size,
+        )
+        return s
+
     def _format_key(self, key):
         s = "{key:^{s}}".format(
             key=key,
@@ -62,6 +81,9 @@ class ScreenLogger(_Tracker):
 
         cells.append(self._format_number(self._iterations + 1))
         cells.append(self._format_number(res["target"]))
+        if self._is_constrained:
+            cells.append(self._format_bool(res["allowed"]))
+
 
         for key in instance.space.keys:
             cells.append(self._format_number(res["params"][key]))
@@ -72,6 +94,10 @@ class ScreenLogger(_Tracker):
         cells = []
         cells.append(self._format_key("iter"))
         cells.append(self._format_key("target"))
+
+        if self._is_constrained:
+            cells.append(self._format_key("allowed"))
+
         for key in instance.space.keys:
             cells.append(self._format_key(key))
 

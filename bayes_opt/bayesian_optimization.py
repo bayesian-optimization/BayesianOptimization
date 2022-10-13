@@ -212,7 +212,7 @@ class BayesianOptimization(Observable):
 
     def _prime_subscriptions(self):
         if not any([len(subs) for subs in self._events.values()]):
-            _logger = _get_default_logger(self._verbose)
+            _logger = _get_default_logger(self._verbose, self.is_constrained)
             self.subscribe(Events.OPTIMIZATION_START, _logger)
             self.subscribe(Events.OPTIMIZATION_STEP, _logger)
             self.subscribe(Events.OPTIMIZATION_END, _logger)
