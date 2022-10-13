@@ -49,8 +49,11 @@ class ConstraintModel():
             self._ub = np.array([ub])
         else:
             self._ub = ub
-        
-        
+
+        if np.any(self._lb >= self._ub):
+            msg = "Lower bounds must be less than upper bounds."
+            raise ValueError(msg)
+
         basis = lambda: GaussianProcessRegressor(
             kernel=Matern(nu=2.5),
             alpha=1e-6,
