@@ -40,15 +40,8 @@ class ConstraintModel():
     def __init__(self, fun, lb, ub, random_state=None):
         self.fun = fun
 
-        if isinstance(lb, float):
-            self._lb = np.array([lb])
-        else:
-            self._lb = lb
-        
-        if isinstance(ub, float):
-            self._ub = np.array([ub])
-        else:
-            self._ub = ub
+        self._lb = np.atleast_1d(lb)        
+        self._ub = np.atleast_1d(ub)
 
         if np.any(self._lb >= self._ub):
             msg = "Lower bounds must be less than upper bounds."
