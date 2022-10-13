@@ -3,7 +3,7 @@ from queue import Queue, Empty
 
 from bayes_opt.constraint import ConstraintModel
 
-from .target_space import TargetSpace, ConstrainedTargetSpace
+from .target_space import TargetSpace
 from .event import Events, DEFAULT_EVENTS
 from .logger import _get_default_logger
 from .util import UtilityFunction, acq_max, ensure_rng
@@ -107,7 +107,7 @@ class BayesianOptimization(Observable):
             # Data structure containing the function to be optimized, the
             # bounds of its domain, and a record of the evaluations we have
             # done so far
-            self._space = TargetSpace(f, pbounds, random_state)
+            self._space = TargetSpace(f, pbounds, random_state=random_state)
             self.is_constrained = False
         else:
             constraint_ = ConstraintModel(
@@ -116,11 +116,11 @@ class BayesianOptimization(Observable):
                 constraint.ub,
                 random_state=random_state
             )
-            self._space = ConstrainedTargetSpace(
+            self._space = TargetSpace(
                 f,
-                constraint_,
                 pbounds,
-                random_state
+                constraint=constraint_,
+                random_state=random_state
             )
             self.is_constrained = True
 
