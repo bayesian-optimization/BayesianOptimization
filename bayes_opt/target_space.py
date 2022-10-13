@@ -183,10 +183,14 @@ class TargetSpace(object):
         self._params = np.concatenate([self._params, x.reshape(1, -1)])
         self._target = np.concatenate([self._target, [target]])
 
-        if constraint_value is None:
+        if self._constraint is None:
             # Insert data into unique dictionary
             self._cache[_hashable(x.ravel())] = target
         else:
+            if constraint_value is None:
+                msg = ("When registering a point to a constrained TargetSpace" +
+                    " a constraint value needs to be present.")
+                raise ValueError(msg)
             # Insert data into unique dictionary
             self._cache[_hashable(x.ravel())] = (target, constraint_value)
             self._constraint_values = np.concatenate([self._constraint_values,

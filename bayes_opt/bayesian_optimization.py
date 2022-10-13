@@ -153,9 +153,9 @@ class BayesianOptimization(Observable):
     def res(self):
         return self._space.res()
 
-    def register(self, params, target):
+    def register(self, params, target, constraint_value=None):
         """Expect observation with known target"""
-        self._space.register(params, target)
+        self._space.register(params, target, constraint_value)
         self.dispatch(Events.OPTIMIZATION_STEP)
 
     def probe(self, params, lazy=True):

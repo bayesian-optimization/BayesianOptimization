@@ -176,13 +176,11 @@ def load_logs(optimizer, logs):
                     break
 
                 iteration = json.loads(iteration)
-                try:
-                    optimizer.register(
-                        params=iteration["params"],
-                        target=iteration["target"],
-                    )
-                except KeyError:
-                    pass
+                optimizer.register(
+                    params=iteration["params"],
+                    target=iteration["target"],
+                    constraint_value=iteration["constraint"] if optimizer.is_constrained else None
+                )
 
     return optimizer
 
