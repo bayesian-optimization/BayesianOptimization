@@ -175,3 +175,28 @@ def test_kwargs_not_the_same():
             init_points=2,
             n_iter=10,
         )
+
+def test_lower_less_than_upper():
+    def target_function(x, y):
+        return np.cos(2 * x) * np.cos(y) + np.sin(x)
+
+    def constraint_function_2_dim(x, y):
+        return np.array([
+            -np.cos(x) * np.cos(y) + np.sin(x) * np.sin(y),
+            -np.cos(x) * np.cos(-y) + np.sin(x) * np.sin(-y)
+        ])
+
+    constraint_limit_lower = np.array([0.6, -np.inf])
+    constraint_limit_upper = np.array([0.3, 0.6])
+
+    conmod = NonlinearConstraint(constraint_function_2_dim, constraint_limit_lower, constraint_limit_upper)
+    pbounds = {'x': (0, 6), 'y': (0, 6)}
+
+    with raises(ValueError):
+        optimizer = BayesianOptimization(
+            f=target_function,
+            constraint=conmod,
+            pbounds=pbounds,
+            verbose=0,
+            random_state=1,
+        )
