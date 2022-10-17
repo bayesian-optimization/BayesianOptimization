@@ -158,6 +158,11 @@ class UtilityFunction(object):
         return norm.cdf(z)
 
 
+class NotUniqueError(Exception):
+    """A point is non-unique."""
+    pass
+
+
 def load_logs(optimizer, logs):
     """Load previous ...
 
@@ -176,11 +181,14 @@ def load_logs(optimizer, logs):
                     break
 
                 iteration = json.loads(iteration)
-                optimizer.register(
-                    params=iteration["params"],
-                    target=iteration["target"],
-                    constraint_value=iteration["constraint"] if optimizer.is_constrained else None
-                )
+                try:
+                    optimizer.register(
+                        params=iteration["params"],
+                        target=iteration["target"],
+                        constraint_value=iteration["constraint"] if optimizer.is_constrained else None
+                    )
+                except NotUniqueError:
+                    continue
 
     return optimizer
 

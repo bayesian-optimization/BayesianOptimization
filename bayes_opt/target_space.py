@@ -1,6 +1,5 @@
 import numpy as np
-from .util import ensure_rng
-from .constraint import ConstraintModel
+from .util import ensure_rng, NotUniqueError
 
 
 def _hashable(x):
@@ -177,7 +176,7 @@ class TargetSpace(object):
         """
         x = self._as_array(params)
         if x in self:
-            raise KeyError('Data point {} is not unique'.format(x))
+            raise NotUniqueError('Data point {} is not unique'.format(x))
 
 
         self._params = np.concatenate([self._params, x.reshape(1, -1)])
