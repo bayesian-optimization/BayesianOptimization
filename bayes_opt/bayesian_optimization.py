@@ -145,14 +145,17 @@ class BayesianOptimization(Observable):
         if self.is_constrained:
             return self._space.constraint
         return None
+    @property
+    def res(self):
+        return [r for r in self._space.res() if r["params"] not in self._dummies]
 
     @property
     def max(self):
-        return self._space.max()
+        results = [r for r in self.res if r.get("allowed", True)]
+        if not results:
+            return {"target": None, "params": None, "constraint": None}
+        return  sorted(results, key=lambda x: x["target"])[-1]
 
-    @property
-    def res(self):
-        return self._space.res()
 
     def register(self, params, target):
         """Expect observation with known target"""
