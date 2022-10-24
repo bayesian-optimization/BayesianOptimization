@@ -132,6 +132,7 @@ class BayesianOptimization(Observable):
             except (AttributeError, TypeError):
                 raise TypeError('The transformer must be an instance of '
                                 'DomainTransformer')
+        self._dummies = []
 
         super(BayesianOptimization, self).__init__(events=DEFAULT_EVENTS)
 
@@ -144,19 +145,50 @@ class BayesianOptimization(Observable):
         if self.is_constrained:
             return self._space.constraint
         return None
+    @property
+    def res(self):
+        return [r for r in self._space.res() if r["params"] not in self._dummies]
 
     @property
     def max(self):
-        return self._space.max()
+        results = [r for r in self.res if r.get("allowed", True)]
+        if not results:
+            return {"target": None, "params": None, "constraint": None}
+        return  sorted(results, key=lambda x: x["target"])[-1]
 
-    @property
-    def res(self):
-        return self._space.res()
 
     def register(self, params, target):
         """Expect observation with known target"""
-        self._space.register(params, target)
+        if params in self._dummies:
+            self._space.update(params, target)
+            self._dummies.remove(params)
+        else:
+            self._space.register(params, target)
         self.dispatch(Events.OPTIMIZATION_STEP)
+
+    def register_dummy(self, params, default_value=0):
+        """
+        Register a dummy observation, which is used as a placeholder.
+            Use register() to update once the true value is known.
+            Useful when doing parallel evaluations to prevent similar suggestions.
+            Target value will be temporarily registered with nearest target value.
+
+        Parameters
+        ----------
+        params: dict or list
+            The parameters for which to register the observation
+
+        default_value: float, optional(default=0)
+            Default target value to use when nearest point is not available.
+            It seems that best to use expected max value.
+        """
+        try:
+            closest = self._space.get_closest(params, self._dummies)
+            closest_value = self._space.probe(closest)
+        except ValueError:
+            closest_value = default_value
+        self._dummies.append(params)
+        self._space.register(params, closest_value)
 
     def probe(self, params, lazy=True):
         """
