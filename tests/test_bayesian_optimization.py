@@ -4,7 +4,8 @@ from bayes_opt import UtilityFunction
 from bayes_opt import BayesianOptimization
 from bayes_opt.logger import ScreenLogger
 from bayes_opt.event import Events, DEFAULT_EVENTS
-
+import pickle
+import os
 
 def target_func(**kwargs):
     # arbitrary target func
@@ -319,6 +320,21 @@ def test_single_value_objective():
         n_iter=3,
     )
 
+
+def test_pickle():
+    """
+    several users have asked that the BO object be 'pickalable'
+    This tests that this is the case
+    """
+    optimizer = BayesianOptimization(
+        f=None,
+        pbounds={'x': (-10, 10)},
+        verbose=2,
+        random_state=1,
+    )
+    with open("test_dump.obj", "wb") as filehandler:
+        pickle.dump(optimizer, filehandler)
+    os.remove('test_dump.obj')
 
 if __name__ == '__main__':
     r"""
