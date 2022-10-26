@@ -1,42 +1,43 @@
 import pytest
-from queue import Queue, Empty
+from bayes_opt.bayesian_optimization import Queue
 
 
 def test_add():
     queue = Queue()
 
-    assert queue.empty()
+    assert len(queue) == 0
+    assert queue.empty
 
-    queue.put(1)
-    assert queue.qsize() == 1
+    queue.add(1)
+    assert len(queue) == 1
 
-    queue.put(1)
-    assert queue.qsize() == 2
+    queue.add(1)
+    assert len(queue) == 2
 
-    queue.put(2)
-    assert queue.qsize() == 3
+    queue.add(2)
+    assert len(queue) == 3
 
 
 def test_queue():
 
     queue = Queue()
 
-    with pytest.raises(Empty):
-        queue.get(block=False)
+    with pytest.raises(StopIteration):
+        next(queue)
 
-    queue.put(1)
-    queue.put(2)
-    queue.put(3)
+    queue.add(1)
+    queue.add(2)
+    queue.add(3)
 
-    assert queue.qsize() == 3
-    assert not queue.empty()
+    assert len(queue) == 3
+    assert not queue.empty
 
-    assert queue.get() == 1
-    assert queue.qsize() == 2
+    assert next(queue) == 1
+    assert len(queue) == 2
 
-    assert queue.get() == 2
-    assert queue.get() == 3
-    assert queue.empty()
+    assert next(queue) == 2
+    assert next(queue) == 3
+    assert len(queue) == 0
 
 
 
