@@ -4,7 +4,8 @@ from bayes_opt import UtilityFunction
 from bayes_opt import BayesianOptimization
 from bayes_opt.logger import ScreenLogger
 from bayes_opt.event import Events, DEFAULT_EVENTS
-
+import pickle
+import os
 
 def target_func(**kwargs):
     # arbitrary target func
@@ -37,15 +38,15 @@ def test_probe_lazy():
 
     optimizer.probe(params={"p1": 1, "p2": 2}, lazy=True)
     assert len(optimizer.space) == 0
-    assert optimizer._queue.qsize() == 1
+    assert len(optimizer._queue) == 1
 
     optimizer.probe(params={"p1": 6, "p2": 2}, lazy=True)
     assert len(optimizer.space) == 0
-    assert optimizer._queue.qsize() == 2
+    assert len(optimizer._queue) == 2
 
     optimizer.probe(params={"p1": 6, "p2": 2}, lazy=True)
     assert len(optimizer.space) == 0
-    assert optimizer._queue.qsize() == 3
+    assert len(optimizer._queue) == 3
 
 
 def test_probe_eager():
@@ -53,19 +54,19 @@ def test_probe_eager():
 
     optimizer.probe(params={"p1": 1, "p2": 2}, lazy=False)
     assert len(optimizer.space) == 1
-    assert optimizer._queue.empty()
+    assert len(optimizer._queue) == 0
     assert optimizer.max["target"] == 3
     assert optimizer.max["params"] == {"p1": 1, "p2": 2}
 
     optimizer.probe(params={"p1": 3, "p2": 3}, lazy=False)
     assert len(optimizer.space) == 2
-    assert optimizer._queue.empty()
+    assert len(optimizer._queue) == 0
     assert optimizer.max["target"] == 6
     assert optimizer.max["params"] == {"p1": 3, "p2": 3}
 
     optimizer.probe(params={"p1": 3, "p2": 3}, lazy=False)
     assert len(optimizer.space) == 2
-    assert optimizer._queue.empty()
+    assert len(optimizer._queue) == 0
     assert optimizer.max["target"] == 6
     assert optimizer.max["params"] == {"p1": 3, "p2": 3}
 
@@ -101,43 +102,43 @@ def test_suggest_with_one_observation():
 
 def test_prime_queue_all_empty():
     optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
-    assert optimizer._queue.empty()
+    assert len(optimizer._queue) == 0
     assert len(optimizer.space) == 0
 
     optimizer._prime_queue(init_points=0)
-    assert optimizer._queue.qsize() == 1
+    assert len(optimizer._queue) == 1
     assert len(optimizer.space) == 0
 
 
 def test_prime_queue_empty_with_init():
     optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
-    assert optimizer._queue.empty()
+    assert len(optimizer._queue) == 0
     assert len(optimizer.space) == 0
 
     optimizer._prime_queue(init_points=5)
-    assert optimizer._queue.qsize() == 5
+    assert len(optimizer._queue) == 5
     assert len(optimizer.space) == 0
 
 
 def test_prime_queue_with_register():
     optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
-    assert optimizer._queue.empty()
+    assert len(optimizer._queue) == 0
     assert len(optimizer.space) == 0
 
     optimizer.register(params={"p1": 1, "p2": 2}, target=3)
     optimizer._prime_queue(init_points=0)
-    assert optimizer._queue.empty()
+    assert len(optimizer._queue) == 0
     assert len(optimizer.space) == 1
 
 
 def test_prime_queue_with_register_and_init():
     optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
-    assert optimizer._queue.empty()
+    assert len(optimizer._queue) == 0
     assert len(optimizer.space) == 0
 
     optimizer.register(params={"p1": 1, "p2": 2}, target=3)
     optimizer._prime_queue(init_points=3)
-    assert optimizer._queue.qsize() == 3
+    assert len(optimizer._queue) == 3
     assert len(optimizer.space) == 1
 
 
@@ -270,14 +271,14 @@ def test_maximize():
     )
 
     optimizer.maximize(init_points=0, n_iter=0)
-    assert optimizer._queue.empty()
+    assert optimizer._queue.empty
     assert len(optimizer.space) == 1
     assert tracker.start_count == 1
     assert tracker.step_count == 1
     assert tracker.end_count == 1
 
     optimizer.maximize(init_points=2, n_iter=0, alpha=1e-2)
-    assert optimizer._queue.empty()
+    assert optimizer._queue.empty
     assert len(optimizer.space) == 3
     assert optimizer._gp.alpha == 1e-2
     assert tracker.start_count == 2
@@ -285,7 +286,7 @@ def test_maximize():
     assert tracker.end_count == 2
 
     optimizer.maximize(init_points=0, n_iter=2)
-    assert optimizer._queue.empty()
+    assert optimizer._queue.empty
     assert len(optimizer.space) == 5
     assert tracker.start_count == 3
     assert tracker.step_count == 5
@@ -319,6 +320,21 @@ def test_single_value_objective():
         n_iter=3,
     )
 
+
+def test_pickle():
+    """
+    several users have asked that the BO object be 'pickalable'
+    This tests that this is the case
+    """
+    optimizer = BayesianOptimization(
+        f=None,
+        pbounds={'x': (-10, 10)},
+        verbose=2,
+        random_state=1,
+    )
+    with open("test_dump.obj", "wb") as filehandler:
+        pickle.dump(optimizer, filehandler)
+    os.remove('test_dump.obj')
 
 if __name__ == '__main__':
     r"""
