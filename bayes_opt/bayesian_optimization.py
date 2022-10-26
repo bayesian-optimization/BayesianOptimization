@@ -29,9 +29,6 @@ class Queue:
         self._queue = self._queue[1:]
         return obj
 
-    def next(self):
-        return self.__next__()
-
     def add(self, obj):
         """Add object to end of queue."""
         self._queue.append(obj)
