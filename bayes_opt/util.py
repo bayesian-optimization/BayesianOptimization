@@ -4,7 +4,7 @@ from scipy.stats import norm
 from scipy.optimize import minimize
 
 
-def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=10000, n_iter=10):
+def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000, n_iter=10):
     """
     A function to find the maximum of the acquisition function
 
@@ -29,6 +29,9 @@ def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=10000, n_iter=10):
     :param random_state:
         instance of np.RandomState random number generator
 
+    :param constraint:
+        A ConstraintModel.
+
     :param n_warmup:
         number of times to randomly sample the acquisition function
 
@@ -50,10 +53,29 @@ def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=10000, n_iter=10):
     # Explore the parameter space more throughly
     x_seeds = random_state.uniform(bounds[:, 0], bounds[:, 1],
                                    size=(n_iter, bounds.shape[0]))
+
+    if constraint is not None:
+        def to_minimize(x):
+            target = -ac(x.reshape(1, -1), gp=gp, y_max=y_max)
+            p_constraint = constraint.predict(x.reshape(1, -1))
+
+            # TODO: This is not exactly how Gardner et al do it.
+            # Their way would require the result of the acquisition function
+            # to be strictly positive (or negative), which is not the case
+            # here. For a negative target value, we use Gardner's version. If
+            # the target is positive, we instead slightly rescale the target
+            # depending on the probability estimate to fulfill the constraint.
+            if target < 0:
+                return target * p_constraint
+            else:
+                return target / (0.5 + p_constraint)
+    else:
+        to_minimize = lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max)
+
     for x_try in x_seeds:
         # Find the minimum of minus the acquisition function
-        res = minimize(lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max),
-                       x_try.reshape(1, -1),
+        res = minimize(lambda x: to_minimize(x),
+                       x_try,
                        bounds=bounds,
                        method="L-BFGS-B")
 
@@ -83,7 +105,7 @@ class UtilityFunction(object):
         self._kappa_decay_delay = kappa_decay_delay
 
         self.xi = xi
-        
+
         self._iters_counter = 0
 
         if kind not in ['ucb', 'ei', 'poi']:
@@ -121,7 +143,7 @@ class UtilityFunction(object):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             mean, std = gp.predict(x, return_std=True)
-  
+
         a = (mean - y_max - xi)
         z = a / std
         return a * norm.cdf(z) + std * norm.pdf(z)

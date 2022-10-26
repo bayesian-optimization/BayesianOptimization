@@ -1,7 +1,9 @@
 import warnings
 from queue import Queue, Empty
 
-from .target_space import TargetSpace
+from bayes_opt.constraint import ConstraintModel
+
+from .target_space import TargetSpace, ConstrainedTargetSpace
 from .event import Events, DEFAULT_EVENTS
 from .logger import _get_default_logger
 from .util import UtilityFunction, acq_max, ensure_rng
@@ -16,6 +18,7 @@ class Observable(object):
     Inspired/Taken from
         https://www.protechtraining.com/blog/post/879#simple-observer
     """
+
     def __init__(self, events):
         # maps event names to subscribers
         # str -> dict
@@ -52,9 +55,12 @@ class BayesianOptimization(Observable):
         Dictionary with parameters names as keys and a tuple with minimum
         and maximum values.
 
+    constraint: A ConstraintModel. Note that the names of arguments of the
+        constraint function and of f need to be the same.
+
     random_state: int or numpy.random.RandomState, optional(default=None)
         If the value is an integer, it is used as the seed for creating a
-        numpy.random.RandomState. Otherwise the random state provided it is used.
+        numpy.random.RandomState. Otherwise the random state provided is used.
         When set to None, an unseeded random state is generated.
 
     verbose: int, optional(default=2)
@@ -76,13 +82,15 @@ class BayesianOptimization(Observable):
     set_bounds()
         Allows changing the lower and upper searching bounds
     """
-    def __init__(self, f, pbounds, random_state=None, verbose=2,
+
+    def __init__(self,
+                 f,
+                 pbounds,
+                 constraint=None,
+                 random_state=None,
+                 verbose=2,
                  bounds_transformer=None):
         self._random_state = ensure_rng(random_state)
-
-        # Data structure containing the function to be optimized, the bounds of
-        # its domain, and a record of the evaluations we have done so far
-        self._space = TargetSpace(f, pbounds, random_state)
 
         self._queue = Queue()
 
@@ -94,6 +102,27 @@ class BayesianOptimization(Observable):
             n_restarts_optimizer=5,
             random_state=self._random_state,
         )
+
+        if constraint is None:
+            # Data structure containing the function to be optimized, the
+            # bounds of its domain, and a record of the evaluations we have
+            # done so far
+            self._space = TargetSpace(f, pbounds, random_state)
+            self.is_constrained = False
+        else:
+            constraint_ = ConstraintModel(
+                constraint.fun,
+                constraint.lb,
+                constraint.ub,
+                random_state=random_state
+            )
+            self._space = ConstrainedTargetSpace(
+                f,
+                constraint_,
+                pbounds,
+                random_state
+            )
+            self.is_constrained = True
 
         self._verbose = verbose
         self._bounds_transformer = bounds_transformer
@@ -109,6 +138,12 @@ class BayesianOptimization(Observable):
     @property
     def space(self):
         return self._space
+
+    @property
+    def constraint(self):
+        if self.is_constrained:
+            return self._space.constraint
+        return None
 
     @property
     def max(self):
@@ -136,6 +171,7 @@ class BayesianOptimization(Observable):
             If True, the optimizer will evaluate the points when calling
             maximize(). Otherwise it will evaluate it at the moment.
         """
+
         if lazy:
             self._queue.put(params)
         else:
@@ -152,15 +188,17 @@ class BayesianOptimization(Observable):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             self._gp.fit(self._space.params, self._space.target)
+            if self.is_constrained:
+                self.constraint.fit(self._space.params,
+                                    self._space._constraint_values)
 
         # Finding argmax of the acquisition function.
-        suggestion = acq_max(
-            ac=utility_function.utility,
-            gp=self._gp,
-            y_max=self._space.target.max(),
-            bounds=self._space.bounds,
-            random_state=self._random_state
-        )
+        suggestion = acq_max(ac=utility_function.utility,
+                             gp=self._gp,
+                             constraint=self.constraint,
+                             y_max=self._space.target.max(),
+                             bounds=self._space.bounds,
+                             random_state=self._random_state)
 
         return self._space.array_to_params(suggestion)
 
@@ -211,15 +249,15 @@ class BayesianOptimization(Observable):
         kappa: float, optional(default=2.576)
             Parameter to indicate how closed are the next parameters sampled.
                 Higher value = favors spaces that are least explored.
-                Lower value = favors spaces where the regression function is the
-                highest.
+                Lower value = favors spaces where the regression function is
+                the highest.
 
         kappa_decay: float, optional(default=1)
             `kappa` is multiplied by this factor every iteration.
 
         kappa_decay_delay: int, optional(default=0)
-            Number of iterations that must have passed before applying the decay
-            to `kappa`.
+            Number of iterations that must have passed before applying the
+            decay to `kappa`.
 
         xi: float, optional(default=0.0)
             [unused]
@@ -242,12 +280,11 @@ class BayesianOptimization(Observable):
                 util.update_params()
                 x_probe = self.suggest(util)
                 iteration += 1
-
             self.probe(x_probe, lazy=False)
 
             if self._bounds_transformer and iteration > 0:
-                # The bounds transformer should only modify the bounds after the init_points points (only for the true
-                # iterations)
+                # The bounds transformer should only modify the bounds after
+                # the init_points points (only for the true iterations)
                 self.set_bounds(
                     self._bounds_transformer.transform(self._space))
 

@@ -299,6 +299,27 @@ def test_define_wrong_transformer():
                                          bounds_transformer=3)
 
 
+def test_single_value_objective():
+    """
+    As documented [here](https://github.com/scipy/scipy/issues/16898)
+    scipy is changing the way they handle 1D objectives inside minimize.
+    This is a simple test to make sure our tests fail if scipy updates this
+    in future
+    """
+    pbounds = {'x': (-10, 10)}
+
+    optimizer = BayesianOptimization(
+        f=lambda x: x*3,
+        pbounds=pbounds,
+        verbose=2,
+        random_state=1,
+    )
+    optimizer.maximize(
+        init_points=2,
+        n_iter=3,
+    )
+
+
 if __name__ == '__main__':
     r"""
     CommandLine:
