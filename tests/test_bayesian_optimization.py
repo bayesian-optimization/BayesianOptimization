@@ -4,8 +4,10 @@ from bayes_opt import UtilityFunction
 from bayes_opt import BayesianOptimization
 from bayes_opt.logger import ScreenLogger
 from bayes_opt.event import Events, DEFAULT_EVENTS
+from bayes_opt.util import NotUniqueError
 import pickle
 import os
+
 
 def target_func(**kwargs):
     # arbitrary target func
@@ -27,9 +29,9 @@ def test_register():
     assert len(optimizer.res) == 2
     assert len(optimizer.space) == 2
 
-    with pytest.raises(KeyError):
+    with pytest.raises(NotUniqueError):
         optimizer.register(params={"p1": 1, "p2": 2}, target=3)
-    with pytest.raises(KeyError):
+    with pytest.raises(NotUniqueError):
         optimizer.register(params={"p1": 5, "p2": 4}, target=9)
 
 
