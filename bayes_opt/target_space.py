@@ -2,6 +2,7 @@ import warnings
 
 import numpy as np
 from .util import ensure_rng, NotUniqueError
+from .util import Colours
 
 
 def _hashable(x):
@@ -183,10 +184,11 @@ class TargetSpace(object):
         if x in self:
             if self._allow_duplicate_points:
                 self.n_duplicate_points = self.n_duplicate_points + 1
-                warnings.warn(f'Data point {x} is not unique. {self.n_duplicate_points} duplicates registered.'
-                              f' Continuing ...')
+                print(f'{Colours.RED}Data point {x} is not unique. {self.n_duplicate_points} duplicates registered.'
+                              f' Continuing ...{Colours.END}')
             else:
-                raise NotUniqueError('Data point {} is not unique'.format(x))
+                raise NotUniqueError(f'Data point {x} is not unique. You can set "allow_duplicate_points=True" to '
+                                     f'avoid this error')
 
         self._params = np.concatenate([self._params, x.reshape(1, -1)])
         self._target = np.concatenate([self._target, [target]])
