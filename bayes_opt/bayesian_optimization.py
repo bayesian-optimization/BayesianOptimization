@@ -2,7 +2,7 @@ import warnings
 
 from bayes_opt.constraint import ConstraintModel
 
-from .target_space import TargetSpace, ConstrainedTargetSpace
+from .target_space import TargetSpace
 from .event import Events, DEFAULT_EVENTS
 from .logger import _get_default_logger
 from .util import UtilityFunction, acq_max, ensure_rng
@@ -129,7 +129,7 @@ class BayesianOptimization(Observable):
             # Data structure containing the function to be optimized, the
             # bounds of its domain, and a record of the evaluations we have
             # done so far
-            self._space = TargetSpace(f, pbounds, random_state)
+            self._space = TargetSpace(f, pbounds, random_state=random_state)
             self.is_constrained = False
         else:
             constraint_ = ConstraintModel(
@@ -138,11 +138,11 @@ class BayesianOptimization(Observable):
                 constraint.ub,
                 random_state=random_state
             )
-            self._space = ConstrainedTargetSpace(
+            self._space = TargetSpace(
                 f,
-                constraint_,
                 pbounds,
-                random_state
+                constraint=constraint_,
+                random_state=random_state
             )
             self.is_constrained = True
 
@@ -175,9 +175,9 @@ class BayesianOptimization(Observable):
     def res(self):
         return self._space.res()
 
-    def register(self, params, target):
+    def register(self, params, target, constraint_value=None):
         """Expect observation with known target"""
-        self._space.register(params, target)
+        self._space.register(params, target, constraint_value)
         self.dispatch(Events.OPTIMIZATION_STEP)
 
     def probe(self, params, lazy=True):
@@ -234,7 +234,7 @@ class BayesianOptimization(Observable):
 
     def _prime_subscriptions(self):
         if not any([len(subs) for subs in self._events.values()]):
-            _logger = _get_default_logger(self._verbose)
+            _logger = _get_default_logger(self._verbose, self.is_constrained)
             self.subscribe(Events.OPTIMIZATION_START, _logger)
             self.subscribe(Events.OPTIMIZATION_STEP, _logger)
             self.subscribe(Events.OPTIMIZATION_END, _logger)

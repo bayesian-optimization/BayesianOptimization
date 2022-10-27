@@ -1,6 +1,8 @@
 import pytest
 import numpy as np
+from bayes_opt.constraint import ConstraintModel
 from bayes_opt.target_space import TargetSpace
+from bayes_opt.util import NotUniqueError
 
 
 def target_func(**kwargs):
@@ -87,10 +89,33 @@ def test_register():
     assert all(space.params[1] == np.array([5, 4]))
     assert all(space.target == np.array([3, 9]))
 
-    with pytest.raises(KeyError):
+    with pytest.raises(NotUniqueError):
         space.register(params={"p1": 1, "p2": 2}, target=3)
-    with pytest.raises(KeyError):
+    with pytest.raises(NotUniqueError):
         space.register(params={"p1": 5, "p2": 4}, target=9)
+
+
+def test_register_with_constraint():
+    constraint = ConstraintModel(lambda x: x, -2, 2)
+    space = TargetSpace(target_func, PBOUNDS, constraint=constraint)
+
+    assert len(space) == 0
+    # registering with dict
+    space.register(params={"p1": 1, "p2": 2}, target=3, constraint_value=0.)
+    assert len(space) == 1
+    assert all(space.params[0] == np.array([1, 2]))
+    assert all(space.target == np.array([3]))
+    assert all(space.constraint_values == np.array([0]))
+
+    # registering with array
+    space.register(params={"p1": 5, "p2": 4}, target=9, constraint_value=2)
+    assert len(space) == 2
+    assert all(space.params[1] == np.array([5, 4]))
+    assert all(space.target == np.array([3, 9]))
+    assert all(space.constraint_values == np.array([0, 2]))
+
+    with pytest.raises(ValueError):
+        space.register(params={"p1": 2, "p2": 2}, target=3)
 
 
 def test_probe():

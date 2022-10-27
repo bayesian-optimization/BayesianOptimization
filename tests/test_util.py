@@ -8,6 +8,7 @@ from bayes_opt.util import acq_max, load_logs, ensure_rng
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
 
+from scipy.optimize import NonlinearConstraint
 
 def get_globals():
     X = np.array([
@@ -144,6 +145,30 @@ def test_logs():
     )
     with pytest.raises(ValueError):
         load_logs(other_optimizer, ["./tests/test_logs.json"])
+
+
+def test_logs_constraint():
+    import pytest
+    def f(x, y):
+        return -x ** 2 - (y - 1) ** 2 + 1
+
+    def c(x, y):
+        return x ** 2 + y ** 2
+    
+    constraint = NonlinearConstraint(c, -np.inf, 3)
+
+    optimizer = BayesianOptimization(
+        f=f,
+        pbounds={"x": (-2, 2), "y": (-2, 2)},
+        constraint=constraint
+    )
+
+    with pytest.raises(KeyError):
+        load_logs(optimizer, ["./tests/test_logs.json"])
+    
+    load_logs(optimizer, ["./tests/test_logs_constrained.json"])
+
+    assert len(optimizer.space) == 7
 
 
 def test_colours():
