@@ -11,8 +11,6 @@
 Pure Python implementation of bayesian global optimization with gaussian
 processes.
 
-> :warning: If you are using scipy>1.8.x, please install directly from this branch: e.g. ```pip install git+https://github.com/fmfn/BayesianOptimization```
-
 * PyPI (pip):
 
 ```console
