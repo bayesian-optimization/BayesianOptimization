@@ -338,6 +338,49 @@ def test_pickle():
         pickle.dump(optimizer, filehandler)
     os.remove('test_dump.obj')
 
+
+def test_duplicate_points():
+    """
+    The default behavior of this code is to not enable duplicate points in the target space,
+    however there are situations in which you may want this, particularly optimization in high
+    noise situations. In that case one can set allow_duplicate_points to be True.
+    This tests the behavior of the code around duplicate points under several scenarios
+    """
+    # test manual registration of duplicate points (should generate error)
+    optimizer = BayesianOptimization(f=None, pbounds={'x': (-2, 2)}, random_state=1)
+    utility = UtilityFunction(kind="ucb", kappa=5, xi=1)  # kappa determines explore/Exploitation ratio
+    next_point_to_probe = optimizer.suggest(utility)
+    target = 1
+    # register once (should work)
+    optimizer.register(
+        params=next_point_to_probe,
+        target=target,
+    )
+    # register twice (should throw error)
+    try:
+        optimizer.register(
+            params=next_point_to_probe,
+            target=target,
+        )
+        duplicate_point_error = None  # should be overwritten below
+    except Exception as e:
+        duplicate_point_error = e
+
+    assert isinstance(duplicate_point_error, NotUniqueError)
+
+    # OK, now let's test that it DOESNT fail when allow_duplicate_points=True
+    optimizer = BayesianOptimization(f=None, pbounds={'x': (-2, 2)}, random_state=1, allow_duplicate_points=True)
+    optimizer.register(
+        params=next_point_to_probe,
+        target=target,
+    )
+    # and again (should throw warning)
+    optimizer.register(
+        params=next_point_to_probe,
+        target=target,
+    )
+
+
 if __name__ == '__main__':
     r"""
     CommandLine:

@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 from .util import ensure_rng, NotUniqueError
 
@@ -22,7 +24,9 @@ class TargetSpace(object):
     >>> y = space.register_point(x)
     >>> assert self.max_point()['max_val'] == y
     """
-    def __init__(self, target_func, pbounds, constraint=None, random_state=None):
+
+    def __init__(self, target_func, pbounds, constraint=None, random_state=None,
+                 allow_duplicate_points=False):
         """
         Parameters
         ----------
@@ -37,6 +41,8 @@ class TargetSpace(object):
             optionally specify a seed for a random number generator
         """
         self.random_state = ensure_rng(random_state)
+        self._allow_duplicate_points = allow_duplicate_points
+        self.n_duplicate_points = 0
 
         # The function to be optimized
         self.target_func = target_func
@@ -55,7 +61,6 @@ class TargetSpace(object):
 
         # keep track of unique points we have seen so far
         self._cache = {}
-
 
         self._constraint = constraint
 
@@ -96,7 +101,7 @@ class TargetSpace(object):
     @property
     def bounds(self):
         return self._bounds
-    
+
     @property
     def constraint(self):
         return self._constraint
@@ -176,8 +181,12 @@ class TargetSpace(object):
         """
         x = self._as_array(params)
         if x in self:
-            raise NotUniqueError('Data point {} is not unique'.format(x))
-
+            if self._allow_duplicate_points:
+                self.n_duplicate_points = self.n_duplicate_points + 1
+                warnings.warn(f'Data point {x} is not unique. {self.n_duplicate_points} duplicates registered.'
+                              f' Continuing ...')
+            else:
+                raise NotUniqueError('Data point {} is not unique'.format(x))
 
         self._params = np.concatenate([self._params, x.reshape(1, -1)])
         self._target = np.concatenate([self._target, [target]])
@@ -188,12 +197,12 @@ class TargetSpace(object):
         else:
             if constraint_value is None:
                 msg = ("When registering a point to a constrained TargetSpace" +
-                    " a constraint value needs to be present.")
+                       " a constraint value needs to be present.")
                 raise ValueError(msg)
             # Insert data into unique dictionary
             self._cache[_hashable(x.ravel())] = (target, constraint_value)
             self._constraint_values = np.concatenate([self._constraint_values,
-                                                 [constraint_value]])
+                                                      [constraint_value]])
 
     def probe(self, params):
         """
@@ -229,7 +238,6 @@ class TargetSpace(object):
                 constraint_value = self._constraint.eval(**params)
                 self.register(x, target, constraint_value)
                 return target, constraint_value
-
 
     def random_sample(self):
         """
@@ -317,7 +325,7 @@ class TargetSpace(object):
                     self._constraint_values,
                     params,
                     self._constraint.allowed(self._constraint_values)
-                    )
+                )
             ]
 
     def set_bounds(self, new_bounds):
