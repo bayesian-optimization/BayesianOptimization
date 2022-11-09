@@ -1,7 +1,5 @@
 import warnings
 
-from bayes_opt.constraint import ConstraintModel
-
 from .target_space import TargetSpace
 from .event import Events, DEFAULT_EVENTS
 from .logger import _get_default_logger
@@ -9,9 +7,12 @@ from .util import UtilityFunction, acq_max, ensure_rng
 
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
+from .parameter import wrap_kernel
+from icecream import ic
 
 
 class Queue:
+
     def __init__(self):
         self._queue = []
 
@@ -116,15 +117,6 @@ class BayesianOptimization(Observable):
 
         self._queue = Queue()
 
-        # Internal GP regressor
-        self._gp = GaussianProcessRegressor(
-            kernel=Matern(nu=2.5),
-            alpha=1e-6,
-            normalize_y=True,
-            n_restarts_optimizer=5,
-            random_state=self._random_state,
-        )
-
         if constraint is None:
             # Data structure containing the function to be optimized, the
             # bounds of its domain, and a record of the evaluations we have
@@ -132,19 +124,21 @@ class BayesianOptimization(Observable):
             self._space = TargetSpace(f, pbounds, random_state=random_state)
             self.is_constrained = False
         else:
-            constraint_ = ConstraintModel(
-                constraint.fun,
-                constraint.lb,
-                constraint.ub,
-                random_state=random_state
-            )
-            self._space = TargetSpace(
-                f,
-                pbounds,
-                constraint=constraint_,
-                random_state=random_state
-            )
+            self._space = TargetSpace(f,
+                                      pbounds,
+                                      constraint=constraint,
+                                      random_state=random_state)
             self.is_constrained = True
+
+        # Internal GP regressor
+        self._gp = GaussianProcessRegressor(
+            kernel=wrap_kernel(Matern(nu=2.5),
+                               transform=self._space.kernel_transform),
+            alpha=1e-6,
+            normalize_y=True,
+            n_restarts_optimizer=5,
+            random_state=self._random_state,
+        )
 
         self._verbose = verbose
         self._bounds_transformer = bounds_transformer
@@ -219,9 +213,8 @@ class BayesianOptimization(Observable):
                              gp=self._gp,
                              constraint=self.constraint,
                              y_max=self._space.target.max(),
-                             bounds=self._space.bounds,
+                             bounds=self._space.float_bounds,
                              random_state=self._random_state)
-
         return self._space.array_to_params(suggestion)
 
     def _prime_queue(self, init_points):
@@ -230,7 +223,8 @@ class BayesianOptimization(Observable):
             init_points = max(init_points, 1)
 
         for _ in range(init_points):
-            self._queue.add(self._space.random_sample())
+            self._queue.add(
+                self._space.array_to_params(self._space.random_sample()))
 
     def _prime_subscriptions(self):
         if not any([len(subs) for subs in self._events.values()]):
@@ -307,8 +301,8 @@ class BayesianOptimization(Observable):
             if self._bounds_transformer and iteration > 0:
                 # The bounds transformer should only modify the bounds after
                 # the init_points points (only for the true iterations)
-                self.set_bounds(
-                    self._bounds_transformer.transform(self._space))
+                self.set_bounds(self._bounds_transformer.transform(
+                    self._space))
 
         self.dispatch(Events.OPTIMIZATION_END)
 

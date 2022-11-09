@@ -5,7 +5,10 @@ import json
 from .observer import _Tracker
 from .event import Events
 from .util import Colours
+from .parameter import FloatParameter, IntParameter, CategoricalParameter
 
+import numpy as np
+from icecream import ic
 def _get_default_logger(verbose, is_constrained):
     return ScreenLogger(verbose=verbose, is_constrained=is_constrained)
 
@@ -66,7 +69,7 @@ class ScreenLogger(_Tracker):
         )
         return s
 
-    def _format_key(self, key):
+    def _format_str(self, key):
         s = "{key:^{s}}".format(
             key=key,
             s=self._default_cell_size
@@ -86,20 +89,29 @@ class ScreenLogger(_Tracker):
 
 
         for key in instance.space.keys:
-            cells.append(self._format_number(res["params"][key]))
+            val = res["params"][key]
+            if type(instance.space._params_config[key]) == FloatParameter:
+                cells.append(self._format_number(val))
+            elif type(instance.space._params_config[key]) == IntParameter:
+                cells.append(self._format_number(val))
+            elif type(instance.space._params_config[key]) == CategoricalParameter:
+                cells.append(self._format_str(str(val)))
+            else:
+                raise TypeError
+                
 
         return "| " + " | ".join(map(colour, cells)) + " |"
 
     def _header(self, instance):
         cells = []
-        cells.append(self._format_key("iter"))
-        cells.append(self._format_key("target"))
+        cells.append(self._format_str("iter"))
+        cells.append(self._format_str("target"))
 
         if self._is_constrained:
-            cells.append(self._format_key("allowed"))
+            cells.append(self._format_str("allowed"))
 
         for key in instance.space.keys:
-            cells.append(self._format_key(key))
+            cells.append(self._format_str(key))
 
         line = "| " + " | ".join(cells) + " |"
         self._header_length = len(line)
