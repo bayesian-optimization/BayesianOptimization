@@ -143,19 +143,28 @@ class UtilityFunction(object):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             mean, std = gp.predict(x, return_std=True)
-
+        val = None
         a = (mean - y_max - xi)
-        z = a / std
-        return a * norm.cdf(z) + std * norm.pdf(z)
+        with np.errstate(divide='ignore'):
+            z = a / std
+            val = a * norm.cdf(z) + std * norm.pdf(z)
+            val[std == 0.0] = 0.0
 
+        return val
+        
     @staticmethod
     def _poi(x, gp, y_max, xi):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             mean, std = gp.predict(x, return_std=True)
+        
+        val = None
+        with np.errstate(divide='ignore'):
+            z = (mean - y_max - xi)/std
+            val = norm.cdf(z)
+            val[std == 0.0] = 0.0
 
-        z = (mean - y_max - xi)/std
-        return norm.cdf(z)
+        return val
 
 
 class NotUniqueError(Exception):
