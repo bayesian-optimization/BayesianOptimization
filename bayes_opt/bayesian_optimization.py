@@ -246,12 +246,8 @@ class BayesianOptimization(Observable):
     def maximize(self,
                  init_points=5,
                  n_iter=25,
-                 acq='ucb',
-                 kappa=2.576,
-                 kappa_decay=1,
-                 kappa_decay_delay=0,
-                 xi=0.0,
-                 **gp_params):
+                 utility_function=None):
+
         """
         Probes the target space to find the parameters that yield the maximum
         value for the given function.
@@ -291,13 +287,16 @@ class BayesianOptimization(Observable):
         self._prime_subscriptions()
         self.dispatch(Events.OPTIMIZATION_START)
         self._prime_queue(init_points)
-        self.set_gp_params(**gp_params)
 
-        util = UtilityFunction(kind=acq,
-                               kappa=kappa,
-                               xi=xi,
-                               kappa_decay=kappa_decay,
-                               kappa_decay_delay=kappa_decay_delay)
+        if utility_function is None:
+            util = UtilityFunction(kind='ucb',
+                                   kappa=2.576,
+                                   xi=0.0,
+                                   kappa_decay=1,
+                                   kappa_decay_delay=0)
+        else:
+            util = utility_function
+
         iteration = 0
         while not self._queue.empty or iteration < n_iter:
             try:

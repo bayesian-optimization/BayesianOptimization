@@ -27,10 +27,7 @@ if __name__ == '__main__':
 
         optimizer.maximize(init_points=2,
                      n_iter=25,
-                     acq='ucb',
-                     kappa=5,
-                     xi=1,
-                     **{'normalize_y':True, 'alpha':2.5e-3, 'n_restarts_optimizer':20})
+                     utility_function=utility)
         # for point in range(20):
         #     next_point_to_probe = optimizer.suggest(utility)
         #     NextPointValues = np.array(list(next_point_to_probe.values()))
