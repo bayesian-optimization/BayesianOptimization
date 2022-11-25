@@ -62,6 +62,8 @@ class Observable(object):
             callback(event, self)
 
 
+
+
 class BayesianOptimization(Observable):
     """
     This class takes the function to optimize as well as the parameters bounds

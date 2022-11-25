@@ -226,20 +226,16 @@ class TargetSpace(object):
             target function value.
         """
         x = self._as_array(params)
+        params = dict(zip(self._keys, x))
+        target = self.target_func(**params)
 
-        try:
-            return self._cache[_hashable(x)]
-        except KeyError:
-            params = dict(zip(self._keys, x))
-            target = self.target_func(**params)
-
-            if self._constraint is None:
-                self.register(x, target)
-                return target
-            else:
-                constraint_value = self._constraint.eval(**params)
-                self.register(x, target, constraint_value)
-                return target, constraint_value
+        if self._constraint is None:
+            self.register(x, target)
+            return target
+        else:
+            constraint_value = self._constraint.eval(**params)
+            self.register(x, target, constraint_value)
+            return target, constraint_value
 
     def random_sample(self):
         """
