@@ -52,7 +52,7 @@ def test_probe_lazy():
 
 
 def test_probe_eager():
-    optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
+    optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1, allow_duplicate_points=True)
 
     optimizer.probe(params={"p1": 1, "p2": 2}, lazy=False)
     assert len(optimizer.space) == 1
@@ -67,7 +67,7 @@ def test_probe_eager():
     assert optimizer.max["params"] == {"p1": 3, "p2": 3}
 
     optimizer.probe(params={"p1": 3, "p2": 3}, lazy=False)
-    assert len(optimizer.space) == 2
+    assert len(optimizer.space) == 3
     assert len(optimizer._queue) == 0
     assert optimizer.max["target"] == 6
     assert optimizer.max["params"] == {"p1": 3, "p2": 3}
@@ -253,7 +253,8 @@ def test_maximize():
             self.__init__()
 
     optimizer = BayesianOptimization(target_func, PBOUNDS,
-                                     random_state=np.random.RandomState(1))
+                                     random_state=np.random.RandomState(1),
+                                     allow_duplicate_points=True)
 
     tracker = Tracker()
     optimizer.subscribe(
@@ -279,7 +280,8 @@ def test_maximize():
     assert tracker.step_count == 1
     assert tracker.end_count == 1
 
-    optimizer.maximize(init_points=2, n_iter=0, alpha=1e-2)
+    optimizer.set_gp_params(alpha=1e-2)
+    optimizer.maximize(init_points=2, n_iter=0)
     assert optimizer._queue.empty
     assert len(optimizer.space) == 3
     assert optimizer._gp.alpha == 1e-2
