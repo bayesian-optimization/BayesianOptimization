@@ -281,7 +281,8 @@ def test_maximize():
     assert tracker.end_count == 1
 
     optimizer.set_gp_params(alpha=1e-2)
-    optimizer.maximize(init_points=2, n_iter=0)
+    acquisition_function = UtilityFunction()
+    optimizer.maximize(init_points=2, n_iter=0, acquisition_function=acquisition_function)
     assert optimizer._queue.empty
     assert len(optimizer.space) == 3
     assert optimizer._gp.alpha == 1e-2
