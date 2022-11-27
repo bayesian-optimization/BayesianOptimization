@@ -62,8 +62,6 @@ class Observable(object):
             callback(event, self)
 
 
-
-
 class BayesianOptimization(Observable):
     """
     This class takes the function to optimize as well as the parameters bounds
@@ -92,6 +90,12 @@ class BayesianOptimization(Observable):
 
     bounds_transformer: DomainTransformer, optional(default=None)
         If provided, the transformation is applied to the bounds.
+
+    allow_duplicate_points: bool, optional (default=False)
+        If True, the optimizer will allow duplicate points to be registered.
+        This behavior may be desired in high noise situations where repeatedly probing
+        the same point will give different answers. In other situations, the acquisition
+        may occasionaly generate a duplicate point.
 
     Methods
     -------
@@ -271,6 +275,9 @@ class BayesianOptimization(Observable):
         acquisition_function: object, optional
             An instance of bayes_opt.util.UtilityFunction.
             If nothing is passed, a default using ucb is used
+
+        All other parameters are unused, and are only available to ensure backwards compatability - these
+        will be removed in a future release
         """
         self._prime_subscriptions()
         self.dispatch(Events.OPTIMIZATION_START)

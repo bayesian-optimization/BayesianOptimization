@@ -40,6 +40,12 @@ class TargetSpace(object):
 
         random_state : int, RandomState, or None
             optionally specify a seed for a random number generator
+
+        allow_duplicate_points: bool, optional (default=False)
+            If True, the optimizer will allow duplicate points to be registered.
+            This behavior may be desired in high noise situations where repeatedly probing
+            the same point will give different answers. In other situations, the acquisition
+            may occasionaly generate a duplicate point.
         """
         self.random_state = ensure_rng(random_state)
         self._allow_duplicate_points = allow_duplicate_points
