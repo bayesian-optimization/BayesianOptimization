@@ -246,7 +246,13 @@ class BayesianOptimization(Observable):
     def maximize(self,
                  init_points=5,
                  n_iter=25,
-                 acquisition_function=None):
+                 acquisition_function=None,
+                 acq=None,
+                 kappa=None,
+                 kappa_decay=None,
+                 kappa_decay_delay=None,
+                 xi=None,
+                 **gp_params):
 
         """
         Probes the target space to find the parameters that yield the maximum
@@ -269,6 +275,14 @@ class BayesianOptimization(Observable):
         self._prime_subscriptions()
         self.dispatch(Events.OPTIMIZATION_START)
         self._prime_queue(init_points)
+
+        old_params_used = any([param is not None for param in [acq, kappa, kappa_decay, kappa_decay_delay, xi]])
+        if old_params_used or gp_params:
+            warnings.warn('\nPassing acquisition function parameters or gaussian process parameters to maximize'
+                                     '\nis no longer supported, and will cause an error in future releases. Instead,'
+                                     '\nplease use the "set_gp_params" method to set the gp params, and pass an instance'
+                                     '\n of bayes_opt.util.UtilityFunction using the acquisition_function argument\n',
+                          DeprecationWarning, stacklevel=2)
 
         if acquisition_function is None:
             util = UtilityFunction(kind='ucb',
