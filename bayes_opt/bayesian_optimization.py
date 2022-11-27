@@ -262,27 +262,9 @@ class BayesianOptimization(Observable):
             Number of iterations where the method attempts to find the maximum
             value.
 
-        acq: {'ucb', 'ei', 'poi'}
-            The acquisition method used.
-                * 'ucb' stands for the Upper Confidence Bounds method
-                * 'ei' is the Expected Improvement method
-                * 'poi' is the Probability Of Improvement criterion.
-
-        kappa: float, optional(default=2.576)
-            Parameter to indicate how closed are the next parameters sampled.
-                Higher value = favors spaces that are least explored.
-                Lower value = favors spaces where the regression function is
-                the highest.
-
-        kappa_decay: float, optional(default=1)
-            `kappa` is multiplied by this factor every iteration.
-
-        kappa_decay_delay: int, optional(default=0)
-            Number of iterations that must have passed before applying the
-            decay to `kappa`.
-
-        xi: float, optional(default=0.0)
-            [unused]
+        acquisition_function: object, optional
+            An instance of bayes_opt.util.UtilityFunction.
+            If nothing is passed, a default using ucb is used
         """
         self._prime_subscriptions()
         self.dispatch(Events.OPTIMIZATION_START)
