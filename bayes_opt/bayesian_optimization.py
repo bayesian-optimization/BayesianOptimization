@@ -91,6 +91,12 @@ class BayesianOptimization(Observable):
     bounds_transformer: DomainTransformer, optional(default=None)
         If provided, the transformation is applied to the bounds.
 
+    allow_duplicate_points: bool, optional (default=False)
+        If True, the optimizer will allow duplicate points to be registered.
+        This behavior may be desired in high noise situations where repeatedly probing
+        the same point will give different answers. In other situations, the acquisition
+        may occasionaly generate a duplicate point.
+
     Methods
     -------
     probe()
@@ -111,9 +117,10 @@ class BayesianOptimization(Observable):
                  constraint=None,
                  random_state=None,
                  verbose=2,
-                 bounds_transformer=None):
+                 bounds_transformer=None,
+                 allow_duplicate_points=False):
         self._random_state = ensure_rng(random_state)
-
+        self._allow_duplicate_points = allow_duplicate_points
         self._queue = Queue()
 
         # Internal GP regressor
@@ -129,7 +136,8 @@ class BayesianOptimization(Observable):
             # Data structure containing the function to be optimized, the
             # bounds of its domain, and a record of the evaluations we have
             # done so far
-            self._space = TargetSpace(f, pbounds, random_state=random_state)
+            self._space = TargetSpace(f, pbounds, random_state=random_state,
+                                      allow_duplicate_points=self._allow_duplicate_points)
             self.is_constrained = False
         else:
             constraint_ = ConstraintModel(
@@ -242,12 +250,14 @@ class BayesianOptimization(Observable):
     def maximize(self,
                  init_points=5,
                  n_iter=25,
-                 acq='ucb',
-                 kappa=2.576,
-                 kappa_decay=1,
-                 kappa_decay_delay=0,
-                 xi=0.0,
+                 acquisition_function=None,
+                 acq=None,
+                 kappa=None,
+                 kappa_decay=None,
+                 kappa_decay_delay=None,
+                 xi=None,
                  **gp_params):
+
         """
         Probes the target space to find the parameters that yield the maximum
         value for the given function.
@@ -262,38 +272,34 @@ class BayesianOptimization(Observable):
             Number of iterations where the method attempts to find the maximum
             value.
 
-        acq: {'ucb', 'ei', 'poi'}
-            The acquisition method used.
-                * 'ucb' stands for the Upper Confidence Bounds method
-                * 'ei' is the Expected Improvement method
-                * 'poi' is the Probability Of Improvement criterion.
+        acquisition_function: object, optional
+            An instance of bayes_opt.util.UtilityFunction.
+            If nothing is passed, a default using ucb is used
 
-        kappa: float, optional(default=2.576)
-            Parameter to indicate how closed are the next parameters sampled.
-                Higher value = favors spaces that are least explored.
-                Lower value = favors spaces where the regression function is
-                the highest.
-
-        kappa_decay: float, optional(default=1)
-            `kappa` is multiplied by this factor every iteration.
-
-        kappa_decay_delay: int, optional(default=0)
-            Number of iterations that must have passed before applying the
-            decay to `kappa`.
-
-        xi: float, optional(default=0.0)
-            [unused]
+        All other parameters are unused, and are only available to ensure backwards compatability - these
+        will be removed in a future release
         """
         self._prime_subscriptions()
         self.dispatch(Events.OPTIMIZATION_START)
         self._prime_queue(init_points)
-        self.set_gp_params(**gp_params)
 
-        util = UtilityFunction(kind=acq,
-                               kappa=kappa,
-                               xi=xi,
-                               kappa_decay=kappa_decay,
-                               kappa_decay_delay=kappa_decay_delay)
+        old_params_used = any([param is not None for param in [acq, kappa, kappa_decay, kappa_decay_delay, xi]])
+        if old_params_used or gp_params:
+            warnings.warn('\nPassing acquisition function parameters or gaussian process parameters to maximize'
+                                     '\nis no longer supported, and will cause an error in future releases. Instead,'
+                                     '\nplease use the "set_gp_params" method to set the gp params, and pass an instance'
+                                     '\n of bayes_opt.util.UtilityFunction using the acquisition_function argument\n',
+                          DeprecationWarning, stacklevel=2)
+
+        if acquisition_function is None:
+            util = UtilityFunction(kind='ucb',
+                                   kappa=2.576,
+                                   xi=0.0,
+                                   kappa_decay=1,
+                                   kappa_decay_delay=0)
+        else:
+            util = acquisition_function
+
         iteration = 0
         while not self._queue.empty or iteration < n_iter:
             try:
