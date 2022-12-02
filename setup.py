@@ -14,7 +14,7 @@ setup(
         "numpy >= 1.9.0",
         "scipy >= 1.0.0",
         "scikit-learn >= 0.18.0",
-        "colorama"
+        "colorama >= 0.4.6",
     ],
     classifiers=[
         'License :: OSI Approved :: MIT License',
