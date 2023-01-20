@@ -5,7 +5,7 @@ from scipy.optimize import minimize
 from colorama import just_fix_windows_console
 
 
-def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000, n_iter=10):
+def acq_max(ac, gp, y_max, x_last, bounds, random_state, constraint=None, n_warmup=10000, n_iter=10):
     """
     A function to find the maximum of the acquisition function
 
@@ -47,7 +47,7 @@ def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000
     # Warm up with random points
     x_tries = random_state.uniform(bounds[:, 0], bounds[:, 1],
                                    size=(n_warmup, bounds.shape[0]))
-    ys = ac(x_tries, gp=gp, y_max=y_max)
+    ys = ac(x_tries, gp=gp, y_max=y_max, x_last=x_last)
     x_max = x_tries[ys.argmax()]
     max_acq = ys.max()
 
@@ -57,7 +57,7 @@ def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000
 
     if constraint is not None:
         def to_minimize(x):
-            target = -ac(x.reshape(1, -1), gp=gp, y_max=y_max)
+            target = -ac(x.reshape(1, -1), gp=gp, y_max=y_max, x_last=x_last)
             p_constraint = constraint.predict(x.reshape(1, -1))
 
             # TODO: This is not exactly how Gardner et al do it.
@@ -71,7 +71,7 @@ def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000
             else:
                 return target / (0.5 + p_constraint)
     else:
-        to_minimize = lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max)
+        to_minimize = lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max, x_last=x_last)
 
     for x_try in x_seeds:
         # Find the minimum of minus the acquisition function
@@ -98,9 +98,10 @@ class UtilityFunction(object):
     """
     An object to compute the acquisition functions.
 
-    kind: {'ucb', 'ei', 'poi'}
+    kind: {'ucb', 'ei', 'eipu', 'poi'}
         * 'ucb' stands for the Upper Confidence Bounds method
         * 'ei' is the Expected Improvement method
+        * 'eipu' is the Expected Improvement Per Unit cost method, as named in [Lee et al., 2020](https://assets.amazon.science/53/43/5121e84a45c7965cfd0644d81ec1/cost-aware-bayesian-optimization.pdf)
         * 'poi' is the Probability Of Improvement criterion.
 
     kappa: float, optional(default=2.576)
@@ -117,19 +118,26 @@ class UtilityFunction(object):
         decay to `kappa`.
 
     xi: float, optional(default=0.0)
+    
+    cost_func: function that takes x, x_last as input and output the 
+        cost to go from x_last to x (default=lambda x, x_last:1). 
+        At default cost_func, 'ei' and 'eipu' are equivalent
     """
 
-    def __init__(self, kind='ucb', kappa=2.576, xi=0, kappa_decay=1, kappa_decay_delay=0):
+    def __init__(self, kind='ucb', kappa=2.576, xi=0, kappa_decay=1, kappa_decay_delay=0, eps=1e-10, cost_func=None):
 
         self.kappa = kappa
         self._kappa_decay = kappa_decay
         self._kappa_decay_delay = kappa_decay_delay
 
+        
+        self.cost_func = cost_func if cost_func else lambda x, x_last: 1
         self.xi = xi
+        self.eps = eps
 
         self._iters_counter = 0
 
-        if kind not in ['ucb', 'ei', 'poi']:
+        if kind not in ['ucb', 'ei', 'eipu', 'poi']:
             err = "The utility function " \
                   "{} has not been implemented, " \
                   "please choose one of ucb, ei, or poi.".format(kind)
@@ -143,11 +151,13 @@ class UtilityFunction(object):
         if self._kappa_decay < 1 and self._iters_counter > self._kappa_decay_delay:
             self.kappa *= self._kappa_decay
 
-    def utility(self, x, gp, y_max):
+    def utility(self, x, gp, y_max, x_last):
         if self.kind == 'ucb':
             return self._ucb(x, gp, self.kappa)
         if self.kind == 'ei':
             return self._ei(x, gp, y_max, self.xi)
+        if self.kind == 'eipu':
+            return self._eipu(x, gp, y_max, x_last, self.xi, self.cost_func, self.eps)
         if self.kind == 'poi':
             return self._poi(x, gp, y_max, self.xi)
 
@@ -168,6 +178,17 @@ class UtilityFunction(object):
         a = (mean - y_max - xi)
         z = a / std
         return a * norm.cdf(z) + std * norm.pdf(z)
+    
+    @staticmethod
+    def _eipu(x, gp, y_max, x_last, xi, cost_func, eps):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            mean, std = gp.predict(x, return_std=True)
+
+        a = (mean - y_max - xi)
+        z = a / std
+        cost =  cost_func(x.squeeze(), x_last) + eps # add eps for numerical stability
+        return a * norm.cdf(z) + std * norm.pdf(z) / cost
 
     @staticmethod
     def _poi(x, gp, y_max, xi):
