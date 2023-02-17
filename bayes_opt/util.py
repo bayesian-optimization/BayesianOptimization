@@ -188,7 +188,7 @@ class UtilityFunction(object):
         a = (mean - y_max - xi)
         z = a / std
         cost =  cost_func(x_last, x.squeeze()) + eps # add eps for numerical stability
-        return a * norm.cdf(z) + std * norm.pdf(z) / cost
+        return (a * norm.cdf(z) + std * norm.pdf(z)) / cost
 
     @staticmethod
     def _poi(x, gp, y_max, xi):
