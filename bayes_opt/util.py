@@ -187,7 +187,7 @@ class UtilityFunction(object):
 
         a = (mean - y_max - xi)
         z = a / std
-        cost =  cost_func(x.squeeze(), x_last) + eps # add eps for numerical stability
+        cost =  cost_func(x_last, x.squeeze()) + eps # add eps for numerical stability
         return a * norm.cdf(z) + std * norm.pdf(z) / cost
 
     @staticmethod
