@@ -106,18 +106,16 @@ class SequentialDomainReductionTransformer(DomainTransformer):
             window_width = abs(entry[0] - entry[1])
             if window_width < self.minimum_window[i]:
                 dw = (self.minimum_window[i] - window_width) / 2.0
-                new_bounds[i, 0] -= dw
-                new_bounds[i, 1] += dw
-                # left_expansion_space = abs(global_bounds[i, 0] - entry[0]) # should be non-positive
-                # right_expansion_space = abs(global_bounds[i, 1] - entry[1]) # should be non-negative
-                # # conservative
-                # dw_l = min(dw, left_expansion_space)
-                # dw_r = min(dw, right_expansion_space)
-                # # this crawls towards the edge
-                # ddw_r = dw_r + max(dw - dw_l, 0)
-                # ddw_l = dw_l + max(dw - dw_r, 0)
-                # new_bounds[i, 0] -= ddw_l
-                # new_bounds[i, 1] += ddw_r
+                left_expansion_space = abs(global_bounds[i, 0] - entry[0]) # should be non-positive
+                right_expansion_space = abs(global_bounds[i, 1] - entry[1]) # should be non-negative
+                # conservative
+                dw_l = min(dw, left_expansion_space)
+                dw_r = min(dw, right_expansion_space)
+                # this crawls towards the edge
+                ddw_r = dw_r + max(dw - dw_l, 0)
+                ddw_l = dw_l + max(dw - dw_r, 0)
+                new_bounds[i, 0] -= ddw_l
+                new_bounds[i, 1] += ddw_r
         return new_bounds
 
     def _create_bounds(self, parameters: dict, bounds: np.array) -> dict:
