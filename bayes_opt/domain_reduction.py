@@ -68,6 +68,9 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
         self.r = self.contraction_rate * self.r
 
+        # check if the minimum window fits in the orignal bounds
+        self._window_bounds_compatiblity(self.original_bounds)
+
     def _update(self, target_space: TargetSpace) -> None:
 
         # setting the previous
@@ -117,6 +120,14 @@ class SequentialDomainReductionTransformer(DomainTransformer):
                 new_bounds[i, 0] -= ddw_l
                 new_bounds[i, 1] += ddw_r
         return new_bounds
+
+    def _window_bounds_compatiblity(self, global_bounds: np.array) -> bool:
+        """Checks if global bounds are compatible with the minimum window sizes."""
+        for i, entry in enumerate(global_bounds):
+            global_window_width = abs(entry[1] - entry[0])
+            if global_window_width < self.minimum_window[i]:
+                raise ValueError(
+                    "Global bounds are not compatible with the minimum window size.")
 
     def _create_bounds(self, parameters: dict, bounds: np.array) -> dict:
         return {param: bounds[i, :] for i, param in enumerate(parameters)}

@@ -1,8 +1,9 @@
 import numpy as np
+import pytest
 
 from bayes_opt import SequentialDomainReductionTransformer
 from bayes_opt import BayesianOptimization
-
+from bayes_opt.target_space import TargetSpace
 
 def black_box_function(x, y):
     """Function with unknown internals we wish to maximize.
@@ -104,3 +105,42 @@ def test_minimum_window_array_is_kept():
     )
     window_widths = np.diff(bounds_transformer.bounds)
     assert np.all(np.isclose(np.squeeze(np.min(window_widths, axis=0)), window_ranges))
+
+def test_trimming_bounds():
+    """Test if the bounds are trimmed correctly within the bounds"""
+    def dummy_function(x1, x2, x3, x4, x5):
+        return 0.0
+
+    min_window = 1.0
+    bounds_transformer = SequentialDomainReductionTransformer(minimum_window=min_window)
+    pbounds  = {
+        'x1': (-1, 0.6),
+        'x2': (-1, 0.5),
+        'x3': (-0.4, 0.6),
+        'x4': (0.3, 1.3),
+        'x5': (-1, 0.8),
+    }
+    target_sp = TargetSpace(target_func=dummy_function, pbounds=pbounds)
+    bounds_transformer.initialize(target_sp)
+    new_bounds = np.concatenate((np.ones((5, 1)) * 0.1, np.ones((5, 1))), axis=1)
+    global_bounds = np.asarray(list(pbounds.values()))
+   
+    trimmed_bounds = bounds_transformer._trim(new_bounds, global_bounds)
+    # check that the bounds are trimmed to the minimum window
+    # raises ValueError if the bounds are not trimmed correctly
+    bounds_transformer._window_bounds_compatiblity(trimmed_bounds)
+
+
+def test_exceeded_bounds():
+    """Raises Value Error if the bounds are exceeded."""
+    window_ranges = [1.01, 0.72]
+    bounds_transformer = SequentialDomainReductionTransformer(minimum_window=window_ranges)
+    pbounds = {'x': (-0.5, 0.5), 'y': (-0.7, 0.0)}
+    with pytest.raises(ValueError):
+        _ = BayesianOptimization(
+                f=black_box_function,
+                pbounds=pbounds,
+                verbose=0,
+                random_state=1,
+                bounds_transformer=bounds_transformer
+            )
