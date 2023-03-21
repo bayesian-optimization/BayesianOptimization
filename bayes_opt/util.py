@@ -51,6 +51,10 @@ def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000
     x_max = x_tries[ys.argmax()]
     max_acq = ys.max()
 
+    # Make sure constraints can be better satisfied
+    if constraint.predict(x_max.reshape(1, -1)) < 0.6:
+        max_acq = -1000000
+
     # Explore the parameter space more throughly
     x_seeds = random_state.uniform(bounds[:, 0], bounds[:, 1],
                                    size=(n_iter, bounds.shape[0]))
