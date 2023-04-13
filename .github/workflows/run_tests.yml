@@ -34,10 +34,6 @@ jobs:
         pip install pytest-cov
         pip install coverage
         pip install -e .
-    - name: Test with pytest
-      run: |
-        pytest --cov-config .coveragerc --cov-report html --cov=bayes_opt
-        codecov
 
     - name: Test with pytest
       run: |
