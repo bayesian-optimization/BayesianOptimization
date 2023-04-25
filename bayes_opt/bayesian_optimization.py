@@ -285,11 +285,10 @@ class BayesianOptimization(Observable):
 
         old_params_used = any([param is not None for param in [acq, kappa, kappa_decay, kappa_decay_delay, xi]])
         if old_params_used or gp_params:
-            warnings.warn('\nPassing acquisition function parameters or gaussian process parameters to maximize'
-                                     '\nis no longer supported, and will cause an error in future releases. Instead,'
-                                     '\nplease use the "set_gp_params" method to set the gp params, and pass an instance'
-                                     '\n of bayes_opt.util.UtilityFunction using the acquisition_function argument\n',
-                          DeprecationWarning, stacklevel=2)
+            raise Exception('\nPassing acquisition function parameters or gaussian process parameters to maximize'
+                                     '\nis no longer supported. Instead,please use the "set_gp_params" method to set'
+                                     '\n the gp params, and pass an instance of bayes_opt.util.UtilityFunction'
+                                     '\n using the acquisition_function argument\n')
 
         if acquisition_function is None:
             util = UtilityFunction(kind='ucb',
