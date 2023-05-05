@@ -69,7 +69,7 @@ def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000
             if target < 0:
                 return target * p_constraint
             else:
-                return target / (0.5 + p_constraint)
+                return target / (0.5 + 0.5 * p_constraint)
     else:
         to_minimize = lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max)
 
