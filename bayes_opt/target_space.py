@@ -1,5 +1,3 @@
-import warnings
-
 import numpy as np
 from .util import ensure_rng, NotUniqueError
 from .util import Colours

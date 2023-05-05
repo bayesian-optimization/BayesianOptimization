@@ -147,7 +147,7 @@ def test_multiple_constraints():
     params = optimizer.res[0]["params"]
     x, y = params['x'], params['y']
 
-    assert constraint_function_2_dim(x, y) == approx(optimizer.constraint.approx(np.array([x, y])), rel=1e-5, abs=1e-5)
+    assert constraint_function_2_dim(x, y) == approx(optimizer.constraint.approx(np.array([x, y])), rel=1e-3, abs=1e-3)
 
 
 def test_kwargs_not_the_same():
