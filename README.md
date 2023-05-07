@@ -323,7 +323,7 @@ If you used this package in your research and is interested in citing it here's 
 * Numpy
 * Scipy
 * Scikit-learn
-
+ 
 # References:
 * http://papers.nips.cc/paper/4522-practical-bayesian-optimization-of-machine-learning-algorithms.pdf
 * http://arxiv.org/pdf/1012.2599v1.pdf

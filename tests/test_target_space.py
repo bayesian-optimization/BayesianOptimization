@@ -119,7 +119,7 @@ def test_register_with_constraint():
 
 
 def test_probe():
-    space = TargetSpace(target_func, PBOUNDS)
+    space = TargetSpace(target_func, PBOUNDS, allow_duplicate_points=True)
 
     assert len(space) == 0
     # probing with dict
@@ -136,15 +136,15 @@ def test_probe():
 
     # probing same point with dict
     space.probe(params={"p1": 1, "p2": 2})
-    assert len(space) == 2
+    assert len(space) == 3
     assert all(space.params[1] == np.array([5, 4]))
-    assert all(space.target == np.array([3, 9]))
+    assert all(space.target == np.array([3, 9, 3]))
 
     # probing same point with array
     space.probe(np.array([5, 4]))
-    assert len(space) == 2
+    assert len(space) == 4
     assert all(space.params[1] == np.array([5, 4]))
-    assert all(space.target == np.array([3, 9]))
+    assert all(space.target == np.array([3, 9, 3 , 9]))
 
 
 def test_random_sample():

@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
 
     steps:
     - uses: actions/checkout@v3
@@ -32,9 +32,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install pytest
         pip install pytest-cov
-        pip install codecov
+        pip install coverage
         pip install -e .
+
     - name: Test with pytest
       run: |
-        pytest --cov-config .coveragerc --cov-report html --cov=bayes_opt
-        codecov 
+        pytest --cov-report xml --cov=bayes_opt/
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3

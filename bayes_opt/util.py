@@ -2,6 +2,7 @@ import warnings
 import numpy as np
 from scipy.stats import norm
 from scipy.optimize import minimize
+from colorama import just_fix_windows_console
 
 
 def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000, n_iter=10):
@@ -96,9 +97,29 @@ def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000
 class UtilityFunction(object):
     """
     An object to compute the acquisition functions.
+
+    kind: {'ucb', 'ei', 'poi'}
+        * 'ucb' stands for the Upper Confidence Bounds method
+        * 'ei' is the Expected Improvement method
+        * 'poi' is the Probability Of Improvement criterion.
+
+    kappa: float, optional(default=2.576)
+            Parameter to indicate how closed are the next parameters sampled.
+            Higher value = favors spaces that are least explored.
+            Lower value = favors spaces where the regression function is
+            the highest.
+
+    kappa_decay: float, optional(default=1)
+        `kappa` is multiplied by this factor every iteration.
+
+    kappa_decay_delay: int, optional(default=0)
+        Number of iterations that must have passed before applying the
+        decay to `kappa`.
+
+    xi: float, optional(default=0.0)
     """
 
-    def __init__(self, kind, kappa, xi, kappa_decay=1, kappa_decay_delay=0):
+    def __init__(self, kind='ucb', kappa=2.576, xi=0, kappa_decay=1, kappa_decay_delay=0):
 
         self.kappa = kappa
         self._kappa_decay = kappa_decay
@@ -275,3 +296,6 @@ class Colours:
     def yellow(cls, s):
         """Wrap text in yellow."""
         return cls._wrap_colour(s, cls.YELLOW)
+
+
+just_fix_windows_console()
