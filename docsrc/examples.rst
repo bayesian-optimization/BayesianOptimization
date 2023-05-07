@@ -11,5 +11,3 @@ Examples
    /visualization
    /constraints
    /domain_reduction
-   /Spot
-   /steering_dispersion
