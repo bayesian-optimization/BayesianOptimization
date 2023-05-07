@@ -28,6 +28,7 @@ jobs:
           pip install sphinx
           pip install nbsphinx
           pip install sphinx_rtd_theme
+          pip install jupyter
       - name: Install package
         run: |
           pip install -e .
