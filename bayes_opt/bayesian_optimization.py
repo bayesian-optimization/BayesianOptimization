@@ -226,7 +226,7 @@ class BayesianOptimization(Observable):
         suggestion = acq_max(ac=utility_function.utility,
                              gp=self._gp,
                              constraint=self.constraint,
-                             y_max=self._space.y_max(),
+                             y_max=self._space._target_max(),
                              bounds=self._space.bounds,
                              random_state=self._random_state)
 

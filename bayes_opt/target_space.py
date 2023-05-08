@@ -265,7 +265,7 @@ class TargetSpace(object):
             data.T[col] = self.random_state.uniform(lower, upper, size=1)
         return data.ravel()
 
-    def y_max(self):
+    def _target_max(self):
         """Get maximum target value found.
         
         If there is a constraint present, the maximum value that fulfills the
@@ -287,9 +287,9 @@ class TargetSpace(object):
         
         If there is a constraint present, the maximum value that fulfills the
         constraint is returned."""
-        y_max = self.y_max()
+        target_max = self._target_max()
 
-        if y_max is None:
+        if target_max is None:
             res = {
                 'target': None,
                 'params': None
@@ -300,17 +300,17 @@ class TargetSpace(object):
 
             return res
 
-        y_idx = np.where(self.target == y_max)[0][0]
+        target_max_idx = np.where(self.target == target_max)[0][0]
 
         res = {
-                'target': y_max,
+                'target': target_max,
                 'params': dict(
-                zip(self.keys, self.params[y_idx])
+                zip(self.keys, self.params[target_max_idx])
             )
         }
 
         if self._constraint is not None:
-            res['constraint'] = self._constraint_values[y_idx]
+            res['constraint'] = self._constraint_values[target_max_idx]
 
         return res
 

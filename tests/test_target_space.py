@@ -165,20 +165,20 @@ def test_random_sample():
 
 def test_y_max():
     space = TargetSpace(target_func, PBOUNDS)
-    assert space.y_max() == None
+    assert space._target_max() == None
     space.probe(params={"p1": 1, "p2": 2})
     space.probe(params={"p1": 5, "p2": 1})
     space.probe(params={"p1": 0, "p2": 1})
-    assert space.y_max() == 6
+    assert space._target_max() == 6
 
 def test_y_max_with_constraint():
     constraint = ConstraintModel(lambda p1, p2: p1-p2, -2, 2)
     space = TargetSpace(target_func, PBOUNDS, constraint)
-    assert space.y_max() == None
+    assert space._target_max() == None
     space.probe(params={"p1": 1, "p2": 2}) # Feasible
     space.probe(params={"p1": 5, "p2": 1}) # Unfeasible
     space.probe(params={"p1": 0, "p2": 1}) # Feasible
-    assert space.y_max() == 3
+    assert space._target_max() == 3
 
 
 
