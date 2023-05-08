@@ -62,7 +62,7 @@ def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000
                 # on the probability estimate to fulfill the constraint.
                 return np.array(
                     [
-                        value * p if value > 0 else value / (0.5 + p)
+                        value * p if value > 0 else value / (0.5 + 0.5 * p)
                         for value, p in zip(values, p_constraints)
                     ]
                 )
