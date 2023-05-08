@@ -253,7 +253,7 @@ optimizer.maximize(
 )
 ```
 
-By default the previous data in the json file is removed. If you want to keep working with the same logger, the `reset` paremeter in `JSONLogger` should be set to False.
+By default the previous data in the json file is removed. If you want to keep working with the same logger, the `reset` parameter in `JSONLogger` should be set to False.
 
 ### 4.2 Loading progress
 
