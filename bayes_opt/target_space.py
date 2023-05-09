@@ -290,15 +290,7 @@ class TargetSpace(object):
         target_max = self._target_max()
 
         if target_max is None:
-            res = {
-                'target': None,
-                'params': None
-            }
-
-            if self._constraint is not None:
-                res['constraint'] = None
-
-            return res
+            return None
 
         target_max_idx = np.where(self.target == target_max)[0][0]
 
