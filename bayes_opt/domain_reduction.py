@@ -19,7 +19,7 @@ class DomainTransformer():
 
 class SequentialDomainReductionTransformer(DomainTransformer):
     """
-    A sequential domain reduction transformer bassed on the work by Stander, N. and Craig, K:
+    A sequential domain reduction transformer based on the work by Stander, N. and Craig, K:
     "On the robustness of a simple domain reduction scheme for simulation‐based optimization"
     """
 
@@ -68,8 +68,8 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
         self.r = self.contraction_rate * self.r
 
-        # check if the minimum window fits in the orignal bounds
-        self._window_bounds_compatiblity(self.original_bounds)
+        # check if the minimum window fits in the original bounds
+        self._window_bounds_compatibility(self.original_bounds)
 
     def _update(self, target_space: TargetSpace) -> None:
 
@@ -121,7 +121,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
                 new_bounds[i, 1] += ddw_r
         return new_bounds
 
-    def _window_bounds_compatiblity(self, global_bounds: np.array) -> bool:
+    def _window_bounds_compatibility(self, global_bounds: np.array) -> bool:
         """Checks if global bounds are compatible with the minimum window sizes."""
         for i, entry in enumerate(global_bounds):
             global_window_width = abs(entry[1] - entry[0])
