@@ -44,10 +44,43 @@ def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000
     :return: x_max, The arg max of the acquisition function.
     """
 
+    # We need to adjust the acquisition function to deal with constraints when there is some
+    if constraint is not None:
+        def adjusted_ac(x):
+            """Acquisition function adjusted to fulfill the constraint when necessary"""
+
+            # Transforms the problem in a minimization problem, this is necessary
+            # because the solver we are using later on is a minimizer
+            values = -ac(x.reshape(-1, bounds.shape[0]), gp=gp, y_max=y_max)
+            p_constraints = constraint.predict(x.reshape(-1, bounds.shape[0]))
+
+            # Slower fallback for the case where any values are negative
+            if np.any(values > 0):
+                # TODO: This is not exactly how Gardner et al do it.
+                # Their way would require the result of the acquisition function
+                # to be strictly positive, which is not the case here. For a
+                # positive target value, we use Gardner's version. If the target
+                # is negative, we instead slightly rescale the target depending
+                # on the probability estimate to fulfill the constraint.
+                return np.array(
+                    [
+                        value / (0.5 + 0.5 * p) if value > 0 else value * p
+                        for value, p in zip(values, p_constraints)
+                    ]
+                )
+
+            # Faster, vectorized version of Gardner et al's method
+            return values * p_constraints
+
+    else:
+        # Transforms the problem in a minimization problem, this is necessary
+        # because the solver we are using later on is a minimizer
+        adjusted_ac = lambda x: -ac(x.reshape(-1, bounds.shape[0]), gp=gp, y_max=y_max)
+
     # Warm up with random points
     x_tries = random_state.uniform(bounds[:, 0], bounds[:, 1],
                                    size=(n_warmup, bounds.shape[0]))
-    ys = ac(x_tries, gp=gp, y_max=y_max)
+    ys = -adjusted_ac(x_tries)
     x_max = x_tries[ys.argmax()]
     max_acq = ys.max()
 
@@ -55,27 +88,9 @@ def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000
     x_seeds = random_state.uniform(bounds[:, 0], bounds[:, 1],
                                    size=(n_iter, bounds.shape[0]))
 
-    if constraint is not None:
-        def to_minimize(x):
-            target = -ac(x.reshape(1, -1), gp=gp, y_max=y_max)
-            p_constraint = constraint.predict(x.reshape(1, -1))
-
-            # TODO: This is not exactly how Gardner et al do it.
-            # Their way would require the result of the acquisition function
-            # to be strictly positive (or negative), which is not the case
-            # here. For a negative target value, we use Gardner's version. If
-            # the target is positive, we instead slightly rescale the target
-            # depending on the probability estimate to fulfill the constraint.
-            if target < 0:
-                return target * p_constraint
-            else:
-                return target / (0.5 + 0.5 * p_constraint)
-    else:
-        to_minimize = lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max)
-
     for x_try in x_seeds:
         # Find the minimum of minus the acquisition function
-        res = minimize(lambda x: to_minimize(x),
+        res = minimize(adjusted_ac,
                        x_try,
                        bounds=bounds,
                        method="L-BFGS-B")
