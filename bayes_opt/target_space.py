@@ -214,7 +214,7 @@ class TargetSpace(object):
 
     def probe(self, params):
         """
-        Evaulates a single point x, to obtain the value y and then records them
+        Evaluates a single point x, to obtain the value y and then records them
         as observations.
 
         Notes
@@ -265,44 +265,46 @@ class TargetSpace(object):
             data.T[col] = self.random_state.uniform(lower, upper, size=1)
         return data.ravel()
 
+    def _target_max(self):
+        """Get maximum target value found.
+        
+        If there is a constraint present, the maximum value that fulfills the
+        constraint is returned."""
+        if len(self.target) == 0:
+            return None
+
+        if self._constraint is None:
+            return self.target.max()
+
+        allowed = self._constraint.allowed(self._constraint_values)
+        if allowed.any():
+            return self.target[allowed].max()
+
+        return None
+
     def max(self):
         """Get maximum target value found and corresponding parameters.
         
         If there is a constraint present, the maximum value that fulfills the
         constraint is returned."""
-        if self._constraint is None:
-            try:
-                res = {
-                    'target': self.target.max(),
-                    'params': dict(
-                        zip(self.keys, self.params[self.target.argmax()])
-                    )
-                }
-            except ValueError:
-                res = {}
-            return res
-        else:
-            allowed = self._constraint.allowed(self._constraint_values)
-            if allowed.any():
-                # Getting of all points that fulfill the constraints, find the
-                # one with the maximum value for the target function.
-                sorted = np.argsort(self.target)
-                idx = sorted[allowed[sorted]][-1]
-                # there must be a better way to do this, right?
-                res = {
-                    'target': self.target[idx],
-                    'params': dict(
-                        zip(self.keys, self.params[idx])
-                    ),
-                    'constraint': self._constraint_values[idx]
-                }
-            else:
-                res = {
-                    'target': None,
-                    'params': None,
-                    'constraint': None
-                }
-            return res
+        target_max = self._target_max()
+
+        if target_max is None:
+            return None
+
+        target_max_idx = np.where(self.target == target_max)[0][0]
+
+        res = {
+                'target': target_max,
+                'params': dict(
+                zip(self.keys, self.params[target_max_idx])
+            )
+        }
+
+        if self._constraint is not None:
+            res['constraint'] = self._constraint_values[target_max_idx]
+
+        return res
 
     def res(self):
         """Get all target values and constraint fulfillment for all parameters.

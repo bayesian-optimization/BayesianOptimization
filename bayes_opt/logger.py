@@ -106,7 +106,7 @@ class ScreenLogger(_Tracker):
         return line + "\n" + ("-" * self._header_length)
 
     def _is_new_max(self, instance):
-        if instance.max["target"] is None:
+        if instance.max is None:
             # During constrained optimization, there might not be a maximum
             # value since the optimizer might've not encountered any points
             # that fulfill the constraints.
