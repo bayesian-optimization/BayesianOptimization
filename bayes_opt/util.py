@@ -210,9 +210,6 @@ def load_logs(optimizer, logs):
         logs = [logs]
 
     for log in logs:
-        if not (Path(log).suffix) == '.log':
-            warnings.warn('overwriting log extension with *.log"')
-        log = str(Path(log).with_suffix('.log'))
         with open(log, "r") as j:
             while True:
                 try:
