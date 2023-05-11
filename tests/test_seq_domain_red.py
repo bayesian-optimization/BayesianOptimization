@@ -128,7 +128,7 @@ def test_trimming_bounds():
     trimmed_bounds = bounds_transformer._trim(new_bounds, global_bounds)
     # check that the bounds are trimmed to the minimum window
     # raises ValueError if the bounds are not trimmed correctly
-    bounds_transformer._window_bounds_compatiblity(trimmed_bounds)
+    bounds_transformer._window_bounds_compatibility(trimmed_bounds)
 
 
 def test_exceeded_bounds():

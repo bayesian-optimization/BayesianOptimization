@@ -180,7 +180,7 @@ def test_prime_subscriptions():
         optimizer._events[Events.OPTIMIZATION_START].values()
     ])
 
-    # Check that prime subscriptions won't overight manual subscriptions
+    # Check that prime subscriptions won't overwrite manual subscriptions
     optimizer._prime_subscriptions()
     assert all([
         k == test_subscriber for k in

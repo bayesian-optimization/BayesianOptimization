@@ -95,7 +95,7 @@ class BayesianOptimization(Observable):
         If True, the optimizer will allow duplicate points to be registered.
         This behavior may be desired in high noise situations where repeatedly probing
         the same point will give different answers. In other situations, the acquisition
-        may occasionaly generate a duplicate point.
+        may occasionally generate a duplicate point.
 
     Methods
     -------
@@ -226,7 +226,7 @@ class BayesianOptimization(Observable):
         suggestion = acq_max(ac=utility_function.utility,
                              gp=self._gp,
                              constraint=self.constraint,
-                             y_max=self._space.target.max(),
+                             y_max=self._space._target_max(),
                              bounds=self._space.bounds,
                              random_state=self._random_state)
 
@@ -276,7 +276,7 @@ class BayesianOptimization(Observable):
             An instance of bayes_opt.util.UtilityFunction.
             If nothing is passed, a default using ucb is used
 
-        All other parameters are unused, and are only available to ensure backwards compatability - these
+        All other parameters are unused, and are only available to ensure backwards compatibility - these
         will be removed in a future release
         """
         self._prime_subscriptions()

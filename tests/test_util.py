@@ -54,7 +54,7 @@ GLOB = get_globals()
 X, Y, GP, MESH = GLOB['x'], GLOB['y'], GLOB['gp'], GLOB['mesh']
 
 
-def test_utility_fucntion():
+def test_utility_function():
     util = UtilityFunction(kind="ucb", kappa=1.0, xi=1.0)
     assert util.kind == "ucb"
 
@@ -70,7 +70,7 @@ def test_utility_fucntion():
 
 def test_acq_with_ucb():
     util = UtilityFunction(kind="ucb", kappa=1.0, xi=1.0)
-    episilon = 1e-2
+    epsilon = 1e-2
     y_max = 2.0
 
     max_arg = acq_max(
@@ -83,12 +83,12 @@ def test_acq_with_ucb():
     )
     _, brute_max_arg = brute_force_maximum(MESH, GP, kind='ucb', kappa=1.0, xi=1.0)
 
-    assert all(abs(brute_max_arg - max_arg) < episilon)
+    assert all(abs(brute_max_arg - max_arg) < epsilon)
 
 
 def test_acq_with_ei():
     util = UtilityFunction(kind="ei", kappa=1.0, xi=1e-6)
-    episilon = 1e-2
+    epsilon = 1e-2
     y_max = 2.0
 
     max_arg = acq_max(
@@ -101,12 +101,12 @@ def test_acq_with_ei():
     )
     _, brute_max_arg = brute_force_maximum(MESH, GP, kind='ei', kappa=1.0, xi=1e-6)
 
-    assert all(abs(brute_max_arg - max_arg) < episilon)
+    assert all(abs(brute_max_arg - max_arg) < epsilon)
 
 
 def test_acq_with_poi():
     util = UtilityFunction(kind="poi", kappa=1.0, xi=1e-4)
-    episilon = 1e-2
+    epsilon = 1e-2
     y_max = 2.0
 
     max_arg = acq_max(
@@ -119,7 +119,7 @@ def test_acq_with_poi():
     )
     _, brute_max_arg = brute_force_maximum(MESH, GP, kind='poi', kappa=1.0, xi=1e-4)
 
-    assert all(abs(brute_max_arg - max_arg) < episilon)
+    assert all(abs(brute_max_arg - max_arg) < epsilon)
 
 
 def test_logs():
