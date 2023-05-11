@@ -3,6 +3,7 @@ import numpy as np
 from scipy.stats import norm
 from scipy.optimize import minimize
 from colorama import just_fix_windows_console
+from pathlib import Path
 
 
 def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000, n_iter=10):
@@ -209,6 +210,9 @@ def load_logs(optimizer, logs):
         logs = [logs]
 
     for log in logs:
+        if not (Path(log).suffix) == '.log':
+            warnings.warn('overwriting log extension with *.log"')
+        log = str(Path(log).with_suffix('.log'))
         with open(log, "r") as j:
             while True:
                 try:

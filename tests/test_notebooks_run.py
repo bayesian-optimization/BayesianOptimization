@@ -6,10 +6,12 @@ import nbformat
 from nbconvert.preprocessors import ExecutePreprocessor
 from pathlib import Path
 from glob import glob
+from matplotlib import pyplot as plt  # this script doesn't use this but the notebooks do
 this_file_loc = Path(__file__).parent
 
 def check_notebook_runs(notebook_loc):
 
+    print(f'running: {notebook_loc}...')
     try:
         with open(notebook_loc, encoding='utf8') as f:
             nb = nbformat.read(f, as_version=4)
@@ -18,6 +20,7 @@ def check_notebook_runs(notebook_loc):
     except Exception as e:
         print(f'failed to run notebook {notebook_loc}: rethrowing exception:')
         raise e
+    print(f'success!')
 
 def test_all_notebooks_run():
     # get all notebooks:

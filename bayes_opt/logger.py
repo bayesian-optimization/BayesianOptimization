@@ -1,7 +1,8 @@
 from __future__ import print_function
 import os
 import json
-
+import warnings
+from pathlib import Path
 from .observer import _Tracker
 from .event import Events
 from .util import Colours
@@ -135,7 +136,10 @@ class ScreenLogger(_Tracker):
 
 class JSONLogger(_Tracker):
     def __init__(self, path, reset=True):
-        self._path = path if path[-5:] == ".json" else path + ".json"
+
+        if not (Path(path).suffix) == '.log':
+            warnings.warn('overwriting log extension with *.log"')
+        self._path = str(Path(path).with_suffix('.log'))
         if reset:
             try:
                 os.remove(self._path)
