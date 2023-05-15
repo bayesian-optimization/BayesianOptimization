@@ -29,3 +29,7 @@ ENV/
 env.bak/
 venv.bak/
 *temp*
+
+docs/*
+docsrc/.ipynb_checkpoints/*
+docsrc/*.ipynb
