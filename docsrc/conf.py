@@ -28,7 +28,6 @@ for notebook in notebooks:
 # -- Project information -----------------------------------------------------
 
 project = 'Bayesian Optimization'
-copyright = '2022, Brendan Whelan'
 author = 'Fernando Nogueira'
 
 
