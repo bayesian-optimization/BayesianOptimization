@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Examples &mdash; Bayesian Optimization  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Basic tour of the Bayesian Optimization package" href="basic-tour.html" />
+    <link rel="prev" title="Bayesian Optimization" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Bayesian Optimization
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="basic-tour.html">Basic tour of the Bayesian Optimization package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-tour.html">Advanced tour of the Bayesian Optimization package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exploitation_vs_exploration.html">Exploitation vs Exploration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="visualization.html">Visualization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="constraints.html">Constrained Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="domain_reduction.html">Sequential Domain Reduction</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_docs.html">Code Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Bayesian Optimization</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Examples</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/examples.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Examples:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="basic-tour.html">Basic tour of the Bayesian Optimization package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="basic-tour.html#1.-Specifying-the-function-to-be-optimized">1. Specifying the function to be optimized</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic-tour.html#2.-Getting-Started">2. Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic-tour.html#3.-Guiding-the-optimization">3. Guiding the optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic-tour.html#4.-Saving,-loading-and-restarting">4. Saving, loading and restarting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic-tour.html#Next-Steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="advanced-tour.html">Advanced tour of the Bayesian Optimization package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="advanced-tour.html#1.-Suggest-Evaluate-Register-Paradigm">1. Suggest-Evaluate-Register Paradigm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-tour.html#2.-Dealing-with-discrete-parameters">2. Dealing with discrete parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-tour.html#3.-Tuning-the-underlying-Gaussian-Process">3. Tuning the underlying Gaussian Process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-tour.html#Observers-Continued">Observers Continued</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="exploitation_vs_exploration.html">Exploitation vs Exploration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="exploitation_vs_exploration.html#Target-function">Target function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exploitation_vs_exploration.html#Acquisition-Function-%22Upper-Confidence-Bound%22">Acquisition Function “Upper Confidence Bound”</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exploitation_vs_exploration.html#Acquisition-Function-%22Expected-Improvement%22">Acquisition Function “Expected Improvement”</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exploitation_vs_exploration.html#Acquisition-Function-%22Probability-of-Improvement%22">Acquisition Function “Probability of Improvement”</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="visualization.html">Visualization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="visualization.html#Create-a-BayesianOptimization-Object">Create a BayesianOptimization Object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="visualization.html#Plotting-and-visualizing-the-algorithm-at-each-step">Plotting and visualizing the algorithm at each step</a></li>
+<li class="toctree-l2"><a class="reference internal" href="visualization.html#Stopping">Stopping</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="constraints.html">Constrained Optimization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="constraints.html#1.-Simple-Constrained-Optimization">1. Simple Constrained Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="constraints.html#2.-Advanced-Constrained-Optimization">2. Advanced Constrained Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="constraints.html#2.1-Simple,-single-constraint">2.1 Simple, single constraint</a></li>
+<li class="toctree-l2"><a class="reference internal" href="constraints.html#Simulation-2">Simulation 2</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="domain_reduction.html">Sequential Domain Reduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="domain_reduction.html#Background">Background</a></li>
+<li class="toctree-l2"><a class="reference internal" href="domain_reduction.html#Basics">Basics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="domain_reduction.html#Parameters">Parameters</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Bayesian Optimization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="basic-tour.html" class="btn btn-neutral float-right" title="Basic tour of the Bayesian Optimization package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

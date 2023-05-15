@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Basic tour of the Bayesian Optimization package &mdash; Bayesian Optimization  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/nbsphinx-code-cells.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Advanced tour of the Bayesian Optimization package" href="advanced-tour.html" />
+    <link rel="prev" title="Examples" href="examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Bayesian Optimization
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="examples.html">Examples</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Basic tour of the Bayesian Optimization package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#1.-Specifying-the-function-to-be-optimized">1. Specifying the function to be optimized</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#2.-Getting-Started">2. Getting Started</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#2.1-Changing-bounds">2.1 Changing bounds</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#3.-Guiding-the-optimization">3. Guiding the optimization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#4.-Saving,-loading-and-restarting">4. Saving, loading and restarting</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#4.1-Saving-progress">4.1 Saving progress</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#4.2-Loading-progress">4.2 Loading progress</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Next-Steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-tour.html">Advanced tour of the Bayesian Optimization package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exploitation_vs_exploration.html">Exploitation vs Exploration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="visualization.html">Visualization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="constraints.html">Constrained Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="domain_reduction.html">Sequential Domain Reduction</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_docs.html">Code Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Bayesian Optimization</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="examples.html">Examples</a></li>
+      <li class="breadcrumb-item active">Basic tour of the Bayesian Optimization package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/basic-tour.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Basic-tour-of-the-Bayesian-Optimization-package">
+<h1>Basic tour of the Bayesian Optimization package<a class="headerlink" href="#Basic-tour-of-the-Bayesian-Optimization-package" title="Permalink to this heading"></a></h1>
+<p>This is a constrained global optimization package built upon bayesian inference and gaussian process, that attempts to find the maximum value of an unknown function in as few iterations as possible. This technique is particularly suited for optimization of high cost functions, situations where the balance between exploration and exploitation is important.</p>
+<p>Bayesian optimization works by constructing a posterior distribution of functions (gaussian process) that best describes the function you want to optimize. As the number of observations grows, the posterior distribution improves, and the algorithm becomes more certain of which regions in parameter space are worth exploring and which are not, as seen in the picture below.</p>
+<p>As you iterate over and over, the algorithm balances its needs of exploration and exploitation taking into account what it knows about the target function. At each step a Gaussian Process is fitted to the known samples (points previously explored), and the posterior distribution, combined with a exploration strategy (such as UCB (Upper Confidence Bound), or EI (Expected Improvement)), are used to determine the next point that should be explored (see the gif below).</p>
+<p>This process is designed to minimize the number of steps required to find a combination of parameters that are close to the optimal combination. To do so, this method uses a proxy optimization problem (finding the maximum of the acquisition function) that, albeit still a hard problem, is cheaper (in the computational sense) and common tools can be employed. Therefore Bayesian Optimization is most adequate for situations where sampling the function to be optimized is a very expensive endeavor.
+See the references for a proper discussion of this method.</p>
+<section id="1.-Specifying-the-function-to-be-optimized">
+<h2>1. Specifying the function to be optimized<a class="headerlink" href="#1.-Specifying-the-function-to-be-optimized" title="Permalink to this heading"></a></h2>
+<p>This is a function optimization package, therefore the first and most important ingredient is, of course, the function to be optimized.</p>
+<p><strong>DISCLAIMER:</strong> We know exactly how the output of the function below depends on its parameter. Obviously this is just an example, and you shouldn’t expect to know it in a real scenario. However, it should be clear that you don’t need to. All you need in order to use this package (and more generally, this technique) is a function <code class="docutils literal notranslate"><span class="pre">f</span></code> that takes a known set of parameters and outputs a real number.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">black_box_function</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Function with unknown internals we wish to maximize.</span>
+
+<span class="sd">    This is just serving as an example, for all intents and</span>
+<span class="sd">    purposes think of the internals of this function, i.e.: the process</span>
+<span class="sd">    which generates its output values, as unknown.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="o">-</span><span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="2.-Getting-Started">
+<h2>2. Getting Started<a class="headerlink" href="#2.-Getting-Started" title="Permalink to this heading"></a></h2>
+<p>All we need to get started is to instantiate a <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code> object specifying a function to be optimized <code class="docutils literal notranslate"><span class="pre">f</span></code>, and its parameters with their corresponding bounds, <code class="docutils literal notranslate"><span class="pre">pbounds</span></code>. This is a constrained optimization technique, so you must specify the minimum and maximum values that can be probed for each parameter in order for it to work</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bayes_opt</span> <span class="kn">import</span> <span class="n">BayesianOptimization</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Bounded region of parameter space</span>
+<span class="n">pbounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)}</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span>
+    <span class="n">f</span><span class="o">=</span><span class="n">black_box_function</span><span class="p">,</span>
+    <span class="n">pbounds</span><span class="o">=</span><span class="n">pbounds</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="c1"># verbose = 1 prints only when a maximum is observed, verbose = 0 is silent</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>The BayesianOptimization object will work out of the box without much tuning needed. The main method you should be aware of is <code class="docutils literal notranslate"><span class="pre">maximize</span></code>, which does exactly what you think it does.</p>
+<p>There are many parameters you can pass to maximize, nonetheless, the most important ones are: - <code class="docutils literal notranslate"><span class="pre">n_iter</span></code>: How many steps of bayesian optimization you want to perform. The more steps the more likely to find a good maximum you are. - <code class="docutils literal notranslate"><span class="pre">init_points</span></code>: How many steps of <strong>random</strong> exploration you want to perform. Random exploration can help by diversifying the exploration space.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span>
+    <span class="n">init_points</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">n_iter</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+|   iter    |  target   |     x     |     y     |
+-------------------------------------------------
+|  1        | -7.135    |  2.834    |  1.322    |
+|  2        | -7.78     |  2.0      | -1.186    |
+|  3        | -19.0     |  4.0      |  3.0      |
+|  4        | -16.3     |  2.378    | -2.413    |
+| <span class="ansi-magenta-intense-fg"> 5       </span> | <span class="ansi-magenta-intense-fg">-4.441   </span> | <span class="ansi-magenta-intense-fg"> 2.105   </span> | <span class="ansi-magenta-intense-fg">-0.005822</span> |
+=================================================
+</pre></div></div>
+</div>
+<p>The best combination of parameters and target value found can be accessed via the property <code class="docutils literal notranslate"><span class="pre">bo.max</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">optimizer</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;target&#39;: -4.441293113411222, &#39;params&#39;: {&#39;y&#39;: -0.005822117636089974, &#39;x&#39;: 2.104665051994087}}
+</pre></div></div>
+</div>
+<p>While the list of all parameters probed and their corresponding target values is available via the property <code class="docutils literal notranslate"><span class="pre">bo.res</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">res</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">optimizer</span><span class="o">.</span><span class="n">res</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Iteration </span><span class="si">{}</span><span class="s2">: </span><span class="se">\n\t</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">res</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Iteration 0:
+        {&#39;target&#39;: -7.135455292718879, &#39;params&#39;: {&#39;y&#39;: 1.3219469606529488, &#39;x&#39;: 2.8340440094051482}}
+Iteration 1:
+        {&#39;target&#39;: -7.779531005607566, &#39;params&#39;: {&#39;y&#39;: -1.1860045642089614, &#39;x&#39;: 2.0002287496346898}}
+Iteration 2:
+        {&#39;target&#39;: -19.0, &#39;params&#39;: {&#39;y&#39;: 3.0, &#39;x&#39;: 4.0}}
+Iteration 3:
+        {&#39;target&#39;: -16.29839645063864, &#39;params&#39;: {&#39;y&#39;: -2.412527795983739, &#39;x&#39;: 2.3776144540856503}}
+Iteration 4:
+        {&#39;target&#39;: -4.441293113411222, &#39;params&#39;: {&#39;y&#39;: -0.005822117636089974, &#39;x&#39;: 2.104665051994087}}
+</pre></div></div>
+</div>
+<section id="2.1-Changing-bounds">
+<h3>2.1 Changing bounds<a class="headerlink" href="#2.1-Changing-bounds" title="Permalink to this heading"></a></h3>
+<p>During the optimization process you may realize the bounds chosen for some parameters are not adequate. For these situations you can invoke the method <code class="docutils literal notranslate"><span class="pre">set_bounds</span></code> to alter them. You can pass any combination of <strong>existing</strong> parameters and their associated new bounds.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span><span class="o">.</span><span class="n">set_bounds</span><span class="p">(</span><span class="n">new_bounds</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)})</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span>
+    <span class="n">init_points</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">n_iter</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+|   iter    |  target   |     x     |     y     |
+-------------------------------------------------
+|  6        | -5.145    |  2.115    | -0.2924   |
+|  7        | -5.379    |  2.337    |  0.04124  |
+| <span class="ansi-magenta-intense-fg"> 8       </span> | <span class="ansi-magenta-intense-fg">-3.581   </span> | <span class="ansi-magenta-intense-fg"> 1.874   </span> | <span class="ansi-magenta-intense-fg">-0.03428 </span> |
+| <span class="ansi-magenta-intense-fg"> 9       </span> | <span class="ansi-magenta-intense-fg">-2.624   </span> | <span class="ansi-magenta-intense-fg"> 1.702   </span> | <span class="ansi-magenta-intense-fg"> 0.1472  </span> |
+| <span class="ansi-magenta-intense-fg"> 10      </span> | <span class="ansi-magenta-intense-fg">-1.762   </span> | <span class="ansi-magenta-intense-fg"> 1.442   </span> | <span class="ansi-magenta-intense-fg"> 0.1735  </span> |
+=================================================
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="3.-Guiding-the-optimization">
+<h2>3. Guiding the optimization<a class="headerlink" href="#3.-Guiding-the-optimization" title="Permalink to this heading"></a></h2>
+<p>It is often the case that we have an idea of regions of the parameter space where the maximum of our function might lie. For these situations the <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code> object allows the user to specify specific points to be probed. By default these will be explored lazily (<code class="docutils literal notranslate"><span class="pre">lazy=True</span></code>), meaning these points will be evaluated only the next time you call <code class="docutils literal notranslate"><span class="pre">maximize</span></code>. This probing process happens before the gaussian process takes over.</p>
+<p>Parameters can be passed as dictionaries such as below:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span><span class="o">.</span><span class="n">probe</span><span class="p">(</span>
+    <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mf">0.7</span><span class="p">},</span>
+    <span class="n">lazy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Or as an iterable. Beware that the order has to be alphabetical. You can usee <code class="docutils literal notranslate"><span class="pre">optimizer.space.keys</span></code> for guidance</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">optimizer</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">keys</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[&#39;x&#39;, &#39;y&#39;]
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span><span class="o">.</span><span class="n">probe</span><span class="p">(</span>
+    <span class="n">params</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span>
+    <span class="n">lazy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+|   iter    |  target   |     x     |     y     |
+-------------------------------------------------
+| <span class="ansi-magenta-intense-fg"> 11      </span> | <span class="ansi-magenta-intense-fg"> 0.66    </span> | <span class="ansi-magenta-intense-fg"> 0.5     </span> | <span class="ansi-magenta-intense-fg"> 0.7     </span> |
+|  12       |  0.1      | -0.3      |  0.1      |
+=================================================
+</pre></div></div>
+</div>
+</section>
+<section id="4.-Saving,-loading-and-restarting">
+<h2>4. Saving, loading and restarting<a class="headerlink" href="#4.-Saving,-loading-and-restarting" title="Permalink to this heading"></a></h2>
+<p>By default you can follow the progress of your optimization by setting <code class="docutils literal notranslate"><span class="pre">verbose&gt;0</span></code> when instantiating the <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code> object. If you need more control over logging/alerting you will need to use an observer. For more information about observers checkout the advanced tour notebook. Here we will only see how to use the native <code class="docutils literal notranslate"><span class="pre">JSONLogger</span></code> object to save to and load progress from files.</p>
+<section id="4.1-Saving-progress">
+<h3>4.1 Saving progress<a class="headerlink" href="#4.1-Saving-progress" title="Permalink to this heading"></a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bayes_opt.logger</span> <span class="kn">import</span> <span class="n">JSONLogger</span>
+<span class="kn">from</span> <span class="nn">bayes_opt.event</span> <span class="kn">import</span> <span class="n">Events</span>
+</pre></div>
+</div>
+</div>
+<p>The observer paradigm works by: 1. Instantiating an observer object. 2. Tying the observer object to a particular event fired by an optimizer.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code> object fires a number of internal events during optimization, in particular, every time it probes the function and obtains a new parameter-target combination it will fire an <code class="docutils literal notranslate"><span class="pre">Events.OPTIMIZATION_STEP</span></code> event, which our logger will listen to.</p>
+<p><strong>Caveat:</strong> The logger will not look back at previously probed points.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">logger</span> <span class="o">=</span> <span class="n">JSONLogger</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;./logs.json&quot;</span><span class="p">)</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">Events</span><span class="o">.</span><span class="n">OPTIMIZATION_STEP</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span>
+    <span class="n">init_points</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">n_iter</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+|   iter    |  target   |     x     |     y     |
+-------------------------------------------------
+|  13       | -12.48    | -1.266    | -2.446    |
+|  14       | -3.854    | -1.069    | -0.9266   |
+|  15       |  0.3932   |  0.3099   |  0.2853   |
+| <span class="ansi-magenta-intense-fg"> 16      </span> | <span class="ansi-magenta-intense-fg"> 0.8768  </span> | <span class="ansi-magenta-intense-fg"> 0.02197 </span> | <span class="ansi-magenta-intense-fg"> 0.6497  </span> |
+| <span class="ansi-magenta-intense-fg"> 17      </span> | <span class="ansi-magenta-intense-fg"> 0.9446  </span> | <span class="ansi-magenta-intense-fg"> 0.198   </span> | <span class="ansi-magenta-intense-fg"> 0.8727  </span> |
+=================================================
+</pre></div></div>
+</div>
+</section>
+<section id="4.2-Loading-progress">
+<h3>4.2 Loading progress<a class="headerlink" href="#4.2-Loading-progress" title="Permalink to this heading"></a></h3>
+<p>Naturally, if you stored progress you will be able to load that onto a new instance of <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code>. The easiest way to do it is by invoking the <code class="docutils literal notranslate"><span class="pre">load_logs</span></code> function, from the <code class="docutils literal notranslate"><span class="pre">util</span></code> submodule.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bayes_opt.util</span> <span class="kn">import</span> <span class="n">load_logs</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">new_optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span>
+    <span class="n">f</span><span class="o">=</span><span class="n">black_box_function</span><span class="p">,</span>
+    <span class="n">pbounds</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)},</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">new_optimizer</span><span class="o">.</span><span class="n">space</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+0
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">load_logs</span><span class="p">(</span><span class="n">new_optimizer</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;./logs.json&quot;</span><span class="p">]);</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;New optimizer is now aware of </span><span class="si">{}</span><span class="s2"> points.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">new_optimizer</span><span class="o">.</span><span class="n">space</span><span class="p">)))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+New optimizer is now aware of 5 points.
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">new_optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span>
+    <span class="n">init_points</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">n_iter</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+|   iter    |  target   |     x     |     y     |
+-------------------------------------------------
+|  1        |  0.6131   |  0.5571   |  0.7233   |
+|  2        |  0.8609   | -0.3295   |  1.175    |
+|  3        |  0.3761   |  0.2406   |  1.752    |
+|  4        | -0.7845   | -0.8972   |  1.99     |
+|  5        |  0.1401   | -0.8733   |  0.6882   |
+|  6        | -1.798    |  1.545    |  1.642    |
+|  7        |  0.9331   |  0.05549  |  1.253    |
+|  8        | -5.369    |  2.0      | -0.5391   |
+| <span class="ansi-magenta-intense-fg"> 9       </span> | <span class="ansi-magenta-intense-fg"> 0.97    </span> | <span class="ansi-magenta-intense-fg">-0.1587  </span> | <span class="ansi-magenta-intense-fg"> 0.9305  </span> |
+|  10       |  0.7718   |  0.4293   |  1.21     |
+=================================================
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Next-Steps">
+<h2>Next Steps<a class="headerlink" href="#Next-Steps" title="Permalink to this heading"></a></h2>
+<p>This tour should be enough to cover most usage scenarios of this package. If, however, you feel like you need to know more, please checkout the <code class="docutils literal notranslate"><span class="pre">advanced-tour</span></code> notebook. There you will be able to find other, more advanced features of this package that could be what you’re looking for. Also, browse the examples folder for implementation tips and ideas.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="examples.html" class="btn btn-neutral float-left" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="advanced-tour.html" class="btn btn-neutral float-right" title="Advanced tour of the Bayesian Optimization package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
