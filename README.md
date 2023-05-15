@@ -243,10 +243,10 @@ The `BayesianOptimization` object fires a number of internal events during optim
 
 
 ```python
-logger = JSONLogger(path="./logs.json")
+logger = JSONLogger(path="./logs.log")
 optimizer.subscribe(Events.OPTIMIZATION_STEP, logger)
 
-# Results will be saved in ./logs.json
+# Results will be saved in ./logs.log
 optimizer.maximize(
     init_points=2,
     n_iter=3,
@@ -272,7 +272,7 @@ new_optimizer = BayesianOptimization(
 )
 
 # New optimizer is loaded with previously seen points
-load_logs(new_optimizer, logs=["./logs.json"]);
+load_logs(new_optimizer, logs=["./logs.log"]);
 ```
 
 ## Next Steps

@@ -137,9 +137,8 @@ class ScreenLogger(_Tracker):
 class JSONLogger(_Tracker):
     def __init__(self, path, reset=True):
 
-        if not (Path(path).suffix) == '.log':
-            warnings.warn('overwriting log extension with *.log"')
-        self._path = str(Path(path).with_suffix('.log'))
+
+        self._path = path
         if reset:
             try:
                 os.remove(self._path)
