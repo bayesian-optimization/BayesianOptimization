@@ -177,11 +177,11 @@ See the references for a proper discussion of this method.</p>
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |     y     |
 -------------------------------------------------
-|  1        | -7.135    |  2.834    |  1.322    |
-|  2        | -7.78     |  2.0      | -1.186    |
-|  3        | -19.0     |  4.0      |  3.0      |
-|  4        | -16.3     |  2.378    | -2.413    |
-| <span class="ansi-magenta-intense-fg"> 5       </span> | <span class="ansi-magenta-intense-fg">-4.441   </span> | <span class="ansi-magenta-intense-fg"> 2.105   </span> | <span class="ansi-magenta-intense-fg">-0.005822</span> |
+| 1         | -7.135    | 2.834     | 1.322     |
+| 2         | -7.78     | 2.0       | -1.186    |
+| <span class="ansi-magenta-intense-fg">3        </span> | <span class="ansi-magenta-intense-fg">-7.11    </span> | <span class="ansi-magenta-intense-fg">2.218    </span> | <span class="ansi-magenta-intense-fg">-0.7867  </span> |
+| 4         | -12.4     | 3.66      | 0.9608    |
+| <span class="ansi-magenta-intense-fg">5        </span> | <span class="ansi-magenta-intense-fg">-6.999   </span> | <span class="ansi-magenta-intense-fg">2.23     </span> | <span class="ansi-magenta-intense-fg">-0.7392  </span> |
 =================================================
 </pre></div></div>
 </div>
@@ -199,7 +199,7 @@ See the references for a proper discussion of this method.</p>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-{&#39;target&#39;: -4.441293113411222, &#39;params&#39;: {&#39;y&#39;: -0.005822117636089974, &#39;x&#39;: 2.104665051994087}}
+{&#39;target&#39;: -6.999472814518675, &#39;params&#39;: {&#39;x&#39;: 2.2303920156083024, &#39;y&#39;: -0.7392021938893159}}
 </pre></div></div>
 </div>
 <p>While the list of all parameters probed and their corresponding target values is available via the property <code class="docutils literal notranslate"><span class="pre">bo.res</span></code>.</p>
@@ -218,15 +218,15 @@ See the references for a proper discussion of this method.</p>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Iteration 0:
-        {&#39;target&#39;: -7.135455292718879, &#39;params&#39;: {&#39;y&#39;: 1.3219469606529488, &#39;x&#39;: 2.8340440094051482}}
+        {&#39;target&#39;: -7.135455292718879, &#39;params&#39;: {&#39;x&#39;: 2.8340440094051482, &#39;y&#39;: 1.3219469606529488}}
 Iteration 1:
-        {&#39;target&#39;: -7.779531005607566, &#39;params&#39;: {&#39;y&#39;: -1.1860045642089614, &#39;x&#39;: 2.0002287496346898}}
+        {&#39;target&#39;: -7.779531005607566, &#39;params&#39;: {&#39;x&#39;: 2.0002287496346898, &#39;y&#39;: -1.1860045642089614}}
 Iteration 2:
-        {&#39;target&#39;: -19.0, &#39;params&#39;: {&#39;y&#39;: 3.0, &#39;x&#39;: 4.0}}
+        {&#39;target&#39;: -7.109925819441113, &#39;params&#39;: {&#39;x&#39;: 2.2175526295255183, &#39;y&#39;: -0.7867249801593896}}
 Iteration 3:
-        {&#39;target&#39;: -16.29839645063864, &#39;params&#39;: {&#39;y&#39;: -2.412527795983739, &#39;x&#39;: 2.3776144540856503}}
+        {&#39;target&#39;: -12.397162416009818, &#39;params&#39;: {&#39;x&#39;: 3.660003815774634, &#39;y&#39;: 0.9608275029525108}}
 Iteration 4:
-        {&#39;target&#39;: -4.441293113411222, &#39;params&#39;: {&#39;y&#39;: -0.005822117636089974, &#39;x&#39;: 2.104665051994087}}
+        {&#39;target&#39;: -6.999472814518675, &#39;params&#39;: {&#39;x&#39;: 2.2303920156083024, &#39;y&#39;: -0.7392021938893159}}
 </pre></div></div>
 </div>
 <section id="2.1-Changing-bounds">
@@ -258,11 +258,11 @@ Iteration 4:
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |     y     |
 -------------------------------------------------
-|  6        | -5.145    |  2.115    | -0.2924   |
-|  7        | -5.379    |  2.337    |  0.04124  |
-| <span class="ansi-magenta-intense-fg"> 8       </span> | <span class="ansi-magenta-intense-fg">-3.581   </span> | <span class="ansi-magenta-intense-fg"> 1.874   </span> | <span class="ansi-magenta-intense-fg">-0.03428 </span> |
-| <span class="ansi-magenta-intense-fg"> 9       </span> | <span class="ansi-magenta-intense-fg">-2.624   </span> | <span class="ansi-magenta-intense-fg"> 1.702   </span> | <span class="ansi-magenta-intense-fg"> 0.1472  </span> |
-| <span class="ansi-magenta-intense-fg"> 10      </span> | <span class="ansi-magenta-intense-fg">-1.762   </span> | <span class="ansi-magenta-intense-fg"> 1.442   </span> | <span class="ansi-magenta-intense-fg"> 0.1735  </span> |
+| <span class="ansi-magenta-intense-fg">6        </span> | <span class="ansi-magenta-intense-fg">-2.942   </span> | <span class="ansi-magenta-intense-fg">1.98     </span> | <span class="ansi-magenta-intense-fg">0.8567   </span> |
+| <span class="ansi-magenta-intense-fg">7        </span> | <span class="ansi-magenta-intense-fg">-0.4597  </span> | <span class="ansi-magenta-intense-fg">1.096    </span> | <span class="ansi-magenta-intense-fg">1.508    </span> |
+| <span class="ansi-magenta-intense-fg">8        </span> | <span class="ansi-magenta-intense-fg">0.5304   </span> | <span class="ansi-magenta-intense-fg">-0.6807  </span> | <span class="ansi-magenta-intense-fg">1.079    </span> |
+| 9         | -5.33     | -1.526    | 3.0       |
+| 10        | -5.419    | -2.0      | -0.5552   |
 =================================================
 </pre></div></div>
 </div>
@@ -326,8 +326,8 @@ Iteration 4:
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |     y     |
 -------------------------------------------------
-| <span class="ansi-magenta-intense-fg"> 11      </span> | <span class="ansi-magenta-intense-fg"> 0.66    </span> | <span class="ansi-magenta-intense-fg"> 0.5     </span> | <span class="ansi-magenta-intense-fg"> 0.7     </span> |
-|  12       |  0.1      | -0.3      |  0.1      |
+| <span class="ansi-magenta-intense-fg">11       </span> | <span class="ansi-magenta-intense-fg">0.66     </span> | <span class="ansi-magenta-intense-fg">0.5      </span> | <span class="ansi-magenta-intense-fg">0.7      </span> |
+| 12        | 0.1       | -0.3      | 0.1       |
 =================================================
 </pre></div></div>
 </div>
@@ -353,7 +353,7 @@ Iteration 4:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">logger</span> <span class="o">=</span> <span class="n">JSONLogger</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;./logs.json&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">logger</span> <span class="o">=</span> <span class="n">JSONLogger</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;./logs.log&quot;</span><span class="p">)</span>
 <span class="n">optimizer</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">Events</span><span class="o">.</span><span class="n">OPTIMIZATION_STEP</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -376,11 +376,11 @@ Iteration 4:
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |     y     |
 -------------------------------------------------
-|  13       | -12.48    | -1.266    | -2.446    |
-|  14       | -3.854    | -1.069    | -0.9266   |
-|  15       |  0.3932   |  0.3099   |  0.2853   |
-| <span class="ansi-magenta-intense-fg"> 16      </span> | <span class="ansi-magenta-intense-fg"> 0.8768  </span> | <span class="ansi-magenta-intense-fg"> 0.02197 </span> | <span class="ansi-magenta-intense-fg"> 0.6497  </span> |
-| <span class="ansi-magenta-intense-fg"> 17      </span> | <span class="ansi-magenta-intense-fg"> 0.9446  </span> | <span class="ansi-magenta-intense-fg"> 0.198   </span> | <span class="ansi-magenta-intense-fg"> 0.8727  </span> |
+| 13        | -12.48    | -1.266    | -2.446    |
+| 14        | -3.854    | -1.069    | -0.9266   |
+| 15        | -3.594    | 0.7709    | 3.0       |
+| <span class="ansi-magenta-intense-fg">16       </span> | <span class="ansi-magenta-intense-fg">0.8238   </span> | <span class="ansi-magenta-intense-fg">0.03434  </span> | <span class="ansi-magenta-intense-fg">1.418    </span> |
+| <span class="ansi-magenta-intense-fg">17       </span> | <span class="ansi-magenta-intense-fg">0.9721   </span> | <span class="ansi-magenta-intense-fg">-0.1051  </span> | <span class="ansi-magenta-intense-fg">0.87     </span> |
 =================================================
 </pre></div></div>
 </div>
@@ -422,7 +422,7 @@ Iteration 4:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">load_logs</span><span class="p">(</span><span class="n">new_optimizer</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;./logs.json&quot;</span><span class="p">]);</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">load_logs</span><span class="p">(</span><span class="n">new_optimizer</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;./logs.log&quot;</span><span class="p">]);</span>
 </pre></div>
 </div>
 </div>
@@ -460,16 +460,16 @@ New optimizer is now aware of 5 points.
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |     y     |
 -------------------------------------------------
-|  1        |  0.6131   |  0.5571   |  0.7233   |
-|  2        |  0.8609   | -0.3295   |  1.175    |
-|  3        |  0.3761   |  0.2406   |  1.752    |
-|  4        | -0.7845   | -0.8972   |  1.99     |
-|  5        |  0.1401   | -0.8733   |  0.6882   |
-|  6        | -1.798    |  1.545    |  1.642    |
-|  7        |  0.9331   |  0.05549  |  1.253    |
-|  8        | -5.369    |  2.0      | -0.5391   |
-| <span class="ansi-magenta-intense-fg"> 9       </span> | <span class="ansi-magenta-intense-fg"> 0.97    </span> | <span class="ansi-magenta-intense-fg">-0.1587  </span> | <span class="ansi-magenta-intense-fg"> 0.9305  </span> |
-|  10       |  0.7718   |  0.4293   |  1.21     |
+| 1         | -3.548    | -2.0      | 1.74      |
+| 2         | -3.041    | 1.914     | 0.3844    |
+| 3         | -12.0     | 2.0       | -2.0      |
+| 4         | -3.969    | 2.0       | 1.984     |
+| 5         | -0.7794   | -1.238    | 0.5022    |
+| 6         | 0.529     | 0.685     | 0.9576    |
+| 7         | 0.2987    | 0.1242    | 0.1718    |
+| 8         | 0.9544    | 0.2123    | 0.9766    |
+| 9         | 0.7157    | -0.437    | 1.305     |
+| <span class="ansi-magenta-intense-fg">10       </span> | <span class="ansi-magenta-intense-fg">0.983    </span> | <span class="ansi-magenta-intense-fg">-0.06785 </span> | <span class="ansi-magenta-intense-fg">1.111    </span> |
 =================================================
 </pre></div></div>
 </div>
