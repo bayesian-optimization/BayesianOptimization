@@ -3,21 +3,9 @@ import numpy as np
 from sklearn.gaussian_process import kernels
 from inspect import signature
 
-from icecream import ic
 
 def is_numeric(value):
     return type(value) in [float, int, complex]
-
-def pfloat(*args, **kwargs):
-    return FloatParameter(*args, **kwargs)
-
-
-def pint(*args, **kwargs):
-    return IntParameter(*args, **kwargs)
-
-
-def pcat(*args, **kwargs):
-    return CategoricalParameter(*args, **kwargs)
 
 
 class BayesParameter():

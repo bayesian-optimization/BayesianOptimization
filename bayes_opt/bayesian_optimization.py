@@ -8,7 +8,7 @@ from .util import UtilityFunction, acq_max, ensure_rng
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
 from .parameter import wrap_kernel
-from icecream import ic
+from .domain_reduction import DomainTransformer
 
 
 class Queue:
@@ -145,7 +145,7 @@ class BayesianOptimization(Observable):
         if self._bounds_transformer:
             try:
                 self._bounds_transformer.initialize(self._space)
-            except (AttributeError, TypeError):
+            except (AttributeError, TypeError) as e:
                 raise TypeError('The transformer must be an instance of '
                                 'DomainTransformer')
 

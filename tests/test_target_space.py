@@ -25,8 +25,8 @@ def test_keys_and_bounds_in_same_order():
     assert space.dim == len(pbounds)
     assert space.empty
     assert space.keys == ["p1", "p2",  "p3",  "p4"]
-    assert all(space.bounds[:, 0] == np.array([0, 0, 0, 0]))
-    assert all(space.bounds[:, 1] == np.array([1, 2, 3, 4]))
+    assert all(space.float_bounds[:, 0] == np.array([0, 0, 0, 0]))
+    assert all(space.float_bounds[:, 1] == np.array([1, 2, 3, 4]))
 
 
 def test_params_to_array():
@@ -52,25 +52,23 @@ def test_array_to_params():
         space.array_to_params(np.array([2, 3, 5]))
 
 
-def test_as_array():
+def test_to_float():
     space = TargetSpace(target_func, PBOUNDS)
 
-    x = space._as_array([0, 1])
+    x = space._to_float({"p2": 0, "p1": 1})
     assert x.shape == (2,)
-    assert all(x == np.array([0, 1]))
-
-    x = space._as_array({"p2": 1, "p1": 2})
-    assert x.shape == (2,)
-    assert all(x == np.array([2, 1]))
+    assert all(x == np.array([1, 0]))
 
     with pytest.raises(ValueError):
-        x = space._as_array([2, 1, 7])
+        x = space._to_float([0, 1])
     with pytest.raises(ValueError):
-        x = space._as_array({"p2": 1, "p1": 2, "other": 7})
+        x = space._to_float([2, 1, 7])
     with pytest.raises(ValueError):
-        x = space._as_array({"p2": 1})
+        x = space._to_float({"p2": 1, "p1": 2, "other": 7})
     with pytest.raises(ValueError):
-        x = space._as_array({"other": 7})
+        x = space._to_float({"p2": 1})
+    with pytest.raises(ValueError):
+        x = space._to_float({"other": 7})
 
 
 def test_register():
@@ -96,7 +94,7 @@ def test_register():
 
 
 def test_register_with_constraint():
-    constraint = ConstraintModel(lambda x: x, -2, 2)
+    constraint = ConstraintModel(lambda x: x, -2, 2, transform=lambda x: x)
     space = TargetSpace(target_func, PBOUNDS, constraint=constraint)
 
     assert len(space) == 0
@@ -159,8 +157,8 @@ def test_random_sample():
     for _ in range(50):
         random_sample = space.random_sample()
         assert len(random_sample) == space.dim
-        assert all(random_sample >= space.bounds[:, 0])
-        assert all(random_sample <= space.bounds[:, 1])
+        assert all(random_sample >= space.float_bounds[:, 0])
+        assert all(random_sample <= space.float_bounds[:, 1])
 
 
 def test_max():
@@ -204,13 +202,13 @@ def test_set_bounds():
 
     # Ignore unknown keys
     space.set_bounds({"other": (7, 8)})
-    assert all(space.bounds[:, 0] == np.array([0, 0, 0, 0]))
-    assert all(space.bounds[:, 1] == np.array([1, 2, 3, 4]))
+    assert all(space.float_bounds[:, 0] == np.array([0, 0, 0, 0]))
+    assert all(space.float_bounds[:, 1] == np.array([1, 2, 3, 4]))
 
     # Update bounds accordingly
     space.set_bounds({"p2": (1, 8)})
-    assert all(space.bounds[:, 0] == np.array([0, 1, 0, 0]))
-    assert all(space.bounds[:, 1] == np.array([1, 8, 3, 4]))
+    assert all(space.float_bounds[:, 0] == np.array([0, 1, 0, 0]))
+    assert all(space.float_bounds[:, 1] == np.array([1, 8, 3, 4]))
 
 
 if __name__ == '__main__':

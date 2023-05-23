@@ -1,7 +1,6 @@
 import numpy as np
 from .util import ensure_rng, NotUniqueError
-from icecream import ic
-from .parameter import pfloat, pint, pcat, is_numeric, CategoricalParameter
+from .parameter import FloatParameter, IntParameter, is_numeric, CategoricalParameter
 from .constraint import ConstraintModel
 
 
@@ -132,14 +131,14 @@ class TargetSpace(object):
             pbound = pbounds[key]
             if len(pbound) == 2 and is_numeric(pbound[0]) and is_numeric(
                     pbound[1]):
-                res = pfloat(name=key, domain=pbound)
+                res = FloatParameter(name=key, domain=pbound)
             elif len(pbound) == 3 and pbound[-1] == float:
-                res = pfloat(name=key, domain=(pbound[0], pbound[1]))
+                res = FloatParameter(name=key, domain=(pbound[0], pbound[1]))
             elif len(pbound) == 3 and pbound[-1] == int:
-                res = pint(name=key, domain=(int(pbound[0]), int(pbound[1])))
+                res = IntParameter(name=key, domain=(int(pbound[0]), int(pbound[1])))
             else:
                 # assume categorical variable with pbound as list of possible values
-                res = pcat(name=key, domain=pbound)
+                res = CategoricalParameter(name=key, domain=pbound)
             params[key] = res
         return params
 
@@ -160,8 +159,8 @@ class TargetSpace(object):
         return bounds
 
     def params_to_array(self, value) -> np.ndarray:
-        if type(value
-                ) == dict:  # assume the input is one single set of parameters
+        if type(value) == dict:
+            # assume the input is one single set of parameters
             return self._to_float(value)
         else:
             return np.vstack([self._to_float(x) for x in value])
@@ -171,8 +170,8 @@ class TargetSpace(object):
             assert set(value) == set(self.keys)
         except AssertionError:
             raise ValueError(
-                "Parameters' keys ({}) do ".format(sorted(value)) +
-                "not match the expected set of keys ({}).".format(self.keys))
+                f"Parameters' keys ({sorted(value)}) do " +
+                f"not match the expected set of keys ({self.keys}).")
         res = np.zeros(self._dim)
         for key in self._keys:
             p = self._params_config[key]

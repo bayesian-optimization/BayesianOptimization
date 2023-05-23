@@ -8,7 +8,7 @@ from .util import Colours
 from .parameter import FloatParameter, IntParameter, CategoricalParameter
 
 import numpy as np
-from icecream import ic
+
 def _get_default_logger(verbose, is_constrained):
     return ScreenLogger(verbose=verbose, is_constrained=is_constrained)
 

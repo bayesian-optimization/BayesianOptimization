@@ -15,25 +15,6 @@ def black_box_function(x, y):
 
 
 def test_bound_x_maximize():
-
-    class Tracker:
-        def __init__(self):
-            self.start_count = 0
-            self.step_count = 0
-            self.end_count = 0
-
-        def update_start(self, event, instance):
-            self.start_count += 1
-
-        def update_step(self, event, instance):
-            self.step_count += 1
-
-        def update_end(self, event, instance):
-            self.end_count += 1
-
-        def reset(self):
-            self.__init__()
-
     bounds_transformer = SequentialDomainReductionTransformer()
     pbounds = {'x': (-10, 10), 'y': (-10, 10)}
     n_iter = 10
@@ -64,8 +45,8 @@ def test_bound_x_maximize():
     )
 
     assert len(standard_optimizer.space) == len(mutated_optimizer.space)
-    assert not (standard_optimizer._space.bounds ==
-                mutated_optimizer._space.bounds).any()
+    assert not (standard_optimizer._space.float_bounds ==
+                mutated_optimizer._space.float_bounds).any()
 
 def test_minimum_window_is_kept():
     bounds_transformer = SequentialDomainReductionTransformer(minimum_window=1.0)
