@@ -2,6 +2,8 @@ import warnings
 import numpy as np
 from scipy.stats import norm
 from scipy.optimize import minimize
+from colorama import just_fix_windows_console
+import json
 
 def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000, n_iter=10):
     """
@@ -42,38 +44,53 @@ def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000
     :return: x_max, The arg max of the acquisition function.
     """
 
+    # We need to adjust the acquisition function to deal with constraints when there is some
+    if constraint is not None:
+        def adjusted_ac(x):
+            """Acquisition function adjusted to fulfill the constraint when necessary"""
+
+            # Transforms the problem in a minimization problem, this is necessary
+            # because the solver we are using later on is a minimizer
+            values = -ac(x.reshape(-1, bounds.shape[0]), gp=gp, y_max=y_max)
+            p_constraints = constraint.predict(x.reshape(-1, bounds.shape[0]))
+
+            # Slower fallback for the case where any values are negative
+            if np.any(values > 0):
+                # TODO: This is not exactly how Gardner et al do it.
+                # Their way would require the result of the acquisition function
+                # to be strictly positive, which is not the case here. For a
+                # positive target value, we use Gardner's version. If the target
+                # is negative, we instead slightly rescale the target depending
+                # on the probability estimate to fulfill the constraint.
+                return np.array(
+                    [
+                        value / (0.5 + 0.5 * p) if value > 0 else value * p
+                        for value, p in zip(values, p_constraints)
+                    ]
+                )
+
+            # Faster, vectorized version of Gardner et al's method
+            return values * p_constraints
+
+    else:
+        # Transforms the problem in a minimization problem, this is necessary
+        # because the solver we are using later on is a minimizer
+        adjusted_ac = lambda x: -ac(x.reshape(-1, bounds.shape[0]), gp=gp, y_max=y_max)
+
     # Warm up with random points
     x_tries = random_state.uniform(bounds[:, 0], bounds[:, 1],
                                    size=(n_warmup, bounds.shape[0]))
-    ys = ac(x_tries, gp=gp, y_max=y_max)
+    ys = -adjusted_ac(x_tries)
     x_max = x_tries[ys.argmax()]
     max_acq = ys.max()
 
-    # Explore the parameter space more throughly
+    # Explore the parameter space more thoroughly
     x_seeds = random_state.uniform(bounds[:, 0], bounds[:, 1],
                                    size=(n_iter, bounds.shape[0]))
 
-    if constraint is not None:
-        def to_minimize(x):
-            target = -ac(x.reshape(1, -1), gp=gp, y_max=y_max)
-            p_constraint = constraint.predict(x.reshape(1, -1))
-
-            # TODO: This is not exactly how Gardner et al do it.
-            # Their way would require the result of the acquisition function
-            # to be strictly positive (or negative), which is not the case
-            # here. For a negative target value, we use Gardner's version. If
-            # the target is positive, we instead slightly rescale the target
-            # depending on the probability estimate to fulfill the constraint.
-            if target < 0:
-                return target * p_constraint
-            else:
-                return target / (0.5 + p_constraint)
-    else:
-        to_minimize = lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max)
-
     for x_try in x_seeds:
         # Find the minimum of minus the acquisition function
-        res = minimize(lambda x: to_minimize(x),
+        res = minimize(adjusted_ac,
                        x_try,
                        bounds=bounds,
                        method="L-BFGS-B")
@@ -95,9 +112,29 @@ def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000
 class UtilityFunction(object):
     """
     An object to compute the acquisition functions.
+
+    kind: {'ucb', 'ei', 'poi'}
+        * 'ucb' stands for the Upper Confidence Bounds method
+        * 'ei' is the Expected Improvement method
+        * 'poi' is the Probability Of Improvement criterion.
+
+    kappa: float, optional(default=2.576)
+            Parameter to indicate how closed are the next parameters sampled.
+            Higher value = favors spaces that are least explored.
+            Lower value = favors spaces where the regression function is
+            the highest.
+
+    kappa_decay: float, optional(default=1)
+        `kappa` is multiplied by this factor every iteration.
+
+    kappa_decay_delay: int, optional(default=0)
+        Number of iterations that must have passed before applying the
+        decay to `kappa`.
+
+    xi: float, optional(default=0.0)
     """
 
-    def __init__(self, kind, kappa, xi, kappa_decay=1, kappa_decay_delay=0):
+    def __init__(self, kind='ucb', kappa=2.576, xi=0, kappa_decay=1, kappa_decay_delay=0):
 
         self.kappa = kappa
         self._kappa_decay = kappa_decay
@@ -166,7 +203,7 @@ def load_logs(optimizer, logs):
     """Load previous ...
 
     """
-    import json
+
 
     if isinstance(logs, str):
         logs = [logs]
@@ -274,3 +311,6 @@ class Colours:
     def yellow(cls, s):
         """Wrap text in yellow."""
         return cls._wrap_colour(s, cls.YELLOW)
+
+
+just_fix_windows_console()

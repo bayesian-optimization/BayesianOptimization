@@ -243,17 +243,17 @@ The `BayesianOptimization` object fires a number of internal events during optim
 
 
 ```python
-logger = JSONLogger(path="./logs.json")
+logger = JSONLogger(path="./logs.log")
 optimizer.subscribe(Events.OPTIMIZATION_STEP, logger)
 
-# Results will be saved in ./logs.json
+# Results will be saved in ./logs.log
 optimizer.maximize(
     init_points=2,
     n_iter=3,
 )
 ```
 
-By default the previous data in the json file is removed. If you want to keep working with the same logger, the `reset` paremeter in `JSONLogger` should be set to False.
+By default the previous data in the json file is removed. If you want to keep working with the same logger, the `reset` parameter in `JSONLogger` should be set to False.
 
 ### 4.2 Loading progress
 
@@ -272,7 +272,7 @@ new_optimizer = BayesianOptimization(
 )
 
 # New optimizer is loaded with previously seen points
-load_logs(new_optimizer, logs=["./logs.json"]);
+load_logs(new_optimizer, logs=["./logs.log"]);
 ```
 
 ## Next Steps
@@ -323,7 +323,7 @@ If you used this package in your research and is interested in citing it here's 
 * Numpy
 * Scipy
 * Scikit-learn
-
+ 
 # References:
 * http://papers.nips.cc/paper/4522-practical-bayesian-optimization-of-machine-learning-algorithms.pdf
 * http://arxiv.org/pdf/1012.2599v1.pdf

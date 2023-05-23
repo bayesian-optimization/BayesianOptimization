@@ -42,7 +42,7 @@ def rfc_cv(n_estimators, min_samples_split, max_features, data, targets):
     of cross validation is returned.
 
     Our goal is to find combinations of n_estimators, min_samples_split, and
-    max_features that minimzes the log loss.
+    max_features that minimizes the log loss.
     """
     estimator = RFC(
         n_estimators=n_estimators,

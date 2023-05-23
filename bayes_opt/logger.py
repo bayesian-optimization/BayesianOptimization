@@ -1,7 +1,8 @@
 from __future__ import print_function
 import os
 import json
-
+import warnings
+from pathlib import Path
 from .observer import _Tracker
 from .event import Events
 from .util import Colours
@@ -118,7 +119,7 @@ class ScreenLogger(_Tracker):
         return line + "\n" + ("-" * self._header_length)
 
     def _is_new_max(self, instance):
-        if instance.max["target"] is None:
+        if instance.max is None:
             # During constrained optimization, there might not be a maximum
             # value since the optimizer might've not encountered any points
             # that fulfill the constraints.
@@ -147,7 +148,9 @@ class ScreenLogger(_Tracker):
 
 class JSONLogger(_Tracker):
     def __init__(self, path, reset=True):
-        self._path = path if path[-5:] == ".json" else path + ".json"
+
+
+        self._path = path
         if reset:
             try:
                 os.remove(self._path)
