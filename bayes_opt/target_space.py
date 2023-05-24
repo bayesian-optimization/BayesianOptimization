@@ -43,7 +43,7 @@ class TargetSpace(object):
             If True, the optimizer will allow duplicate points to be registered.
             This behavior may be desired in high noise situations where repeatedly probing
             the same point will give different answers. In other situations, the acquisition
-            may occasionaly generate a duplicate point.
+            may occasionally generate a duplicate point.
         """
         self.random_state = ensure_rng(random_state)
         self._allow_duplicate_points = allow_duplicate_points
@@ -70,7 +70,7 @@ class TargetSpace(object):
         self._constraint = constraint
 
         if constraint is not None:
-            # preallocated memory for constraint fulfillement
+            # preallocated memory for constraint fulfillment
             if constraint.lb.size == 1:
                 self._constraint_values = np.empty(shape=(0), dtype=float)
             else:
@@ -170,7 +170,7 @@ class TargetSpace(object):
 
         Notes
         -----
-        runs in ammortized constant time
+        runs in amortized constant time
 
         Example
         -------
@@ -290,17 +290,29 @@ class TargetSpace(object):
         if target_max is None:
             return None
 
-        target_max_idx = np.where(self.target == target_max)[0][0]
+        if self._constraint is not None:
+            allowed = self._constraint.allowed(self._constraint_values)
+
+            target = self.target[allowed]
+            params = self.params[allowed]
+            constraint_values = self.constraint_values[allowed]
+        else:
+            target = self.target
+            params = self.params
+            constraint_values = self.constraint_values
+        
+        target_max_idx = np.where(target == target_max)[0][0]
+        
 
         res = {
                 'target': target_max,
                 'params': dict(
-                zip(self.keys, self.params[target_max_idx])
+                zip(self.keys, params[target_max_idx])
             )
         }
 
         if self._constraint is not None:
-            res['constraint'] = self._constraint_values[target_max_idx]
+            res['constraint'] = constraint_values[target_max_idx]
 
         return res
 
