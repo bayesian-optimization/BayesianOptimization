@@ -37,19 +37,19 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
     def initialize(self, target_space: TargetSpace) -> None:
         """Initialize all of the parameters"""
-        self.original_bounds = np.copy(target_space.bounds)
+        self.original_bounds = np.copy(target_space.float_bounds)
         self.bounds = [self.original_bounds]
 
         # Set the minimum window to an array of length bounds
         if isinstance(self.minimum_window_value, list) or isinstance(self.minimum_window_value, np.ndarray):
-            assert len(self.minimum_window_value) == len(target_space.bounds)
+            assert len(self.minimum_window_value) == len(target_space.float_bounds)
             self.minimum_window = self.minimum_window_value
         else:
-            self.minimum_window = [self.minimum_window_value] * len(target_space.bounds)
+            self.minimum_window = [self.minimum_window_value] * len(target_space.float_bounds)
 
-        self.previous_optimal = np.mean(target_space.bounds, axis=1)
-        self.current_optimal = np.mean(target_space.bounds, axis=1)
-        self.r = target_space.bounds[:, 1] - target_space.bounds[:, 0]
+        self.previous_optimal = np.mean(target_space.float_bounds, axis=1)
+        self.current_optimal = np.mean(target_space.float_bounds, axis=1)
+        self.r = target_space.float_bounds[:, 1] - target_space.float_bounds[:, 0]
 
         self.previous_d = 2.0 * \
             (self.current_optimal - self.previous_optimal) / self.r
@@ -135,7 +135,6 @@ class SequentialDomainReductionTransformer(DomainTransformer):
     def transform(self, target_space: TargetSpace) -> dict:
 
         self._update(target_space)
-
         new_bounds = np.array(
             [
                 self.current_optimal - 0.5 * self.r,

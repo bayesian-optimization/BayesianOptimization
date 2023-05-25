@@ -5,7 +5,7 @@ from inspect import signature
 
 
 def is_numeric(value):
-    return type(value) in [float, int, complex]
+    return np.issubdtype(type(value), np.number)
 
 
 class BayesParameter():

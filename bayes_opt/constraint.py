@@ -37,7 +37,7 @@ class ConstraintModel():
     is a simply the product of the individual probabilities.
     """
 
-    def __init__(self, fun, lb, ub, transform, random_state=None):
+    def __init__(self, fun, lb, ub, transform=None, random_state=None):
         self.fun = fun
 
         self._lb = np.atleast_1d(lb)        
@@ -48,7 +48,7 @@ class ConstraintModel():
             raise ValueError(msg)
 
         basis = lambda: GaussianProcessRegressor(
-            kernel=wrap_kernel(Matern(nu=2.5), transform),
+            kernel=wrap_kernel(Matern(nu=2.5), transform) if transform is not None else Matern(nu=2.5),
             alpha=1e-6,
             normalize_y=True,
             n_restarts_optimizer=5,

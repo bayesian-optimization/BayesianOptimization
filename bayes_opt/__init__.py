@@ -3,6 +3,7 @@ from .domain_reduction import SequentialDomainReductionTransformer
 from .util import UtilityFunction
 from .logger import ScreenLogger, JSONLogger
 from .constraint import ConstraintModel
+from .parameter import BayesParameter
 
 __all__ = [
     "BayesianOptimization",
@@ -12,5 +13,6 @@ __all__ = [
     "ScreenLogger",
     "JSONLogger",
     "SequentialDomainReductionTransformer",
+    "BayesParameter"
 ]
 

@@ -44,7 +44,7 @@ class TargetSpace(object):
             If True, the optimizer will allow duplicate points to be registered.
             This behavior may be desired in high noise situations where repeatedly probing
             the same point will give different answers. In other situations, the acquisition
-            may occasionaly generate a duplicate point.
+            may occasionally generate a duplicate point.
         """
         self.random_state = ensure_rng(random_state)
         self._allow_duplicate_points = allow_duplicate_points
@@ -237,7 +237,7 @@ class TargetSpace(object):
 
         Notes
         -----
-        runs in ammortized constant time
+        runs in amortized constant time
 
         Example
         -------
@@ -268,7 +268,7 @@ class TargetSpace(object):
                                      f'avoid this error')
 
         self._params = np.concatenate([self._params, x.reshape(1, -1)])
-        self._target = np.concatenate([self._target, np.atleast_1d(target)])
+        self._target = np.concatenate([self._target, [target]])
 
         if self._constraint is None:
             # Insert data into unique dictionary
@@ -280,9 +280,7 @@ class TargetSpace(object):
                 raise ValueError(msg)
             # Insert data into unique dictionary
             self._cache[_hashable(x.ravel())] = (target, constraint_value)
-            self._constraint_values = np.concatenate(
-                [self._constraint_values,
-                 np.atleast_1d(constraint_value)])
+            self._constraint_values = np.concatenate([self._constraint_values, [constraint_value]])
 
     def probe(self, params):
         """
@@ -306,12 +304,25 @@ class TargetSpace(object):
         if type(params) == np.ndarray:
             x = params
             params = self.array_to_params(params)
-        else:
-            assert type(params) == dict
+        elif type(params) == dict:
             x = self.params_to_array(params)
+        else:
+            x = np.array(params)
+            params = self.array_to_params(x)
+
         try:
-            return self._cache[_hashable(x)]
+            # Check if in cache
+            if self._constraint is None:
+                target =  self._cache[_hashable(x)]
+                self.register(x, target)
+                return target
+            else:
+                target, constraint_value =  self._cache[_hashable(x)]
+                self.register(x, target, constraint_value)
+                return target, constraint_value
+
         except KeyError:
+            # Not cached
             target = self.target_func(**params)
 
             if self._constraint is None:
@@ -371,15 +382,27 @@ class TargetSpace(object):
         if target_max is None:
             return None
 
-        target_max_idx = np.where(self.target == target_max)[0][0]
+        if self._constraint is not None:
+            allowed = self._constraint.allowed(self._constraint_values)
+
+            target = self.target[allowed]
+            params = self.params[allowed]
+            constraint_values = self.constraint_values[allowed]
+        else:
+            target = self.target
+            params = self.params
+            constraint_values = self.constraint_values
+        
+        target_max_idx = np.where(target == target_max)[0][0]
+        
 
         res = {
                 'target': target_max,
-                'params': self.array_to_params(self.params[self.target.argmax()])
+                'params':self.array_to_params(params[target_max_idx])
         }
 
         if self._constraint is not None:
-            res['constraint'] = self._constraint_values[target_max_idx]
+            res['constraint'] = constraint_values[target_max_idx]
 
         return res
 
@@ -420,6 +443,7 @@ class TargetSpace(object):
         new_bounds : dict
             A dictionary with the parameter name and its new bounds
         """
+        print(new_bounds)
         new__params_config = self.make_params(new_bounds)
 
 
@@ -429,8 +453,10 @@ class TargetSpace(object):
                     if set(self._params_config[key].domain) == set(new_bounds[key]):
                         msg = "Changing bounds of categorical parameters is not supported"
                         raise NotImplementedError(msg)
+                if type(self._params_config[key]) != type(new__params_config[key]):
+                    msg = (f'Parameter type {type(new__params_config[key])} of'
+                        + ' new bounds does not match parameter type'
+                        + f' {type(self._params_config[key])} of old bounds')
+                    raise ValueError(msg)
                 self._params_config[key] = new__params_config[key]
-        
-        self._dim = sum([self._params_config[key].dim for key in self._keys])
-        self._masks = self.make_masks()
         self._float_bounds = self.calculate_float_bounds()

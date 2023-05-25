@@ -123,7 +123,7 @@ def test_probe():
     # probing with dict
     space.probe(params={"p1": 1, "p2": 2})
     assert len(space) == 1
-    assert all(space.params[0] == np.array([1, 2]))
+    assert all(space.params[-1] == np.array([1, 2]))
     assert all(space.target == np.array([3]))
 
     # probing with array
@@ -135,14 +135,26 @@ def test_probe():
     # probing same point with dict
     space.probe(params={"p1": 1, "p2": 2})
     assert len(space) == 3
-    assert all(space.params[1] == np.array([5, 4]))
+    assert all(space.params[2] == np.array([1, 2]))
     assert all(space.target == np.array([3, 9, 3]))
 
     # probing same point with array
     space.probe(np.array([5, 4]))
     assert len(space) == 4
-    assert all(space.params[1] == np.array([5, 4]))
-    assert all(space.target == np.array([3, 9, 3 , 9]))
+    assert all(space.params[3] == np.array([5, 4]))
+    assert all(space.target == np.array([3, 9, 3, 9]))
+
+    # probing with list
+    space.probe(np.array([1, 4]))
+    assert len(space) == 5
+    assert all(space.params[4] == np.array([1, 4]))
+    assert all(space.target == np.array([3, 9, 3, 9, 5]))
+
+    # probing with tuple
+    space.probe((3, 4))
+    assert len(space) == 6
+    assert all(space.params[5] == np.array([3, 4]))
+    assert all(space.target == np.array([3, 9, 3, 9, 5, 7]))
 
 
 def test_random_sample():
@@ -201,6 +213,17 @@ def test_max_with_constraint():
     space.probe(params={"p1": 1, "p2": 6}) # Unfeasible
     assert space.max() == {"params": {"p1": 2, "p2": 3}, "target": 5, "constraint": -1}
 
+def test_max_with_constraint_identical_target_value():
+    constraint = ConstraintModel(lambda p1, p2: p1-p2, -2, 2)
+    space = TargetSpace(target_func, PBOUNDS, constraint=constraint)
+
+    assert space.max() == None
+    space.probe(params={"p1": 1, "p2": 2}) # Feasible
+    space.probe(params={"p1": 0, "p2": 5}) # Unfeasible, target value is 5, should not be selected
+    space.probe(params={"p1": 5, "p2": 8}) # Unfeasible
+    space.probe(params={"p1": 2, "p2": 3}) # Feasible, target value is also 5
+    space.probe(params={"p1": 1, "p2": 6}) # Unfeasible
+    assert space.max() == {"params": {"p1": 2, "p2": 3}, "target": 5, "constraint": -1}
 
 def test_res():
     space = TargetSpace(target_func, PBOUNDS)
