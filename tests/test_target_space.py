@@ -203,6 +203,17 @@ def test_max_with_constraint():
     space.probe(params={"p1": 1, "p2": 6}) # Unfeasible
     assert space.max() == {"params": {"p1": 2, "p2": 3}, "target": 5, "constraint": -1}
 
+def test_max_with_constraint_identical_target_value():
+    constraint = ConstraintModel(lambda p1, p2: p1-p2, -2, 2)
+    space = TargetSpace(target_func, PBOUNDS, constraint=constraint)
+
+    assert space.max() == None
+    space.probe(params={"p1": 1, "p2": 2}) # Feasible
+    space.probe(params={"p1": 0, "p2": 5}) # Unfeasible, target value is 5, should not be selected
+    space.probe(params={"p1": 5, "p2": 8}) # Unfeasible
+    space.probe(params={"p1": 2, "p2": 3}) # Feasible, target value is also 5
+    space.probe(params={"p1": 1, "p2": 6}) # Unfeasible
+    assert space.max() == {"params": {"p1": 2, "p2": 3}, "target": 5, "constraint": -1}
 
 def test_res():
     space = TargetSpace(target_func, PBOUNDS)
