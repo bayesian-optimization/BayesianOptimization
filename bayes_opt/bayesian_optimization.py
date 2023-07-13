@@ -150,7 +150,8 @@ class BayesianOptimization(Observable):
                 f,
                 pbounds,
                 constraint=constraint_,
-                random_state=random_state
+                random_state=random_state,
+                allow_duplicate_points=self._allow_duplicate_points
             )
             self.is_constrained = True
 
