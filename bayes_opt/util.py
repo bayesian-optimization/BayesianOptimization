@@ -203,7 +203,7 @@ class UtilityFunction():
 
     @staticmethod
     def ucb(x, gp, kappa):
-        r"""Calcualte Upper Confidence Bound acquisition function.
+        r"""Calculate Upper Confidence Bound acquisition function.
 
         Similar to Probability of Improvement (`UtilityFunction.poi`), but also considers the
         magnitude of improvement.
@@ -211,6 +211,7 @@ class UtilityFunction():
     
         .. math::
             \text{UCB}(x) = \mu(x) + \kappa \sigma(x)
+
         where :math:`\Phi` is the CDF and :math:`\phi` the PDF of the normal
         distribution.
 
@@ -254,6 +255,7 @@ class UtilityFunction():
                 \frac{\mu(x)-y_{\text{max}} -  \xi }{\sigma(x)} \right)
                   + \sigma(x) \phi\left(
                     \frac{\mu(x)-y_{\text{max}} -  \xi }{\sigma(x)} \right)
+
         where :math:`\Phi` is the CDF and :math:`\phi` the PDF of the normal
         distribution.
 
@@ -293,6 +295,7 @@ class UtilityFunction():
         Calculated as
     
         .. math:: \text{POI}(x) = \Phi\left( \frac{\mu(x)-y_{\text{max}} -  \xi }{\sigma(x)} \right)
+
         where :math:`\Phi` is the CDF of the normal distribution.
 
         Parameters
