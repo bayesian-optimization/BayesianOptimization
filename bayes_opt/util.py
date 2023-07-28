@@ -35,7 +35,7 @@ def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000
     random_state : np.random.RandomState
         A random state to sample from.
 
-    constraint : ConstraintModel | None, default=None
+    constraint : ConstraintModel or None, default=None
 
     n_warmup : int, default=10000
         Number of points to sample from the acquisition function as seeds
@@ -339,7 +339,7 @@ def load_logs(optimizer, logs):
     optimizer : BayesianOptimizer
         Optimizer the register the previous observations with.
 
-    logs : str | bytes | os.PathLike
+    logs : str or bytes or os.PathLike
         File to load the logs from.
 
     Returns
@@ -379,7 +379,7 @@ def ensure_rng(random_state=None):
 
     Parameters
     ----------
-    random_state : np.random.RandomState | int | None, default=None
+    random_state : np.random.RandomState or int or None, default=None
         Random state to use. if `None`, will create an unseeded random state.
         If `int`, creates a state using the argument as seed. If a
         `np.random.RandomState` simply returns the argument.

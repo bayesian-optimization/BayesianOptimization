@@ -253,7 +253,7 @@ class JSONLogger(_Tracker):
         
         Parameters
         ----------
-        path : str | bytes | os.PathLike
+        path : str or bytes or os.PathLike
 
         """
         self._path = path
