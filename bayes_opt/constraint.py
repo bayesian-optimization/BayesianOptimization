@@ -196,7 +196,7 @@ class ConstraintModel():
         return result.reshape(X_shape[:-1] + (len(self._lb), ))
 
     def allowed(self, constraint_values):
-        """Check whether `constraint_values` are below the specified limits.
+        """Check whether `constraint_values` fulfills the specified limits.
 
         Parameters
         ----------
