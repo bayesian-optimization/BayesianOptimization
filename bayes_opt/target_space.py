@@ -183,7 +183,7 @@ class TargetSpace():
 
         Parameters
         ----------
-        x : duct
+        params : dict
             a single point, with len(x) == self.dim.
 
         Returns
@@ -298,15 +298,15 @@ class TargetSpace():
                                                       [constraint_value]])
 
     def probe(self, params):
-        """Evaluate a single point x to obtain the value y and then register them.
+        """Evaluate the target function on a point and register the result.
 
         Notes
         -----
-        If x has been previously seen returns a cached value of y.
+        If `params` has been previously seen returns a cached value of `y`.
 
         Parameters
         ----------
-        x : np.ndarray
+        params : np.ndarray
             a single point, with len(x) == self.dim
 
         Returns
