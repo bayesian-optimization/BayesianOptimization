@@ -98,9 +98,9 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
     def _trim(self, new_bounds: np.array, global_bounds: np.array) -> np.array:
         for i, variable in enumerate(new_bounds):
-            if variable[0] < global_bounds[i, 0]:
+            if (variable[0] < global_bounds[i, 0] or variable[0] > global_bounds[i, 1]):
                 variable[0] = global_bounds[i, 0]
-            if variable[1] > global_bounds[i, 1]:
+            if (variable[1] > global_bounds[i, 1] or variable[1] < global_bounds[i, 0]):
                 variable[1] = global_bounds[i, 1]
         for i, entry in enumerate(new_bounds):
             if entry[0] > entry[1]:
