@@ -97,7 +97,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         self.r = self.contraction_rate * self.r
 
     def _trim(self, new_bounds: np.array, global_bounds: np.array) -> np.array:
-        """ Performs tests and on the new_bounds to enforce global_bounds and minimum_window."""
+        """ Tests new_bounds to enforce global_bounds and minimum_window."""
         # sort the order of the bounds for each parameter
         for i, pbounds in enumerate(new_bounds):
             if pbounds[0] > pbounds[1]:
