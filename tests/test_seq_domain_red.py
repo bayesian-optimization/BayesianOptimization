@@ -144,3 +144,35 @@ def test_exceeded_bounds():
                 random_state=1,
                 bounds_transformer=bounds_transformer
             )
+
+def test_trim_both_new_bounds_beyond_gloabal_bounds():
+    """Test if the global bounds are respected when both new bounds for a given parameter
+    are beyond the global bounds."""
+
+    # initialize a bounds transformer
+    bounds_transformer = SequentialDomainReductionTransformer(minimum_window=10)
+    pbounds  = {'x': (-10, 10),'y': (-10, 10)}
+    target_sp = TargetSpace(target_func=black_box_function, pbounds=pbounds)
+    bounds_transformer.initialize(target_sp)
+    global_bounds = np.asarray(list(pbounds.values()))
+
+    def verify_bounds_in_range(new_bounds, global_bounds):
+        """Check if the new bounds are within the global bounds."""
+        test = True
+        for i, pbounds in enumerate(new_bounds):
+            if (pbounds[0] < global_bounds[i, 0] or pbounds[0] > global_bounds[i, 1]):
+                test = False
+            if (pbounds[1] > global_bounds[i, 1] or pbounds[1] < global_bounds[i, 0]):
+                test = False
+        return test
+
+    # test if both bounds for one parameter are beyond the global bounds
+    new_bounds = np.array( [[-50, -20], [-10, 10]] )
+    trimmed_bounds = bounds_transformer._trim(new_bounds, global_bounds)
+    assert verify_bounds_in_range(trimmed_bounds, global_bounds)
+
+    # test if both bounds for one parameter are beyond the global bounds 
+    # while they are out of order
+    new_bounds = np.array( [[-20, -50], [-10, 10]] )
+    trimmed_bounds = bounds_transformer._trim(new_bounds, global_bounds)
+    assert verify_bounds_in_range(trimmed_bounds, global_bounds)
