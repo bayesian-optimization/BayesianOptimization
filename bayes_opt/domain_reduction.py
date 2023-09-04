@@ -106,10 +106,10 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
         # check if the new bounds exceed the global bounds
         for i, pbounds in enumerate(new_bounds):
-            # check if lower bound is in range 
+            # check if lower bound exceeds range 
             if (pbounds[0] < global_bounds[i, 0] or pbounds[0] > global_bounds[i, 1]):
                 pbounds[0] = global_bounds[i, 0]
-            # check if upper bound is in range
+            # check if upper bound exceeds range
             if (pbounds[1] > global_bounds[i, 1] or pbounds[1] < global_bounds[i, 0]):
                 pbounds[1] = global_bounds[i, 1]
      
