@@ -97,15 +97,23 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         self.r = self.contraction_rate * self.r
 
     def _trim(self, new_bounds: np.array, global_bounds: np.array) -> np.array:
-        for i, variable in enumerate(new_bounds):
-            if (variable[0] < global_bounds[i, 0] or variable[0] > global_bounds[i, 1]):
-                variable[0] = global_bounds[i, 0]
-            if (variable[1] > global_bounds[i, 1] or variable[1] < global_bounds[i, 0]):
-                variable[1] = global_bounds[i, 1]
+        """ Performs tests and on the new_bounds to enforce global_bounds and minimum_window."""
+        # sort the order of the bounds for each parameter
+        for i, pbounds in enumerate(new_bounds):
+            if pbounds[0] > pbounds[1]:
+                new_bounds[i, 0] = pbounds[1]
+                new_bounds[i, 1] = pbounds[0]
+
+        # check if the new bounds exceed the global bounds
+        for i, pbounds in enumerate(new_bounds):
+            # check if lower bound is in range 
+            if (pbounds[0] < global_bounds[i, 0] or pbounds[0] > global_bounds[i, 1]):
+                pbounds[0] = global_bounds[i, 0]
+            # check if upper bound is in range
+            if (pbounds[1] > global_bounds[i, 1] or pbounds[1] < global_bounds[i, 0]):
+                pbounds[1] = global_bounds[i, 1]
+     
         for i, entry in enumerate(new_bounds):
-            if entry[0] > entry[1]:
-                new_bounds[i, 0] = entry[1]
-                new_bounds[i, 1] = entry[0]
             window_width = abs(entry[0] - entry[1])
             if window_width < self.minimum_window[i]:
                 dw = (self.minimum_window[i] - window_width) / 2.0
