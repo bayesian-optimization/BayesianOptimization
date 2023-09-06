@@ -2,6 +2,7 @@ from typing import Optional, Union, List
 
 import numpy as np
 from .target_space import TargetSpace
+from warnings import warn
 
 
 class DomainTransformer():
@@ -99,19 +100,23 @@ class SequentialDomainReductionTransformer(DomainTransformer):
     def _trim(self, new_bounds: np.array, global_bounds: np.array) -> np.array:
         """ Tests new_bounds to enforce global_bounds and minimum_window."""
         # sort the order of the bounds for each parameter
-        for i, pbounds in enumerate(new_bounds):
-            if pbounds[0] > pbounds[1]:
-                new_bounds[i, 0] = pbounds[1]
-                new_bounds[i, 1] = pbounds[0]
+        new_bounds = np.sort(new_bounds)
 
         # check if the new bounds exceed the global bounds
         for i, pbounds in enumerate(new_bounds):
             # check if lower bound exceeds range 
             if (pbounds[0] < global_bounds[i, 0] or pbounds[0] > global_bounds[i, 1]):
                 pbounds[0] = global_bounds[i, 0]
+                warn("""Domain reduction warning:
+                    A parameter's lower bound has exceeded its global boundaries.
+                    The offensive boundary has been reset, but the optimizer may not converge.""")
+                
             # check if upper bound exceeds range
             if (pbounds[1] > global_bounds[i, 1] or pbounds[1] < global_bounds[i, 0]):
                 pbounds[1] = global_bounds[i, 1]
+                warn("""Domain reduction warning:
+                    A parameter's upper bound has exceeded its global boundaries.
+                    The offensive boundary has been reset, but the optimizer may not converge.""")
      
         for i, entry in enumerate(new_bounds):
             window_width = abs(entry[0] - entry[1])
