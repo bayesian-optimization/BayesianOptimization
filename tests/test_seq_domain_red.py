@@ -166,6 +166,12 @@ def test_trim_both_new_bounds_beyond_gloabal_bounds():
                 test = False
         return test
 
+
+    # test if the sorting of the bounds is correct
+    new_bounds = np.array( [[5, -5], [-10, 10]] )
+    trimmed_bounds = bounds_transformer._trim(new_bounds, global_bounds)
+    assert (trimmed_bounds == np.array( [[-5, 5], [-10, 10]] )).all()
+
     # test if both bounds for one parameter are beyond the global bounds
     new_bounds = np.array( [[-50, -20], [-10, 10]] )
     trimmed_bounds = bounds_transformer._trim(new_bounds, global_bounds)
