@@ -145,7 +145,7 @@ def test_exceeded_bounds():
                 bounds_transformer=bounds_transformer
             )
 
-def test_trim_both_new_bounds_beyond_gloabal_bounds():
+def test_trim_both_new_bounds_beyond_global_bounds():
     """Test if the global bounds are respected when both new bounds for a given parameter
     are beyond the global bounds."""
 
@@ -165,7 +165,6 @@ def test_trim_both_new_bounds_beyond_gloabal_bounds():
             if (pbounds[1] > global_bounds[i, 1] or pbounds[1] < global_bounds[i, 0]):
                 test = False
         return test
-
 
     # test if the sorting of the bounds is correct
     new_bounds = np.array( [[5, -5], [-10, 10]] )
