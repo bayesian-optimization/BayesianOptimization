@@ -3,7 +3,8 @@
 class Events:
     """Define optimization events.
 
-    Behaves similar to enums."""
+    Behaves similar to enums.
+    """
 
     OPTIMIZATION_START = 'optimization:start'
     OPTIMIZATION_STEP = 'optimization:step'
