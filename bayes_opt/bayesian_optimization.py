@@ -1,3 +1,7 @@
+"""Main module.
+
+Holds the `BayesianOptimization` class, which handles the maximization of a
+function over a specific target space."""
 import warnings
 
 from bayes_opt.constraint import ConstraintModel
@@ -12,17 +16,25 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 
 
 class Queue:
+    """Queue datastructure.
+
+    Append items in the end, remove items from the front.
+    """
+
     def __init__(self):
         self._queue = []
 
     @property
     def empty(self):
+        """Check whether the queue holds any items."""
         return len(self) == 0
 
     def __len__(self):
+        """Return number of items in the Queue."""
         return len(self._queue)
 
     def __next__(self):
+        """Remove and return first item in the Queue."""
         if self.empty:
             raise StopIteration("Queue is empty, no more objects to retrieve.")
         obj = self._queue[0]
@@ -35,11 +47,7 @@ class Queue:
 
 
 class Observable(object):
-    """
-
-    Inspired/Taken from
-        https://www.protechtraining.com/blog/post/879#simple-observer
-    """
+    """Inspired by https://www.protechtraining.com/blog/post/879#simple-observer."""
 
     def __init__(self, events):
         # maps event names to subscribers
@@ -47,23 +55,28 @@ class Observable(object):
         self._events = {event: dict() for event in events}
 
     def get_subscribers(self, event):
+        """Return the subscribers of an event."""
         return self._events[event]
 
     def subscribe(self, event, subscriber, callback=None):
+        """Add subscriber to an event."""
         if callback is None:
             callback = getattr(subscriber, 'update')
         self.get_subscribers(event)[subscriber] = callback
 
     def unsubscribe(self, event, subscriber):
+        """Remove a subscriber for a particular event."""
         del self.get_subscribers(event)[subscriber]
 
     def dispatch(self, event):
+        """Trigger callbacks for subscribers of an event."""
         for _, callback in self.get_subscribers(event).items():
             callback(event, self)
 
 
 class BayesianOptimization(Observable):
-    """
+    """Handle optimization of a target function over a specific target space.
+
     This class takes the function to optimize as well as the parameters bounds
     in order to find which values for the parameters yield the maximum value
     using bayesian optimization.
@@ -168,30 +181,53 @@ class BayesianOptimization(Observable):
 
     @property
     def space(self):
+        """Return the target space associated with the optimizer."""
         return self._space
 
     @property
     def constraint(self):
+        """Return the constraint associated with the optimizer, if any."""
         if self.is_constrained:
             return self._space.constraint
         return None
 
     @property
     def max(self):
+        """Get maximum target value found and corresponding parameters.
+
+        See `TargetSpace.max` for more information.
+        """
         return self._space.max()
 
     @property
     def res(self):
+        """Get all target values and constraint fulfillment for all parameters.
+
+        See `TargetSpace.res` for more information.
+        """
         return self._space.res()
 
     def register(self, params, target, constraint_value=None):
-        """Expect observation with known target"""
+        """Register an observation with known target.
+
+        Parameters
+        ----------
+        params: dict or list
+            The parameters associated with the observation.
+
+        target: float
+            Value of the target function at the observation.
+
+        constraint_value: float or None
+            Value of the constraint function at the observation, if any.
+        """
         self._space.register(params, target, constraint_value)
         self.dispatch(Events.OPTIMIZATION_STEP)
 
     def probe(self, params, lazy=True):
-        """
-        Evaluates the function on the given points. Useful to guide the optimizer.
+        """Evaluate the function on the given points.
+
+        Useful to guide the optimizer.
 
         Parameters
         ----------
@@ -202,7 +238,6 @@ class BayesianOptimization(Observable):
             If True, the optimizer will evaluate the points when calling
             maximize(). Otherwise it will evaluate it at the moment.
         """
-
         if lazy:
             self._queue.add(params)
         else:
@@ -210,7 +245,14 @@ class BayesianOptimization(Observable):
             self.dispatch(Events.OPTIMIZATION_STEP)
 
     def suggest(self, utility_function):
-        """Most promising point to probe next"""
+        """Suggest a promising point to probe next.
+        
+        Parameters
+        ----------
+        utility_function:
+            Surrogate function which suggests parameters to probe the target
+            function at.
+        """
         if len(self._space) == 0:
             return self._space.array_to_params(self._space.random_sample())
 
@@ -234,7 +276,13 @@ class BayesianOptimization(Observable):
         return self._space.array_to_params(suggestion)
 
     def _prime_queue(self, init_points):
-        """Make sure there's something in the queue at the very beginning."""
+        """Ensure the queue is not empty.
+
+        Parameters
+        ----------
+        init_points: int
+            Number of parameters to prime the queue with.
+        """
         if self._queue.empty and self._space.empty:
             init_points = max(init_points, 1)
 
@@ -258,10 +306,8 @@ class BayesianOptimization(Observable):
                  kappa_decay_delay=None,
                  xi=None,
                  **gp_params):
-
         """
-        Probes the target space to find the parameters that yield the maximum
-        value for the given function.
+        Maximize the given function over the target space.
 
         Parameters
         ----------
@@ -319,8 +365,7 @@ class BayesianOptimization(Observable):
         self.dispatch(Events.OPTIMIZATION_END)
 
     def set_bounds(self, new_bounds):
-        """
-        A method that allows changing the lower and upper searching bounds
+        """Modify the bounds of the search space.
 
         Parameters
         ----------
@@ -330,5 +375,5 @@ class BayesianOptimization(Observable):
         self._space.set_bounds(new_bounds)
 
     def set_gp_params(self, **params):
-        """Set parameters to the internal Gaussian Process Regressor"""
+        """Set parameters of the internal Gaussian Process Regressor."""
         self._gp.set_params(**params)
