@@ -1,7 +1,8 @@
 """Main module.
 
 Holds the `BayesianOptimization` class, which handles the maximization of a
-function over a specific target space."""
+function over a specific target space.
+"""
 import warnings
 
 from bayes_opt.constraint import ConstraintModel
