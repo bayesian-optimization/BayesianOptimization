@@ -226,7 +226,7 @@ class BayesianOptimization(Observable):
         self.dispatch(Events.OPTIMIZATION_STEP)
 
     def probe(self, params, lazy=True):
-        """Evaluate the function on the given points.
+        """Evaluate the function at the given points.
 
         Useful to guide the optimizer.
 
