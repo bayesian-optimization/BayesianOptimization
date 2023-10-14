@@ -1,3 +1,4 @@
+"""Pure Python implementation of bayesian global optimization with gaussian processes."""
 from .bayesian_optimization import BayesianOptimization, Events
 from .domain_reduction import SequentialDomainReductionTransformer
 from .util import UtilityFunction
