@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
-from bayes_opt import UtilityFunction
 from bayes_opt import BayesianOptimization
+from bayes_opt import acquisition
 from bayes_opt.logger import ScreenLogger
 from bayes_opt.event import Events, DEFAULT_EVENTS
 from bayes_opt.util import NotUniqueError
@@ -74,24 +74,24 @@ def test_probe_eager():
 
 
 def test_suggest_at_random():
-    util = UtilityFunction(kind="poi", kappa=5, xi=0)
-    optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
+    acq = acquisition.ProbabilityOfImprovement(xi=0)
+    optimizer = BayesianOptimization(target_func, PBOUNDS, acq, random_state=1)
 
     for _ in range(50):
-        sample = optimizer.space.params_to_array(optimizer.suggest(util))
+        sample = optimizer.space.params_to_array(optimizer.suggest())
         assert len(sample) == optimizer.space.dim
         assert all(sample >= optimizer.space.bounds[:, 0])
         assert all(sample <= optimizer.space.bounds[:, 1])
 
 
 def test_suggest_with_one_observation():
-    util = UtilityFunction(kind="ucb", kappa=5, xi=0)
-    optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
+    acq = acquisition.UpperConfidenceBound(kappa=5)
+    optimizer = BayesianOptimization(target_func, PBOUNDS, acq, random_state=1)
 
     optimizer.register(params={"p1": 1, "p2": 2}, target=3)
 
     for _ in range(5):
-        sample = optimizer.space.params_to_array(optimizer.suggest(util))
+        sample = optimizer.space.params_to_array(optimizer.suggest())
         assert len(sample) == optimizer.space.dim
         assert all(sample >= optimizer.space.bounds[:, 0])
         assert all(sample <= optimizer.space.bounds[:, 1])
@@ -251,8 +251,10 @@ def test_maximize():
 
         def reset(self):
             self.__init__()
+    
 
-    optimizer = BayesianOptimization(target_func, PBOUNDS,
+    acq = acquisition.UpperConfidenceBound()
+    optimizer = BayesianOptimization(target_func, PBOUNDS, acq,
                                      random_state=np.random.RandomState(1),
                                      allow_duplicate_points=True)
 
@@ -281,8 +283,7 @@ def test_maximize():
     assert tracker.end_count == 1
 
     optimizer.set_gp_params(alpha=1e-2)
-    acquisition_function = UtilityFunction()
-    optimizer.maximize(init_points=2, n_iter=0, acquisition_function=acquisition_function)
+    optimizer.maximize(init_points=2, n_iter=0)
     assert optimizer._queue.empty
     assert len(optimizer.space) == 3
     assert optimizer._gp.alpha == 1e-2
@@ -350,9 +351,9 @@ def test_duplicate_points():
     This tests the behavior of the code around duplicate points under several scenarios
     """
     # test manual registration of duplicate points (should generate error)
-    optimizer = BayesianOptimization(f=None, pbounds={'x': (-2, 2)}, random_state=1)
-    utility = UtilityFunction(kind="ucb", kappa=5, xi=1)  # kappa determines explore/Exploitation ratio
-    next_point_to_probe = optimizer.suggest(utility)
+    acq = acquisition.UpperConfidenceBound(kappa=5.)  # kappa determines explore/Exploitation ratio
+    optimizer = BayesianOptimization(f=None, pbounds={'x': (-2, 2)}, acquisition_function=acq, random_state=1)
+    next_point_to_probe = optimizer.suggest()
     target = 1
     # register once (should work)
     optimizer.register(

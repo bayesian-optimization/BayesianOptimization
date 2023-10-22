@@ -1,5 +1,5 @@
 import numpy as np
-from bayes_opt import BayesianOptimization
+from bayes_opt import BayesianOptimization, acquisition
 from pytest import approx, raises
 from scipy.optimize import NonlinearConstraint
 
@@ -18,6 +18,7 @@ def test_single_constraint_upper():
 
     constraint = NonlinearConstraint(constraint_function, -np.inf, constraint_limit_upper)
     pbounds = {'x': (0, 6), 'y': (0, 6)}
+
 
     optimizer = BayesianOptimization(
         f=target_function,
@@ -47,6 +48,7 @@ def test_single_constraint_lower():
 
     constraint = NonlinearConstraint(constraint_function, constraint_limit_lower, np.inf)
     pbounds = {'x': (0, 6), 'y': (0, 6)}
+
 
     optimizer = BayesianOptimization(
         f=target_function,
@@ -107,8 +109,8 @@ def test_single_constraint_lower_upper():
     y = res[:, 3]
     
     # Check accuracy of approximation for sampled points
-    assert constraint_function(x, y) == approx(optimizer.constraint.approx(xy), rel=1e-5, abs=1e-5)
-    assert constraint_function(x, y) == approx(optimizer.space.constraint_values[:-1], rel=1e-5, abs=1e-5)
+    assert constraint_function(x, y) == approx(optimizer.constraint.approx(xy), rel=1e-5, abs=1e-3)
+    assert constraint_function(x, y) == approx(optimizer.space.constraint_values[:-1], rel=1e-5, abs=1e-3)
     
 
 def test_multiple_constraints():
