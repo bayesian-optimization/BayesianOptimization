@@ -7,7 +7,7 @@ from scipy.special import softmax
 from .target_space import TargetSpace
 from .constraint import ConstraintModel
 from sklearn.gaussian_process import GaussianProcessRegressor
-from typing import Callable, List
+from typing import Callable, List, Union
 from copy import deepcopy
 
 class AcquisitionFunction():
@@ -33,7 +33,7 @@ class AcquisitionFunction():
     def suggest(self, gp: GaussianProcessRegressor, target_space: TargetSpace, n_random=10_000, n_l_bfgs_b=10, fit_gp:bool=True):
         self.i += 1
 
-    def _get_acq(self, base_acq: Callable, dim: int, gp: GaussianProcessRegressor, constraint: ConstraintModel | None = None):
+    def _get_acq(self, base_acq: Callable, dim: int, gp: GaussianProcessRegressor, constraint: Union[ConstraintModel, None] = None):
         if constraint is not None:
             def acq(x):
                 x = x.reshape(-1, dim)
@@ -67,7 +67,7 @@ class AcquisitionFunction():
         min_acq = ys.min()
         return x_min, min_acq
     
-    def _l_bfgs_b_minimize(self, acq: Callable, bounds: np.ndarray, x_seeds:int|None=None):
+    def _l_bfgs_b_minimize(self, acq: Callable, bounds: np.ndarray, x_seeds:Union[int, None]=None):
         if x_seeds is None:
             x_seeds = 10
         if type(x_seeds) == int:
@@ -193,7 +193,7 @@ class KrigingBeliever(AcquisitionFunction):
         self.dummy_targets = []
         self.dummy_constraints = []
     
-    def _copy_target_space(self, target_space: TargetSpace) -> TargetSpace:
+    def _copy_target_space(self, target_space: TargetSpace):
         keys = target_space.keys
         pbounds = {key: bound for key, bound in zip(keys, target_space.bounds)}
         target_space_copy = TargetSpace(
