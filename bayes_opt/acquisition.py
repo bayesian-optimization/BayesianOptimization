@@ -193,7 +193,7 @@ class KrigingBeliever(AcquisitionFunction):
         self.dummy_targets = []
         self.dummy_constraints = []
     
-    def _copy_target_space(target_space: TargetSpace) -> TargetSpace:
+    def _copy_target_space(self, target_space: TargetSpace) -> TargetSpace:
         keys = target_space.keys
         pbounds = {key: bound for key, bound in zip(keys, target_space.bounds)}
         target_space_copy = TargetSpace(
@@ -231,15 +231,15 @@ class KrigingBeliever(AcquisitionFunction):
         
     def suggest(self, gp: GaussianProcessRegressor, target_space: TargetSpace, n_random=10_000, n_l_bfgs_b=10, fit_gp:bool=True):
         super().suggest(gp=gp, target_space=target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=fit_gp)
-        self._fit_gp()
         self._remove_expired_dummies(target_space)
         dummy_target_space = self._copy_target_space(target_space)
+        self._fit_gp(gp=gp, target_space=dummy_target_space)
 
         for idx, dummy in enumerate(self.dummies):
             if dummy_target_space.constraint is not None:
-                dummy_target_space.register(dummy, self.dummy_targets[idx], self.dummy_constraints[idx])
+                dummy_target_space.register(dummy, self.dummy_targets[idx].squeeze(), self.dummy_constraints[idx].squeeze())
             else:
-                dummy_target_space.register(dummy, self.dummy_targets[idx])
+                dummy_target_space.register(dummy, self.dummy_targets[idx].squeeze())
     
         x_max = self.base_acquisition.suggest(gp, dummy_target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=True)
 
