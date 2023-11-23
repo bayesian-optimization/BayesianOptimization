@@ -10,8 +10,8 @@ from bayes_opt import BayesianOptimization
 from bayes_opt import acquisition
 from scipy.optimize import rosen
 
-USE_KRIGING_BELIEVER = False
-
+ASYNC_METHOD = 'believe' # 'lie_max'
+assert ASYNC_METHOD in ['believe', 'lie_max', 'none']
 def _closest_distance(point, points):
     return min(np.linalg.norm(point - p) for p in points if p is not point)
 
@@ -21,15 +21,17 @@ def optimize(
 ):
     init_samples = int(np.sqrt(num_iter))
     init_kappa = 10
-    kappa_decay = (0.1 / init_kappa) ** (1 / (num_iter - init_samples))
+    kappa_decay = (0.1 / init_kappa) ** (1 / num_iter)
 
     acquisition_function = acquisition.UpperConfidenceBound(
         kappa=init_kappa,
         exploration_decay=kappa_decay,
-        exploration_decay_delay=init_samples
+        exploration_decay_delay=0
     )
 
-    if USE_KRIGING_BELIEVER:
+    if ASYNC_METHOD == 'lie_max':
+        acquisition_function = acquisition.ConstantLier(acquisition_function, 'max')
+    elif ASYNC_METHOD == 'believe':
         acquisition_function = acquisition.KrigingBeliever(acquisition_function)
 
     optimizer = BayesianOptimization(
@@ -55,9 +57,9 @@ bounds = {"x": [-5, 5], "y": [-5, 5]}
 
 all_times = {}
 all_results = {}
-workers_each = [1, 2, 4, 8, 16]
+workers_each = [1, 2, 4, 8,]# 16]
 print(f"Simulating parallel optimization for {workers_each} workers, this can take some time.")
-print(f"Kriging believer turned {'on' if USE_KRIGING_BELIEVER else 'off'}.")
+print(f"Async method: {ASYNC_METHOD}.")
 for num_workers in workers_each:
     print(f"\tChecking {num_workers} workers")
     results = []
@@ -70,8 +72,10 @@ for num_workers in workers_each:
     all_results[num_workers] = samples
 
 fig, axs = plt.subplots(2, 2)
-if USE_KRIGING_BELIEVER:
+if ASYNC_METHOD == 'believe':
     acquisition_function_str = "Kriging Believer (UCB)"
+elif ASYNC_METHOD == 'lie_max':
+    acquisition_function_str = "Constant Max Lier (UCB)"
 else:
     acquisition_function_str = "UCB"
 
@@ -88,4 +92,4 @@ for idx, (num_workers, samples) in enumerate(all_results.items()):
     avg_min_distance = np.mean([_closest_distance(sample, samples) for sample in samples])
     print(f"{num_workers=}, mean_min_distance={avg_min_distance:.3f}, time={all_times[num_workers]:.3f}")
 fig.tight_layout()
-plt.savefig(f"corrected_async_{USE_KRIGING_BELIEVER}.png")
+plt.savefig(f"corrected_async_{ASYNC_METHOD}.png")

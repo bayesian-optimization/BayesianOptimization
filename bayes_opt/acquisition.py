@@ -9,6 +9,7 @@ from .constraint import ConstraintModel
 from sklearn.gaussian_process import GaussianProcessRegressor
 from typing import Callable, List, Union
 from copy import deepcopy
+from numbers import Number
 
 class AcquisitionFunction():
     def __init__(self, random_state=None):
@@ -123,7 +124,7 @@ class UpperConfidenceBound(AcquisitionFunction):
     
     def update_params(self):
         if self.exploration_decay is not None:
-            if self.exploration_decay_delay is None or self.exploration_decay_delay >= self.i:
+            if self.exploration_decay_delay is None or self.exploration_decay_delay <= self.i:
                 self.kappa = self.kappa*self.exploration_decay
 
 
@@ -152,7 +153,7 @@ class ProbabilityOfImprovement(AcquisitionFunction):
 
     def update_params(self):
         if self.exploration_decay is not None:
-            if self.exploration_decay_delay is None or self.exploration_decay_delay >= self.i:
+            if self.exploration_decay_delay is None or self.exploration_decay_delay <= self.i:
                 self.xi = self.xi*self.exploration_decay
 
 
@@ -181,9 +182,68 @@ class ExpectedImprovement(AcquisitionFunction):
 
     def update_params(self):
         if self.exploration_decay is not None:
-            if self.exploration_decay_delay is None or self.exploration_decay_delay >= self.i:
+            if self.exploration_decay_delay is None or self.exploration_decay_delay <= self.i:
                 self.xi = self.xi*self.exploration_decay
 
+
+class ConstantLier(AcquisitionFunction):
+    def __init__(self, base_acquisition: AcquisitionFunction, strategy='min', random_state=None):
+        super().__init__(random_state)
+        self.base_acquisition = base_acquisition
+        self.dummies = []
+        if not isinstance(strategy, Number) and not strategy in ['min', 'mean', 'max']:
+            raise ValueError(f"Received invalid argument {strategy} for strategy.")
+        self.strategy = strategy
+    
+    def _copy_target_space(self, target_space: TargetSpace):
+        keys = target_space.keys
+        pbounds = {key: bound for key, bound in zip(keys, target_space.bounds)}
+        target_space_copy = TargetSpace(
+            None,
+            pbounds=pbounds,
+            constraint=target_space.constraint,
+            allow_duplicate_points=target_space._allow_duplicate_points
+        )
+        target_space_copy._params = deepcopy(target_space._params)
+        target_space_copy._target = deepcopy(target_space._target)
+        if target_space.constraint is not None:
+            target_space_copy._constraint_values = deepcopy(target_space._constraint_values)
+        return target_space_copy
+
+    def _remove_expired_dummies(self, target_space: TargetSpace):
+        for dummy in self.dummies:
+            if dummy in target_space.params:
+                self.dummies.remove(dummy)
+        
+    def suggest(self, gp: GaussianProcessRegressor, target_space: TargetSpace, n_random=10_000, n_l_bfgs_b=10, fit_gp:bool=True):
+        super().suggest(gp=gp, target_space=target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=fit_gp)
+        if target_space.constraint is not None:
+            msg = (
+                f"Received constraints, but acquisition function {type(self)} "
+                + "does not support constrained optimization."
+            )
+            raise ValueError(msg)
+    
+        self._remove_expired_dummies(target_space)
+        dummy_target_space = self._copy_target_space(target_space)
+    
+        if isinstance(self.strategy, Number):
+            dummy_target = self.strategy
+        elif self.strategy == 'min':
+            dummy_target = target_space.target.min()
+        elif self.strategy == 'mean':
+            dummy_target = target_space.target.mean()
+        elif self.strategy == 'max':
+            dummy_target = target_space.target.max()
+
+        for dummy in self.dummies:
+            dummy_target_space.register(dummy, dummy_target)
+
+        self._fit_gp(gp=gp, target_space=dummy_target_space)
+        x_max = self.base_acquisition.suggest(gp, dummy_target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=True)
+        self.dummies.append(x_max)
+
+        return x_max
 
 class KrigingBeliever(AcquisitionFunction):
     def __init__(self, base_acquisition: AcquisitionFunction, random_state=None):
@@ -233,7 +293,6 @@ class KrigingBeliever(AcquisitionFunction):
         super().suggest(gp=gp, target_space=target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=fit_gp)
         self._remove_expired_dummies(target_space)
         dummy_target_space = self._copy_target_space(target_space)
-        self._fit_gp(gp=gp, target_space=dummy_target_space)
 
         for idx, dummy in enumerate(self.dummies):
             if dummy_target_space.constraint is not None:
@@ -242,6 +301,8 @@ class KrigingBeliever(AcquisitionFunction):
                 dummy_target_space.register(dummy, self.dummy_targets[idx].squeeze())
     
         x_max = self.base_acquisition.suggest(gp, dummy_target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=True)
+
+        self._fit_gp(gp=gp, target_space=dummy_target_space)
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")

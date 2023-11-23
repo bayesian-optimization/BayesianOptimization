@@ -7,6 +7,7 @@ from .event import Events, DEFAULT_EVENTS
 from .logger import _get_default_logger
 from .util import ensure_rng
 
+import numpy as np
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
 from .acquisition import GPHedge, UpperConfidenceBound, ExpectedImprovement, ProbabilityOfImprovement
@@ -136,7 +137,13 @@ class BayesianOptimization(Observable):
                     self._random_state
                 )
             else:
-                self.acquisition_function = ExpectedImprovement(xi=0.1, random_state=self._random_state)
+                self.acquisition_function = GPHedge(
+                    [
+                        ProbabilityOfImprovement(xi=0.01, random_state=self._random_state),
+                        ExpectedImprovement(xi=0.01, random_state=self._random_state),
+                    ],
+                    self._random_state
+                )
         else:
             self.acquisition_function = acquisition_function
 
