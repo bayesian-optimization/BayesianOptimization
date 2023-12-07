@@ -1,22 +1,24 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Visualization &mdash; Bayesian Optimization  documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="_static/nbsphinx-code-cells.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css" />
+
+  
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/jquery.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -116,7 +118,7 @@
 </div>
 </div>
 <section id="Visualization">
-<h1>Visualization<a class="headerlink" href="#Visualization" title="Permalink to this heading"></a></h1>
+<h1>Visualization<a class="headerlink" href="#Visualization" title="Link to this heading"></a></h1>
 <p>Lets create a target 1-D function with multiple local maxima to test and visualize how the <a class="reference external" href="https://github.com/fmfn/BayesianOptimization">BayesianOptimization</a> package works. The target function we will try to maximize is the following:</p>
 <div class="math notranslate nohighlight">
 \[f(x) = e^{-(x - 2)^2} + e^{-\frac{(x - 6)^2}{10}} + \frac{1}{x^2 + 1},\]</div>
@@ -150,7 +152,7 @@
 </div>
 </div>
 <section id="Create-a-BayesianOptimization-Object">
-<h2>Create a BayesianOptimization Object<a class="headerlink" href="#Create-a-BayesianOptimization-Object" title="Permalink to this heading"></a></h2>
+<h2>Create a BayesianOptimization Object<a class="headerlink" href="#Create-a-BayesianOptimization-Object" title="Link to this heading"></a></h2>
 <p>Enter the target function to be maximized, its variable(s) and their corresponding ranges. A minimum number of 2 initial guesses is necessary to kick start the algorithms, these can either be random or user defined.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
@@ -184,9 +186,9 @@
 </div>
 </section>
 <section id="Plotting-and-visualizing-the-algorithm-at-each-step">
-<h2>Plotting and visualizing the algorithm at each step<a class="headerlink" href="#Plotting-and-visualizing-the-algorithm-at-each-step" title="Permalink to this heading"></a></h2>
+<h2>Plotting and visualizing the algorithm at each step<a class="headerlink" href="#Plotting-and-visualizing-the-algorithm-at-each-step" title="Link to this heading"></a></h2>
 <section id="Let's-first-define-a-couple-functions-to-make-plotting-easier">
-<h3>Let’s first define a couple functions to make plotting easier<a class="headerlink" href="#Let's-first-define-a-couple-functions-to-make-plotting-easier" title="Permalink to this heading"></a></h3>
+<h3>Let’s first define a couple functions to make plotting easier<a class="headerlink" href="#Let's-first-define-a-couple-functions-to-make-plotting-easier" title="Link to this heading"></a></h3>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
@@ -243,7 +245,7 @@
 </div>
 </section>
 <section id="Two-random-points">
-<h3>Two random points<a class="headerlink" href="#Two-random-points" title="Permalink to this heading"></a></h3>
+<h3>Two random points<a class="headerlink" href="#Two-random-points" title="Link to this heading"></a></h3>
 <p>After we probe two points at random, we can fit a Gaussian Process and start the bayesian optimization procedure. Two points should give us a uneventful posterior with the uncertainty growing as we go further from the observations.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
@@ -262,7 +264,7 @@
 </div>
 </section>
 <section id="After-one-step-of-GP-(and-two-random-points)">
-<h3>After one step of GP (and two random points)<a class="headerlink" href="#After-one-step-of-GP-(and-two-random-points)" title="Permalink to this heading"></a></h3>
+<h3>After one step of GP (and two random points)<a class="headerlink" href="#After-one-step-of-GP-(and-two-random-points)" title="Link to this heading"></a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
@@ -301,7 +303,7 @@ C:\Users\Brendan\Documents\temp\temp\BayesianOptimization\venv\lib\site-packages
 </div>
 </section>
 <section id="After-two-steps-of-GP-(and-two-random-points)">
-<h3>After two steps of GP (and two random points)<a class="headerlink" href="#After-two-steps-of-GP-(and-two-random-points)" title="Permalink to this heading"></a></h3>
+<h3>After two steps of GP (and two random points)<a class="headerlink" href="#After-two-steps-of-GP-(and-two-random-points)" title="Link to this heading"></a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
@@ -331,7 +333,7 @@ C:\Users\Brendan\Documents\temp\temp\BayesianOptimization\venv\lib\site-packages
 </div>
 </section>
 <section id="After-three-steps-of-GP-(and-two-random-points)">
-<h3>After three steps of GP (and two random points)<a class="headerlink" href="#After-three-steps-of-GP-(and-two-random-points)" title="Permalink to this heading"></a></h3>
+<h3>After three steps of GP (and two random points)<a class="headerlink" href="#After-three-steps-of-GP-(and-two-random-points)" title="Link to this heading"></a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
@@ -361,7 +363,7 @@ C:\Users\Brendan\Documents\temp\temp\BayesianOptimization\venv\lib\site-packages
 </div>
 </section>
 <section id="After-four-steps-of-GP-(and-two-random-points)">
-<h3>After four steps of GP (and two random points)<a class="headerlink" href="#After-four-steps-of-GP-(and-two-random-points)" title="Permalink to this heading"></a></h3>
+<h3>After four steps of GP (and two random points)<a class="headerlink" href="#After-four-steps-of-GP-(and-two-random-points)" title="Link to this heading"></a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
@@ -391,7 +393,7 @@ C:\Users\Brendan\Documents\temp\temp\BayesianOptimization\venv\lib\site-packages
 </div>
 </section>
 <section id="After-five-steps-of-GP-(and-two-random-points)">
-<h3>After five steps of GP (and two random points)<a class="headerlink" href="#After-five-steps-of-GP-(and-two-random-points)" title="Permalink to this heading"></a></h3>
+<h3>After five steps of GP (and two random points)<a class="headerlink" href="#After-five-steps-of-GP-(and-two-random-points)" title="Link to this heading"></a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
@@ -421,7 +423,7 @@ C:\Users\Brendan\Documents\temp\temp\BayesianOptimization\venv\lib\site-packages
 </div>
 </section>
 <section id="After-six-steps-of-GP-(and-two-random-points)">
-<h3>After six steps of GP (and two random points)<a class="headerlink" href="#After-six-steps-of-GP-(and-two-random-points)" title="Permalink to this heading"></a></h3>
+<h3>After six steps of GP (and two random points)<a class="headerlink" href="#After-six-steps-of-GP-(and-two-random-points)" title="Link to this heading"></a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
@@ -451,7 +453,7 @@ C:\Users\Brendan\Documents\temp\temp\BayesianOptimization\venv\lib\site-packages
 </div>
 </section>
 <section id="After-seven-steps-of-GP-(and-two-random-points)">
-<h3>After seven steps of GP (and two random points)<a class="headerlink" href="#After-seven-steps-of-GP-(and-two-random-points)" title="Permalink to this heading"></a></h3>
+<h3>After seven steps of GP (and two random points)<a class="headerlink" href="#After-seven-steps-of-GP-(and-two-random-points)" title="Link to this heading"></a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
@@ -482,7 +484,7 @@ C:\Users\Brendan\Documents\temp\temp\BayesianOptimization\venv\lib\site-packages
 </section>
 </section>
 <section id="Stopping">
-<h2>Stopping<a class="headerlink" href="#Stopping" title="Permalink to this heading"></a></h2>
+<h2>Stopping<a class="headerlink" href="#Stopping" title="Link to this heading"></a></h2>
 <p>After just a few points the algorithm was able to get pretty close to the true maximum. It is important to notice that the trade off between exploration (exploring the parameter space) and exploitation (probing points near the current known maximum) is fundamental to a succesful bayesian optimization procedure. The utility function being used here (Upper Confidence Bound - UCB) has a free parameter <span class="math notranslate nohighlight">\(\kappa\)</span> that allows the user to make the algorithm more or less conservative. Additionally,
 the larger the initial set of random points explored, the less likely the algorithm is to get stuck in local minima due to being too conservative.</p>
 <div class="nbinput nblast docutils container">

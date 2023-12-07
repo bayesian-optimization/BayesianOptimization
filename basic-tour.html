@@ -1,22 +1,24 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Basic tour of the Bayesian Optimization package &mdash; Bayesian Optimization  documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="_static/nbsphinx-code-cells.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css" />
+
+  
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/jquery.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -100,14 +102,14 @@
            <div itemprop="articleBody">
              
   <section id="Basic-tour-of-the-Bayesian-Optimization-package">
-<h1>Basic tour of the Bayesian Optimization package<a class="headerlink" href="#Basic-tour-of-the-Bayesian-Optimization-package" title="Permalink to this heading"></a></h1>
+<h1>Basic tour of the Bayesian Optimization package<a class="headerlink" href="#Basic-tour-of-the-Bayesian-Optimization-package" title="Link to this heading"></a></h1>
 <p>This is a constrained global optimization package built upon bayesian inference and gaussian process, that attempts to find the maximum value of an unknown function in as few iterations as possible. This technique is particularly suited for optimization of high cost functions, situations where the balance between exploration and exploitation is important.</p>
 <p>Bayesian optimization works by constructing a posterior distribution of functions (gaussian process) that best describes the function you want to optimize. As the number of observations grows, the posterior distribution improves, and the algorithm becomes more certain of which regions in parameter space are worth exploring and which are not, as seen in the picture below.</p>
 <p>As you iterate over and over, the algorithm balances its needs of exploration and exploitation taking into account what it knows about the target function. At each step a Gaussian Process is fitted to the known samples (points previously explored), and the posterior distribution, combined with a exploration strategy (such as UCB (Upper Confidence Bound), or EI (Expected Improvement)), are used to determine the next point that should be explored (see the gif below).</p>
 <p>This process is designed to minimize the number of steps required to find a combination of parameters that are close to the optimal combination. To do so, this method uses a proxy optimization problem (finding the maximum of the acquisition function) that, albeit still a hard problem, is cheaper (in the computational sense) and common tools can be employed. Therefore Bayesian Optimization is most adequate for situations where sampling the function to be optimized is a very expensive endeavor.
 See the references for a proper discussion of this method.</p>
 <section id="1.-Specifying-the-function-to-be-optimized">
-<h2>1. Specifying the function to be optimized<a class="headerlink" href="#1.-Specifying-the-function-to-be-optimized" title="Permalink to this heading"></a></h2>
+<h2>1. Specifying the function to be optimized<a class="headerlink" href="#1.-Specifying-the-function-to-be-optimized" title="Link to this heading"></a></h2>
 <p>This is a function optimization package, therefore the first and most important ingredient is, of course, the function to be optimized.</p>
 <p><strong>DISCLAIMER:</strong> We know exactly how the output of the function below depends on its parameter. Obviously this is just an example, and you shouldn’t expect to know it in a real scenario. However, it should be clear that you don’t need to. All you need in order to use this package (and more generally, this technique) is a function <code class="docutils literal notranslate"><span class="pre">f</span></code> that takes a known set of parameters and outputs a real number.</p>
 <div class="nbinput nblast docutils container">
@@ -127,7 +129,7 @@ See the references for a proper discussion of this method.</p>
 </div>
 </section>
 <section id="2.-Getting-Started">
-<h2>2. Getting Started<a class="headerlink" href="#2.-Getting-Started" title="Permalink to this heading"></a></h2>
+<h2>2. Getting Started<a class="headerlink" href="#2.-Getting-Started" title="Link to this heading"></a></h2>
 <p>All we need to get started is to instantiate a <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code> object specifying a function to be optimized <code class="docutils literal notranslate"><span class="pre">f</span></code>, and its parameters with their corresponding bounds, <code class="docutils literal notranslate"><span class="pre">pbounds</span></code>. This is a constrained optimization technique, so you must specify the minimum and maximum values that can be probed for each parameter in order for it to work</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
@@ -232,7 +234,7 @@ Iteration 4:
 </pre></div></div>
 </div>
 <section id="2.1-Changing-bounds">
-<h3>2.1 Changing bounds<a class="headerlink" href="#2.1-Changing-bounds" title="Permalink to this heading"></a></h3>
+<h3>2.1 Changing bounds<a class="headerlink" href="#2.1-Changing-bounds" title="Link to this heading"></a></h3>
 <p>During the optimization process you may realize the bounds chosen for some parameters are not adequate. For these situations you can invoke the method <code class="docutils literal notranslate"><span class="pre">set_bounds</span></code> to alter them. You can pass any combination of <strong>existing</strong> parameters and their associated new bounds.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
@@ -271,7 +273,7 @@ Iteration 4:
 </section>
 </section>
 <section id="3.-Guiding-the-optimization">
-<h2>3. Guiding the optimization<a class="headerlink" href="#3.-Guiding-the-optimization" title="Permalink to this heading"></a></h2>
+<h2>3. Guiding the optimization<a class="headerlink" href="#3.-Guiding-the-optimization" title="Link to this heading"></a></h2>
 <p>It is often the case that we have an idea of regions of the parameter space where the maximum of our function might lie. For these situations the <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code> object allows the user to specify specific points to be probed. By default these will be explored lazily (<code class="docutils literal notranslate"><span class="pre">lazy=True</span></code>), meaning these points will be evaluated only the next time you call <code class="docutils literal notranslate"><span class="pre">maximize</span></code>. This probing process happens before the gaussian process takes over.</p>
 <p>Parameters can be passed as dictionaries such as below:</p>
 <div class="nbinput nblast docutils container">
@@ -335,10 +337,10 @@ Iteration 4:
 </div>
 </section>
 <section id="4.-Saving,-loading-and-restarting">
-<h2>4. Saving, loading and restarting<a class="headerlink" href="#4.-Saving,-loading-and-restarting" title="Permalink to this heading"></a></h2>
+<h2>4. Saving, loading and restarting<a class="headerlink" href="#4.-Saving,-loading-and-restarting" title="Link to this heading"></a></h2>
 <p>By default you can follow the progress of your optimization by setting <code class="docutils literal notranslate"><span class="pre">verbose&gt;0</span></code> when instantiating the <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code> object. If you need more control over logging/alerting you will need to use an observer. For more information about observers checkout the advanced tour notebook. Here we will only see how to use the native <code class="docutils literal notranslate"><span class="pre">JSONLogger</span></code> object to save to and load progress from files.</p>
 <section id="4.1-Saving-progress">
-<h3>4.1 Saving progress<a class="headerlink" href="#4.1-Saving-progress" title="Permalink to this heading"></a></h3>
+<h3>4.1 Saving progress<a class="headerlink" href="#4.1-Saving-progress" title="Link to this heading"></a></h3>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
@@ -388,7 +390,7 @@ Iteration 4:
 </div>
 </section>
 <section id="4.2-Loading-progress">
-<h3>4.2 Loading progress<a class="headerlink" href="#4.2-Loading-progress" title="Permalink to this heading"></a></h3>
+<h3>4.2 Loading progress<a class="headerlink" href="#4.2-Loading-progress" title="Link to this heading"></a></h3>
 <p>Naturally, if you stored progress you will be able to load that onto a new instance of <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code>. The easiest way to do it is by invoking the <code class="docutils literal notranslate"><span class="pre">load_logs</span></code> function, from the <code class="docutils literal notranslate"><span class="pre">util</span></code> submodule.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
@@ -478,7 +480,7 @@ New optimizer is now aware of 5 points.
 </section>
 </section>
 <section id="Next-Steps">
-<h2>Next Steps<a class="headerlink" href="#Next-Steps" title="Permalink to this heading"></a></h2>
+<h2>Next Steps<a class="headerlink" href="#Next-Steps" title="Link to this heading"></a></h2>
 <p>This tour should be enough to cover most usage scenarios of this package. If, however, you feel like you need to know more, please checkout the <code class="docutils literal notranslate"><span class="pre">advanced-tour</span></code> notebook. There you will be able to find other, more advanced features of this package that could be what you’re looking for. Also, browse the examples folder for implementation tips and ideas.</p>
 </section>
 </section>

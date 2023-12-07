@@ -1,22 +1,24 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Constrained Optimization &mdash; Bayesian Optimization  documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="_static/nbsphinx-code-cells.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css" />
+
+  
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/jquery.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -95,7 +97,7 @@
            <div itemprop="articleBody">
              
   <section id="Constrained-Optimization">
-<h1>Constrained Optimization<a class="headerlink" href="#Constrained-Optimization" title="Permalink to this heading"></a></h1>
+<h1>Constrained Optimization<a class="headerlink" href="#Constrained-Optimization" title="Link to this heading"></a></h1>
 <p>Constrained optimization refers to situations in which you must for instance maximize “f”, a function of “x” and “y”, but the solution must lie in a region where for instance “x&lt;y”.</p>
 <p>There are two distinct situations you may find yourself in:</p>
 <ol class="arabic simple">
@@ -103,7 +105,7 @@
 <li><p>Expensive constraints - in other situations, you may not know whether or not a given solution violates your constraints until you have explicitly evaluate the objective function there - which is typically an expensive operation. In such situations, it is desirable to <strong>learn</strong> the constrained regions on the fly in order to avoid unnecessary expensive calls to the objective function. The way to handle these situations is described in <strong>2. Advanced Constrained Optimization</strong></p></li>
 </ol>
 <section id="1.-Simple-Constrained-Optimization">
-<h2>1. Simple Constrained Optimization<a class="headerlink" href="#1.-Simple-Constrained-Optimization" title="Permalink to this heading"></a></h2>
+<h2>1. Simple Constrained Optimization<a class="headerlink" href="#1.-Simple-Constrained-Optimization" title="Link to this heading"></a></h2>
 <p>In situations where you know in advance whether or not a given point violates your constraints, you can normally simply code them directly into the objective function. To demonstrate this, let’s start with a standard non-constrained optimization:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
@@ -225,13 +227,13 @@ the best solution with y=4-x is {&#39;target&#39;: -4.0, &#39;params&#39;: {&#39
 </div></blockquote>
 </section>
 <section id="2.-Advanced-Constrained-Optimization">
-<h2>2. Advanced Constrained Optimization<a class="headerlink" href="#2.-Advanced-Constrained-Optimization" title="Permalink to this heading"></a></h2>
+<h2>2. Advanced Constrained Optimization<a class="headerlink" href="#2.-Advanced-Constrained-Optimization" title="Link to this heading"></a></h2>
 <p>In some situations, certain regions of the solution domain may be infeasible or not allowed. In addition, you may not know whether specific parameter combinations fall into these regions until you have evaluated the constraint function at these points. In other words, checking for feasibility is as expensive, or close to as expensive as evaluating the objective function. This notebook demonstrates how you can handle these situations by modelling the constraints as a Gaussian process. This
 approach is based on a paper by <a class="reference external" href="http://proceedings.mlr.press/v32/gardner14.pdf">Gardner et. al., 2014</a>.</p>
 <p>Note that if the constrained regions are known/if the constraint function is cheap to evaluate, then other approaches are preferable due to the computational complexity of modelling using Gaussian processes. In this case, at the time of writing the best approach is to return a low number to the optimizer when it tries to evaluate these regions</p>
 </section>
 <section id="2.1-Simple,-single-constraint">
-<h2>2.1 Simple, single constraint<a class="headerlink" href="#2.1-Simple,-single-constraint" title="Permalink to this heading"></a></h2>
+<h2>2.1 Simple, single constraint<a class="headerlink" href="#2.1-Simple,-single-constraint" title="Link to this heading"></a></h2>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
@@ -426,7 +428,7 @@ order – the approximation of the target function using the gaussian regressors
 </div>
 </section>
 <section id="Simulation-2">
-<h2>Simulation 2<a class="headerlink" href="#Simulation-2" title="Permalink to this heading"></a></h2>
+<h2>Simulation 2<a class="headerlink" href="#Simulation-2" title="Link to this heading"></a></h2>
 <p>We proceed with another slightly different problem of the same form. Here, we place a constraint from above and below on a function value.</p>
 <div class="math notranslate nohighlight">
 \[\max f(x, y)\]</div>
@@ -486,7 +488,7 @@ order – the approximation of the target function using the gaussian regressors
 </div>
 </div>
 <section id="2.2-Multiple-Constraints">
-<h3>2.2 Multiple Constraints<a class="headerlink" href="#2.2-Multiple-Constraints" title="Permalink to this heading"></a></h3>
+<h3>2.2 Multiple Constraints<a class="headerlink" href="#2.2-Multiple-Constraints" title="Link to this heading"></a></h3>
 <p>Occasionally, one might need to fulfill multiple constraints. In this case, simply employ a multi-dimensional surrogate constraint function, i.e., in case of <code class="docutils literal notranslate"><span class="pre">n</span></code> constraints, a function returning an array of shape <code class="docutils literal notranslate"><span class="pre">(n,)</span></code>. Similarly, the <code class="docutils literal notranslate"><span class="pre">constraint_limit</span></code> should be an array of shape <code class="docutils literal notranslate"><span class="pre">(n,)</span></code>. The problem we are solving is</p>
 <div class="math notranslate nohighlight">
 \[\max f(x, y)\]</div>

@@ -1,22 +1,24 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Advanced tour of the Bayesian Optimization package &mdash; Bayesian Optimization  documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="_static/nbsphinx-code-cells.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css" />
+
+  
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/jquery.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -100,7 +102,7 @@
            <div itemprop="articleBody">
              
   <section id="Advanced-tour-of-the-Bayesian-Optimization-package">
-<h1>Advanced tour of the Bayesian Optimization package<a class="headerlink" href="#Advanced-tour-of-the-Bayesian-Optimization-package" title="Permalink to this heading"></a></h1>
+<h1>Advanced tour of the Bayesian Optimization package<a class="headerlink" href="#Advanced-tour-of-the-Bayesian-Optimization-package" title="Link to this heading"></a></h1>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
@@ -110,7 +112,7 @@
 </div>
 </div>
 <section id="1.-Suggest-Evaluate-Register-Paradigm">
-<h2>1. Suggest-Evaluate-Register Paradigm<a class="headerlink" href="#1.-Suggest-Evaluate-Register-Paradigm" title="Permalink to this heading"></a></h2>
+<h2>1. Suggest-Evaluate-Register Paradigm<a class="headerlink" href="#1.-Suggest-Evaluate-Register-Paradigm" title="Link to this heading"></a></h2>
 <p>Internally the <code class="docutils literal notranslate"><span class="pre">maximize</span></code> method is simply a wrapper around the methods <code class="docutils literal notranslate"><span class="pre">suggest</span></code>, <code class="docutils literal notranslate"><span class="pre">probe</span></code>, and <code class="docutils literal notranslate"><span class="pre">register</span></code>. If you need more control over your optimization loops the Suggest-Evaluate-Register paradigm should give you that extra flexibility.</p>
 <p>For an example of running the <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code> in a distributed fashion (where the function being optimized is evaluated concurrently in different cores/machines/servers), checkout the <code class="docutils literal notranslate"><span class="pre">async_optimization.py</span></code> script in the examples folder.</p>
 <div class="nbinput nblast docutils container">
@@ -198,7 +200,7 @@ Found the target value to be: 0.7861845912690542
 </div>
 </div>
 <section id="1.1-The-maximize-loop">
-<h3>1.1 The maximize loop<a class="headerlink" href="#1.1-The-maximize-loop" title="Permalink to this heading"></a></h3>
+<h3>1.1 The maximize loop<a class="headerlink" href="#1.1-The-maximize-loop" title="Link to this heading"></a></h3>
 <p>And that’s it. By repeating the steps above you recreate the internals of the <code class="docutils literal notranslate"><span class="pre">maximize</span></code> method. This should give you all the flexibility you need to log progress, hault execution, perform concurrent evaluations, etc.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
@@ -230,7 +232,7 @@ Found the target value to be: 0.7861845912690542
 </section>
 </section>
 <section id="2.-Dealing-with-discrete-parameters">
-<h2>2. Dealing with discrete parameters<a class="headerlink" href="#2.-Dealing-with-discrete-parameters" title="Permalink to this heading"></a></h2>
+<h2>2. Dealing with discrete parameters<a class="headerlink" href="#2.-Dealing-with-discrete-parameters" title="Link to this heading"></a></h2>
 <p><strong>There is no principled way of dealing with discrete parameters using this package.</strong></p>
 <p>Ok, now that we got that out of the way, how do you do it? You’re bound to be in a situation where some of your function’s parameters may only take on discrete values. Unfortunately, the nature of bayesian optimization with gaussian processes doesn’t allow for an easy/intuitive way of dealing with discrete parameters - but that doesn’t mean it is impossible. The example below showcases a simple, yet reasonably adequate, way to dealing with discrete parameters.</p>
 <div class="nbinput nblast docutils container">
@@ -319,10 +321,10 @@ Found the target value to be: 0.7861845912690542
 </div>
 </section>
 <section id="3.-Tuning-the-underlying-Gaussian-Process">
-<h2>3. Tuning the underlying Gaussian Process<a class="headerlink" href="#3.-Tuning-the-underlying-Gaussian-Process" title="Permalink to this heading"></a></h2>
+<h2>3. Tuning the underlying Gaussian Process<a class="headerlink" href="#3.-Tuning-the-underlying-Gaussian-Process" title="Link to this heading"></a></h2>
 <p>The bayesian optimization algorithm works by performing a gaussian process regression of the observed combination of parameters and their associated target values. The predicted parameter<span class="math notranslate nohighlight">\(\rightarrow\)</span>target hyper-surface (and its uncertainty) is then used to guide the next best point to probe.</p>
 <section id="3.1-Passing-parameter-to-the-GP">
-<h3>3.1 Passing parameter to the GP<a class="headerlink" href="#3.1-Passing-parameter-to-the-GP" title="Permalink to this heading"></a></h3>
+<h3>3.1 Passing parameter to the GP<a class="headerlink" href="#3.1-Passing-parameter-to-the-GP" title="Link to this heading"></a></h3>
 <p>Depending on the problem it could be beneficial to change the default parameters of the underlying GP. You can use the <code class="docutils literal notranslate"><span class="pre">optimizer.set_gp_params</span></code> method to do this:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
@@ -360,16 +362,16 @@ Found the target value to be: 0.7861845912690542
 </div>
 </section>
 <section id="3.2-Tuning-the-alpha-parameter">
-<h3>3.2 Tuning the <code class="docutils literal notranslate"><span class="pre">alpha</span></code> parameter<a class="headerlink" href="#3.2-Tuning-the-alpha-parameter" title="Permalink to this heading"></a></h3>
+<h3>3.2 Tuning the <code class="docutils literal notranslate"><span class="pre">alpha</span></code> parameter<a class="headerlink" href="#3.2-Tuning-the-alpha-parameter" title="Link to this heading"></a></h3>
 <p>When dealing with functions with discrete parameters,or particularly erratic target space it might be beneficial to increase the value of the <code class="docutils literal notranslate"><span class="pre">alpha</span></code> parameter. This parameters controls how much noise the GP can handle, so increase it whenever you think that extra flexibility is needed.</p>
 </section>
 <section id="3.3-Changing-kernels">
-<h3>3.3 Changing kernels<a class="headerlink" href="#3.3-Changing-kernels" title="Permalink to this heading"></a></h3>
+<h3>3.3 Changing kernels<a class="headerlink" href="#3.3-Changing-kernels" title="Link to this heading"></a></h3>
 <p>By default this package uses the Matern 2.5 kernel. Depending on your use case you may find that tunning the GP kernel could be beneficial. You’re on your own here since these are very specific solutions to very specific problems.</p>
 </section>
 </section>
 <section id="Observers-Continued">
-<h2>Observers Continued<a class="headerlink" href="#Observers-Continued" title="Permalink to this heading"></a></h2>
+<h2>Observers Continued<a class="headerlink" href="#Observers-Continued" title="Link to this heading"></a></h2>
 <p>Observers are objects that subscribe and listen to particular events fired by the <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code> object.</p>
 <p>When an event gets fired a callback function is called with the event and the <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code> instance passed as parameters. The callback can be specified at the time of subscription. If none is given it will look for an <code class="docutils literal notranslate"><span class="pre">update</span></code> method from the observer.</p>
 <div class="nbinput nblast docutils container">
