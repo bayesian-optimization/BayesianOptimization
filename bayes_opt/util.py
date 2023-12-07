@@ -6,13 +6,13 @@ from colorama import just_fix_windows_console
 import json
 
 
-def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000, n_iter=10):
+def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000, n_iter=10, y_max_params=None):
     """
     A function to find the maximum of the acquisition function
 
     It uses a combination of random sampling (cheap) and the 'L-BFGS-B'
     optimization method. First by sampling `n_warmup` (1e5) points at random,
-    and then running L-BFGS-B from `n_iter` (250) random starting points.
+    and then running L-BFGS-B from `n_iter` (10) random starting points.
 
     Parameters
     ----------
@@ -39,6 +39,9 @@ def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000
 
     :param n_iter:
         number of times to run scipy.minimize
+
+    :param y_max_params:
+        Function parameters that produced the maximum known value given by `y_max`.
 
     Returns
     -------
@@ -87,7 +90,15 @@ def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000
 
     # Explore the parameter space more thoroughly
     x_seeds = random_state.uniform(bounds[:, 0], bounds[:, 1],
-                                   size=(n_iter, bounds.shape[0]))
+                                   size=(1+n_iter+int(not y_max_params is None),
+                                   bounds.shape[0]))
+    # Add the best candidate from the random sampling to the seeds so that the
+    # optimization algorithm can try to walk up to that particular local maxima
+    x_seeds[0] = x_max
+    if not y_max_params is None:
+        # Add the provided best sample to the seeds so that the optimization
+        # algorithm is aware of it and will attempt to find its local maxima
+        x_seeds[1] = y_max_params
 
     for x_try in x_seeds:
         # Find the minimum of minus the acquisition function
