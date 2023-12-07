@@ -40,6 +40,9 @@ def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000
     :param n_iter:
         number of times to run scipy.minimize
 
+    :param y_max_params:
+        Function parameters that produced the maximum known value given by `y_max`.
+
     Returns
     -------
     :return: x_max, The arg max of the acquisition function.
