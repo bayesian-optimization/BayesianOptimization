@@ -1,5 +1,6 @@
 import numpy as np
-from .util import ensure_rng
+from .util import ensure_rng, NotUniqueError
+from .util import Colours
 
 
 def _hashable(x):
@@ -22,7 +23,9 @@ class TargetSpace(object):
     >>> y = space.register_point(x)
     >>> assert self.max_point()['max_val'] == y
     """
-    def __init__(self, target_func, pbounds, random_state=None):
+
+    def __init__(self, target_func, pbounds, constraint=None, random_state=None,
+                 allow_duplicate_points=False):
         """
         Parameters
         ----------
@@ -35,8 +38,16 @@ class TargetSpace(object):
 
         random_state : int, RandomState, or None
             optionally specify a seed for a random number generator
+
+        allow_duplicate_points: bool, optional (default=False)
+            If True, the optimizer will allow duplicate points to be registered.
+            This behavior may be desired in high noise situations where repeatedly probing
+            the same point will give different answers. In other situations, the acquisition
+            may occasionally generate a duplicate point.
         """
         self.random_state = ensure_rng(random_state)
+        self._allow_duplicate_points = allow_duplicate_points
+        self.n_duplicate_points = 0
 
         # The function to be optimized
         self.target_func = target_func
@@ -46,7 +57,7 @@ class TargetSpace(object):
         # Create an array with parameters bounds
         self._bounds = np.array(
             [item[1] for item in sorted(pbounds.items(), key=lambda x: x[0])],
-            dtype=np.float
+            dtype=float
         )
 
         # preallocated memory for X and Y points
@@ -55,6 +66,15 @@ class TargetSpace(object):
 
         # keep track of unique points we have seen so far
         self._cache = {}
+
+        self._constraint = constraint
+
+        if constraint is not None:
+            # preallocated memory for constraint fulfillment
+            if constraint.lb.size == 1:
+                self._constraint_values = np.empty(shape=(0), dtype=float)
+            else:
+                self._constraint_values = np.empty(shape=(0, constraint.lb.size), dtype=float)
 
     def __contains__(self, x):
         return _hashable(x) in self._cache
@@ -86,6 +106,15 @@ class TargetSpace(object):
     @property
     def bounds(self):
         return self._bounds
+
+    @property
+    def constraint(self):
+        return self._constraint
+
+    @property
+    def constraint_values(self):
+        if self._constraint is not None:
+            return self._constraint_values
 
     def params_to_array(self, params):
         try:
@@ -119,11 +148,10 @@ class TargetSpace(object):
         except AssertionError:
             raise ValueError(
                 "Size of array ({}) is different than the ".format(len(x)) +
-                "expected number of parameters ({}).".format(len(self.keys))
-            )
+                "expected number of parameters ({}).".format(len(self.keys)))
         return x
 
-    def register(self, params, target):
+    def register(self, params, target, constraint_value=None):
         """
         Append a point and its target value to the known data.
 
@@ -142,7 +170,7 @@ class TargetSpace(object):
 
         Notes
         -----
-        runs in ammortized constant time
+        runs in amortized constant time
 
         Example
         -------
@@ -158,17 +186,33 @@ class TargetSpace(object):
         """
         x = self._as_array(params)
         if x in self:
-            raise KeyError('Data point {} is not unique'.format(x))
-
-        # Insert data into unique dictionary
-        self._cache[_hashable(x.ravel())] = target
+            if self._allow_duplicate_points:
+                self.n_duplicate_points = self.n_duplicate_points + 1
+                print(f'{Colours.RED}Data point {x} is not unique. {self.n_duplicate_points} duplicates registered.'
+                              f' Continuing ...{Colours.END}')
+            else:
+                raise NotUniqueError(f'Data point {x} is not unique. You can set "allow_duplicate_points=True" to '
+                                     f'avoid this error')
 
         self._params = np.concatenate([self._params, x.reshape(1, -1)])
         self._target = np.concatenate([self._target, [target]])
 
+        if self._constraint is None:
+            # Insert data into unique dictionary
+            self._cache[_hashable(x.ravel())] = target
+        else:
+            if constraint_value is None:
+                msg = ("When registering a point to a constrained TargetSpace" +
+                       " a constraint value needs to be present.")
+                raise ValueError(msg)
+            # Insert data into unique dictionary
+            self._cache[_hashable(x.ravel())] = (target, constraint_value)
+            self._constraint_values = np.concatenate([self._constraint_values,
+                                                      [constraint_value]])
+
     def probe(self, params):
         """
-        Evaulates a single point x, to obtain the value y and then records them
+        Evaluates a single point x, to obtain the value y and then records them
         as observations.
 
         Notes
@@ -186,14 +230,16 @@ class TargetSpace(object):
             target function value.
         """
         x = self._as_array(params)
+        params = dict(zip(self._keys, x))
+        target = self.target_func(**params)
 
-        try:
-            target = self._cache[_hashable(x)]
-        except KeyError:
-            params = dict(zip(self._keys, x))
-            target = self.target_func(**params)
+        if self._constraint is None:
             self.register(x, target)
-        return target
+            return target
+        else:
+            constraint_value = self._constraint.eval(**params)
+            self.register(x, target, constraint_value)
+            return target, constraint_value
 
     def random_sample(self):
         """
@@ -212,33 +258,91 @@ class TargetSpace(object):
         >>> space.random_points(1)
         array([[ 55.33253689,   0.54488318]])
         """
-        # TODO: support integer, category, and basic scipy.optimize constraints
         data = np.empty((1, self.dim))
         for col, (lower, upper) in enumerate(self._bounds):
             data.T[col] = self.random_state.uniform(lower, upper, size=1)
         return data.ravel()
 
+    def _target_max(self):
+        """Get maximum target value found.
+        
+        If there is a constraint present, the maximum value that fulfills the
+        constraint is returned."""
+        if len(self.target) == 0:
+            return None
+
+        if self._constraint is None:
+            return self.target.max()
+
+        allowed = self._constraint.allowed(self._constraint_values)
+        if allowed.any():
+            return self.target[allowed].max()
+
+        return None
+
     def max(self):
-        """Get maximum target value found and corresponding parametes."""
-        try:
-            res = {
-                'target': self.target.max(),
+        """Get maximum target value found and corresponding parameters.
+        
+        If there is a constraint present, the maximum value that fulfills the
+        constraint is returned."""
+        target_max = self._target_max()
+
+        if target_max is None:
+            return None
+
+        if self._constraint is not None:
+            allowed = self._constraint.allowed(self._constraint_values)
+
+            target = self.target[allowed]
+            params = self.params[allowed]
+            constraint_values = self.constraint_values[allowed]
+        else:
+            target = self.target
+            params = self.params
+            constraint_values = self.constraint_values
+        
+        target_max_idx = np.where(target == target_max)[0][0]
+        
+
+        res = {
+                'target': target_max,
                 'params': dict(
-                    zip(self.keys, self.params[self.target.argmax()])
-                )
-            }
-        except ValueError:
-            res = {}
+                zip(self.keys, params[target_max_idx])
+            )
+        }
+
+        if self._constraint is not None:
+            res['constraint'] = constraint_values[target_max_idx]
+
         return res
 
     def res(self):
-        """Get all target values found and corresponding parametes."""
-        params = [dict(zip(self.keys, p)) for p in self.params]
+        """Get all target values and constraint fulfillment for all parameters.
+        """
+        if self._constraint is None:
+            params = [dict(zip(self.keys, p)) for p in self.params]
 
-        return [
-            {"target": target, "params": param}
-            for target, param in zip(self.target, params)
-        ]
+            return [
+                {"target": target, "params": param}
+                for target, param in zip(self.target, params)
+            ]
+        else:
+            params = [dict(zip(self.keys, p)) for p in self.params]
+
+            return [
+                {
+                    "target": target,
+                    "constraint": constraint_value,
+                    "params": param,
+                    "allowed": allowed
+                }
+                for target, constraint_value, param, allowed in zip(
+                    self.target,
+                    self._constraint_values,
+                    params,
+                    self._constraint.allowed(self._constraint_values)
+                )
+            ]
 
     def set_bounds(self, new_bounds):
         """

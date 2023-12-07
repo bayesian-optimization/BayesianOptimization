@@ -1,22 +1,23 @@
 from __future__ import print_function
 import os
 import json
-
+import warnings
+from pathlib import Path
 from .observer import _Tracker
 from .event import Events
 from .util import Colours
 
-
-def _get_default_logger(verbose):
-    return ScreenLogger(verbose=verbose)
+def _get_default_logger(verbose, is_constrained):
+    return ScreenLogger(verbose=verbose, is_constrained=is_constrained)
 
 
 class ScreenLogger(_Tracker):
     _default_cell_size = 9
     _default_precision = 4
 
-    def __init__(self, verbose=2):
+    def __init__(self, verbose=2, is_constrained=False):
         self._verbose = verbose
+        self._is_constrained = is_constrained
         self._header_length = None
         super(ScreenLogger, self).__init__()
 
@@ -28,14 +29,18 @@ class ScreenLogger(_Tracker):
     def verbose(self, v):
         self._verbose = v
 
+    @property
+    def is_constrained(self):
+        return self._is_constrained
+
     def _format_number(self, x):
         if isinstance(x, int):
-                s = "{x:< {s}}".format(
+                s = "{x:<{s}}".format(
                     x=x,
                     s=self._default_cell_size,
                 )
         else:
-            s = "{x:< {s}.{p}}".format(
+            s = "{x:<{s}.{p}}".format(
                 x=x,
                 s=self._default_cell_size,
                 p=self._default_precision,
@@ -46,6 +51,20 @@ class ScreenLogger(_Tracker):
                 return s[:self._default_cell_size]
             else:
                 return s[:self._default_cell_size - 3] + "..."
+        return s
+
+    def _format_bool(self, x):
+        if 5 > self._default_cell_size:
+            if x == True:
+                x_ = 'T'
+            elif x == False:
+                x_ = 'F'
+        else:
+            x_ = str(x)
+        s = "{x:<{s}}".format(
+            x=x_,
+            s=self._default_cell_size,
+        )
         return s
 
     def _format_key(self, key):
@@ -63,6 +82,9 @@ class ScreenLogger(_Tracker):
 
         cells.append(self._format_number(self._iterations + 1))
         cells.append(self._format_number(res["target"]))
+        if self._is_constrained:
+            cells.append(self._format_bool(res["allowed"]))
+
 
         for key in instance.space.keys:
             cells.append(self._format_number(res["params"][key]))
@@ -73,6 +95,10 @@ class ScreenLogger(_Tracker):
         cells = []
         cells.append(self._format_key("iter"))
         cells.append(self._format_key("target"))
+
+        if self._is_constrained:
+            cells.append(self._format_key("allowed"))
+
         for key in instance.space.keys:
             cells.append(self._format_key(key))
 
@@ -81,6 +107,11 @@ class ScreenLogger(_Tracker):
         return line + "\n" + ("-" * self._header_length)
 
     def _is_new_max(self, instance):
+        if instance.max is None:
+            # During constrained optimization, there might not be a maximum
+            # value since the optimizer might've not encountered any points
+            # that fulfill the constraints.
+            return False
         if self._previous_max is None:
             self._previous_max = instance.max["target"]
         return instance.max["target"] > self._previous_max
@@ -105,7 +136,9 @@ class ScreenLogger(_Tracker):
 
 class JSONLogger(_Tracker):
     def __init__(self, path, reset=True):
-        self._path = path if path[-5:] == ".json" else path + ".json"
+
+
+        self._path = path
         if reset:
             try:
                 os.remove(self._path)
@@ -123,6 +156,9 @@ class JSONLogger(_Tracker):
                 "elapsed": time_elapsed,
                 "delta": time_delta,
             }
+
+            if "allowed" in data: # fix: github.com/fmfn/BayesianOptimization/issues/361
+                data["allowed"] = bool(data["allowed"])
 
             with open(self._path, "a") as f:
                 f.write(json.dumps(data) + "\n")

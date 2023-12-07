@@ -1,3 +1,5 @@
+from typing import Optional, Union, List
+
 import numpy as np
 from .target_space import TargetSpace
 
@@ -17,7 +19,7 @@ class DomainTransformer():
 
 class SequentialDomainReductionTransformer(DomainTransformer):
     """
-    A sequential domain reduction transformer bassed on the work by Stander, N. and Craig, K:
+    A sequential domain reduction transformer based on the work by Stander, N. and Craig, K:
     "On the robustness of a simple domain reduction scheme for simulation‐based optimization"
     """
 
@@ -25,17 +27,25 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         self,
         gamma_osc: float = 0.7,
         gamma_pan: float = 1.0,
-        eta: float = 0.9
+        eta: float = 0.9,
+        minimum_window: Optional[Union[List[float], float]] = 0.0
     ) -> None:
         self.gamma_osc = gamma_osc
         self.gamma_pan = gamma_pan
         self.eta = eta
-        pass
+        self.minimum_window_value = minimum_window
 
     def initialize(self, target_space: TargetSpace) -> None:
         """Initialize all of the parameters"""
         self.original_bounds = np.copy(target_space.bounds)
         self.bounds = [self.original_bounds]
+
+        # Set the minimum window to an array of length bounds
+        if isinstance(self.minimum_window_value, list) or isinstance(self.minimum_window_value, np.ndarray):
+            assert len(self.minimum_window_value) == len(target_space.bounds)
+            self.minimum_window = self.minimum_window_value
+        else:
+            self.minimum_window = [self.minimum_window_value] * len(target_space.bounds)
 
         self.previous_optimal = np.mean(target_space.bounds, axis=1)
         self.current_optimal = np.mean(target_space.bounds, axis=1)
@@ -57,6 +67,9 @@ class SequentialDomainReductionTransformer(DomainTransformer):
             np.abs(self.current_d) * (self.gamma - self.eta)
 
         self.r = self.contraction_rate * self.r
+
+        # check if the minimum window fits in the original bounds
+        self._window_bounds_compatibility(self.original_bounds)
 
     def _update(self, target_space: TargetSpace) -> None:
 
@@ -89,8 +102,32 @@ class SequentialDomainReductionTransformer(DomainTransformer):
                 variable[0] = global_bounds[i, 0]
             if variable[1] > global_bounds[i, 1]:
                 variable[1] = global_bounds[i, 1]
-
+        for i, entry in enumerate(new_bounds):
+            if entry[0] > entry[1]:
+                new_bounds[i, 0] = entry[1]
+                new_bounds[i, 1] = entry[0]
+            window_width = abs(entry[0] - entry[1])
+            if window_width < self.minimum_window[i]:
+                dw = (self.minimum_window[i] - window_width) / 2.0
+                left_expansion_space = abs(global_bounds[i, 0] - entry[0]) # should be non-positive
+                right_expansion_space = abs(global_bounds[i, 1] - entry[1]) # should be non-negative
+                # conservative
+                dw_l = min(dw, left_expansion_space)
+                dw_r = min(dw, right_expansion_space)
+                # this crawls towards the edge
+                ddw_r = dw_r + max(dw - dw_l, 0)
+                ddw_l = dw_l + max(dw - dw_r, 0)
+                new_bounds[i, 0] -= ddw_l
+                new_bounds[i, 1] += ddw_r
         return new_bounds
+
+    def _window_bounds_compatibility(self, global_bounds: np.array) -> bool:
+        """Checks if global bounds are compatible with the minimum window sizes."""
+        for i, entry in enumerate(global_bounds):
+            global_window_width = abs(entry[1] - entry[0])
+            if global_window_width < self.minimum_window[i]:
+                raise ValueError(
+                    "Global bounds are not compatible with the minimum window size.")
 
     def _create_bounds(self, parameters: dict, bounds: np.array) -> dict:
         return {param: bounds[i, :] for i, param in enumerate(parameters)}

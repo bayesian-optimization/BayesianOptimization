@@ -4,6 +4,9 @@ from bayes_opt import UtilityFunction
 from bayes_opt import BayesianOptimization
 from bayes_opt.logger import ScreenLogger
 from bayes_opt.event import Events, DEFAULT_EVENTS
+from bayes_opt.util import NotUniqueError
+import pickle
+import os
 
 
 def target_func(**kwargs):
@@ -26,9 +29,9 @@ def test_register():
     assert len(optimizer.res) == 2
     assert len(optimizer.space) == 2
 
-    with pytest.raises(KeyError):
+    with pytest.raises(NotUniqueError):
         optimizer.register(params={"p1": 1, "p2": 2}, target=3)
-    with pytest.raises(KeyError):
+    with pytest.raises(NotUniqueError):
         optimizer.register(params={"p1": 5, "p2": 4}, target=9)
 
 
@@ -49,7 +52,7 @@ def test_probe_lazy():
 
 
 def test_probe_eager():
-    optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
+    optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1, allow_duplicate_points=True)
 
     optimizer.probe(params={"p1": 1, "p2": 2}, lazy=False)
     assert len(optimizer.space) == 1
@@ -64,7 +67,7 @@ def test_probe_eager():
     assert optimizer.max["params"] == {"p1": 3, "p2": 3}
 
     optimizer.probe(params={"p1": 3, "p2": 3}, lazy=False)
-    assert len(optimizer.space) == 2
+    assert len(optimizer.space) == 3
     assert len(optimizer._queue) == 0
     assert optimizer.max["target"] == 6
     assert optimizer.max["params"] == {"p1": 3, "p2": 3}
@@ -177,7 +180,7 @@ def test_prime_subscriptions():
         optimizer._events[Events.OPTIMIZATION_START].values()
     ])
 
-    # Check that prime subscriptions won't overight manual subscriptions
+    # Check that prime subscriptions won't overwrite manual subscriptions
     optimizer._prime_subscriptions()
     assert all([
         k == test_subscriber for k in
@@ -250,7 +253,8 @@ def test_maximize():
             self.__init__()
 
     optimizer = BayesianOptimization(target_func, PBOUNDS,
-                                     random_state=np.random.RandomState(1))
+                                     random_state=np.random.RandomState(1),
+                                     allow_duplicate_points=True)
 
     tracker = Tracker()
     optimizer.subscribe(
@@ -276,7 +280,9 @@ def test_maximize():
     assert tracker.step_count == 1
     assert tracker.end_count == 1
 
-    optimizer.maximize(init_points=2, n_iter=0, alpha=1e-2)
+    optimizer.set_gp_params(alpha=1e-2)
+    acquisition_function = UtilityFunction()
+    optimizer.maximize(init_points=2, n_iter=0, acquisition_function=acquisition_function)
     assert optimizer._queue.empty
     assert len(optimizer.space) == 3
     assert optimizer._gp.alpha == 1e-2
@@ -297,6 +303,85 @@ def test_define_wrong_transformer():
         optimizer = BayesianOptimization(target_func, PBOUNDS,
                                          random_state=np.random.RandomState(1),
                                          bounds_transformer=3)
+
+
+def test_single_value_objective():
+    """
+    As documented [here](https://github.com/scipy/scipy/issues/16898)
+    scipy is changing the way they handle 1D objectives inside minimize.
+    This is a simple test to make sure our tests fail if scipy updates this
+    in future
+    """
+    pbounds = {'x': (-10, 10)}
+
+    optimizer = BayesianOptimization(
+        f=lambda x: x*3,
+        pbounds=pbounds,
+        verbose=2,
+        random_state=1,
+    )
+    optimizer.maximize(
+        init_points=2,
+        n_iter=3,
+    )
+
+
+def test_pickle():
+    """
+    several users have asked that the BO object be 'pickalable'
+    This tests that this is the case
+    """
+    optimizer = BayesianOptimization(
+        f=None,
+        pbounds={'x': (-10, 10)},
+        verbose=2,
+        random_state=1,
+    )
+    with open("test_dump.obj", "wb") as filehandler:
+        pickle.dump(optimizer, filehandler)
+    os.remove('test_dump.obj')
+
+
+def test_duplicate_points():
+    """
+    The default behavior of this code is to not enable duplicate points in the target space,
+    however there are situations in which you may want this, particularly optimization in high
+    noise situations. In that case one can set allow_duplicate_points to be True.
+    This tests the behavior of the code around duplicate points under several scenarios
+    """
+    # test manual registration of duplicate points (should generate error)
+    optimizer = BayesianOptimization(f=None, pbounds={'x': (-2, 2)}, random_state=1)
+    utility = UtilityFunction(kind="ucb", kappa=5, xi=1)  # kappa determines explore/Exploitation ratio
+    next_point_to_probe = optimizer.suggest(utility)
+    target = 1
+    # register once (should work)
+    optimizer.register(
+        params=next_point_to_probe,
+        target=target,
+    )
+    # register twice (should throw error)
+    try:
+        optimizer.register(
+            params=next_point_to_probe,
+            target=target,
+        )
+        duplicate_point_error = None  # should be overwritten below
+    except Exception as e:
+        duplicate_point_error = e
+
+    assert isinstance(duplicate_point_error, NotUniqueError)
+
+    # OK, now let's test that it DOESNT fail when allow_duplicate_points=True
+    optimizer = BayesianOptimization(f=None, pbounds={'x': (-2, 2)}, random_state=1, allow_duplicate_points=True)
+    optimizer.register(
+        params=next_point_to_probe,
+        target=target,
+    )
+    # and again (should throw warning)
+    optimizer.register(
+        params=next_point_to_probe,
+        target=target,
+    )
 
 
 if __name__ == '__main__':

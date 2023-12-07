@@ -23,10 +23,14 @@ class _Tracker(object):
     def _update_tracker(self, event, instance):
         if event == Events.OPTIMIZATION_STEP:
             self._iterations += 1
+            
+            if instance.max is None:
+                return
 
             current_max = instance.max
-            if (self._previous_max is None or
-                current_max["target"] > self._previous_max):
+
+            if (self._previous_max is None
+                    or current_max["target"] > self._previous_max):
                 self._previous_max = current_max["target"]
                 self._previous_max_params = current_max["params"]
 

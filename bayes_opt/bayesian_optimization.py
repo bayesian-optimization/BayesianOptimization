@@ -1,5 +1,7 @@
 import warnings
 
+from bayes_opt.constraint import ConstraintModel
+
 from .target_space import TargetSpace
 from .event import Events, DEFAULT_EVENTS
 from .logger import _get_default_logger
@@ -27,9 +29,6 @@ class Queue:
         self._queue = self._queue[1:]
         return obj
 
-    def next(self):
-        return self.__next__()
-
     def add(self, obj):
         """Add object to end of queue."""
         self._queue.append(obj)
@@ -41,6 +40,7 @@ class Observable(object):
     Inspired/Taken from
         https://www.protechtraining.com/blog/post/879#simple-observer
     """
+
     def __init__(self, events):
         # maps event names to subscribers
         # str -> dict
@@ -77,9 +77,12 @@ class BayesianOptimization(Observable):
         Dictionary with parameters names as keys and a tuple with minimum
         and maximum values.
 
+    constraint: A ConstraintModel. Note that the names of arguments of the
+        constraint function and of f need to be the same.
+
     random_state: int or numpy.random.RandomState, optional(default=None)
         If the value is an integer, it is used as the seed for creating a
-        numpy.random.RandomState. Otherwise the random state provieded it is used.
+        numpy.random.RandomState. Otherwise the random state provided is used.
         When set to None, an unseeded random state is generated.
 
     verbose: int, optional(default=2)
@@ -87,6 +90,12 @@ class BayesianOptimization(Observable):
 
     bounds_transformer: DomainTransformer, optional(default=None)
         If provided, the transformation is applied to the bounds.
+
+    allow_duplicate_points: bool, optional (default=False)
+        If True, the optimizer will allow duplicate points to be registered.
+        This behavior may be desired in high noise situations where repeatedly probing
+        the same point will give different answers. In other situations, the acquisition
+        may occasionally generate a duplicate point.
 
     Methods
     -------
@@ -101,14 +110,17 @@ class BayesianOptimization(Observable):
     set_bounds()
         Allows changing the lower and upper searching bounds
     """
-    def __init__(self, f, pbounds, random_state=None, verbose=2,
-                 bounds_transformer=None):
+
+    def __init__(self,
+                 f,
+                 pbounds,
+                 constraint=None,
+                 random_state=None,
+                 verbose=2,
+                 bounds_transformer=None,
+                 allow_duplicate_points=False):
         self._random_state = ensure_rng(random_state)
-
-        # Data structure containing the function to be optimized, the bounds of
-        # its domain, and a record of the evaluations we have done so far
-        self._space = TargetSpace(f, pbounds, random_state)
-
+        self._allow_duplicate_points = allow_duplicate_points
         self._queue = Queue()
 
         # Internal GP regressor
@@ -119,6 +131,29 @@ class BayesianOptimization(Observable):
             n_restarts_optimizer=5,
             random_state=self._random_state,
         )
+
+        if constraint is None:
+            # Data structure containing the function to be optimized, the
+            # bounds of its domain, and a record of the evaluations we have
+            # done so far
+            self._space = TargetSpace(f, pbounds, random_state=random_state,
+                                      allow_duplicate_points=self._allow_duplicate_points)
+            self.is_constrained = False
+        else:
+            constraint_ = ConstraintModel(
+                constraint.fun,
+                constraint.lb,
+                constraint.ub,
+                random_state=random_state
+            )
+            self._space = TargetSpace(
+                f,
+                pbounds,
+                constraint=constraint_,
+                random_state=random_state,
+                allow_duplicate_points=self._allow_duplicate_points
+            )
+            self.is_constrained = True
 
         self._verbose = verbose
         self._bounds_transformer = bounds_transformer
@@ -136,6 +171,12 @@ class BayesianOptimization(Observable):
         return self._space
 
     @property
+    def constraint(self):
+        if self.is_constrained:
+            return self._space.constraint
+        return None
+
+    @property
     def max(self):
         return self._space.max()
 
@@ -143,9 +184,9 @@ class BayesianOptimization(Observable):
     def res(self):
         return self._space.res()
 
-    def register(self, params, target):
+    def register(self, params, target, constraint_value=None):
         """Expect observation with known target"""
-        self._space.register(params, target)
+        self._space.register(params, target, constraint_value)
         self.dispatch(Events.OPTIMIZATION_STEP)
 
     def probe(self, params, lazy=True):
@@ -161,6 +202,7 @@ class BayesianOptimization(Observable):
             If True, the optimizer will evaluate the points when calling
             maximize(). Otherwise it will evaluate it at the moment.
         """
+
         if lazy:
             self._queue.add(params)
         else:
@@ -177,16 +219,18 @@ class BayesianOptimization(Observable):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             self._gp.fit(self._space.params, self._space.target)
+            if self.is_constrained:
+                self.constraint.fit(self._space.params,
+                                    self._space._constraint_values)
 
         # Finding argmax of the acquisition function.
-        suggestion = acq_max(
-            ac=utility_function.utility,
-            gp=self._gp,
-            y_max=self._space.target.max(),
-            bounds=self._space.bounds,
-            random_state=self._random_state,
-            y_max_params=self.space.params[self.space.target.argmax()]
-        )
+        suggestion = acq_max(ac=utility_function.utility,
+                             gp=self._gp,
+                             constraint=self.constraint,
+                             y_max=self._space._target_max(),
+                             bounds=self._space.bounds,
+                             random_state=self._random_state,,
+                             y_max_params=self._space.params[self._space.target.argmax())
 
         return self._space.array_to_params(suggestion)
 
@@ -200,7 +244,7 @@ class BayesianOptimization(Observable):
 
     def _prime_subscriptions(self):
         if not any([len(subs) for subs in self._events.values()]):
-            _logger = _get_default_logger(self._verbose)
+            _logger = _get_default_logger(self._verbose, self.is_constrained)
             self.subscribe(Events.OPTIMIZATION_START, _logger)
             self.subscribe(Events.OPTIMIZATION_STEP, _logger)
             self.subscribe(Events.OPTIMIZATION_END, _logger)
@@ -208,12 +252,14 @@ class BayesianOptimization(Observable):
     def maximize(self,
                  init_points=5,
                  n_iter=25,
-                 acq='ucb',
-                 kappa=2.576,
-                 kappa_decay=1,
-                 kappa_decay_delay=0,
-                 xi=0.0,
+                 acquisition_function=None,
+                 acq=None,
+                 kappa=None,
+                 kappa_decay=None,
+                 kappa_decay_delay=None,
+                 xi=None,
                  **gp_params):
+
         """
         Probes the target space to find the parameters that yield the maximum
         value for the given function.
@@ -228,38 +274,33 @@ class BayesianOptimization(Observable):
             Number of iterations where the method attempts to find the maximum
             value.
 
-        acq: {'ucb', 'ei', 'poi'}
-            The acquisition method used.
-                * 'ucb' stands for the Upper Confidence Bounds method
-                * 'ei' is the Expected Improvement method
-                * 'poi' is the Probability Of Improvement criterion.
+        acquisition_function: object, optional
+            An instance of bayes_opt.util.UtilityFunction.
+            If nothing is passed, a default using ucb is used
 
-        kappa: float, optional(default=2.576)
-            Parameter to indicate how closed are the next parameters sampled.
-                Higher value = favors spaces that are least explored.
-                Lower value = favors spaces where the regression function is the
-                highest.
-
-        kappa_decay: float, optional(default=1)
-            `kappa` is multiplied by this factor every iteration.
-
-        kappa_decay_delay: int, optional(default=0)
-            Number of iterations that must have passed before applying the decay
-            to `kappa`.
-
-        xi: float, optional(default=0.0)
-            [unused]
+        All other parameters are unused, and are only available to ensure backwards compatibility - these
+        will be removed in a future release
         """
         self._prime_subscriptions()
         self.dispatch(Events.OPTIMIZATION_START)
         self._prime_queue(init_points)
-        self.set_gp_params(**gp_params)
 
-        util = UtilityFunction(kind=acq,
-                               kappa=kappa,
-                               xi=xi,
-                               kappa_decay=kappa_decay,
-                               kappa_decay_delay=kappa_decay_delay)
+        old_params_used = any([param is not None for param in [acq, kappa, kappa_decay, kappa_decay_delay, xi]])
+        if old_params_used or gp_params:
+            raise Exception('\nPassing acquisition function parameters or gaussian process parameters to maximize'
+                                     '\nis no longer supported. Instead,please use the "set_gp_params" method to set'
+                                     '\n the gp params, and pass an instance of bayes_opt.util.UtilityFunction'
+                                     '\n using the acquisition_function argument\n')
+
+        if acquisition_function is None:
+            util = UtilityFunction(kind='ucb',
+                                   kappa=2.576,
+                                   xi=0.0,
+                                   kappa_decay=1,
+                                   kappa_decay_delay=0)
+        else:
+            util = acquisition_function
+
         iteration = 0
         while not self._queue.empty or iteration < n_iter:
             try:
@@ -268,10 +309,11 @@ class BayesianOptimization(Observable):
                 util.update_params()
                 x_probe = self.suggest(util)
                 iteration += 1
-
             self.probe(x_probe, lazy=False)
 
-            if self._bounds_transformer:
+            if self._bounds_transformer and iteration > 0:
+                # The bounds transformer should only modify the bounds after
+                # the init_points points (only for the true iterations)
                 self.set_bounds(
                     self._bounds_transformer.transform(self._space))
 

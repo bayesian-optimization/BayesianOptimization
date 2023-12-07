@@ -1,6 +1,8 @@
 import pytest
 import numpy as np
+from bayes_opt.constraint import ConstraintModel
 from bayes_opt.target_space import TargetSpace
+from bayes_opt.util import NotUniqueError
 
 
 def target_func(**kwargs):
@@ -87,14 +89,37 @@ def test_register():
     assert all(space.params[1] == np.array([5, 4]))
     assert all(space.target == np.array([3, 9]))
 
-    with pytest.raises(KeyError):
+    with pytest.raises(NotUniqueError):
         space.register(params={"p1": 1, "p2": 2}, target=3)
-    with pytest.raises(KeyError):
+    with pytest.raises(NotUniqueError):
         space.register(params={"p1": 5, "p2": 4}, target=9)
 
 
+def test_register_with_constraint():
+    constraint = ConstraintModel(lambda x: x, -2, 2)
+    space = TargetSpace(target_func, PBOUNDS, constraint=constraint)
+
+    assert len(space) == 0
+    # registering with dict
+    space.register(params={"p1": 1, "p2": 2}, target=3, constraint_value=0.)
+    assert len(space) == 1
+    assert all(space.params[0] == np.array([1, 2]))
+    assert all(space.target == np.array([3]))
+    assert all(space.constraint_values == np.array([0]))
+
+    # registering with array
+    space.register(params={"p1": 5, "p2": 4}, target=9, constraint_value=2)
+    assert len(space) == 2
+    assert all(space.params[1] == np.array([5, 4]))
+    assert all(space.target == np.array([3, 9]))
+    assert all(space.constraint_values == np.array([0, 2]))
+
+    with pytest.raises(ValueError):
+        space.register(params={"p1": 2, "p2": 2}, target=3)
+
+
 def test_probe():
-    space = TargetSpace(target_func, PBOUNDS)
+    space = TargetSpace(target_func, PBOUNDS, allow_duplicate_points=True)
 
     assert len(space) == 0
     # probing with dict
@@ -111,15 +136,15 @@ def test_probe():
 
     # probing same point with dict
     space.probe(params={"p1": 1, "p2": 2})
-    assert len(space) == 2
+    assert len(space) == 3
     assert all(space.params[1] == np.array([5, 4]))
-    assert all(space.target == np.array([3, 9]))
+    assert all(space.target == np.array([3, 9, 3]))
 
     # probing same point with array
     space.probe(np.array([5, 4]))
-    assert len(space) == 2
+    assert len(space) == 4
     assert all(space.params[1] == np.array([5, 4]))
-    assert all(space.target == np.array([3, 9]))
+    assert all(space.target == np.array([3, 9, 3 , 9]))
 
 
 def test_random_sample():
@@ -138,16 +163,57 @@ def test_random_sample():
         assert all(random_sample <= space.bounds[:, 1])
 
 
+def test_y_max():
+    space = TargetSpace(target_func, PBOUNDS)
+    assert space._target_max() == None
+    space.probe(params={"p1": 1, "p2": 2})
+    space.probe(params={"p1": 5, "p2": 1})
+    space.probe(params={"p1": 0, "p2": 1})
+    assert space._target_max() == 6
+
+def test_y_max_with_constraint():
+    constraint = ConstraintModel(lambda p1, p2: p1-p2, -2, 2)
+    space = TargetSpace(target_func, PBOUNDS, constraint)
+    assert space._target_max() == None
+    space.probe(params={"p1": 1, "p2": 2}) # Feasible
+    space.probe(params={"p1": 5, "p2": 1}) # Unfeasible
+    space.probe(params={"p1": 0, "p2": 1}) # Feasible
+    assert space._target_max() == 3
+
+
+
 def test_max():
     space = TargetSpace(target_func, PBOUNDS)
 
-    assert space.max() == {}
+    assert space.max() == None
     space.probe(params={"p1": 1, "p2": 2})
     space.probe(params={"p1": 5, "p2": 4})
     space.probe(params={"p1": 2, "p2": 3})
     space.probe(params={"p1": 1, "p2": 6})
     assert space.max() == {"params": {"p1": 5, "p2": 4}, "target": 9}
 
+def test_max_with_constraint():
+    constraint = ConstraintModel(lambda p1, p2: p1-p2, -2, 2)
+    space = TargetSpace(target_func, PBOUNDS, constraint=constraint)
+
+    assert space.max() == None
+    space.probe(params={"p1": 1, "p2": 2}) # Feasible
+    space.probe(params={"p1": 5, "p2": 8}) # Unfeasible
+    space.probe(params={"p1": 2, "p2": 3}) # Feasible
+    space.probe(params={"p1": 1, "p2": 6}) # Unfeasible
+    assert space.max() == {"params": {"p1": 2, "p2": 3}, "target": 5, "constraint": -1}
+
+def test_max_with_constraint_identical_target_value():
+    constraint = ConstraintModel(lambda p1, p2: p1-p2, -2, 2)
+    space = TargetSpace(target_func, PBOUNDS, constraint=constraint)
+
+    assert space.max() == None
+    space.probe(params={"p1": 1, "p2": 2}) # Feasible
+    space.probe(params={"p1": 0, "p2": 5}) # Unfeasible, target value is 5, should not be selected
+    space.probe(params={"p1": 5, "p2": 8}) # Unfeasible
+    space.probe(params={"p1": 2, "p2": 3}) # Feasible, target value is also 5
+    space.probe(params={"p1": 1, "p2": 6}) # Unfeasible
+    assert space.max() == {"params": {"p1": 2, "p2": 3}, "target": 5, "constraint": -1}
 
 def test_res():
     space = TargetSpace(target_func, PBOUNDS)
