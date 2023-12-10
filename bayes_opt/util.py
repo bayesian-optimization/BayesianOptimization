@@ -6,7 +6,7 @@ from scipy.stats import norm
 from scipy.optimize import minimize
 
 
-def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000, n_iter=10):
+def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000, n_iter=10, y_max_params=None):
     """Find the maximum of the acquisition function.
     
     It uses a combination of random sampling (cheap) and the 'L-BFGS-B'
@@ -43,6 +43,9 @@ def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000
 
     n_iter : int, default=10
         Points to run L-BFGS-B optimization from.
+
+    y_max_params : np.array
+        Function parameters that produced the maximum known value given by `y_max`.
 
     Returns
     -------
@@ -101,7 +104,14 @@ def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000
 
     # Explore the parameter space more thoroughly
     x_seeds = random_state.uniform(bounds[:, 0], bounds[:, 1],
-                                   size=(n_iter, bounds.shape[0]))
+                                   size=(1+n_iter+int(not y_max_params is None),
+                                   bounds.shape[0]))
+
+    x_seeds[0] = x_max
+    if not y_max_params is None:
+        # Add the provided best sample to the seeds so that the optimization
+        # algorithm is aware of it and will attempt to find its local maxima
+        x_seeds[1] = y_max_params
 
     for x_try in x_seeds:
         # Find the minimum of minus the acquisition function
