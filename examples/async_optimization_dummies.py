@@ -30,7 +30,7 @@ def optimize(
     )
 
     if ASYNC_METHOD == 'lie_max':
-        acquisition_function = acquisition.ConstantLier(acquisition_function, 'max')
+        acquisition_function = acquisition.ConstantLiar(acquisition_function, 'max')
     elif ASYNC_METHOD == 'believe':
         acquisition_function = acquisition.KrigingBeliever(acquisition_function)
 

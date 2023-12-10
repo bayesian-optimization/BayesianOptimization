@@ -186,7 +186,7 @@ class ExpectedImprovement(AcquisitionFunction):
                 self.xi = self.xi*self.exploration_decay
 
 
-class ConstantLier(AcquisitionFunction):
+class ConstantLiar(AcquisitionFunction):
     def __init__(self, base_acquisition: AcquisitionFunction, strategy='min', random_state=None):
         super().__init__(random_state)
         self.base_acquisition = base_acquisition
