@@ -279,14 +279,6 @@ class TargetSpace(object):
             data.T[col] = self.random_state.uniform(lower, upper, size=1)
         return data.ravel()
 
-    def _pbound_mask(self):
-        """
-        Returns a  1D boolean mask of points that are within the bounds of the space.
-        """
-
-        return np.all((self._bounds[:, 0] <= self._params) &
-                      (self._params <= self._bounds[:, 1]), axis=1)
-
     def _target_max(self):
         """Get maximum target value found.
         
