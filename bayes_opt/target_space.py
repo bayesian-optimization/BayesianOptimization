@@ -116,6 +116,22 @@ class TargetSpace(object):
         if self._constraint is not None:
             return self._constraint_values
 
+    @property
+    def mask(self):
+        mask = np.ones_like(self.target, dtype=bool)
+
+        # mask points that don't satisfy the constraint
+        if self._constraint is not None:
+            mask &= self._constraint.allowed(self._constraint_values)
+
+        # mask points that are outside the bounds
+        if self._bounds is not None:
+            within_bounds = np.all((self._bounds[:, 0] <= self._params) & 
+                    (self._params <= self._bounds[:, 1]), axis=1)
+            mask &= within_bounds
+
+        return mask
+
     def params_to_array(self, params):
         try:
             assert set(params) == set(self.keys)
@@ -180,7 +196,7 @@ class TargetSpace(object):
         0
         >>> x = np.array([0, 0])
         >>> y = 1
-        >>> space.add_observation(x, y)
+        >>> space.register(x, y)
         >>> len(space)
         1
         """
@@ -263,6 +279,14 @@ class TargetSpace(object):
             data.T[col] = self.random_state.uniform(lower, upper, size=1)
         return data.ravel()
 
+    def _pbound_mask(self):
+        """
+        Returns a  1D boolean mask of points that are within the bounds of the space.
+        """
+
+        return np.all((self._bounds[:, 0] <= self._params) &
+                      (self._params <= self._bounds[:, 1]), axis=1)
+
     def _target_max(self):
         """Get maximum target value found.
         
@@ -271,14 +295,10 @@ class TargetSpace(object):
         if len(self.target) == 0:
             return None
 
-        if self._constraint is None:
-            return self.target.max()
+        if len(self.target[self.mask]) == 0:
+            return None
 
-        allowed = self._constraint.allowed(self._constraint_values)
-        if allowed.any():
-            return self.target[allowed].max()
-
-        return None
+        return self.target[self.mask].max()
 
     def max(self):
         """Get maximum target value found and corresponding parameters.
@@ -286,24 +306,13 @@ class TargetSpace(object):
         If there is a constraint present, the maximum value that fulfills the
         constraint is returned."""
         target_max = self._target_max()
-
         if target_max is None:
             return None
 
-        if self._constraint is not None:
-            allowed = self._constraint.allowed(self._constraint_values)
-
-            target = self.target[allowed]
-            params = self.params[allowed]
-            constraint_values = self.constraint_values[allowed]
-        else:
-            target = self.target
-            params = self.params
-            constraint_values = self.constraint_values
+        target = self.target[self.mask]
+        params = self.params[self.mask]
+        target_max_idx = np.argmax(target)
         
-        target_max_idx = np.where(target == target_max)[0][0]
-        
-
         res = {
                 'target': target_max,
                 'params': dict(
@@ -312,6 +321,7 @@ class TargetSpace(object):
         }
 
         if self._constraint is not None:
+            constraint_values = self.constraint_values[self.mask]
             res['constraint'] = constraint_values[target_max_idx]
 
         return res

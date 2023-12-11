@@ -83,7 +83,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         self.previous_optimal = self.current_optimal
         self.previous_d = self.current_d
         
-        self.current_optimal = self._windowed_max(target_space)
+        self.current_optimal = target_space.params_to_array(target_space.max()['params'])
 
         self.current_d = 2.0 * (self.current_optimal -
                                 self.previous_optimal) / self.r
@@ -99,31 +99,6 @@ class SequentialDomainReductionTransformer(DomainTransformer):
             np.abs(self.current_d) * (self.gamma - self.eta)
 
         self.r = self.contraction_rate * self.r
-        
-    def _windowed_max(self, target_space: TargetSpace) -> np.array:
-        """Returns the parameters that produce the greatest target value within its bounds.
-        """
-        # extract the components we need from the target space
-        params = np.copy(target_space.params.T)
-        target = np.copy(target_space.target)
-        bounds = np.copy(target_space.bounds)
-        
-        # create a mask by checking each params against its bounds
-        mask = np.zeros_like(target)
-        for n, row in enumerate(params):
-            lower_bound = bounds[n, 0]
-            upper_bound = bounds[n, 1]
-            mask += (row <= lower_bound).astype(int)
-            mask += (row >= upper_bound).astype(int)
-        mask = mask<1
-
-        # apply the mask
-        params = params.T[mask]
-        targets = target[mask]
-
-        best_params = params[np.argmax(targets)]
-
-        return best_params
 
     def _trim(self, new_bounds: np.array, global_bounds: np.array) -> np.array:
         """
@@ -148,26 +123,36 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
         # Validate each parameter's bounds against the global_bounds
         for i, pbounds in enumerate(new_bounds):
-            # If the lower bound of the parameter is outside the global bounds, reset the lower bound
-            if (pbounds[0] < global_bounds[i, 0] or pbounds[0] > global_bounds[i, 1]):
+            # If the one of the bounds is outside the global bounds, reset the bound to the global bound
+            # This is expected to happen when the window is near the global bounds, no warning is issued
+            if (pbounds[0] < global_bounds[i, 0]):
+                pbounds[0] = global_bounds[i, 0]
+
+            if (pbounds[1] > global_bounds[i, 1]):
+                pbounds[1] = global_bounds[i, 1]
+
+            # If a lower bound is greater than the associated global upper bound, reset it to the global lower bound
+            if (pbounds[0] > global_bounds[i, 1]):
                 pbounds[0] = global_bounds[i, 0]
                 warn("""Domain Reduction Warning:
-                    A parameter's lower bound has exceeded its global limit.
-                    The offensive boundary has been reset, but be cautious of optimizer convergence.""")
+                    A parameter's lower bound is greater than the global upper bound.
+                    The offensive boundary has been reset.
+                    Be cautious of subsequent reductions.""")
 
-            # If the upper bound bound of the parameter is outside the global bounds, reset the lower bound
-            if (pbounds[1] > global_bounds[i, 1] or pbounds[1] < global_bounds[i, 0]):
+            # If an upper bound is less than the associated global lower bound, reset it to the global upper bound
+            if (pbounds[1] < global_bounds[i, 0]):
                 pbounds[1] = global_bounds[i, 1]
                 warn("""Domain reduction warning:
-                    A parameter's lower bound has exceeded its global limit.
-                    The offensive boundary has been reset, but be cautious of optimizer convergence.""")
+                    A parameter's upper bound is less than the global lower bound.
+                    The offensive boundary has been reset.
+                    Be cautious of subsequent reductions.""")
 
         # Adjust new_bounds to ensure they respect the minimum window width for each parameter
         for i, pbounds in enumerate(new_bounds):
             current_window_width = abs(pbounds[0] - pbounds[1])
 
             # If the window width is less than the minimum allowable width, adjust it
-            # Note that minimum_window < width of the global bounds one side always has more space than required
+            # Note that when minimum_window < width of the global bounds one side always has more space than required
             if current_window_width < self.minimum_window[i]:
                 width_deficit = (self.minimum_window[i] - current_window_width) / 2.0
                 available_left_space = abs(global_bounds[i, 0] - pbounds[0])
