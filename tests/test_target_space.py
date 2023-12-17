@@ -189,7 +189,6 @@ def test_y_max_within_pbounds():
     assert space._target_max() == 3
 
 
-
 def test_max():
     PBOUNDS = {'p1': (0, 10), 'p2': (1, 100)}
     space = TargetSpace(target_func, PBOUNDS)
