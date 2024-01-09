@@ -1,4 +1,5 @@
 import numpy as np
+from warnings import warn
 from .util import ensure_rng, NotUniqueError
 from .util import Colours
 
@@ -213,6 +214,11 @@ class TargetSpace(object):
             else:
                 raise NotUniqueError(f'Data point {x} is not unique. You can set "allow_duplicate_points=True" to '
                                      f'avoid this error')
+
+        # if x is not within the bounds of the parameter space, warn the user
+        if self._bounds is not None:
+            if not np.all((self._bounds[:, 0] <= x) & (x <= self._bounds[:, 1])):
+                warn(f'\nData point {x} is outside the bounds of the parameter space. ', stacklevel=2)
 
         self._params = np.concatenate([self._params, x.reshape(1, -1)])
         self._target = np.concatenate([self._target, [target]])

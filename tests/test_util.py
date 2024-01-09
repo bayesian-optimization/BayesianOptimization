@@ -132,7 +132,7 @@ def test_logs():
 
     optimizer = BayesianOptimization(
         f=f,
-        pbounds={"x": (-2, 2), "y": (-2, 2)}
+        pbounds={"x": (-200, 200), "y": (-200, 200)}
     )
     assert len(optimizer.space) == 0
 
@@ -150,6 +150,21 @@ def test_logs():
         load_logs(other_optimizer, [str(test_dir / "test_logs.log")])
 
 
+def test_logs_bounds():
+    def f(x, y):
+        return x + y
+
+    optimizer = BayesianOptimization(
+        f=f,
+        pbounds={"x": (-2, 2), "y": (-2, 2)}
+    )
+
+    with pytest.warns(UserWarning):
+        load_logs(optimizer, [str(test_dir / "test_logs_bounds.log")])
+    
+    assert len(optimizer.space) == 5
+
+
 def test_logs_constraint():
 
     def f(x, y):
@@ -162,7 +177,7 @@ def test_logs_constraint():
 
     optimizer = BayesianOptimization(
         f=f,
-        pbounds={"x": (-2, 2), "y": (-2, 2)},
+        pbounds={"x": (-200, 200), "y": (-200, 200)},
         constraint=constraint
     )
 
@@ -201,5 +216,4 @@ if __name__ == '__main__':
     CommandLine:
         python tests/test_target_space.py
     """
-    import pytest
     pytest.main([__file__])

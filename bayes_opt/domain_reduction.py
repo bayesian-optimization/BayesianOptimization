@@ -134,18 +134,18 @@ class SequentialDomainReductionTransformer(DomainTransformer):
             # If a lower bound is greater than the associated global upper bound, reset it to the global lower bound
             if (pbounds[0] > global_bounds[i, 1]):
                 pbounds[0] = global_bounds[i, 0]
-                warn("""Domain Reduction Warning:
-                    A parameter's lower bound is greater than the global upper bound.
-                    The offensive boundary has been reset.
-                    Be cautious of subsequent reductions.""")
+                warn("\nDomain Reduction Warning:\n"+
+                    "A parameter's lower bound is greater than the global upper bound."+
+                    "The offensive boundary has been reset."+
+                    "Be cautious of subsequent reductions.", stacklevel=2)
 
             # If an upper bound is less than the associated global lower bound, reset it to the global upper bound
             if (pbounds[1] < global_bounds[i, 0]):
                 pbounds[1] = global_bounds[i, 1]
-                warn("""Domain reduction warning:
-                    A parameter's upper bound is less than the global lower bound.
-                    The offensive boundary has been reset.
-                    Be cautious of subsequent reductions.""")
+                warn("\nDomain Reduction Warning:\n"+
+                    "A parameter's lower bound is greater than the global upper bound."+
+                    "The offensive boundary has been reset."+
+                    "Be cautious of subsequent reductions.", stacklevel=2)
 
         # Adjust new_bounds to ensure they respect the minimum window width for each parameter
         for i, pbounds in enumerate(new_bounds):

@@ -173,13 +173,15 @@ def test_trim_when_both_new_bounds_exceed_global_bounds():
 
     # test if both (upper/lower) bounds for a parameter exceed the global bounds
     new_bounds = np.array( [[-50, -20], [-10, 10]] )
-    trimmed_bounds = bounds_transformer._trim(new_bounds, global_bounds)
+    with pytest.warns(UserWarning):
+        trimmed_bounds = bounds_transformer._trim(new_bounds, global_bounds)
     assert verify_bounds_in_range(trimmed_bounds, global_bounds)
 
     # test if both (upper/lower) bounds for a parameter exceed the global bounds 
     # while they are out of order
     new_bounds = np.array( [[-20, -50], [-10, 10]] )
-    trimmed_bounds = bounds_transformer._trim(new_bounds, global_bounds)
+    with pytest.warns(UserWarning):
+        trimmed_bounds = bounds_transformer._trim(new_bounds, global_bounds)
     assert verify_bounds_in_range(trimmed_bounds, global_bounds)
 
 if __name__ == '__main__':
