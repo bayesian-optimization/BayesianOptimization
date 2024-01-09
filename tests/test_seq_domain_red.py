@@ -68,6 +68,7 @@ def test_bound_x_maximize():
     assert not (standard_optimizer._space.bounds ==
                 mutated_optimizer._space.bounds).any()
 
+
 def test_minimum_window_is_kept():
     bounds_transformer = SequentialDomainReductionTransformer(minimum_window=1.0)
     pbounds = {'x': (-0.5, 0.5), 'y': (-1.0, 0.0)}
@@ -105,6 +106,7 @@ def test_minimum_window_array_is_kept():
     )
     window_widths = np.diff(bounds_transformer.bounds)
     assert np.all(np.isclose(np.squeeze(np.min(window_widths, axis=0)), window_ranges))
+
 
 def test_trimming_bounds():
     """Test if the bounds are trimmed correctly within the bounds"""
@@ -144,6 +146,7 @@ def test_exceeded_bounds():
                 random_state=1,
                 bounds_transformer=bounds_transformer
             )
+
 
 def test_trim_when_both_new_bounds_exceed_global_bounds():
     """Test if the global bounds are respected when both new bounds for a given parameter

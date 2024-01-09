@@ -182,6 +182,7 @@ def test_y_max():
     space.probe(params={"p1": 0, "p2": 1})
     assert space._target_max() == 8
 
+
 def test_y_max_with_constraint():
     PBOUNDS = {'p1': (0, 10), 'p2': (1, 100)}
     constraint = ConstraintModel(lambda p1, p2: p1-p2, -2, 2)
@@ -191,6 +192,7 @@ def test_y_max_with_constraint():
     space.probe(params={"p1": 5, "p2": 1}) # Unfeasible
     space.probe(params={"p1": 0, "p2": 1}) # Feasible
     assert space._target_max() == 3
+
 
 def test_y_max_within_pbounds():
     PBOUNDS = {'p1': (0, 2), 'p2': (1, 100)}
@@ -214,6 +216,7 @@ def test_max():
     space.probe(params={"p1": 1, "p2": 6})
     assert space.max() == {"params": {"p1": 5, "p2": 4}, "target": 9}
 
+
 def test_max_with_constraint():
     PBOUNDS = {'p1': (0, 10), 'p2': (1, 100)}
     constraint = ConstraintModel(lambda p1, p2: p1-p2, -2, 2)
@@ -225,6 +228,7 @@ def test_max_with_constraint():
     space.probe(params={"p1": 2, "p2": 3}) # Feasible
     space.probe(params={"p1": 1, "p2": 6}) # Unfeasible
     assert space.max() == {"params": {"p1": 2, "p2": 3}, "target": 5, "constraint": -1}
+
 
 def test_max_with_constraint_identical_target_value():
     PBOUNDS = {'p1': (0, 10), 'p2': (1, 100)}
@@ -238,6 +242,7 @@ def test_max_with_constraint_identical_target_value():
     space.probe(params={"p1": 2, "p2": 3}) # Feasible, target value is also 5
     space.probe(params={"p1": 1, "p2": 6}) # Unfeasible
     assert space.max() == {"params": {"p1": 2, "p2": 3}, "target": 5, "constraint": -1}
+
 
 def test_res():
     PBOUNDS = {'p1': (0, 10), 'p2': (1, 100)}
