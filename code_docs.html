@@ -67,6 +67,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#target-space">Target Space</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#bayes_opt.target_space.TargetSpace"><code class="docutils literal notranslate"><span class="pre">TargetSpace</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bayes_opt.target_space.TargetSpace.mask"><code class="docutils literal notranslate"><span class="pre">TargetSpace.mask</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bayes_opt.target_space.TargetSpace.max"><code class="docutils literal notranslate"><span class="pre">TargetSpace.max()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bayes_opt.target_space.TargetSpace.probe"><code class="docutils literal notranslate"><span class="pre">TargetSpace.probe()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bayes_opt.target_space.TargetSpace.random_sample"><code class="docutils literal notranslate"><span class="pre">TargetSpace.random_sample()</span></code></a></li>
@@ -80,6 +81,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#domain-reduction">Domain reduction</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#bayes_opt.domain_reduction.SequentialDomainReductionTransformer"><code class="docutils literal notranslate"><span class="pre">SequentialDomainReductionTransformer</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#bayes_opt.domain_reduction.SequentialDomainReductionTransformer.initialize"><code class="docutils literal notranslate"><span class="pre">SequentialDomainReductionTransformer.initialize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bayes_opt.domain_reduction.SequentialDomainReductionTransformer.transform"><code class="docutils literal notranslate"><span class="pre">SequentialDomainReductionTransformer.transform()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -295,24 +297,43 @@ Allows for constant-time appends while ensuring no duplicates are added</p>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="k">return</span> <span class="n">p1</span> <span class="o">+</span> <span class="n">p2</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pbounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;p1&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;p2&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">space</span> <span class="o">=</span> <span class="n">TargetSpace</span><span class="p">(</span><span class="n">target_func</span><span class="p">,</span> <span class="n">pbounds</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">space</span><span class="o">.</span><span class="n">random_points</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">space</span><span class="o">.</span><span class="n">register_point</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_point</span><span class="p">()[</span><span class="s1">&#39;max_val&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">y</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">4</span> <span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">target_func</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">space</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span><span class="p">()[</span><span class="s1">&#39;target&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">9</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span><span class="p">()[</span><span class="s1">&#39;params&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;p1&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s1">&#39;p2&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">}</span>
 </pre></div>
 </div>
+<dl class="py property">
+<dt class="sig sig-object py" id="bayes_opt.target_space.TargetSpace.mask">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mask</span></span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.mask" title="Link to this definition"></a></dt>
+<dd><p>Returns a boolean array of the points that satisfy the constraint and boundary conditions</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="bayes_opt.target_space.TargetSpace.max">
 <span class="sig-name descname"><span class="pre">max</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.max" title="Link to this definition"></a></dt>
-<dd><p>Get maximum target value found and corresponding parameters.</p>
+<dd><p>Get the maximum target value within the current parameter bounds,
+and its associated parameters.</p>
 <p>If there is a constraint present, the maximum value that fulfills the
-constraint is returned.</p>
+constraint within the parameter bounds is returned.</p>
+<section id="returns">
+<h4>Returns<a class="headerlink" href="#returns" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>res: dict</dt><dd><p>A dictionary with the keys ‘target’ and ‘params’. The value of
+‘target’ is the maximum target value, and the value of ‘params’ is
+a dictionary with the parameter names as keys and the parameter
+values as values.</p>
+</dd>
+</dl>
+</section>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="bayes_opt.target_space.TargetSpace.probe">
 <span class="sig-name descname"><span class="pre">probe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.probe" title="Link to this definition"></a></dt>
-<dd><p>Evaluates a single point x, to obtain the value y and then records them
-as observations.</p>
+<dd><p>Evaluates a single point x, to obtain the value y and then registers the
+point and its evaluation.</p>
 <section id="notes">
 <h4>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h4>
 <p>If x has been previously seen returns a cached value of y.</p>
@@ -324,23 +345,10 @@ as observations.</p>
 </dd>
 </dl>
 </section>
-<section id="returns">
-<h4>Returns<a class="headerlink" href="#returns" title="Link to this heading"></a></h4>
-<dl class="simple">
-<dt>y<span class="classifier">float</span></dt><dd><p>target function value.</p>
-</dd>
-</dl>
-</section>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="bayes_opt.target_space.TargetSpace.random_sample">
-<span class="sig-name descname"><span class="pre">random_sample</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.random_sample" title="Link to this definition"></a></dt>
-<dd><p>Creates random points within the bounds of the space.</p>
 <section id="id5">
 <h4>Returns<a class="headerlink" href="#id5" title="Link to this heading"></a></h4>
 <dl class="simple">
-<dt>data: ndarray</dt><dd><p>[num x dim] array points with dimensions corresponding to <cite>self._keys</cite></p>
+<dt>y<span class="classifier">float</span></dt><dd><p>target function value.</p>
 </dd>
 </dl>
 </section>
@@ -348,8 +356,32 @@ as observations.</p>
 <h4>Example<a class="headerlink" href="#id6" title="Link to this heading"></a></h4>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">target_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">:</span> <span class="n">p1</span> <span class="o">+</span> <span class="n">p2</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pbounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;p1&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;p2&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">space</span> <span class="o">=</span> <span class="n">TargetSpace</span><span class="p">(</span><span class="n">target_func</span><span class="p">,</span> <span class="n">pbounds</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">space</span><span class="o">.</span><span class="n">probe</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span><span class="p">()[</span><span class="s1">&#39;target&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">6</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span><span class="p">()[</span><span class="s1">&#39;params&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;p1&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s1">&#39;p2&#39;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_opt.target_space.TargetSpace.random_sample">
+<span class="sig-name descname"><span class="pre">random_sample</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.random_sample" title="Link to this definition"></a></dt>
+<dd><p>Creates a random point within the bounds of the space.</p>
+<section id="id7">
+<h4>Returns<a class="headerlink" href="#id7" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>data: ndarray</dt><dd><p>[1 x dim] array with dimensions corresponding to <cite>self._keys</cite></p>
+</dd>
+</dl>
+</section>
+<section id="id8">
+<h4>Example<a class="headerlink" href="#id8" title="Link to this heading"></a></h4>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">target_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">:</span> <span class="n">p1</span> <span class="o">+</span> <span class="n">p2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pbounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;p1&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;p2&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">space</span> <span class="o">=</span> <span class="n">TargetSpace</span><span class="p">(</span><span class="n">target_func</span><span class="p">,</span> <span class="n">pbounds</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">space</span><span class="o">.</span><span class="n">random_points</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">space</span><span class="o">.</span><span class="n">random_sample</span><span class="p">()</span>
 <span class="go">array([[ 55.33253689,   0.54488318]])</span>
 </pre></div>
 </div>
@@ -360,8 +392,8 @@ as observations.</p>
 <dt class="sig sig-object py" id="bayes_opt.target_space.TargetSpace.register">
 <span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraint_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.register" title="Link to this definition"></a></dt>
 <dd><p>Append a point and its target value to the known data.</p>
-<section id="id7">
-<h4>Parameters<a class="headerlink" href="#id7" title="Link to this heading"></a></h4>
+<section id="id9">
+<h4>Parameters<a class="headerlink" href="#id9" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>x<span class="classifier">ndarray</span></dt><dd><p>a single point, with len(x) == self.dim</p>
 </dd>
@@ -376,19 +408,20 @@ as observations.</p>
 </dd>
 </dl>
 </section>
-<section id="id8">
-<h4>Notes<a class="headerlink" href="#id8" title="Link to this heading"></a></h4>
+<section id="id10">
+<h4>Notes<a class="headerlink" href="#id10" title="Link to this heading"></a></h4>
 <p>runs in amortized constant time</p>
 </section>
-<section id="id9">
-<h4>Example<a class="headerlink" href="#id9" title="Link to this heading"></a></h4>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pbounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;p1&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;p2&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">space</span> <span class="o">=</span> <span class="n">TargetSpace</span><span class="p">(</span><span class="k">lambda</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">:</span> <span class="n">p1</span> <span class="o">+</span> <span class="n">p2</span><span class="p">,</span> <span class="n">pbounds</span><span class="p">)</span>
+<section id="id11">
+<h4>Example<a class="headerlink" href="#id11" title="Link to this heading"></a></h4>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">target_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">:</span> <span class="n">p1</span> <span class="o">+</span> <span class="n">p2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pbounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;p1&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;p2&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">space</span> <span class="o">=</span> <span class="n">TargetSpace</span><span class="p">(</span><span class="n">target_func</span><span class="p">,</span> <span class="n">pbounds</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">)</span>
 <span class="go">0</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">space</span><span class="o">.</span><span class="n">add_observation</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">space</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">)</span>
 <span class="go">1</span>
 </pre></div>
@@ -400,14 +433,29 @@ as observations.</p>
 <dt class="sig sig-object py" id="bayes_opt.target_space.TargetSpace.res">
 <span class="sig-name descname"><span class="pre">res</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.res" title="Link to this definition"></a></dt>
 <dd><p>Get all target values and constraint fulfillment for all parameters.</p>
+<section id="id12">
+<h4>Returns<a class="headerlink" href="#id12" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>res: list</dt><dd><p>A list of dictionaries with the keys ‘target’, ‘params’, and
+‘constraint’. The value of ‘target’ is the target value, the value
+of ‘params’ is a dictionary with the parameter names as keys and the
+parameter values as values, and the value of ‘constraint’ is the
+constraint fulfillment.</p>
+</dd>
+</dl>
+</section>
+<section id="id13">
+<h4>Notes<a class="headerlink" href="#id13" title="Link to this heading"></a></h4>
+<p>Does not report if points are within the bounds of the parameter space.</p>
+</section>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="bayes_opt.target_space.TargetSpace.set_bounds">
 <span class="sig-name descname"><span class="pre">set_bounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_bounds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.set_bounds" title="Link to this definition"></a></dt>
 <dd><p>A method that allows changing the lower and upper searching bounds</p>
-<section id="id10">
-<h4>Parameters<a class="headerlink" href="#id10" title="Link to this heading"></a></h4>
+<section id="id14">
+<h4>Parameters<a class="headerlink" href="#id14" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>new_bounds<span class="classifier">dict</span></dt><dd><p>A dictionary with the parameter name and its new bounds</p>
 </dd>
@@ -429,7 +477,13 @@ as observations.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="bayes_opt.domain_reduction.SequentialDomainReductionTransformer.initialize">
 <span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_space</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#bayes_opt.target_space.TargetSpace" title="bayes_opt.target_space.TargetSpace"><span class="pre">TargetSpace</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#bayes_opt.domain_reduction.SequentialDomainReductionTransformer.initialize" title="Link to this definition"></a></dt>
-<dd><p>Initialize all of the parameters</p>
+<dd><p>Initialize all of the parameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_opt.domain_reduction.SequentialDomainReductionTransformer.transform">
+<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_space</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#bayes_opt.target_space.TargetSpace" title="bayes_opt.target_space.TargetSpace"><span class="pre">TargetSpace</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#bayes_opt.domain_reduction.SequentialDomainReductionTransformer.transform" title="Link to this definition"></a></dt>
+<dd><p>Reduces the bounds of the target space.</p>
 </dd></dl>
 
 </dd></dl>
@@ -443,8 +497,8 @@ as observations.</p>
 <dd><p>This class takes the function to optimize as well as the parameters bounds
 in order to find which values for the parameters yield the maximum value
 using bayesian optimization.</p>
-<section id="id11">
-<h3>Parameters<a class="headerlink" href="#id11" title="Link to this heading"></a></h3>
+<section id="id15">
+<h3>Parameters<a class="headerlink" href="#id15" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>fun: function</dt><dd><p>Constraint function. If multiple constraints are handled, this should
 return a numpy.ndarray of appropriate size.</p>
