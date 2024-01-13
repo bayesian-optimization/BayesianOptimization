@@ -68,6 +68,7 @@ def test_bound_x_maximize():
     assert not (standard_optimizer._space.bounds ==
                 mutated_optimizer._space.bounds).any()
 
+
 def test_minimum_window_is_kept():
     bounds_transformer = SequentialDomainReductionTransformer(minimum_window=1.0)
     pbounds = {'x': (-0.5, 0.5), 'y': (-1.0, 0.0)}
@@ -105,6 +106,7 @@ def test_minimum_window_array_is_kept():
     )
     window_widths = np.diff(bounds_transformer.bounds)
     assert np.all(np.isclose(np.squeeze(np.min(window_widths, axis=0)), window_ranges))
+
 
 def test_trimming_bounds():
     """Test if the bounds are trimmed correctly within the bounds"""
@@ -144,3 +146,50 @@ def test_exceeded_bounds():
                 random_state=1,
                 bounds_transformer=bounds_transformer
             )
+
+
+def test_trim_when_both_new_bounds_exceed_global_bounds():
+    """Test if the global bounds are respected when both new bounds for a given parameter
+    are beyond the global bounds."""
+
+    # initialize a bounds transformer
+    bounds_transformer = SequentialDomainReductionTransformer(minimum_window=10)
+    pbounds  = {'x': (-10, 10),'y': (-10, 10)}
+    target_sp = TargetSpace(target_func=black_box_function, pbounds=pbounds)
+    bounds_transformer.initialize(target_sp)
+    global_bounds = np.asarray(list(pbounds.values()))
+
+    def verify_bounds_in_range(new_bounds, global_bounds):
+        """Check if the new bounds are within the global bounds."""
+        test = True
+        for i, pbounds in enumerate(new_bounds):
+            if (pbounds[0] < global_bounds[i, 0] or pbounds[0] > global_bounds[i, 1]):
+                test = False
+            if (pbounds[1] > global_bounds[i, 1] or pbounds[1] < global_bounds[i, 0]):
+                test = False
+        return test
+
+    # test if the sorting of the bounds is correct
+    new_bounds = np.array( [[5, -5], [-10, 10]] )
+    trimmed_bounds = bounds_transformer._trim(new_bounds, global_bounds)
+    assert (trimmed_bounds == np.array( [[-5, 5], [-10, 10]] )).all()
+
+    # test if both (upper/lower) bounds for a parameter exceed the global bounds
+    new_bounds = np.array( [[-50, -20], [20, 50]] )
+    with pytest.warns(UserWarning):
+        trimmed_bounds = bounds_transformer._trim(new_bounds, global_bounds)
+    assert verify_bounds_in_range(trimmed_bounds, global_bounds)
+
+    # test if both (upper/lower) bounds for a parameter exceed the global bounds 
+    # while they are out of order
+    new_bounds = np.array( [[-20, -50], [-10, 10]] )
+    with pytest.warns(UserWarning):
+        trimmed_bounds = bounds_transformer._trim(new_bounds, global_bounds)
+    assert verify_bounds_in_range(trimmed_bounds, global_bounds)
+
+if __name__ == '__main__':
+    r"""
+    CommandLine:
+        python tests/test_seq_domain_red.py
+    """
+    pytest.main([__file__])
