@@ -1,4 +1,4 @@
-from typing import Optional, Union, List
+from typing import Optional, Union, List, Dict
 
 import numpy as np
 from .target_space import TargetSpace
@@ -29,12 +29,16 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         gamma_osc: float = 0.7,
         gamma_pan: float = 1.0,
         eta: float = 0.9,
-        minimum_window: Optional[Union[List[float], float]] = 0.0
+        minimum_window: Optional[Union[List[float], float, Dict[str, float]]] = 0.0
     ) -> None:
         self.gamma_osc = gamma_osc
         self.gamma_pan = gamma_pan
         self.eta = eta
-        self.minimum_window_value = minimum_window
+        if isinstance(minimum_window, dict):
+            self.minimum_window_value = [item[1] for item in sorted(minimum_window.items(), key=lambda x: x[0])]
+        else:
+            self.minimum_window_value = minimum_window
+            
 
     def initialize(self, target_space: TargetSpace) -> None:
         """Initialize all of the parameters.
