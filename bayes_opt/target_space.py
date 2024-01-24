@@ -205,6 +205,23 @@ class TargetSpace():
 
         return mask
 
+    @property
+    def mask(self):
+        '''Returns a boolean array of the points that satisfy the constraint and boundary conditions'''
+        mask = np.ones_like(self.target, dtype=bool)
+
+        # mask points that don't satisfy the constraint
+        if self._constraint is not None:
+            mask &= self._constraint.allowed(self._constraint_values)
+
+        # mask points that are outside the bounds
+        if self._bounds is not None:
+            within_bounds = np.all((self._bounds[:, 0] <= self._params) & 
+                    (self._params <= self._bounds[:, 1]), axis=1)
+            mask &= within_bounds
+
+        return mask
+
     def params_to_array(self, params):
         """Convert a dict representation of parameters into an array version.
 
@@ -308,6 +325,11 @@ class TargetSpace():
             else:
                 raise NotUniqueError(f'Data point {x} is not unique. You can set'
                                      ' "allow_duplicate_points=True" to avoid this error')
+
+        # if x is not within the bounds of the parameter space, warn the user
+        if self._bounds is not None:
+            if not np.all((self._bounds[:, 0] <= x) & (x <= self._bounds[:, 1])):
+                warn(f'\nData point {x} is outside the bounds of the parameter space. ', stacklevel=2)
 
         # if x is not within the bounds of the parameter space, warn the user
         if self._bounds is not None:
@@ -463,6 +485,7 @@ class TargetSpace():
         Does not report if points are within the bounds of the parameter space.
 
         """
+
         if self._constraint is None:
             params = [dict(zip(self.keys, p)) for p in self.params]
 

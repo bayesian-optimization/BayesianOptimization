@@ -187,6 +187,21 @@ def test_trim_when_both_new_bounds_exceed_global_bounds():
         trimmed_bounds = bounds_transformer._trim(new_bounds, global_bounds)
     assert verify_bounds_in_range(trimmed_bounds, global_bounds)
 
+
+def test_minimum_window_dict_ordering():
+    """Tests if dictionary input for minimum_window is reordered the same as pbounds"""
+    window_ranges = {'y': 1, 'x': 3,'w': 1e5}
+    bounds_transformer = SequentialDomainReductionTransformer(minimum_window=window_ranges)
+    pbounds = {'y': (-1, 1),'w':(-1e6,1e6), 'x': (-10, 10)}
+
+    _ = BayesianOptimization(
+            f=None,
+            pbounds=pbounds,
+            verbose=0,
+            random_state=1,
+            bounds_transformer=bounds_transformer
+        )
+
 if __name__ == '__main__':
     r"""
     CommandLine:
