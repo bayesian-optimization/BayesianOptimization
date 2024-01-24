@@ -1,3 +1,9 @@
+"""Implement domain transformation.
+
+In particular, this provides a base transformer class and a sequential domain
+reduction transformer as based on Stander and Craig's "On the robustness of a
+simple domain reduction scheme for simulation-based optimization"
+"""
 from typing import Optional, Union, List
 
 import numpy as np
@@ -6,22 +12,26 @@ from warnings import warn
 
 
 class DomainTransformer():
-    '''The base transformer class'''
+    """Base class."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
+        """To override with specific implementation."""
         pass
 
-    def initialize(self, target_space: TargetSpace):
+    def initialize(self, target_space: TargetSpace) -> None:
+        """To override with specific implementation."""
         raise NotImplementedError
 
-    def transform(self, target_space: TargetSpace):
+    def transform(self, target_space: TargetSpace) -> dict:
+        """To override with specific implementation."""
         raise NotImplementedError
 
 
 class SequentialDomainReductionTransformer(DomainTransformer):
-    """
+    """Reduce the searchable space.
+
     A sequential domain reduction transformer based on the work by Stander, N. and Craig, K:
-    "On the robustness of a simple domain reduction scheme for simulation‐based optimization"
+    "On the robustness of a simple domain reduction scheme for simulation-based optimization"
     """
 
     def __init__(
@@ -38,8 +48,12 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
     def initialize(self, target_space: TargetSpace) -> None:
         """Initialize all of the parameters.
+
+        Parameters
+        ----------
+        target_space : TargetSpace
+            TargetSpace this DomainTransformer operates on.
         """
-    
         # Set the original bounds
         self.original_bounds = np.copy(target_space.bounds)
         self.bounds = [self.original_bounds]
@@ -77,8 +91,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         self._window_bounds_compatibility(self.original_bounds)
 
     def _update(self, target_space: TargetSpace) -> None:
-        """ Updates contraction rate, window size, and window center.
-        """
+        """Update contraction rate, window size, and window center."""
         # setting the previous
         self.previous_optimal = self.current_optimal
         self.previous_d = self.current_d
@@ -104,20 +117,19 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         """
         Adjust the new_bounds and verify that they adhere to global_bounds and minimum_window.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         new_bounds : np.array
             The proposed new_bounds that (may) need adjustment.
 
         global_bounds : np.array
             The maximum allowable bounds for each parameter.
 
-        Returns:
-        --------
+        Returns
+        -------
         new_bounds : np.array
             The adjusted bounds after enforcing constraints.
         """
-
         #sort bounds
         new_bounds = np.sort(new_bounds)
 
@@ -177,8 +189,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         return new_bounds
 
     def _window_bounds_compatibility(self, global_bounds: np.array) -> bool:
-        """Checks if global bounds are compatible with the minimum window sizes.
-        """
+        """Check if global bounds are compatible with the minimum window sizes."""
         for i, entry in enumerate(global_bounds):
             global_window_width = abs(entry[1] - entry[0])
             if global_window_width < self.minimum_window[i]:
@@ -189,8 +200,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         return {param: bounds[i, :] for i, param in enumerate(parameters)}
 
     def transform(self, target_space: TargetSpace) -> dict:
-        """Reduces the bounds of the target space.
-        """
+        """Transform the bounds of the target space."""
         self._update(target_space)
 
         new_bounds = np.array(
