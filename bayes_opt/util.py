@@ -44,7 +44,7 @@ def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000
     n_iter : int, default=10
         Points to run L-BFGS-B optimization from.
 
-    :param y_max_params:
+    y_max_params : np.array
         Function parameters that produced the maximum known value given by `y_max`.
 
     Returns
@@ -106,8 +106,6 @@ def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000
     x_seeds = random_state.uniform(bounds[:, 0], bounds[:, 1],
                                    size=(1+n_iter+int(not y_max_params is None),
                                    bounds.shape[0]))
-    # Add the best candidate from the random sampling to the seeds so that the
-    # optimization algorithm can try to walk up to that particular local maxima
     x_seeds[0] = x_max
     if not y_max_params is None:
         # Add the provided best sample to the seeds so that the optimization
