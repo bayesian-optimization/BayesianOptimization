@@ -4,6 +4,7 @@ from .domain_reduction import SequentialDomainReductionTransformer
 from .util import UtilityFunction
 from .logger import ScreenLogger, JSONLogger
 from .constraint import ConstraintModel
+from .util import UtilityFunction
 
 __all__ = [
     "BayesianOptimization",
