@@ -42,7 +42,9 @@ extensions = [
     'sphinx.ext.githubpages',
     'nbsphinx',
     'IPython.sphinxext.ipython_console_highlighting',
-    'sphinx.ext.mathjax']
+    'sphinx.ext.mathjax',
+    'myst_parser',
+    'numpydoc']
 
 source_suffix = {
     '.rst': 'restructuredtext',
@@ -63,6 +65,7 @@ exclude_patterns = []
 # a list of builtin themes.
 #
 html_theme = 'sphinx_rtd_theme'
+html_favicon = 'func.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

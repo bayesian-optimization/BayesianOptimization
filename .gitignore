@@ -33,3 +33,5 @@ venv.bak/
 docs/*
 docsrc/.ipynb_checkpoints/*
 docsrc/*.ipynb
+docsrc/static/*
+docsrc/README.md

@@ -81,7 +81,7 @@ class ConstraintModel():
         Raises
         ------
         TypeError
-            If the kwargs keys don't match the function argument names.
+            If the kwargs' keys don't match the function argument names.
         """
         try:
             return self.fun(**kwargs)

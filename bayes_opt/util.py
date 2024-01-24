@@ -8,7 +8,7 @@ from scipy.optimize import minimize
 
 def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000, n_iter=10, y_max_params=None):
     """Find the maximum of the acquisition function.
-    
+
     It uses a combination of random sampling (cheap) and the 'L-BFGS-B'
     optimization method. First by sampling `n_warmup` (1e5) points at random,
     and then running L-BFGS-B from `n_iter` (10) random starting points.
@@ -106,7 +106,6 @@ def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000
     x_seeds = random_state.uniform(bounds[:, 0], bounds[:, 1],
                                    size=(1+n_iter+int(not y_max_params is None),
                                    bounds.shape[0]))
-
     x_seeds[0] = x_max
     if not y_max_params is None:
         # Add the provided best sample to the seeds so that the optimization

@@ -29,6 +29,8 @@ jobs:
           pip install nbsphinx
           pip install sphinx_rtd_theme
           pip install jupyter
+          pip install numpydoc
+          pip install myst-parser
       - name: Install package
         run: |
           pip install -e .
