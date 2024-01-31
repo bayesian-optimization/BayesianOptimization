@@ -117,21 +117,21 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
         self.r = self.contraction_rate * self.r
 
-    def _trim(self, new_bounds: np.array, global_bounds: np.array) -> np.array:
+    def _trim(self, new_bounds: np.ndarray, global_bounds: np.ndarray) -> np.ndarray:
         """
         Adjust the new_bounds and verify that they adhere to global_bounds and minimum_window.
 
         Parameters
         ----------
-        new_bounds : np.array
+        new_bounds : np.ndarray
             The proposed new_bounds that (may) need adjustment.
 
-        global_bounds : np.array
+        global_bounds : np.ndarray
             The maximum allowable bounds for each parameter.
 
         Returns
         -------
-        new_bounds : np.array
+        new_bounds : np.ndarray
             The adjusted bounds after enforcing constraints.
         """
         #sort bounds
@@ -192,7 +192,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
         return new_bounds
 
-    def _window_bounds_compatibility(self, global_bounds: np.array) -> bool:
+    def _window_bounds_compatibility(self, global_bounds: np.ndarray) -> bool:
         """Check if global bounds are compatible with the minimum window sizes."""
         for i, entry in enumerate(global_bounds):
             global_window_width = abs(entry[1] - entry[0])
@@ -200,7 +200,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
                 raise ValueError(
                     "Global bounds are not compatible with the minimum window size.")
 
-    def _create_bounds(self, parameters: dict, bounds: np.array) -> dict:
+    def _create_bounds(self, parameters: dict, bounds: np.ndarray) -> dict:
         return {param: bounds[i, :] for i, param in enumerate(parameters)}
 
     def transform(self, target_space: TargetSpace) -> dict:

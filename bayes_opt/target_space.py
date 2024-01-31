@@ -205,22 +205,6 @@ class TargetSpace():
 
         return mask
 
-    @property
-    def mask(self):
-        '''Returns a boolean array of the points that satisfy the constraint and boundary conditions'''
-        mask = np.ones_like(self.target, dtype=bool)
-
-        # mask points that don't satisfy the constraint
-        if self._constraint is not None:
-            mask &= self._constraint.allowed(self._constraint_values)
-
-        # mask points that are outside the bounds
-        if self._bounds is not None:
-            within_bounds = np.all((self._bounds[:, 0] <= self._params) & 
-                    (self._params <= self._bounds[:, 1]), axis=1)
-            mask &= within_bounds
-
-        return mask
 
     def params_to_array(self, params):
         """Convert a dict representation of parameters into an array version.
@@ -235,13 +219,11 @@ class TargetSpace():
         np.ndarray
             Representation of the parameters as dictionary.
         """
-        try:
-            assert set(params) == set(self.keys)
-        except AssertionError as e:
+        if not set(params) == set(self.keys):
             raise ValueError(
                 f"Parameters' keys ({sorted(params)}) do " +
                 f"not match the expected set of keys ({self.keys})."
-            ) from e
+            )
         return np.asarray([params[key] for key in self.keys])
 
     def array_to_params(self, x):
@@ -257,13 +239,11 @@ class TargetSpace():
         dict
             Representation of the parameters as dictionary.
         """
-        try:
-            assert len(x) == len(self.keys)
-        except AssertionError as e:
+        if not len(x) == len(self.keys):
             raise ValueError(
                 f"Size of array ({len(x)}) is different than the " +
                 f"expected number of parameters ({len(self.keys)})."
-            ) from e
+            )
         return dict(zip(self.keys, x))
 
     def _as_array(self, x):
@@ -273,13 +253,11 @@ class TargetSpace():
             x = self.params_to_array(x)
 
         x = x.ravel()
-        try:
-            assert x.size == self.dim
-        except AssertionError as e:
+        if not x.size == self.dim:
             raise ValueError(
                 f"Size of array ({len(x)}) is different than the " +
                 f"expected number of parameters ({len(self.keys)})."
-            ) from e
+            )
         return x
 
     def register(self, params, target, constraint_value=None):
@@ -485,7 +463,6 @@ class TargetSpace():
         Does not report if points are within the bounds of the parameter space.
 
         """
-
         if self._constraint is None:
             params = [dict(zip(self.keys, p)) for p in self.params]
 

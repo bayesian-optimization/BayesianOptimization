@@ -6,7 +6,7 @@ from scipy.stats import norm
 
 
 class ConstraintModel():
-    """Model constraints using GPRs.
+    """Model constraints using GP regressors.
 
     This class takes the function to optimize as well as the parameters bounds
     in order to find which values for the parameters yield the maximum value
@@ -65,7 +65,7 @@ class ConstraintModel():
         """Return GP regressors of the constraint function."""
         return self._model
 
-    def eval(self, **kwargs):
+    def eval(self, **kwargs: dict):
         """Evaluate the constraint function.
 
         Parameters
@@ -206,7 +206,7 @@ class ConstraintModel():
 
         Returns
         -------
-            np.ndarrray of shape (n_samples,)
+        np.ndarrray of shape (n_samples,)
             Specifying wheter the constraints are fulfilled.
 
         """
