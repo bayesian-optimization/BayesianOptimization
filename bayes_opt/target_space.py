@@ -400,7 +400,6 @@ class TargetSpace():
         -------
         max: float
             The maximum target value.
-        
         """
         if len(self.target) == 0:
             return None
@@ -423,7 +422,6 @@ class TargetSpace():
             'target' is the maximum target value, and the value of 'params' is
             a dictionary with the parameter names as keys and the parameter
             values as values.
-        
         """
         target_max = self._target_max()
         if target_max is None:
@@ -461,7 +459,6 @@ class TargetSpace():
         Notes
         -----
         Does not report if points are within the bounds of the parameter space.
-
         """
         if self._constraint is None:
             params = [dict(zip(self.keys, p)) for p in self.params]

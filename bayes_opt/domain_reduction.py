@@ -32,6 +32,20 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
     A sequential domain reduction transformer based on the work by Stander, N. and Craig, K:
     "On the robustness of a simple domain reduction scheme for simulation-based optimization"
+
+    Parameters
+    ----------
+    gamma_osc : float, default=0.7
+        Parameter used to scale (typically dampen) oscillations.
+
+    gamma_pan : float, default=1.0
+        Parameter used to scale (typically unitary) panning.
+
+    eta : float, default=0.9
+        Zooming parameter used to shrink the region of interest.
+
+    minimum_window : float or np.ndarray or dict, default=0.0
+        Minimum window size for each parameter. If a float is provided, the same value is used for all parameters.
     """
 
     def __init__(
@@ -95,7 +109,13 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         self._window_bounds_compatibility(self.original_bounds)
 
     def _update(self, target_space: TargetSpace) -> None:
-        """Update contraction rate, window size, and window center."""
+        """Update contraction rate, window size, and window center.
+        
+        Parameters
+        ----------
+        target_space : TargetSpace
+            TargetSpace this DomainTransformer operates on.
+        """
         # setting the previous
         self.previous_optimal = self.current_optimal
         self.previous_d = self.current_d
@@ -192,8 +212,19 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
         return new_bounds
 
-    def _window_bounds_compatibility(self, global_bounds: np.ndarray) -> bool:
-        """Check if global bounds are compatible with the minimum window sizes."""
+    def _window_bounds_compatibility(self, global_bounds: np.ndarray):
+        """Check if global bounds are compatible with the minimum window sizes.
+        
+        Parameters
+        ----------
+        global_bounds : np.ndarray
+            The maximum allowable bounds for each parameter.
+
+        Raises
+        ------
+        ValueError
+            If global bounds are not compatible with the minimum window size.
+        """
         for i, entry in enumerate(global_bounds):
             global_window_width = abs(entry[1] - entry[0])
             if global_window_width < self.minimum_window[i]:
@@ -201,10 +232,28 @@ class SequentialDomainReductionTransformer(DomainTransformer):
                     "Global bounds are not compatible with the minimum window size.")
 
     def _create_bounds(self, parameters: dict, bounds: np.ndarray) -> dict:
+        """Create a dictionary of bounds for each parameter.
+        
+        Parameters
+        ----------
+        parameters : dict
+            The parameters for which to create the bounds.
+        """
         return {param: bounds[i, :] for i, param in enumerate(parameters)}
 
     def transform(self, target_space: TargetSpace) -> dict:
-        """Transform the bounds of the target space."""
+        """Transform the bounds of the target space.
+        
+        Parameters
+        ----------
+        target_space : TargetSpace
+            TargetSpace this DomainTransformer operates on.
+        
+        Returns
+        -------
+        dict
+            The new bounds of each parameter.
+        """
         self._update(target_space)
 
         new_bounds = np.array(

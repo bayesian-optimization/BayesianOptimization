@@ -29,6 +29,13 @@ class ConstraintModel():
 
     random_state : np.random.RandomState or int or None, default=None
         Random state to use.
+
+    Notes
+    -----
+    In case of multiple constraints, this model assumes conditional
+    independence. This means that for each constraint, the probability of
+    fulfillment is the cdf of a univariate Gaussian. The overall probability
+    is a simply the product of the individual probabilities.
     """
 
     def __init__(self, fun, lb, ub, random_state=None):
