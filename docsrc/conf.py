@@ -43,8 +43,8 @@ extensions = [
     'nbsphinx',
     'IPython.sphinxext.ipython_console_highlighting',
     'sphinx.ext.mathjax',
-    'myst_parser',
-    'numpydoc']
+    'myst_parser'
+]
 
 source_suffix = {
     '.rst': 'restructuredtext',

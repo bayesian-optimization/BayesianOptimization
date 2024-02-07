@@ -73,11 +73,11 @@ class ConstraintModel():
         return self._model
 
     def eval(self, **kwargs: dict):
-        """Evaluate the constraint function.
+        r"""Evaluate the constraint function.
 
         Parameters
         ----------
-        **kwargs :
+        \*\*kwargs :
             Function arguments to evaluate the constraint function on.
 
 
