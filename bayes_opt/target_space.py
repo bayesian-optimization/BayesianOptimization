@@ -265,15 +265,18 @@ class TargetSpace():
 
         Parameters
         ----------
-        x : np.ndarray
+        params : np.ndarray
             a single point, with len(x) == self.dim.
 
-        y : float
+        target : float
             target function value
+
+        constraint_value : float or None
+            Constraint function value
 
         Raises
         ------
-        KeyError:
+        NotUniqueError:
             if the point is not unique
 
         Notes

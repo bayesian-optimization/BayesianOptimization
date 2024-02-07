@@ -36,6 +36,8 @@ def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000
         A random state to sample from.
 
     constraint : ConstraintModel or None, default=None
+        If provided, the acquisition function will be adjusted according
+        to the probability of fulfilling the constraint.
 
     n_warmup : int, default=10000
         Number of points to sample from the acquisition function as seeds

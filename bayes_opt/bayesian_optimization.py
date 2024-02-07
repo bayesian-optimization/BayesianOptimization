@@ -308,7 +308,7 @@ class BayesianOptimization(Observable):
                  kappa_decay_delay=None,
                  xi=None,
                  **gp_params):
-        """
+        r"""
         Maximize the given function over the target space.
 
         Parameters
@@ -325,8 +325,23 @@ class BayesianOptimization(Observable):
             An instance of bayes_opt.util.UtilityFunction.
             If nothing is passed, a default using ucb is used
 
-        All other parameters are unused, and are only available to ensure backwards compatibility - these
-        will be removed in a future release
+        acq:
+            Deprecated, unused and slated for deletion.
+
+        kappa:
+            Deprecated, unused and slated for deletion.
+
+        kappa_decay:
+            Deprecated, unused and slated for deletion.
+
+        kappa_decay_delay:
+            Deprecated, unused and slated for deletion.
+
+        xi:
+            Deprecated, unused and slated for deletion.
+
+        \*\*gp_params:
+            Deprecated, unused and slated for deletion.
         """
         self._prime_subscriptions()
         self.dispatch(Events.OPTIMIZATION_START)

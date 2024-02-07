@@ -238,6 +238,9 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         ----------
         parameters : dict
             The parameters for which to create the bounds.
+
+        bounds : np.ndarray
+            The bounds for each parameter.
         """
         return {param: bounds[i, :] for i, param in enumerate(parameters)}
 

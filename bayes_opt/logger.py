@@ -79,7 +79,7 @@ class ScreenLogger(_Tracker):
         Parameters
         ----------
         x : number
-            
+            Value to format.
 
         Returns
         -------
@@ -102,7 +102,7 @@ class ScreenLogger(_Tracker):
         Parameters
         ----------
         x : boolean
-            
+            Value to format.
 
         Returns
         -------
@@ -124,7 +124,7 @@ class ScreenLogger(_Tracker):
         Parameters
         ----------
         key : string
-            
+            Value to format.
 
         Returns
         -------
@@ -245,17 +245,18 @@ class JSONLogger(_Tracker):
     Logger that outputs steps in JSON format.
 
     The resulting file can be used to restart the optimization from an earlier state.
+
+    Parameters
+    ----------
+    path : str or bytes or os.PathLike
+        Path to the file to write to.
+
+    reset : bool
+        Whether to overwrite the file if it already exists.
+
     """
 
     def __init__(self, path, reset=True):
-        """
-        Initialize the logger.
-        
-        Parameters
-        ----------
-        path : str or bytes or os.PathLike
-
-        """
         self._path = path
         if reset:
             try:
