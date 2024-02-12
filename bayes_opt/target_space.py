@@ -333,7 +333,8 @@ class TargetSpace():
 
         Notes
         -----
-        If `params` has been previously seen returns a cached value of `y`.
+        If `params` has been previously seen and duplicate points are not allowed,
+        returns a cached value of `result`.
 
         Parameters
         ----------
@@ -342,8 +343,8 @@ class TargetSpace():
 
         Returns
         -------
-        y : float
-            target function value.
+        result : float | Tuple(float, float)
+            target function value, or Tuple(target function value, constraint value)
 
         Example
         -------
@@ -355,6 +356,10 @@ class TargetSpace():
         >>> assert self.max()['params'] == {'p1': 1.0, 'p2': 5.0}
         """
         x = self._as_array(params)
+        if x in self:
+            if not self._allow_duplicate_points:
+                return self._cache[_hashable(x.ravel())]
+
         params = dict(zip(self._keys, x))
         target = self.target_func(**params)
 
