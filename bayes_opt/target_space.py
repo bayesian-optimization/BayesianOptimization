@@ -217,7 +217,7 @@ class TargetSpace():
         Returns
         -------
         np.ndarray
-            Representation of the parameters as dictionary.
+            Representation of the parameters as an array.
         """
         if not set(params) == set(self.keys):
             raise ValueError(
