@@ -273,21 +273,6 @@ load_logs(new_optimizer, logs=["./logs.log"]);
 
 This introduction covered the most basic functionality of the package. Checkout the [basic-tour](http://bayesian-optimization.github.io/BayesianOptimization/basic-tour.html) and [advanced-tour](http://bayesian-optimization.github.io/BayesianOptimization/advanced-tour.html), where you will find detailed explanations and other more advanced functionality. Also, browse the [examples](http://bayesian-optimization.github.io/BayesianOptimization/examples.html) for implementation tips and ideas.
 
-## Installing from GitHub
-To install directly from master, simply run
-```
-pip install https://github.com/bayesian-optimization/BayesianOptimization/archive/master.zip
-```
-Please note that these builds are not necessarily stable.
-
-If you prefer, you can also clone the repository and run `setup.py`:
-```
-git clone https://github.com/bayesian-optimization/BayesianOptimization.git
-cd BayesianOptimization
-python setup.py install
-```
-    
-
 ## Minutiae
 
 ### Citation
@@ -330,11 +315,6 @@ For constrained optimization:
 }
 ```
 
-### Dependencies
-* Numpy
-* Scipy
-* Scikit-learn
- 
 ### References:
 * http://papers.nips.cc/paper/4522-practical-bayesian-optimization-of-machine-learning-algorithms.pdf
 * http://arxiv.org/pdf/1012.2599v1.pdf
