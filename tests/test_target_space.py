@@ -157,6 +157,19 @@ def test_probe():
     assert all(space.params[1] == np.array([5, 4]))
     assert all(space.target == np.array([3, 9, 3 , 9]))
 
+    space = TargetSpace(target_func, PBOUNDS, allow_duplicate_points=False)
+    
+    # register wrong target to check probe doesn't recompute a duplicate point
+    space.register(params={"p1": 1, "p2": 2}, target=5)
+
+    # probing same point with dict
+    target_ = space.probe(params={"p1": 1, "p2": 2})
+    assert target_ == 5
+
+    # probing same point with array
+    target_ = space.probe(np.array([1, 2]))
+    assert target_ == 5
+
 
 def test_random_sample():
     pbounds = {

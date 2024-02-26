@@ -1,3 +1,9 @@
+"""Implement domain transformation.
+
+In particular, this provides a base transformer class and a sequential domain
+reduction transformer as based on Stander and Craig's "On the robustness of a
+simple domain reduction scheme for simulation-based optimization"
+"""
 from typing import Optional, Union, List, Dict
 
 import numpy as np
@@ -6,22 +12,40 @@ from warnings import warn
 
 
 class DomainTransformer():
-    '''The base transformer class'''
+    """Base class."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
+        """To override with specific implementation."""
         pass
 
-    def initialize(self, target_space: TargetSpace):
+    def initialize(self, target_space: TargetSpace) -> None:
+        """To override with specific implementation."""
         raise NotImplementedError
 
-    def transform(self, target_space: TargetSpace):
+    def transform(self, target_space: TargetSpace) -> dict:
+        """To override with specific implementation."""
         raise NotImplementedError
 
 
 class SequentialDomainReductionTransformer(DomainTransformer):
-    """
+    """Reduce the searchable space.
+
     A sequential domain reduction transformer based on the work by Stander, N. and Craig, K:
-    "On the robustness of a simple domain reduction scheme for simulation‐based optimization"
+    "On the robustness of a simple domain reduction scheme for simulation-based optimization"
+
+    Parameters
+    ----------
+    gamma_osc : float, default=0.7
+        Parameter used to scale (typically dampen) oscillations.
+
+    gamma_pan : float, default=1.0
+        Parameter used to scale (typically unitary) panning.
+
+    eta : float, default=0.9
+        Zooming parameter used to shrink the region of interest.
+
+    minimum_window : float or np.ndarray or dict, default=0.0
+        Minimum window size for each parameter. If a float is provided, the same value is used for all parameters.
     """
 
     def __init__(
@@ -42,8 +66,12 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
     def initialize(self, target_space: TargetSpace) -> None:
         """Initialize all of the parameters.
+
+        Parameters
+        ----------
+        target_space : TargetSpace
+            TargetSpace this DomainTransformer operates on.
         """
-    
         # Set the original bounds
         self.original_bounds = np.copy(target_space.bounds)
         self.bounds = [self.original_bounds]
@@ -81,7 +109,12 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         self._window_bounds_compatibility(self.original_bounds)
 
     def _update(self, target_space: TargetSpace) -> None:
-        """ Updates contraction rate, window size, and window center.
+        """Update contraction rate, window size, and window center.
+        
+        Parameters
+        ----------
+        target_space : TargetSpace
+            TargetSpace this DomainTransformer operates on.
         """
         # setting the previous
         self.previous_optimal = self.current_optimal
@@ -104,24 +137,23 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
         self.r = self.contraction_rate * self.r
 
-    def _trim(self, new_bounds: np.array, global_bounds: np.array) -> np.array:
+    def _trim(self, new_bounds: np.ndarray, global_bounds: np.ndarray) -> np.ndarray:
         """
         Adjust the new_bounds and verify that they adhere to global_bounds and minimum_window.
 
-        Parameters:
-        -----------
-        new_bounds : np.array
+        Parameters
+        ----------
+        new_bounds : np.ndarray
             The proposed new_bounds that (may) need adjustment.
 
-        global_bounds : np.array
+        global_bounds : np.ndarray
             The maximum allowable bounds for each parameter.
 
-        Returns:
-        --------
-        new_bounds : np.array
+        Returns
+        -------
+        new_bounds : np.ndarray
             The adjusted bounds after enforcing constraints.
         """
-
         #sort bounds
         new_bounds = np.sort(new_bounds)
 
@@ -180,8 +212,18 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
         return new_bounds
 
-    def _window_bounds_compatibility(self, global_bounds: np.array) -> bool:
-        """Checks if global bounds are compatible with the minimum window sizes.
+    def _window_bounds_compatibility(self, global_bounds: np.ndarray):
+        """Check if global bounds are compatible with the minimum window sizes.
+        
+        Parameters
+        ----------
+        global_bounds : np.ndarray
+            The maximum allowable bounds for each parameter.
+
+        Raises
+        ------
+        ValueError
+            If global bounds are not compatible with the minimum window size.
         """
         for i, entry in enumerate(global_bounds):
             global_window_width = abs(entry[1] - entry[0])
@@ -189,11 +231,31 @@ class SequentialDomainReductionTransformer(DomainTransformer):
                 raise ValueError(
                     "Global bounds are not compatible with the minimum window size.")
 
-    def _create_bounds(self, parameters: dict, bounds: np.array) -> dict:
+    def _create_bounds(self, parameters: dict, bounds: np.ndarray) -> dict:
+        """Create a dictionary of bounds for each parameter.
+        
+        Parameters
+        ----------
+        parameters : dict
+            The parameters for which to create the bounds.
+
+        bounds : np.ndarray
+            The bounds for each parameter.
+        """
         return {param: bounds[i, :] for i, param in enumerate(parameters)}
 
     def transform(self, target_space: TargetSpace) -> dict:
-        """Reduces the bounds of the target space.
+        """Transform the bounds of the target space.
+        
+        Parameters
+        ----------
+        target_space : TargetSpace
+            TargetSpace this DomainTransformer operates on.
+        
+        Returns
+        -------
+        dict
+            The new bounds of each parameter.
         """
         self._update(target_space)
 
