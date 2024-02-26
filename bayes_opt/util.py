@@ -1,14 +1,13 @@
+"""Contains utility functions."""
+import json
 import warnings
 import numpy as np
 from scipy.stats import norm
 from scipy.optimize import minimize
-from colorama import just_fix_windows_console
-import json
 
 
 def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000, n_iter=10, y_max_params=None):
-    """
-    A function to find the maximum of the acquisition function
+    """Find the maximum of the acquisition function.
 
     It uses a combination of random sampling (cheap) and the 'L-BFGS-B'
     optimization method. First by sampling `n_warmup` (1e5) points at random,
@@ -16,43 +15,63 @@ def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000
 
     Parameters
     ----------
-    :param ac:
-        The acquisition function object that return its point-wise value.
+    ac : callable
+        Acquisition function to use. Should accept an array of parameters `x`,
+        an from sklearn.gaussian_process.GaussianProcessRegressor `gp` and the
+        best current value `y_max` as parameters.
+        
+    gp : sklearn.gaussian_process.GaussianProcessRegressor
+        A gaussian process regressor modelling the target function based on
+        previous observations.
+        
+    y_max : number
+        Highest found value of the target function.
 
-    :param gp:
-        A gaussian process fitted to the relevant data.
+    bounds : np.ndarray
+        Bounds of the search space. For `N` parameters this has shape
+        `(N, 2)` with `[i, 0]` the lower bound of parameter `i` and
+        `[i, 1]` the upper bound.
+        
+    random_state : np.random.RandomState
+        A random state to sample from.
 
-    :param y_max:
-        The current maximum known value of the target function.
+    constraint : ConstraintModel or None, default=None
+        If provided, the acquisition function will be adjusted according
+        to the probability of fulfilling the constraint.
 
-    :param bounds:
-        The variables bounds to limit the search of the acq max.
+    n_warmup : int, default=10000
+        Number of points to sample from the acquisition function as seeds
+        before looking for a minimum.
 
-    :param random_state:
-        instance of np.RandomState random number generator
+    n_iter : int, default=10
+        Points to run L-BFGS-B optimization from.
 
-    :param constraint:
-        A ConstraintModel.
-
-    :param n_warmup:
-        number of times to randomly sample the acquisition function
-
-    :param n_iter:
-        number of times to run scipy.minimize
+    y_max_params : np.array
+        Function parameters that produced the maximum known value given by `y_max`.
 
     :param y_max_params:
         Function parameters that produced the maximum known value given by `y_max`.
 
     Returns
     -------
-    :return: x_max, The arg max of the acquisition function.
-    """
+    Parameters maximizing the acquisition function.
 
+    """
     # We need to adjust the acquisition function to deal with constraints when there is some
     if constraint is not None:
         def adjusted_ac(x):
-            """Acquisition function adjusted to fulfill the constraint when necessary"""
+            """Acquisition function adjusted to fulfill the constraint when necessary.
 
+            Parameters
+            ----------
+            x : np.ndarray
+                Parameter at which to sample.
+
+
+            Returns
+            -------
+            The value of the acquisition function adjusted for constraints.
+            """
             # Transforms the problem in a minimization problem, this is necessary
             # because the solver we are using later on is a minimizer
             values = -ac(x.reshape(-1, bounds.shape[0]), gp=gp, y_max=y_max)
@@ -121,33 +140,33 @@ def acq_max(ac, gp, y_max, bounds, random_state, constraint=None, n_warmup=10000
     return np.clip(x_max, bounds[:, 0], bounds[:, 1])
 
 
-class UtilityFunction(object):
-    """
-    An object to compute the acquisition functions.
-
+class UtilityFunction():
+    """An object to compute the acquisition functions.
+    
+    Parameters
+    ----------
     kind: {'ucb', 'ei', 'poi'}
         * 'ucb' stands for the Upper Confidence Bounds method
         * 'ei' is the Expected Improvement method
         * 'poi' is the Probability Of Improvement criterion.
-
+    
     kappa: float, optional(default=2.576)
             Parameter to indicate how closed are the next parameters sampled.
             Higher value = favors spaces that are least explored.
             Lower value = favors spaces where the regression function is
             the highest.
-
+    
     kappa_decay: float, optional(default=1)
         `kappa` is multiplied by this factor every iteration.
-
+    
     kappa_decay_delay: int, optional(default=0)
         Number of iterations that must have passed before applying the
         decay to `kappa`.
-
+    
     xi: float, optional(default=0.0)
     """
 
     def __init__(self, kind='ucb', kappa=2.576, xi=0, kappa_decay=1, kappa_decay_delay=0):
-
         self.kappa = kappa
         self._kappa_decay = kappa_decay
         self._kappa_decay_delay = kappa_decay_delay
@@ -158,28 +177,81 @@ class UtilityFunction(object):
 
         if kind not in ['ucb', 'ei', 'poi']:
             err = "The utility function " \
-                  "{} has not been implemented, " \
-                  "please choose one of ucb, ei, or poi.".format(kind)
+                  f"{kind} has not been implemented, " \
+                  "please choose one of ucb, ei, or poi."
             raise NotImplementedError(err)
-        else:
-            self.kind = kind
+        self.kind = kind
 
     def update_params(self):
+        """Update internal parameters."""
         self._iters_counter += 1
 
         if self._kappa_decay < 1 and self._iters_counter > self._kappa_decay_delay:
             self.kappa *= self._kappa_decay
 
     def utility(self, x, gp, y_max):
+        """Calculate acquisition function.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            Parameters to evaluate the function at.
+
+        gp : sklearn.gaussian_process.GaussianProcessRegressor
+            A gaussian process regressor modelling the target function based on
+            previous observations.
+
+        y_max : number
+            Highest found value of the target function.
+
+
+        Returns
+        -------
+        Values of the acquisition function
+        """
         if self.kind == 'ucb':
-            return self._ucb(x, gp, self.kappa)
+            return self.ucb(x, gp, self.kappa)
         if self.kind == 'ei':
-            return self._ei(x, gp, y_max, self.xi)
+            return self.ei(x, gp, y_max, self.xi)
         if self.kind == 'poi':
-            return self._poi(x, gp, y_max, self.xi)
+            return self.poi(x, gp, y_max, self.xi)
+        raise ValueError(f"{self.kind} is not a valid acquisition function.")
 
     @staticmethod
-    def _ucb(x, gp, kappa):
+    def ucb(x, gp, kappa):
+        r"""Calculate Upper Confidence Bound acquisition function.
+
+        Similar to Probability of Improvement (`UtilityFunction.poi`), but also considers the
+        magnitude of improvement.
+        Calculated as
+    
+        .. math::
+            \text{UCB}(x) = \mu(x) + \kappa \sigma(x)
+
+        where :math:`\Phi` is the CDF and :math:`\phi` the PDF of the normal
+        distribution.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            Parameters to evaluate the function at.
+
+        gp : sklearn.gaussian_process.GaussianProcessRegressor
+            A gaussian process regressor modelling the target function based on
+            previous observations.
+
+        y_max : number
+            Highest found value of the target function.
+
+        kappa : float, positive
+            Governs the exploration/exploitation tradeoff. Lower prefers
+            exploitation, higher prefers exploration.
+
+
+        Returns
+        -------
+        Values of the acquisition function
+        """
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             mean, std = gp.predict(x, return_std=True)
@@ -187,17 +259,82 @@ class UtilityFunction(object):
         return mean + kappa * std
 
     @staticmethod
-    def _ei(x, gp, y_max, xi):
+    def ei(x, gp, y_max, xi):
+        r"""Calculate Expected Improvement acqusition function.
+
+        Similar to Probability of Improvement (`UtilityFunction.poi`), but also considers the
+        magnitude of improvement.
+        Calculated as
+    
+        .. math::
+            \text{EI}(x) = (\mu(x)-y_{\text{max}} - \xi) \Phi\left(
+                \frac{\mu(x)-y_{\text{max}} -  \xi }{\sigma(x)} \right)
+                  + \sigma(x) \phi\left(
+                    \frac{\mu(x)-y_{\text{max}} -  \xi }{\sigma(x)} \right)
+
+        where :math:`\Phi` is the CDF and :math:`\phi` the PDF of the normal
+        distribution.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            Parameters to evaluate the function at.
+
+        gp : sklearn.gaussian_process.GaussianProcessRegressor
+            A gaussian process regressor modelling the target function based on
+            previous observations.
+        
+        y_max : number
+            Highest found value of the target function.
+            
+        xi : float, positive
+            Governs the exploration/exploitation tradeoff. Lower prefers
+            exploitation, higher prefers exploration.
+
+
+        Returns
+        -------
+        Values of the acquisition function
+        """
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             mean, std = gp.predict(x, return_std=True)
 
-        a = (mean - y_max - xi)
+        a = mean - y_max - xi
         z = a / std
         return a * norm.cdf(z) + std * norm.pdf(z)
 
     @staticmethod
-    def _poi(x, gp, y_max, xi):
+    def poi(x, gp, y_max, xi):
+        r"""Calculate Probability of Improvement acqusition function.
+
+        Calculated as
+    
+        .. math:: \text{POI}(x) = \Phi\left( \frac{\mu(x)-y_{\text{max}} -  \xi }{\sigma(x)} \right)
+
+        where :math:`\Phi` is the CDF of the normal distribution.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            Parameters to evaluate the function at.
+        gp : sklearn.gaussian_process.GaussianProcessRegressor
+            A gaussian process regressor modelling the target function based on
+            previous observations.
+        
+        y_max : number
+            Highest found value of the target function.
+            
+        xi : float, positive
+            Governs the exploration/exploitation tradeoff. Lower prefers
+            exploitation, higher prefers exploration.
+
+
+        Returns
+        -------
+        Values of the acquisition function
+        
+        """
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             mean, std = gp.predict(x, return_std=True)
@@ -208,15 +345,24 @@ class UtilityFunction(object):
 
 class NotUniqueError(Exception):
     """A point is non-unique."""
-    pass
 
 
 def load_logs(optimizer, logs):
     """Load previous ...
 
+    Parameters
+    ----------
+    optimizer : BayesianOptimizer
+        Optimizer the register the previous observations with.
+
+    logs : str or bytes or os.PathLike
+        File to load the logs from.
+
+    Returns
+    -------
+    The optimizer with the state loaded.
+    
     """
-
-
     if isinstance(logs, str):
         logs = [logs]
 
@@ -233,7 +379,10 @@ def load_logs(optimizer, logs):
                     optimizer.register(
                         params=iteration["params"],
                         target=iteration["target"],
-                        constraint_value=iteration["constraint"] if optimizer.is_constrained else None
+                        constraint_value=(
+                            iteration["constraint"]
+                            if optimizer.is_constrained else None
+                        )
                     )
                 except NotUniqueError:
                     continue
@@ -242,10 +391,19 @@ def load_logs(optimizer, logs):
 
 
 def ensure_rng(random_state=None):
-    """
-    Creates a random number generator based on an optional seed.  This can be
-    an integer or another random state for a seeded rng, or None for an
-    unseeded rng.
+    """Create a random number generator based on an optional seed.
+
+    Parameters
+    ----------
+    random_state : np.random.RandomState or int or None, default=None
+        Random state to use. if `None`, will create an unseeded random state.
+        If `int`, creates a state using the argument as seed. If a
+        `np.random.RandomState` simply returns the argument.
+
+    Returns
+    -------
+    np.random.RandomState
+    
     """
     if random_state is None:
         random_state = np.random.RandomState()
@@ -255,74 +413,3 @@ def ensure_rng(random_state=None):
         assert isinstance(random_state, np.random.RandomState)
     return random_state
 
-
-class Colours:
-    """Print in nice colours."""
-
-    BLUE = '\033[94m'
-    BOLD = '\033[1m'
-    CYAN = '\033[96m'
-    DARKCYAN = '\033[36m'
-    END = '\033[0m'
-    GREEN = '\033[92m'
-    PURPLE = '\033[95m'
-    RED = '\033[91m'
-    UNDERLINE = '\033[4m'
-    YELLOW = '\033[93m'
-
-    @classmethod
-    def _wrap_colour(cls, s, colour):
-        return colour + s + cls.END
-
-    @classmethod
-    def black(cls, s):
-        """Wrap text in black."""
-        return cls._wrap_colour(s, cls.END)
-
-    @classmethod
-    def blue(cls, s):
-        """Wrap text in blue."""
-        return cls._wrap_colour(s, cls.BLUE)
-
-    @classmethod
-    def bold(cls, s):
-        """Wrap text in bold."""
-        return cls._wrap_colour(s, cls.BOLD)
-
-    @classmethod
-    def cyan(cls, s):
-        """Wrap text in cyan."""
-        return cls._wrap_colour(s, cls.CYAN)
-
-    @classmethod
-    def darkcyan(cls, s):
-        """Wrap text in darkcyan."""
-        return cls._wrap_colour(s, cls.DARKCYAN)
-
-    @classmethod
-    def green(cls, s):
-        """Wrap text in green."""
-        return cls._wrap_colour(s, cls.GREEN)
-
-    @classmethod
-    def purple(cls, s):
-        """Wrap text in purple."""
-        return cls._wrap_colour(s, cls.PURPLE)
-
-    @classmethod
-    def red(cls, s):
-        """Wrap text in red."""
-        return cls._wrap_colour(s, cls.RED)
-
-    @classmethod
-    def underline(cls, s):
-        """Wrap text in underline."""
-        return cls._wrap_colour(s, cls.UNDERLINE)
-
-    @classmethod
-    def yellow(cls, s):
-        """Wrap text in yellow."""
-        return cls._wrap_colour(s, cls.YELLOW)
-
-
-just_fix_windows_console()
