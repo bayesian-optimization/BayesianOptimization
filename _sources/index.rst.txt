@@ -5,6 +5,7 @@ Bayesian Optimization
    :maxdepth: 2
    :caption: Contents:
 
+   /quickstart
    /examples
    /code_docs
 

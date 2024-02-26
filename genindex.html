@@ -8,6 +8,7 @@
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
   
+    <link rel="shortcut icon" href="_static/func.ico"/>
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -44,6 +45,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Bayesian Optimization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="code_docs.html">Code Documentation</a></li>
 </ul>
@@ -78,12 +80,17 @@
  <a href="#A"><strong>A</strong></a>
  | <a href="#B"><strong>B</strong></a>
  | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
  | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
+ | <a href="#G"><strong>G</strong></a>
  | <a href="#I"><strong>I</strong></a>
+ | <a href="#K"><strong>K</strong></a>
+ | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
+ | <a href="#Q"><strong>Q</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
@@ -93,11 +100,15 @@
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code_docs.html#bayes_opt.bayesian_optimization.Queue.add">add() (bayes_opt.bayesian_optimization.Queue method)</a>
+</li>
       <li><a href="code_docs.html#bayes_opt.constraint.ConstraintModel.allowed">allowed() (bayes_opt.constraint.ConstraintModel method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code_docs.html#bayes_opt.constraint.ConstraintModel.approx">approx() (bayes_opt.constraint.ConstraintModel method)</a>
+</li>
+      <li><a href="code_docs.html#bayes_opt.target_space.TargetSpace.array_to_params">array_to_params() (bayes_opt.target_space.TargetSpace method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -116,19 +127,53 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code_docs.html#bayes_opt.bayesian_optimization.BayesianOptimization">BayesianOptimization (class in bayes_opt.bayesian_optimization)</a>
 </li>
+      <li><a href="code_docs.html#bayes_opt.target_space.TargetSpace.bounds">bounds (bayes_opt.target_space.TargetSpace property)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code_docs.html#bayes_opt.bayesian_optimization.BayesianOptimization.constraint">constraint (bayes_opt.bayesian_optimization.BayesianOptimization property)</a>
+
+      <ul>
+        <li><a href="code_docs.html#bayes_opt.target_space.TargetSpace.constraint">(bayes_opt.target_space.TargetSpace property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code_docs.html#bayes_opt.target_space.TargetSpace.constraint_values">constraint_values (bayes_opt.target_space.TargetSpace property)</a>
+</li>
       <li><a href="code_docs.html#bayes_opt.constraint.ConstraintModel">ConstraintModel (class in bayes_opt.constraint)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code_docs.html#bayes_opt.target_space.TargetSpace.dim">dim (bayes_opt.target_space.TargetSpace property)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code_docs.html#bayes_opt.bayesian_optimization.Observable.dispatch">dispatch() (bayes_opt.bayesian_optimization.Observable method)</a>
 </li>
   </ul></td>
 </tr></table>
 
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code_docs.html#bayes_opt.util.UtilityFunction.ei">ei() (bayes_opt.util.UtilityFunction static method)</a>
+</li>
+      <li><a href="code_docs.html#bayes_opt.bayesian_optimization.Queue.empty">empty (bayes_opt.bayesian_optimization.Queue property)</a>
+
+      <ul>
+        <li><a href="code_docs.html#bayes_opt.target_space.TargetSpace.empty">(bayes_opt.target_space.TargetSpace property)</a>
+</li>
+      </ul></li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code_docs.html#bayes_opt.constraint.ConstraintModel.eval">eval() (bayes_opt.constraint.ConstraintModel method)</a>
 </li>
@@ -143,10 +188,34 @@
   </ul></td>
 </tr></table>
 
+<h2 id="G">G</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code_docs.html#bayes_opt.bayesian_optimization.Observable.get_subscribers">get_subscribers() (bayes_opt.bayesian_optimization.Observable method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code_docs.html#bayes_opt.domain_reduction.SequentialDomainReductionTransformer.initialize">initialize() (bayes_opt.domain_reduction.SequentialDomainReductionTransformer method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="K">K</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code_docs.html#bayes_opt.target_space.TargetSpace.keys">keys (bayes_opt.target_space.TargetSpace property)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code_docs.html#bayes_opt.constraint.ConstraintModel.lb">lb (bayes_opt.constraint.ConstraintModel property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -156,11 +225,15 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code_docs.html#bayes_opt.target_space.TargetSpace.mask">mask (bayes_opt.target_space.TargetSpace property)</a>
 </li>
+      <li><a href="code_docs.html#bayes_opt.bayesian_optimization.BayesianOptimization.max">max (bayes_opt.bayesian_optimization.BayesianOptimization property)</a>
+</li>
       <li><a href="code_docs.html#bayes_opt.target_space.TargetSpace.max">max() (bayes_opt.target_space.TargetSpace method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code_docs.html#bayes_opt.bayesian_optimization.BayesianOptimization.maximize">maximize() (bayes_opt.bayesian_optimization.BayesianOptimization method)</a>
+</li>
+      <li><a href="code_docs.html#bayes_opt.constraint.ConstraintModel.model">model (bayes_opt.constraint.ConstraintModel property)</a>
 </li>
       <li>
     module
@@ -183,16 +256,30 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="code_docs.html#bayes_opt.constraint.ConstraintModel.predict">predict() (bayes_opt.constraint.ConstraintModel method)</a>
+      <li><a href="code_docs.html#bayes_opt.target_space.TargetSpace.params">params (bayes_opt.target_space.TargetSpace property)</a>
+</li>
+      <li><a href="code_docs.html#bayes_opt.target_space.TargetSpace.params_to_array">params_to_array() (bayes_opt.target_space.TargetSpace method)</a>
+</li>
+      <li><a href="code_docs.html#bayes_opt.util.UtilityFunction.poi">poi() (bayes_opt.util.UtilityFunction static method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code_docs.html#bayes_opt.constraint.ConstraintModel.predict">predict() (bayes_opt.constraint.ConstraintModel method)</a>
+</li>
       <li><a href="code_docs.html#bayes_opt.bayesian_optimization.BayesianOptimization.probe">probe() (bayes_opt.bayesian_optimization.BayesianOptimization method)</a>
 
       <ul>
         <li><a href="code_docs.html#bayes_opt.target_space.TargetSpace.probe">(bayes_opt.target_space.TargetSpace method)</a>
 </li>
       </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Q">Q</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code_docs.html#bayes_opt.bayesian_optimization.Queue">Queue (class in bayes_opt.bayesian_optimization)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -209,6 +296,8 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code_docs.html#bayes_opt.bayesian_optimization.BayesianOptimization.res">res (bayes_opt.bayesian_optimization.BayesianOptimization property)</a>
+</li>
       <li><a href="code_docs.html#bayes_opt.target_space.TargetSpace.res">res() (bayes_opt.target_space.TargetSpace method)</a>
 </li>
   </ul></td>
@@ -229,6 +318,10 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code_docs.html#bayes_opt.bayesian_optimization.BayesianOptimization.set_gp_params">set_gp_params() (bayes_opt.bayesian_optimization.BayesianOptimization method)</a>
 </li>
+      <li><a href="code_docs.html#bayes_opt.bayesian_optimization.BayesianOptimization.space">space (bayes_opt.bayesian_optimization.BayesianOptimization property)</a>
+</li>
+      <li><a href="code_docs.html#bayes_opt.bayesian_optimization.Observable.subscribe">subscribe() (bayes_opt.bayesian_optimization.Observable method)</a>
+</li>
       <li><a href="code_docs.html#bayes_opt.bayesian_optimization.BayesianOptimization.suggest">suggest() (bayes_opt.bayesian_optimization.BayesianOptimization method)</a>
 </li>
   </ul></td>
@@ -237,10 +330,12 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="code_docs.html#bayes_opt.target_space.TargetSpace">TargetSpace (class in bayes_opt.target_space)</a>
+      <li><a href="code_docs.html#bayes_opt.target_space.TargetSpace.target">target (bayes_opt.target_space.TargetSpace property)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code_docs.html#bayes_opt.target_space.TargetSpace">TargetSpace (class in bayes_opt.target_space)</a>
+</li>
       <li><a href="code_docs.html#bayes_opt.domain_reduction.SequentialDomainReductionTransformer.transform">transform() (bayes_opt.domain_reduction.SequentialDomainReductionTransformer method)</a>
 </li>
   </ul></td>
@@ -249,6 +344,18 @@
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code_docs.html#bayes_opt.constraint.ConstraintModel.ub">ub (bayes_opt.constraint.ConstraintModel property)</a>
+</li>
+      <li><a href="code_docs.html#bayes_opt.util.UtilityFunction.ucb">ucb() (bayes_opt.util.UtilityFunction static method)</a>
+</li>
+      <li><a href="code_docs.html#bayes_opt.bayesian_optimization.Observable.unsubscribe">unsubscribe() (bayes_opt.bayesian_optimization.Observable method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code_docs.html#bayes_opt.util.UtilityFunction.update_params">update_params() (bayes_opt.util.UtilityFunction method)</a>
+</li>
+      <li><a href="code_docs.html#bayes_opt.util.UtilityFunction.utility">utility() (bayes_opt.util.UtilityFunction method)</a>
+</li>
       <li><a href="code_docs.html#bayes_opt.util.UtilityFunction">UtilityFunction (class in bayes_opt.util)</a>
 </li>
   </ul></td>

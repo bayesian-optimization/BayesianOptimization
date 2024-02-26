@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bayesian Optimization &mdash; Bayesian Optimization  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="_static/func.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Bayesian Optimization
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Bayesian Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_docs.html">Code Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Bayesian Optimization</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Bayesian Optimization</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/README.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div align="center">
+  <img src="https://raw.githubusercontent.com/bayesian-optimization/BayesianOptimization/master/static/func.png"><br><br>
+</div>
+<section id="bayesian-optimization">
+<h1>Bayesian Optimization<a class="headerlink" href="#bayesian-optimization" title="Link to this heading"></a></h1>
+<p><img alt="tests" src="https://github.com/bayesian-optimization/BayesianOptimization/actions/workflows/run_tests.yml/badge.svg" />
+<a class="reference external" href="https://codecov.io/github/bayesian-optimization/BayesianOptimization?branch=master"><img alt="Codecov" src="https://codecov.io/github/bayesian-optimization/BayesianOptimization/badge.svg?branch=master&amp;service=github" /></a>
+<a class="reference external" href="https://pypi.python.org/pypi/bayesian-optimization"><img alt="Pypi" src="https://img.shields.io/pypi/v/bayesian-optimization.svg" /></a></p>
+<p>Pure Python implementation of bayesian global optimization with gaussian
+processes.</p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>PyPI (pip):</p></li>
+</ul>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>bayesian-optimization
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Conda from conda-forge channel:</p></li>
+</ul>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>bayesian-optimization
+</pre></div>
+</div>
+<p>This is a constrained global optimization package built upon bayesian inference
+and gaussian process, that attempts to find the maximum value of an unknown
+function in as few iterations as possible. This technique is particularly
+suited for optimization of high cost functions, situations where the balance
+between exploration and exploitation is important.</p>
+</section>
+<section id="quick-start">
+<h2>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading"></a></h2>
+<p>See below for a quick tour over the basics of the Bayesian Optimization package. More detailed information, other advanced features, and tips on usage/implementation can be found in the <a class="reference external" href="http://bayesian-optimization.github.io/BayesianOptimization/examples.html">examples</a> folder. I suggest that you:</p>
+<ul class="simple">
+<li><p>Follow the <a class="reference external" href="http://bayesian-optimization.github.io/BayesianOptimization/basic-tour.html">basic tour notebook</a> to learn how to use the package’s most important features.</p></li>
+<li><p>Take a look at the <a class="reference external" href="http://bayesian-optimization.github.io/BayesianOptimization/advanced-tour.html">advanced tour notebook</a> to learn how to make the package more flexible, how to deal with categorical parameters, how to use observers, and more.</p></li>
+<li><p>Check out this <a class="reference external" href="http://bayesian-optimization.github.io/BayesianOptimization/visualization.html">notebook</a> with a step by step visualization of how this method works.</p></li>
+<li><p>To understand how to use bayesian optimization when additional constraints are present, see the <a class="reference external" href="http://bayesian-optimization.github.io/BayesianOptimization/constraints.html">constrained optimization notebook</a>.</p></li>
+<li><p>Explore this <a class="reference external" href="http://bayesian-optimization.github.io/BayesianOptimization/exploitation_vs_exploration.html">notebook</a>
+exemplifying the balance between exploration and exploitation and how to
+control it.</p></li>
+<li><p>Go over this <a class="reference external" href="https://github.com/bayesian-optimization/BayesianOptimization/blob/master/examples/sklearn_example.py">script</a>
+for examples of how to tune parameters of Machine Learning models using cross validation and bayesian optimization.</p></li>
+<li><p>Explore the <a class="reference external" href="http://bayesian-optimization.github.io/BayesianOptimization/domain_reduction.html">domain reduction notebook</a> to learn more about how search can be sped up by dynamically changing parameters’ bounds.</p></li>
+<li><p>Finally, take a look at this <a class="reference external" href="https://github.com/bayesian-optimization/BayesianOptimization/blob/master/examples/async_optimization.py">script</a>
+for ideas on how to implement bayesian optimization in a distributed fashion using this package.</p></li>
+</ul>
+</section>
+<section id="how-does-it-work">
+<h2>How does it work?<a class="headerlink" href="#how-does-it-work" title="Link to this heading"></a></h2>
+<p>Bayesian optimization works by constructing a posterior distribution of functions (gaussian process) that best describes the function you want to optimize. As the number of observations grows, the posterior distribution improves, and the algorithm becomes more certain of which regions in parameter space are worth exploring and which are not, as seen in the picture below.</p>
+<p><img alt="BayesianOptimization in action" src="_images/bo_example.png" /></p>
+<p>As you iterate over and over, the algorithm balances its needs of exploration and exploitation taking into account what it knows about the target function. At each step a Gaussian Process is fitted to the known samples (points previously explored), and the posterior distribution, combined with a exploration strategy (such as UCB (Upper Confidence Bound), or EI (Expected Improvement)), are used to determine the next point that should be explored (see the gif below).</p>
+<p><img alt="BayesianOptimization in action" src="_images/bayesian_optimization.gif" /></p>
+<p>This process is designed to minimize the number of steps required to find a combination of parameters that are close to the optimal combination. To do so, this method uses a proxy optimization problem (finding the maximum of the acquisition function) that, albeit still a hard problem, is cheaper (in the computational sense) and common tools can be employed. Therefore Bayesian Optimization is most adequate for situations where sampling the function to be optimized is a very expensive endeavor. See the references for a proper discussion of this method.</p>
+<p>This project is under active development, if you find a bug, or anything that
+needs correction, please let me know.</p>
+</section>
+<section id="basic-tour-of-the-bayesian-optimization-package">
+<h2>Basic tour of the Bayesian Optimization package<a class="headerlink" href="#basic-tour-of-the-bayesian-optimization-package" title="Link to this heading"></a></h2>
+<section id="specifying-the-function-to-be-optimized">
+<h3>1. Specifying the function to be optimized<a class="headerlink" href="#specifying-the-function-to-be-optimized" title="Link to this heading"></a></h3>
+<p>This is a function optimization package, therefore the first and most important ingredient is, of course, the function to be optimized.</p>
+<p><strong>DISCLAIMER:</strong> We know exactly how the output of the function below depends on its parameter. Obviously this is just an example, and you shouldn’t expect to know it in a real scenario. However, it should be clear that you don’t need to. All you need in order to use this package (and more generally, this technique) is a function <code class="docutils literal notranslate"><span class="pre">f</span></code> that takes a known set of parameters and outputs a real number.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">black_box_function</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Function with unknown internals we wish to maximize.</span>
+
+<span class="sd">    This is just serving as an example, for all intents and</span>
+<span class="sd">    purposes think of the internals of this function, i.e.: the process</span>
+<span class="sd">    which generates its output values, as unknown.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="o">-</span><span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+</pre></div>
+</div>
+</section>
+<section id="getting-started">
+<h3>2. Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading"></a></h3>
+<p>All we need to get started is to instantiate a <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code> object specifying a function to be optimized <code class="docutils literal notranslate"><span class="pre">f</span></code>, and its parameters with their corresponding bounds, <code class="docutils literal notranslate"><span class="pre">pbounds</span></code>. This is a constrained optimization technique, so you must specify the minimum and maximum values that can be probed for each parameter in order for it to work</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bayes_opt</span> <span class="kn">import</span> <span class="n">BayesianOptimization</span>
+
+<span class="c1"># Bounded region of parameter space</span>
+<span class="n">pbounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)}</span>
+
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span>
+    <span class="n">f</span><span class="o">=</span><span class="n">black_box_function</span><span class="p">,</span>
+    <span class="n">pbounds</span><span class="o">=</span><span class="n">pbounds</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The BayesianOptimization object will work out of the box without much tuning needed. The main method you should be aware of is <code class="docutils literal notranslate"><span class="pre">maximize</span></code>, which does exactly what you think it does.</p>
+<p>There are many parameters you can pass to maximize, nonetheless, the most important ones are:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">n_iter</span></code>: How many steps of bayesian optimization you want to perform. The more steps the more likely to find a good maximum you are.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">init_points</span></code>: How many steps of <strong>random</strong> exploration you want to perform. Random exploration can help by diversifying the exploration space.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span>
+    <span class="n">init_points</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">n_iter</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>|   iter    |  target   |     x     |     y     |
+-------------------------------------------------
+|  1        | -7.135    |  2.834    |  1.322    |
+|  2        | -7.78     |  2.0      | -1.186    |
+|  3        | -19.0     |  4.0      |  3.0      |
+|  4        | -16.3     |  2.378    | -2.413    |
+|  5        | -4.441    |  2.105    | -0.005822 |
+=================================================
+</pre></div>
+</div>
+<p>The best combination of parameters and target value found can be accessed via the property <code class="docutils literal notranslate"><span class="pre">optimizer.max</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">optimizer</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">{</span><span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">4.441293113411222</span><span class="p">,</span> <span class="s1">&#39;params&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.005822117636089974</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mf">2.104665051994087</span><span class="p">}}</span>
+</pre></div>
+</div>
+<p>While the list of all parameters probed and their corresponding target values is available via the property <code class="docutils literal notranslate"><span class="pre">optimizer.res</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">res</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">optimizer</span><span class="o">.</span><span class="n">res</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Iteration </span><span class="si">{}</span><span class="s2">: </span><span class="se">\n\t</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">res</span><span class="p">))</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Iteration</span> <span class="mi">0</span><span class="p">:</span>
+<span class="o">&gt;&gt;&gt;</span>     <span class="p">{</span><span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">7.135455292718879</span><span class="p">,</span> <span class="s1">&#39;params&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="mf">1.3219469606529488</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mf">2.8340440094051482</span><span class="p">}}</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Iteration</span> <span class="mi">1</span><span class="p">:</span>
+<span class="o">&gt;&gt;&gt;</span>     <span class="p">{</span><span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">7.779531005607566</span><span class="p">,</span> <span class="s1">&#39;params&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">1.1860045642089614</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mf">2.0002287496346898</span><span class="p">}}</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Iteration</span> <span class="mi">2</span><span class="p">:</span>
+<span class="o">&gt;&gt;&gt;</span>     <span class="p">{</span><span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">19.0</span><span class="p">,</span> <span class="s1">&#39;params&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mf">4.0</span><span class="p">}}</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Iteration</span> <span class="mi">3</span><span class="p">:</span>
+<span class="o">&gt;&gt;&gt;</span>     <span class="p">{</span><span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">16.29839645063864</span><span class="p">,</span> <span class="s1">&#39;params&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.412527795983739</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mf">2.3776144540856503</span><span class="p">}}</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Iteration</span> <span class="mi">4</span><span class="p">:</span>
+<span class="o">&gt;&gt;&gt;</span>     <span class="p">{</span><span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">4.441293113411222</span><span class="p">,</span> <span class="s1">&#39;params&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.005822117636089974</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mf">2.104665051994087</span><span class="p">}}</span>
+</pre></div>
+</div>
+<section id="changing-bounds">
+<h4>2.1 Changing bounds<a class="headerlink" href="#changing-bounds" title="Link to this heading"></a></h4>
+<p>During the optimization process you may realize the bounds chosen for some parameters are not adequate. For these situations you can invoke the method <code class="docutils literal notranslate"><span class="pre">set_bounds</span></code> to alter them. You can pass any combination of <strong>existing</strong> parameters and their associated new bounds.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span><span class="o">.</span><span class="n">set_bounds</span><span class="p">(</span><span class="n">new_bounds</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)})</span>
+
+<span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span>
+    <span class="n">init_points</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">n_iter</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>|   iter    |  target   |     x     |     y     |
+-------------------------------------------------
+|  6        | -5.145    |  2.115    | -0.2924   |
+|  7        | -5.379    |  2.337    |  0.04124  |
+|  8        | -3.581    |  1.874    | -0.03428  |
+|  9        | -2.624    |  1.702    |  0.1472   |
+|  10       | -1.762    |  1.442    |  0.1735   |
+=================================================
+</pre></div>
+</div>
+</section>
+<section id="sequential-domain-reduction">
+<h4>2.2 Sequential Domain Reduction<a class="headerlink" href="#sequential-domain-reduction" title="Link to this heading"></a></h4>
+<p>Sometimes the initial boundaries specified for a problem are too wide, and adding points to improve the response surface in regions of the solution domain is extraneous. Other times the cost function is very expensive to compute, and minimizing the number of calls is extremely beneficial.</p>
+<p>When it’s worthwhile to converge on an optimal point quickly rather than try to find the optimal point, contracting the domain around the current optimal value as the search progresses can speed up the search progress considerably. Using the <code class="docutils literal notranslate"><span class="pre">SequentialDomainReductionTransformer</span></code> the bounds of the problem can be panned and zoomed dynamically in an attempt to improve convergence.</p>
+<p><img alt="sequential domain reduction" src="_images/sdr.png" /></p>
+<p>An example of using the <code class="docutils literal notranslate"><span class="pre">SequentialDomainReductionTransformer</span></code> is shown in the <a class="reference external" href="http://bayesian-optimization.github.io/BayesianOptimization/domain_reduction.html">domain reduction notebook</a>. More information about this method can be found in the paper <a class="reference external" href="http://www.truegrid.com/srsm_revised.pdf">“On the robustness of a simple domain reduction scheme for simulation‐based optimization”</a>.</p>
+</section>
+</section>
+<section id="guiding-the-optimization">
+<h3>3. Guiding the optimization<a class="headerlink" href="#guiding-the-optimization" title="Link to this heading"></a></h3>
+<p>It is often the case that we have an idea of regions of the parameter space where the maximum of our function might lie. For these situations the <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code> object allows the user to specify points to be probed. By default these will be explored lazily (<code class="docutils literal notranslate"><span class="pre">lazy=True</span></code>), meaning these points will be evaluated only the next time you call <code class="docutils literal notranslate"><span class="pre">maximize</span></code>. This probing process happens before the gaussian process takes over.</p>
+<p>Parameters can be passed as dictionaries or as an iterable.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span><span class="o">.</span><span class="n">probe</span><span class="p">(</span>
+    <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mf">0.7</span><span class="p">},</span>
+    <span class="n">lazy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">optimizer</span><span class="o">.</span><span class="n">probe</span><span class="p">(</span>
+    <span class="n">params</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span>
+    <span class="n">lazy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Will probe only the two points specified above</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>|   iter    |  target   |     x     |     y     |
+-------------------------------------------------
+|  11       |  0.66     |  0.5      |  0.7      |
+|  12       |  0.1      | -0.3      |  0.1      |
+=================================================
+</pre></div>
+</div>
+</section>
+<section id="saving-loading-and-restarting">
+<h3>4. Saving, loading and restarting<a class="headerlink" href="#saving-loading-and-restarting" title="Link to this heading"></a></h3>
+<p>By default you can follow the progress of your optimization by setting <code class="docutils literal notranslate"><span class="pre">verbose&gt;0</span></code> when instantiating the <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code> object. If you need more control over logging/alerting you will need to use an observer. For more information about observers checkout the advanced tour notebook. Here we will only see how to use the native <code class="docutils literal notranslate"><span class="pre">JSONLogger</span></code> object to save to and load progress from files.</p>
+<section id="saving-progress">
+<h4>4.1 Saving progress<a class="headerlink" href="#saving-progress" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bayes_opt.logger</span> <span class="kn">import</span> <span class="n">JSONLogger</span>
+<span class="kn">from</span> <span class="nn">bayes_opt.event</span> <span class="kn">import</span> <span class="n">Events</span>
+</pre></div>
+</div>
+<p>The observer paradigm works by:</p>
+<ol class="arabic simple">
+<li><p>Instantiating an observer object.</p></li>
+<li><p>Tying the observer object to a particular event fired by an optimizer.</p></li>
+</ol>
+<p>The <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code> object fires a number of internal events during optimization, in particular, everytime it probes the function and obtains a new parameter-target combination it will fire an <code class="docutils literal notranslate"><span class="pre">Events.OPTIMIZATION_STEP</span></code> event, which our logger will listen to.</p>
+<p><strong>Caveat:</strong> The logger will not look back at previously probed points.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">logger</span> <span class="o">=</span> <span class="n">JSONLogger</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;./logs.log&quot;</span><span class="p">)</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">Events</span><span class="o">.</span><span class="n">OPTIMIZATION_STEP</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+
+<span class="c1"># Results will be saved in ./logs.log</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span>
+    <span class="n">init_points</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">n_iter</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>By default the previous data in the json file is removed. If you want to keep working with the same logger, the <code class="docutils literal notranslate"><span class="pre">reset</span></code> parameter in <code class="docutils literal notranslate"><span class="pre">JSONLogger</span></code> should be set to False.</p>
+</section>
+<section id="loading-progress">
+<h4>4.2 Loading progress<a class="headerlink" href="#loading-progress" title="Link to this heading"></a></h4>
+<p>Naturally, if you stored progress you will be able to load that onto a new instance of <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code>. The easiest way to do it is by invoking the <code class="docutils literal notranslate"><span class="pre">load_logs</span></code> function, from the <code class="docutils literal notranslate"><span class="pre">util</span></code> submodule.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bayes_opt.util</span> <span class="kn">import</span> <span class="n">load_logs</span>
+
+
+<span class="n">new_optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span>
+    <span class="n">f</span><span class="o">=</span><span class="n">black_box_function</span><span class="p">,</span>
+    <span class="n">pbounds</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)},</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># New optimizer is loaded with previously seen points</span>
+<span class="n">load_logs</span><span class="p">(</span><span class="n">new_optimizer</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;./logs.log&quot;</span><span class="p">]);</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="next-steps">
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading"></a></h2>
+<p>This introduction covered the most basic functionality of the package. Checkout the <a class="reference external" href="http://bayesian-optimization.github.io/BayesianOptimization/basic-tour.html">basic-tour</a> and <a class="reference external" href="http://bayesian-optimization.github.io/BayesianOptimization/advanced-tour.html">advanced-tour</a>, where you will find detailed explanations and other more advanced functionality. Also, browse the <a class="reference external" href="http://bayesian-optimization.github.io/BayesianOptimization/examples.html">examples</a> for implementation tips and ideas.</p>
+</section>
+<section id="minutiae">
+<h2>Minutiae<a class="headerlink" href="#minutiae" title="Link to this heading"></a></h2>
+<section id="citation">
+<h3>Citation<a class="headerlink" href="#citation" title="Link to this heading"></a></h3>
+<p>If you used this package in your research, please cite it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@Misc</span><span class="p">{,</span>
+    <span class="n">author</span> <span class="o">=</span> <span class="p">{</span><span class="n">Fernando</span> <span class="n">Nogueira</span><span class="p">},</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="p">{{</span><span class="n">Bayesian</span> <span class="n">Optimization</span><span class="p">}:</span> <span class="n">Open</span> <span class="n">source</span> <span class="n">constrained</span> <span class="k">global</span> <span class="n">optimization</span> <span class="n">tool</span> <span class="k">for</span> <span class="p">{</span><span class="n">Python</span><span class="p">}},</span>
+    <span class="n">year</span> <span class="o">=</span> <span class="p">{</span><span class="mi">2014</span><span class="o">--</span><span class="p">},</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot; https://github.com/bayesian-optimization/BayesianOptimization&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>If you used any of the advanced functionalities, please additionally cite the corresponding publication:</p>
+<p>For the <code class="docutils literal notranslate"><span class="pre">SequentialDomainTransformer</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@article</span><span class="p">{</span>
+    <span class="n">author</span> <span class="o">=</span> <span class="p">{</span><span class="n">Stander</span><span class="p">,</span> <span class="n">Nielen</span> <span class="ow">and</span> <span class="n">Craig</span><span class="p">,</span> <span class="n">Kenneth</span><span class="p">},</span>
+    <span class="n">year</span> <span class="o">=</span> <span class="p">{</span><span class="mi">2002</span><span class="p">},</span>
+    <span class="n">month</span> <span class="o">=</span> <span class="p">{</span><span class="mi">06</span><span class="p">},</span>
+    <span class="n">pages</span> <span class="o">=</span> <span class="p">{},</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="p">{</span><span class="n">On</span> <span class="n">the</span> <span class="n">robustness</span> <span class="n">of</span> <span class="n">a</span> <span class="n">simple</span> <span class="n">domain</span> <span class="n">reduction</span> <span class="n">scheme</span> <span class="k">for</span> <span class="n">simulation</span><span class="o">-</span><span class="n">based</span> <span class="n">optimization</span><span class="p">},</span>
+    <span class="n">volume</span> <span class="o">=</span> <span class="p">{</span><span class="mi">19</span><span class="p">},</span>
+    <span class="n">journal</span> <span class="o">=</span> <span class="p">{</span><span class="n">International</span> <span class="n">Journal</span> <span class="k">for</span> <span class="n">Computer</span><span class="o">-</span><span class="n">Aided</span> <span class="n">Engineering</span> <span class="ow">and</span> <span class="n">Software</span> <span class="p">(</span><span class="n">Eng</span><span class="o">.</span> <span class="n">Comput</span><span class="o">.</span><span class="p">)},</span>
+    <span class="n">doi</span> <span class="o">=</span> <span class="p">{</span><span class="mf">10.1108</span><span class="o">/</span><span class="mi">02644400210430190</span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>For constrained optimization:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@inproceedings</span><span class="p">{</span><span class="n">gardner2014bayesian</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="p">{</span><span class="n">Bayesian</span> <span class="n">optimization</span> <span class="k">with</span> <span class="n">inequality</span> <span class="n">constraints</span><span class="o">.</span><span class="p">},</span>
+    <span class="n">author</span><span class="o">=</span><span class="p">{</span><span class="n">Gardner</span><span class="p">,</span> <span class="n">Jacob</span> <span class="n">R</span> <span class="ow">and</span> <span class="n">Kusner</span><span class="p">,</span> <span class="n">Matt</span> <span class="n">J</span> <span class="ow">and</span> <span class="n">Xu</span><span class="p">,</span> <span class="n">Zhixiang</span> <span class="n">Eddie</span> <span class="ow">and</span> <span class="n">Weinberger</span><span class="p">,</span> <span class="n">Kilian</span> <span class="n">Q</span> <span class="ow">and</span> <span class="n">Cunningham</span><span class="p">,</span> <span class="n">John</span> <span class="n">P</span><span class="p">},</span>
+    <span class="n">booktitle</span><span class="o">=</span><span class="p">{</span><span class="n">ICML</span><span class="p">},</span>
+    <span class="n">volume</span><span class="o">=</span><span class="p">{</span><span class="mi">2014</span><span class="p">},</span>
+    <span class="n">pages</span><span class="o">=</span><span class="p">{</span><span class="mi">937</span><span class="o">--</span><span class="mi">945</span><span class="p">},</span>
+    <span class="n">year</span><span class="o">=</span><span class="p">{</span><span class="mi">2014</span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="references">
+<h3>References:<a class="headerlink" href="#references" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>http://papers.nips.cc/paper/4522-practical-bayesian-optimization-of-machine-learning-algorithms.pdf</p></li>
+<li><p>http://arxiv.org/pdf/1012.2599v1.pdf</p></li>
+<li><p>http://www.gaussianprocess.org/gpml/</p></li>
+<li><p>https://www.youtube.com/watch?v=vz3D36VXefI&amp;index=10&amp;list=PLE6Wd9FR–EdyJ5lbFl8UuGjecvVw66F6</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
