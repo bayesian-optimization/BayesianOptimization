@@ -1,5 +1,5 @@
 import numpy as np
-from bayes_opt import BayesianOptimization
+from bayes_opt import BayesianOptimization, acquisition
 from pytest import approx, raises
 from scipy.optimize import NonlinearConstraint
 
@@ -18,6 +18,7 @@ def test_single_constraint_upper():
 
     constraint = NonlinearConstraint(constraint_function, -np.inf, constraint_limit_upper)
     pbounds = {'x': (0, 6), 'y': (0, 6)}
+
 
     optimizer = BayesianOptimization(
         f=target_function,
@@ -47,6 +48,7 @@ def test_single_constraint_lower():
 
     constraint = NonlinearConstraint(constraint_function, constraint_limit_lower, np.inf)
     pbounds = {'x': (0, 6), 'y': (0, 6)}
+
 
     optimizer = BayesianOptimization(
         f=target_function,
