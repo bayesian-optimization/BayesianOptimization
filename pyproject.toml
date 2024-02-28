@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "bayesianoptimization"
+name = "bayesian-optimization"
 version = "1.4.3"
 description = "Bayesian Optimization package"
 authors = ["Fernando Nogueira"]
@@ -15,12 +15,15 @@ scipy = ">=1.0.0"
 colorama = "^0.4.6"
 
 
-[tool.poetry.group.dev]  # for testing
+
+[tool.poetry.group.dev]  # for testing/developing
 optional = true
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
 pytest-cov = "^4.1.0"
 coverage = "^7.4.1"
+pydocstyle = "^6.3.0"
+
 
 [tool.poetry.group.nbtools]  # for running/converting notebooks
 optional = true
