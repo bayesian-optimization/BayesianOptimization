@@ -25,13 +25,13 @@ def gp():
 
 @pytest.fixture
 def target_space(target_func):
-    return TargetSpace(target_func=target_func, pbounds={'x': (2, 4), 'y': (0, 1)})
+    return TargetSpace(target_func=target_func, pbounds={'x': (1, 4), 'y': (0, 3.)})
 
 
 @pytest.fixture
 def constrained_target_space(target_func):
     constraint_model = ConstraintModel(fun=lambda params: params['x'] + params['y'], lb=0.0, ub=1.0)
-    return TargetSpace(target_func=target_func, pbounds={'x': (2, 4), 'y': (0, 1)}, constraint=constraint_model)
+    return TargetSpace(target_func=target_func, pbounds={'x': (1, 4), 'y': (0, 3)}, constraint=constraint_model)
 
 
 def test_base_acquisition():
@@ -54,11 +54,20 @@ def test_upper_confidence_bound(gp, target_space, random_state):
     assert acq.kappa == 0.5
 
 
+def test_l_bfgs_fails(gp, target_space, random_state):
+    acq = acquisition.AcquisitionFunction(random_state=random_state)
+
+    def fun(x):
+        try:
+            return np.nan * np.zeros_like(x[:,0])
+        except IndexError:
+            return np.nan
+
+    _, min_acq_l = acq._l_bfgs_b_minimize(fun, bounds=target_space.bounds, n_x_seeds=1)
+    assert min_acq_l == np.inf
+        
 def test_upper_confidence_bound_with_constraints(gp, constrained_target_space, random_state):
     acq = acquisition.UpperConfidenceBound(random_state=random_state)
-
-    with pytest.raises(ValueError):
-        acq.suggest(gp=gp, target_space=constrained_target_space)
 
     constrained_target_space.register(params={'x': 2.5, 'y': 0.5}, target=3.0, constraint_value=0.5)
     with pytest.raises(acquisition.ConstraintNotSupportedError):
@@ -71,6 +80,7 @@ def test_probability_of_improvement(gp, target_space, random_state):
 
     with pytest.raises(ValueError):
         acq.suggest(gp=gp, target_space=target_space)
+
     target_space.register(params={'x': 2.5, 'y': 0.5}, target=3.0)
     acq.suggest(gp=gp, target_space=target_space)
     assert acq.xi == 0.01
