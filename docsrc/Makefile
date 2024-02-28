@@ -15,6 +15,8 @@ BUILDDIR      = ../docs
 .PHONY: help Makefile
 
 github:
+	@cp ../README.md .
+	@cp -r ../static .
 	@make html
 	@cp -a ../docs/html/. ../docs
 
