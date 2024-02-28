@@ -26,6 +26,13 @@ class AcquisitionFunction():
             self.random_state = RandomState()
         self.i = 0
 
+    def __call__(self, x: np.ndarray, gp: GaussianProcessRegressor, constraint: Union[ConstraintModel, None] = None):
+        acq = self._get_acq(x, gp, constraint)
+        return acq(x)
+
+    def base_acq(self, **kwargs):
+        raise NotImplementedError
+
     def _fit_gp(self, gp: GaussianProcessRegressor, target_space: TargetSpace) -> None:
         # Sklearn's GP throws a large number of warnings at times, but
         # we don't really need to see them here.
@@ -40,7 +47,8 @@ class AcquisitionFunction():
             raise ValueError("Cannot suggest a point without previous samples. Use target_space.random_sample() to generate a point.")
         self.i += 1
 
-    def _get_acq(self, base_acq: Callable, dim: int, gp: GaussianProcessRegressor, constraint: Union[ConstraintModel, None] = None) -> Callable:
+    def _get_acq(self, base_acq: Callable, gp: GaussianProcessRegressor, constraint: Union[ConstraintModel, None] = None) -> Callable:
+        dim = gp.X_train_.shape[1]
         if constraint is not None:
             def acq(x):
                 x = x.reshape(-1, dim)
@@ -106,6 +114,9 @@ class UpperConfidenceBound(AcquisitionFunction):
         self.exploration_decay = exploration_decay
         self.exploration_decay_delay = exploration_decay_delay
 
+    def base_acq(self, mean, std):
+        return mean + self.kappa * std
+
     def suggest(self, gp: GaussianProcessRegressor, target_space: TargetSpace, n_random=10_000, n_l_bfgs_b=10, fit_gp:bool=True) -> np.ndarray:
         super().suggest(gp=gp, target_space=target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=fit_gp)
         if target_space.constraint is not None:
@@ -116,11 +127,8 @@ class UpperConfidenceBound(AcquisitionFunction):
             raise ConstraintNotSupportedError(msg)
         if fit_gp:
             self._fit_gp(gp=gp, target_space=target_space)
-
-        def base_acq(mean, std):
-            return mean + self.kappa * std
     
-        acq = self._get_acq(base_acq, dim=target_space.bounds.shape[0], gp=gp)
+        acq = self._get_acq(self.base_acq, gp=gp)
         x_max = self._acq_min(acq, target_space.bounds, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b)
         self.update_params()
         return x_max
@@ -131,25 +139,28 @@ class UpperConfidenceBound(AcquisitionFunction):
                 self.kappa = self.kappa*self.exploration_decay
 
 
-
 class ProbabilityOfImprovement(AcquisitionFunction):
     def __init__(self, xi, exploration_decay=None, exploration_decay_delay=None, random_state=None) -> None:
         super().__init__(random_state=random_state)
         self.xi = xi
         self.exploration_decay = exploration_decay
         self.exploration_decay_delay = exploration_decay_delay
+        self.y_max = None
 
+    def base_acq(self, mean, std):
+        if self.y_max is None:
+            msg = ("y_max is not set.")
+            raise ValueError(msg)
+        z = (mean - self.y_max - self.xi)/std
+        return norm.cdf(z)
+ 
     def suggest(self, gp: GaussianProcessRegressor, target_space: TargetSpace, n_random=10_000, n_l_bfgs_b=10, fit_gp:bool=True) -> np.ndarray:
         super().suggest(gp=gp, target_space=target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=fit_gp)
         if fit_gp:
             self._fit_gp(gp=gp, target_space=target_space)
-        y_max = target_space.max()['target']
+        self.y_max = target_space.max()['target']
 
-        def base_acq(mean, std):
-            z = (mean - y_max - self.xi)/std
-            return norm.cdf(z)
-
-        acq = self._get_acq(base_acq, dim=target_space.bounds.shape[0], gp=gp, constraint=target_space.constraint)
+        acq = self._get_acq(self.base_acq, gp=gp, constraint=target_space.constraint)
         x_max = self._acq_min(acq, target_space.bounds, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b)
         self.update_params()
         return x_max
@@ -166,19 +177,23 @@ class ExpectedImprovement(AcquisitionFunction):
         self.xi = xi
         self.exploration_decay = exploration_decay
         self.exploration_decay_delay = exploration_decay_delay
-    
+        self.y_max = None
+
+    def base_acq(self, mean, std):
+        if self.y_max is None:
+            msg = ("y_max is not set.")
+            raise ValueError(msg)
+        a = (mean - self.y_max - self.xi)
+        z = a / std
+        return a * norm.cdf(z) + std * norm.pdf(z)
+
     def suggest(self, gp: GaussianProcessRegressor, target_space: TargetSpace, n_random=10_000, n_l_bfgs_b=10, fit_gp:bool=True) -> np.ndarray:
         super().suggest(gp=gp, target_space=target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=fit_gp)
         if fit_gp:
             self._fit_gp(gp=gp, target_space=target_space)
-        y_max = target_space.max()['target']
+        self.y_max = target_space.max()['target']
 
-        def base_acq(mean, std):
-            a = (mean - y_max - self.xi)
-            z = a / std
-            return a * norm.cdf(z) + std * norm.pdf(z)
-
-        acq = self._get_acq(base_acq, dim=target_space.bounds.shape[0], gp=gp, constraint=target_space.constraint)
+        acq = self._get_acq(self.base_acq, gp=gp, constraint=target_space.constraint)
         x_max = self._acq_min(acq, target_space.bounds, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b)
         self.update_params()
         return x_max
@@ -190,7 +205,7 @@ class ExpectedImprovement(AcquisitionFunction):
 
 
 class ConstantLiar(AcquisitionFunction):
-    def __init__(self, base_acquisition: AcquisitionFunction, strategy='min', random_state=None, atol=1e-5, rtol=1e-8) -> None:
+    def __init__(self, base_acquisition: AcquisitionFunction, strategy='max', random_state=None, atol=1e-5, rtol=1e-8) -> None:
         super().__init__(random_state)
         self.base_acquisition = base_acquisition
         self.dummies = []
@@ -199,7 +214,10 @@ class ConstantLiar(AcquisitionFunction):
         self.strategy = strategy
         self.atol = atol
         self.rtol = rtol
-    
+
+    def base_acq(self, **kwargs):
+        return self.base_acquisition(**kwargs)
+
     def _copy_target_space(self, target_space: TargetSpace) -> TargetSpace:
         keys = target_space.keys
         pbounds = {key: bound for key, bound in zip(keys, target_space.bounds)}
@@ -215,7 +233,6 @@ class ConstantLiar(AcquisitionFunction):
         return target_space_copy
 
     def _remove_expired_dummies(self, target_space: TargetSpace) -> None:
-        # Could also be a one-liner list-comprehension, but this seems more understandable
         dummies = []
         for dummy in self.dummies:
             close = np.isclose(dummy, target_space.params, rtol=self.rtol, atol=self.atol)
@@ -254,16 +271,18 @@ class ConstantLiar(AcquisitionFunction):
 
         return x_max
 
+
 class KrigingBeliever(AcquisitionFunction):
     def __init__(self, base_acquisition: AcquisitionFunction, random_state=None, atol=1e-5, rtol=1e-8) -> None:
         super().__init__(random_state)
         self.base_acquisition = base_acquisition
         self.dummies = []
-        self.dummy_targets = []
-        self.dummy_constraints = []
         self.atol = atol
         self.rtol = rtol
-    
+
+    def base_acq(self, **kwargs):
+        return self.base_acquisition(**kwargs)
+
     def _copy_target_space(self, target_space: TargetSpace) -> TargetSpace:
         keys = target_space.keys
         pbounds = {key: bound for key, bound in zip(keys, target_space.bounds)}
@@ -292,42 +311,31 @@ class KrigingBeliever(AcquisitionFunction):
                 raise ValueError(msg)
 
     def _remove_expired_dummies(self, target_space: TargetSpace) -> None:
-        self._ensure_dummies_match()
         dummies = []
-        dummy_constraints = []
-        for i, dummy in enumerate(self.dummies):
+        for dummy in self.dummies:
             close = np.isclose(dummy, target_space.params, rtol=self.rtol, atol=self.atol)
             if not close.all(axis=1).any():
                 dummies.append(dummy)
-                if target_space.constraint is not None:
-                    dummy_constraints.append(self.dummy_constraints[i])
         self.dummies = dummies
-        self.dummy_constraints = dummy_constraints
-        
+
     def suggest(self, gp: GaussianProcessRegressor, target_space: TargetSpace, n_random=10_000, n_l_bfgs_b=10, fit_gp:bool=True) -> np.ndarray:
         super().suggest(gp=gp, target_space=target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=fit_gp)
         self._remove_expired_dummies(target_space)
         dummy_target_space = self._copy_target_space(target_space)
 
-        for idx, dummy in enumerate(self.dummies):
+        if self.dummies:
+            dummy_targets = gp.predict(np.array(self.dummies).reshape((len(self.dummies), -1)))
             if dummy_target_space.constraint is not None:
-                dummy_target_space.register(dummy, self.dummy_targets[idx].squeeze(), self.dummy_constraints[idx].squeeze())
-            else:
-                dummy_target_space.register(dummy, self.dummy_targets[idx].squeeze())
-    
-        x_max = self.base_acquisition.suggest(gp, dummy_target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=True)
+                dummy_constraints = target_space.constraint.approx(np.array(self.dummies).reshape((len(self.dummies), -1)))
+            for idx, dummy in enumerate(self.dummies):
+                if dummy_target_space.constraint is not None:
+                    dummy_target_space.register(dummy, dummy_targets[idx].squeeze(), dummy_constraints[idx].squeeze())
+                else:
+                    dummy_target_space.register(dummy, dummy_targets[idx].squeeze())
 
         self._fit_gp(gp=gp, target_space=dummy_target_space)
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            target_pred = gp.predict(x_max.reshape(1, -1))
+        x_max = self.base_acquisition.suggest(gp, dummy_target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=True)
         self.dummies.append(x_max)
-        self.dummy_targets.append(target_pred)
-
-        if dummy_target_space.constraint is not None:
-            constraint_pred = dummy_target_space.constraint.approx(x_max)
-            self.dummy_constraints.append(constraint_pred)
 
         return x_max
 
@@ -339,6 +347,13 @@ class GPHedge(AcquisitionFunction):
         self.n_acq = len(self.base_acquisitions)
         self.gains = np.zeros(self.n_acq)
         self.previous_candidates = None
+
+    def base_acq(self):
+        msg = ("GPHedge base acquisition function is ambiguous."
+               " You may use self.base_acquisitions[i].base_acq(mean, std)"
+               " to get the base acquisition function for the i-th acquisition."
+        )
+        return ValueError(msg)
 
     def _sample_idx_from_softmax_gains(self) -> int:
         cumsum_softmax_g = np.cumsum(softmax(self.gains))
@@ -374,3 +389,48 @@ class GPHedge(AcquisitionFunction):
         idx = self._sample_idx_from_softmax_gains()
         self.previous_candidates = np.array(x_max)
         return x_max[idx]
+
+
+class ThompsonSampling(AcquisitionFunction):
+    def __init__(self, random_state=None):
+        super().__init__(random_state)
+        self.fixed_seed = None
+
+    def base_acq(self, y_mean, y_cov):
+        assert y_cov.shape[0] == y_cov.shape[1], "y_cov must be a square matrix."
+        rng = RandomState()
+        rng.set_state(self.fixed_seed)
+        return rng.multivariate_normal(y_mean, y_cov)
+
+    def _get_acq(self, base_acq: Callable, gp: GaussianProcessRegressor, constraint: Union[ConstraintModel, None] = None) -> Callable:
+        # overwrite the base method since we require cov not std
+        dim = gp.X_train_.shape[1]
+        def acq(x):
+            x = x.reshape(-1, dim)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                mean, cov = gp.predict(x, return_cov=True)
+            return -1 * base_acq(mean, cov)
+        return acq
+
+    def _acq_min(self, acq: Callable, bounds: np.ndarray, n_random=10_000, n_l_bfgs_b=10) -> np.ndarray:
+        x_min_r, _ = self._random_sample_minimize(acq, bounds, n_random=n_random)
+        return x_min_r
+
+    def suggest(self, gp: GaussianProcessRegressor, target_space: TargetSpace, n_random=1000, n_l_bfgs_b=10, fit_gp: bool = True):
+        super().suggest(gp=gp, target_space=target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=fit_gp)
+        self._fit_gp(gp=gp, target_space=target_space)
+        if target_space.constraint is not None:
+            # Do constraints make sense conceptually?
+            msg = (
+                f"Received constraints, but acquisition function {type(self)} "
+                + "does not support constrained optimization."
+            )
+            raise ConstraintNotSupportedError(msg)
+
+        # Fix the state to ensure we always have the same theta
+        self.fixed_seed = self.random_state.get_state()
+        acq = self._get_acq(self.base_acq, gp=gp, constraint=target_space.constraint)
+        x_max = self._acq_min(acq, target_space.bounds, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b)
+        self.fixed_seed = None
+        return x_max

@@ -179,7 +179,6 @@ def test_kriging_believer_with_constraints(gp, constrained_target_space, target_
         assert len(acq.dummies) == len(samples)
 
     samples = np.array(samples)
-    print(samples)
 
     base_distance = pdist(base_samples, 'sqeuclidean').mean()
     distance = pdist(samples, 'sqeuclidean').mean()
@@ -192,7 +191,3 @@ def test_kriging_believer_with_constraints(gp, constrained_target_space, target_
     acq.suggest(gp=gp, target_space=constrained_target_space)
 
     assert len(acq.dummies) == 1
-
-    acq.dummies.append('dummy')
-    with pytest.raises(ValueError):
-        acq._ensure_dummies_match()
