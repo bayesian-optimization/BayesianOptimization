@@ -2,10 +2,11 @@ import time
 import random
 
 from bayes_opt import BayesianOptimization
-from bayes_opt.util import UtilityFunction, Colours
+from bayes_opt.util import UtilityFunction
 
 import asyncio
 import threading
+from colorama import Fore
 
 try:
     import json
@@ -96,19 +97,19 @@ def run_optimizer():
 
         status += name + " got {} as target.\n".format(target)
         status += name + " will to register next: {}.\n".format(register_data)
-        print(colour(status), end="\n")
+        print(colour + status, end="\n")
 
     global results
     results.append((name, max_target))
-    print(colour(name + " is done!"), end="\n\n")
+    print(colour + name + " is done!", end="\n\n")
 
 
 if __name__ == "__main__":
     ioloop = tornado.ioloop.IOLoop.instance()
     optimizers_config = [
-        {"name": "optimizer 1", "colour": Colours.red},
-        {"name": "optimizer 2", "colour": Colours.green},
-        {"name": "optimizer 3", "colour": Colours.blue},
+        {"name": "optimizer 1", "colour": Fore.RED},
+        {"name": "optimizer 2", "colour": Fore.GREEN},
+        {"name": "optimizer 3", "colour": Fore.BLUE},
     ]
 
     app_thread = threading.Thread(target=run_optimization_app)
