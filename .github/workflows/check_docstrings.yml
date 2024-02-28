@@ -26,6 +26,6 @@ jobs:
       run: |
         poetry install --with dev
     - name: Check docstyle
-      run : pydocstyle --convention=numpy --add-select D417 bayes_opt/*
+      run : poetry run pydocstyle --convention=numpy --add-select D417 bayes_opt/*
     #- name: Run linting
     #  run : pylint bayes_opt/* --disable=C0103 # ignore no snake_case conformity of arguments
