@@ -320,3 +320,4 @@ For constrained optimization:
 * http://arxiv.org/pdf/1012.2599v1.pdf
 * http://www.gaussianprocess.org/gpml/
 * https://www.youtube.com/watch?v=vz3D36VXefI&index=10&list=PLE6Wd9FR--EdyJ5lbFl8UuGjecvVw66F6
+
