@@ -18,8 +18,7 @@ def check_notebook_runs(notebook_loc):
         ep = ExecutePreprocessor(timeout=600, kernel_name='python3')
         ep.preprocess(nb, {'metadata': {'path': Path(notebook_loc).parent}})
     except Exception as e:
-        print(f'failed to run notebook {notebook_loc}: rethrowing exception:')
-        raise e
+        raise Exception(f'failed to run notebook {notebook_loc}')
     print(f'success!')
 
 def test_all_notebooks_run():
