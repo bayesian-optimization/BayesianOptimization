@@ -12,8 +12,7 @@ from .util import ensure_rng
 
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
-from .acquisition import GPHedge, UpperConfidenceBound, ExpectedImprovement, ProbabilityOfImprovement
-
+from . import acquisition
 
 class Queue:
     """Queue datastructure.
@@ -139,25 +138,11 @@ class BayesianOptimization(Observable):
 
         if acquisition_function is None:
             if constraint is None:
-                self.acquisition_function = GPHedge(
-                    [
-                        UpperConfidenceBound(kappa=2.576, random_state=self._random_state),
-                        ProbabilityOfImprovement(xi=0.01, random_state=self._random_state),
-                        ExpectedImprovement(xi=0.01, random_state=self._random_state),
-                    ],
-                    self._random_state
-                )
+                self._acquisition_function = acquisition.UpperConfidenceBound(kappa=2.576, random_state=self._random_state)
             else:
-                self.acquisition_function = GPHedge(
-                    [
-                        ProbabilityOfImprovement(xi=0.01, random_state=self._random_state),
-                        ExpectedImprovement(xi=0.01, random_state=self._random_state),
-                    ],
-                    self._random_state
-                )
+                self._acquisition_function = acquisition.ExpectedImprovement(xi=0.01, random_state=self._random_state)
         else:
-            self.acquisition_function = acquisition_function
-
+            self._acquisition_function = acquisition_function
 
         # Internal GP regressor
         self._gp = GaussianProcessRegressor(
@@ -206,6 +191,11 @@ class BayesianOptimization(Observable):
     def space(self):
         """Return the target space associated with the optimizer."""
         return self._space
+
+    @property
+    def acquisition_function(self):
+        """Return the acquisition function associated with the optimizer."""
+        return self._acquisition_function
 
     @property
     def constraint(self):
@@ -273,7 +263,7 @@ class BayesianOptimization(Observable):
             return self._space.array_to_params(self._space.random_sample())
 
         # Finding argmax of the acquisition function.
-        suggestion = self.acquisition_function.suggest(
+        suggestion = self._acquisition_function.suggest(
             gp=self._gp,
             target_space=self._space,
             fit_gp=True

@@ -19,8 +19,8 @@ def random_state():
 
 
 @pytest.fixture
-def gp():
-    return GaussianProcessRegressor()
+def gp(random_state):
+    return GaussianProcessRegressor(random_state=random_state)
 
 
 @pytest.fixture
@@ -45,8 +45,10 @@ def test_upper_confidence_bound(gp, target_space, random_state):
     acq = acquisition.UpperConfidenceBound(exploration_decay=0.5, exploration_decay_delay=2, kappa=1.0, random_state=random_state)
     assert acq.kappa == 1.0
 
-    with pytest.raises(ValueError):
+    # Test that the suggest method raises an error if the GP is unfitted
+    with pytest.raises(ValueError, match="Cannot suggest a point without previous samples"):
         acq.suggest(gp=gp, target_space=target_space)
+
     target_space.register(params={'x': 2.5, 'y': 0.5}, target=3.0)
     acq.suggest(gp=gp, target_space=target_space)
     assert acq.kappa == 1.0
@@ -54,7 +56,7 @@ def test_upper_confidence_bound(gp, target_space, random_state):
     assert acq.kappa == 0.5
 
 
-def test_l_bfgs_fails(gp, target_space, random_state):
+def test_l_bfgs_fails(target_space, random_state):
     acq = acquisition.AcquisitionFunction(random_state=random_state)
 
     def fun(x):
@@ -77,9 +79,8 @@ def test_upper_confidence_bound_with_constraints(gp, constrained_target_space, r
 def test_probability_of_improvement(gp, target_space, random_state):
     acq = acquisition.ProbabilityOfImprovement(exploration_decay=0.5, exploration_decay_delay=2, xi=0.01, random_state=random_state)
     assert acq.xi == 0.01
-
-    with pytest.raises(ValueError):
-        acq.suggest(gp=gp, target_space=target_space)
+    with pytest.raises(ValueError, match="y_max is not set"):
+        acq.base_acq(0.0, 0.0)
 
     target_space.register(params={'x': 2.5, 'y': 0.5}, target=3.0)
     acq.suggest(gp=gp, target_space=target_space)
@@ -87,18 +88,33 @@ def test_probability_of_improvement(gp, target_space, random_state):
     acq.suggest(gp=gp, target_space=target_space)
     assert acq.xi == 0.005
 
+    # no decay
+    acq = acquisition.ProbabilityOfImprovement(exploration_decay=None, xi=0.01, random_state=random_state)
+    assert acq.xi == 0.01
+    acq.suggest(gp=gp, target_space=target_space)
+    assert acq.xi == 0.01
+    acq.suggest(gp=gp, target_space=target_space)
+    assert acq.xi == 0.01
 
 def test_expected_improvement(gp, target_space, random_state):
     acq = acquisition.ExpectedImprovement(exploration_decay=0.5, exploration_decay_delay=2, xi=0.01, random_state=random_state)
     assert acq.xi == 0.01
 
-    with pytest.raises(ValueError):
-        acq.suggest(gp=gp, target_space=target_space)
+    with pytest.raises(ValueError, match="y_max is not set"):
+        acq.base_acq(0.0, 0.0)
+
     target_space.register(params={'x': 2.5, 'y': 0.5}, target=3.0)
     acq.suggest(gp=gp, target_space=target_space)
     assert acq.xi == 0.01
     acq.suggest(gp=gp, target_space=target_space)
     assert acq.xi == 0.005
+
+    acq = acquisition.ExpectedImprovement(exploration_decay=None, xi=0.01, random_state=random_state)
+    assert acq.xi == 0.01
+    acq.suggest(gp=gp, target_space=target_space)
+    assert acq.xi == 0.01
+    acq.suggest(gp=gp, target_space=target_space)
+    assert acq.xi == 0.01
 
 
 @pytest.mark.parametrize("strategy", [0., 'mean', 'min', 'max'])
@@ -143,61 +159,87 @@ def test_constant_liar_with_constraints(gp, constrained_target_space, random_sta
     with pytest.raises(acquisition.ConstraintNotSupportedError):
         acq.suggest(gp=gp, target_space=constrained_target_space)
 
+    mean = random_state.rand(10)
+    std = random_state.rand(10)
+    assert (base_acq.base_acq(mean, std) == acq.base_acq(mean, std)).all()
 
-def test_kriging_believer(gp, target_space, target_func, random_state):
-    base_acq = acquisition.UpperConfidenceBound(random_state=random_state)
-    acq = acquisition.KrigingBeliever(base_acquisition=base_acq, random_state=random_state)
 
+def test_gp_hedge(random_state):
+    acq = acquisition.GPHedge(base_acquisitions=[acquisition.UpperConfidenceBound(random_state=random_state)], random_state=random_state)
+    with pytest.raises(ValueError, match="GPHedge base acquisition function is ambiguous"):
+        acq.base_acq(0.0, 0.0)
+
+    base_acq1 = acquisition.UpperConfidenceBound()
+    base_acq2 = acquisition.ProbabilityOfImprovement(xi=0.01)
+    base_acquisitions = [base_acq1, base_acq2]
+    acq = acquisition.GPHedge(base_acquisitions=base_acquisitions)
+
+    mean = random_state.rand(10)
+    std = random_state.rand(10)
+
+    base_acq2.y_max = 1.0
+    assert (acq.base_acquisitions[0].base_acq(mean, std) == base_acq1.base_acq(mean, std)).all()
+    assert (acq.base_acquisitions[1].base_acq(mean, std) == base_acq2.base_acq(mean, std)).all()
+
+
+def test_gphedge_update_gains(random_state):
+    base_acq1 = acquisition.UpperConfidenceBound(random_state=random_state)
+    base_acq2 = acquisition.ProbabilityOfImprovement(xi=0.01, random_state=random_state)
+    base_acquisitions = [base_acq1, base_acq2]
+
+    acq = acquisition.GPHedge(base_acquisitions=base_acquisitions, random_state=random_state)
+
+    class MockGP1():
+        def __init__(self, n):
+            self.gains = np.zeros(n)
+
+        def predict(self, x):
+            res = np.random.rand(x.shape[0])
+            self.gains += res
+            return res
+
+    mock_gp = MockGP1(len(base_acquisitions))
+    for _ in range(10):
+        acq.previous_candidates = np.zeros(len(base_acquisitions))
+        acq._update_gains(mock_gp)
+        assert (mock_gp.gains == acq.gains).all()
+
+
+def test_gphedge_softmax_sampling(random_state):
+    base_acq1 = acquisition.UpperConfidenceBound(random_state=random_state)
+    base_acq2 = acquisition.ProbabilityOfImprovement(xi=0.01, random_state=random_state)
+    base_acquisitions = [base_acq1, base_acq2]
+
+    acq = acquisition.GPHedge(base_acquisitions=base_acquisitions, random_state=random_state)
+
+    class MockGP2():
+        def __init__(self, good_index=0):
+            self.good_index = good_index
+
+        def predict(self, x):
+            print(x)
+            res = -np.inf * np.ones_like(x)
+            res[self.good_index] = 1.
+            return res
+
+    for good_index in [0, 1]:
+        acq = acquisition.GPHedge(base_acquisitions=base_acquisitions)
+        acq.previous_candidates = np.zeros(len(base_acquisitions))
+        acq._update_gains(MockGP2(good_index=good_index))
+        assert good_index == acq._sample_idx_from_softmax_gains()
+
+
+def test_gphedge_integration(gp, target_space, random_state):
+    base_acq1 = acquisition.UpperConfidenceBound(random_state=random_state)
+    base_acq2 = acquisition.ProbabilityOfImprovement(xi=0.01, random_state=random_state)
+    base_acquisitions = [base_acq1, base_acq2]
+
+    acq = acquisition.GPHedge(base_acquisitions=base_acquisitions, random_state=random_state)
+    assert acq.base_acquisitions == base_acquisitions
+    with pytest.raises(ValueError, ):
+        acq.suggest(gp=gp, target_space=target_space)
     target_space.register(params={'x': 2.5, 'y': 0.5}, target=3.0)
-    target_space.register(params={'x': 1.0, 'y': 1.5}, target=2.5)
-    base_samples = np.array([base_acq.suggest(gp=gp, target_space=target_space) for _ in range(10)])
-    samples = []
 
-    assert len(acq.dummies) == 0
-    for i in range(10):
-        samples.append(acq.suggest(gp=gp, target_space=target_space))
-        assert len(acq.dummies) == len(samples)
-
-    samples = np.array(samples)
-    print(samples)
-
-    base_distance = pdist(base_samples, 'sqeuclidean').mean()
-    distance = pdist(samples, 'sqeuclidean').mean()
-
-    assert base_distance < distance
-
-    for i in range(10):
-        target_space.register(params={'x': samples[i][0], 'y': samples[i][1]}, target=target_func(samples[i]))
-
-    acq.suggest(gp=gp, target_space=target_space)
-
-    assert len(acq.dummies) == 1
-
-
-def test_kriging_believer_with_constraints(gp, constrained_target_space, target_func, random_state):
-    base_acq = acquisition.ExpectedImprovement(xi=0.1,random_state=random_state)
-    acq = acquisition.KrigingBeliever(base_acquisition=base_acq, random_state=random_state)
-
-    constrained_target_space.register(params={'x': 2.5, 'y': 0.5}, target=3.0, constraint_value=0.5)
-    constrained_target_space.register(params={'x': 1.0, 'y': 1.5}, target=2.5, constraint_value=0.5)
-    base_samples = np.array([base_acq.suggest(gp=gp, target_space=constrained_target_space) for _ in range(10)])
-    samples = []
-
-    assert len(acq.dummies) == 0
-    for i in range(10):
-        samples.append(acq.suggest(gp=gp, target_space=constrained_target_space))
-        assert len(acq.dummies) == len(samples)
-
-    samples = np.array(samples)
-
-    base_distance = pdist(base_samples, 'sqeuclidean').mean()
-    distance = pdist(samples, 'sqeuclidean').mean()
-
-    assert base_distance < distance
-
-    for i in range(10):
-        constrained_target_space.register(params={'x': samples[i][0], 'y': samples[i][1]}, target=target_func(samples[i]), constraint_value=0.5)
-
-    acq.suggest(gp=gp, target_space=constrained_target_space)
-
-    assert len(acq.dummies) == 1
+    for _ in range(5):
+        p = acq.suggest(gp=gp, target_space=target_space)
+        target_space.register(p, sum(p))

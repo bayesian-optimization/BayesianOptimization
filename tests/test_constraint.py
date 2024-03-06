@@ -1,19 +1,38 @@
 import numpy as np
-from bayes_opt import BayesianOptimization, acquisition
+from bayes_opt import BayesianOptimization, ConstraintModel
+import pytest
 from pytest import approx, raises
 from scipy.optimize import NonlinearConstraint
 
 np.random.seed(42)
 
 
-def test_single_constraint_upper():
+@pytest.fixture
+def target_function():
+    return lambda x, y: np.cos(2 * x) * np.cos(y) + np.sin(x)
 
-    def target_function(x, y):
-        return np.cos(2 * x) * np.cos(y) + np.sin(x)
+@pytest.fixture
+def constraint_function():
+    return lambda x, y: np.cos(x) * np.cos(y) - np.sin(x) * np.sin(y)
 
-    def constraint_function(x, y):
-        return np.cos(x) * np.cos(y) - np.sin(x) * np.sin(y)
+def test_constraint_property(target_function, constraint_function):
+    constraint_limit_upper = 0.5
+    constraint = NonlinearConstraint(constraint_function, -np.inf, constraint_limit_upper)
+    pbounds = {'x': (0, 6), 'y': (0, 6)}
 
+
+    optimizer = BayesianOptimization(
+        f=target_function,
+        constraint=constraint,
+        pbounds=pbounds,
+        verbose=0,
+        random_state=1,
+    )
+    assert isinstance(optimizer.constraint, ConstraintModel)
+    assert isinstance(optimizer.space.constraint, ConstraintModel)
+
+
+def test_single_constraint_upper(target_function, constraint_function):
     constraint_limit_upper = 0.5
 
     constraint = NonlinearConstraint(constraint_function, -np.inf, constraint_limit_upper)
@@ -36,14 +55,7 @@ def test_single_constraint_upper():
     assert constraint_function(**optimizer.max["params"]) <= constraint_limit_upper
 
 
-def test_single_constraint_lower():
-
-    def target_function(x, y):
-        return np.cos(2 * x) * np.cos(y) + np.sin(x)
-
-    def constraint_function(x, y):
-        return np.cos(x) * np.cos(y) - np.sin(x) * np.sin(y)
-
+def test_single_constraint_lower(target_function, constraint_function):
     constraint_limit_lower = -0.5
 
     constraint = NonlinearConstraint(constraint_function, constraint_limit_lower, np.inf)
@@ -66,14 +78,7 @@ def test_single_constraint_lower():
     assert constraint_function(**optimizer.max["params"]) >= constraint_limit_lower
 
 
-def test_single_constraint_lower_upper():
-
-    def target_function(x, y):
-        return np.cos(2 * x) * np.cos(y) + np.sin(x)
-
-    def constraint_function(x, y):
-        return np.cos(x) * np.cos(y) - np.sin(x) * np.sin(y)
-
+def test_single_constraint_lower_upper(target_function, constraint_function):
     constraint_limit_lower = -0.5
     constraint_limit_upper = 0.5
 
@@ -113,11 +118,7 @@ def test_single_constraint_lower_upper():
     assert constraint_function(x, y) == approx(optimizer.space.constraint_values[:-1], rel=1e-5, abs=1e-5)
     
 
-def test_multiple_constraints():
-
-    def target_function(x, y):
-        return np.cos(2 * x) * np.cos(y) + np.sin(x)
-
+def test_multiple_constraints(target_function):
     def constraint_function_2_dim(x, y):
         return np.array([
             -np.cos(x) * np.cos(y) + np.sin(x) * np.sin(y),
@@ -152,8 +153,7 @@ def test_multiple_constraints():
     assert constraint_function_2_dim(x, y) == approx(optimizer.constraint.approx(np.array([x, y])), rel=1e-3, abs=1e-3)
 
 
-def test_kwargs_not_the_same():
-
+def test_kwargs_not_the_same(target_function):
     def target_function(x, y):
         return np.cos(2 * x) * np.cos(y) + np.sin(x)
 
@@ -178,7 +178,7 @@ def test_kwargs_not_the_same():
             n_iter=10,
         )
 
-def test_lower_less_than_upper():
+def test_lower_less_than_upper(target_function):
     def target_function(x, y):
         return np.cos(2 * x) * np.cos(y) + np.sin(x)
 

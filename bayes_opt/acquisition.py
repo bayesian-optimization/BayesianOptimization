@@ -77,7 +77,12 @@ class AcquisitionFunction():
             Suggested point to probe next.
         """
         if len(target_space) == 0:
-            raise ValueError("Cannot suggest a point without previous samples. Use target_space.random_sample() to generate a point.")
+            msg = (
+                "Cannot suggest a point without previous samples. Use "
+                " target_space.random_sample() to generate a point and "
+                " target_space.probe(*) to evaluate it."
+            )
+            raise ValueError(msg)
         self.i += 1
         if fit_gp:
             self._fit_gp(gp=gp, target_space=target_space)
@@ -442,7 +447,7 @@ class ProbabilityOfImprovement(AcquisitionFunction):
 class ExpectedImprovement(AcquisitionFunction):
     r"""Expected Improvement acqusition function.
 
-    Similar to Probability of Improvement (`UtilityFunction.poi`), but also considers the
+    Similar to Probability of Improvement (`ProbabilityOfImprovement`), but also considers the
     magnitude of improvement.
     Calculated as
 
@@ -499,8 +504,9 @@ class ExpectedImprovement(AcquisitionFunction):
             If y_max is not set.
         """
         if self.y_max is None:
-            msg = ("y_max is not set. If you are calling this method outside "
-                   "of suggest(), you must set y_max manually."
+            msg = (
+                "y_max is not set. If you are calling this method outside "
+                "of suggest(), ensure y_max is set, or set it manually."
             )
             raise ValueError(msg)
         a = (mean - self.y_max - self.xi)
@@ -598,7 +604,7 @@ class ConstantLiar(AcquisitionFunction):
         np.ndarray
             Acquisition function value.
         """
-        return self.base_acquisition(*args, **kwargs)
+        return self.base_acquisition.base_acq(*args, **kwargs)
 
     def _copy_target_space(self, target_space: TargetSpace) -> TargetSpace:
         """Create a copy of the target space.
@@ -712,87 +718,18 @@ class ConstantLiar(AcquisitionFunction):
         return x_max
 
 
-class KrigingBeliever(AcquisitionFunction):
-    def __init__(self, base_acquisition: AcquisitionFunction, random_state=None, atol=1e-5, rtol=1e-8) -> None:
-        super().__init__(random_state)
-        self.base_acquisition = base_acquisition
-        self.dummies = []
-        self.atol = atol
-        self.rtol = rtol
-
-    def base_acq(self, *args, **kwargs):
-        return self.base_acquisition(*args, **kwargs)
-
-    def _copy_target_space(self, target_space: TargetSpace) -> TargetSpace:
-        keys = target_space.keys
-        pbounds = {key: bound for key, bound in zip(keys, target_space.bounds)}
-        target_space_copy = TargetSpace(
-            None,
-            pbounds=pbounds,
-            constraint=target_space.constraint,
-            allow_duplicate_points=target_space._allow_duplicate_points
-        )
-        target_space_copy._params = deepcopy(target_space._params)
-        target_space_copy._target = deepcopy(target_space._target)
-        if target_space.constraint is not None:
-            target_space_copy._constraint_values = deepcopy(target_space._constraint_values)
-        return target_space_copy
-
-    def _ensure_dummies_match(self) -> None:
-        if self.dummy_constraints:
-            if len(self.dummy_constraints) != len(self.dummy_targets):
-                msg = (
-                    "Number of dummy constraints " +
-                    f"{len(self.dummy_constraints)} doesn't match number of " +
-                    f" dummy targets {len(self.dummy_targets)}. This can " +
-                    "happen if constrained and unconstrained optimization is "+
-                    "mixed."
-                )
-                raise ValueError(msg)
-
-    def _remove_expired_dummies(self, target_space: TargetSpace) -> None:
-        dummies = []
-        for dummy in self.dummies:
-            close = np.isclose(dummy, target_space.params, rtol=self.rtol, atol=self.atol)
-            if not close.all(axis=1).any():
-                dummies.append(dummy)
-        self.dummies = dummies
-
-    def suggest(self, gp: GaussianProcessRegressor, target_space: TargetSpace, n_random=10_000, n_l_bfgs_b=10, fit_gp:bool=True) -> np.ndarray:
-        if len(target_space) == 0:
-            raise ValueError("Cannot suggest a point without previous samples. Use target_space.random_sample() to generate a point.")
-    
-        # Check if any dummies have been evaluated and remove them
-        self._remove_expired_dummies(target_space)
-
-        # Create a copy of the target space
-        dummy_target_space = self._copy_target_space(target_space)
-
-        if self.dummies:
-            dummy_targets = gp.predict(np.array(self.dummies).reshape((len(self.dummies), -1)))
-            if dummy_target_space.constraint is not None:
-                dummy_constraints = target_space.constraint.approx(np.array(self.dummies).reshape((len(self.dummies), -1)))
-            for idx, dummy in enumerate(self.dummies):
-                if dummy_target_space.constraint is not None:
-                    dummy_target_space.register(dummy, dummy_targets[idx].squeeze(), dummy_constraints[idx].squeeze())
-                else:
-                    dummy_target_space.register(dummy, dummy_targets[idx].squeeze())
-
-        self._fit_gp(gp=gp, target_space=dummy_target_space)
-        x_max = self.base_acquisition.suggest(gp, dummy_target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=True)
-        self.dummies.append(x_max)
-
-        return x_max
-
-
 class GPHedge(AcquisitionFunction):
     """GPHedge acquisition function.
 
-    GPHedge is a multi-armed bandit algorithm samples from a set of base
-    acquisition functions. The algorithm uses the softmax function to
-    calculate the probability of selecting each base acquisition function.
-    The probability of selecting each base acquisition function is updated
-    based on the performance of previous candidates suggested by each function.
+    At each suggestion step, GPHedge samples suggestions from each base
+    acquisition function acq_i. Then a candidate is selected from the
+    suggestions based on the on the cumulative rewards of each acq_i.
+    After evaluating the candidate, the gains are updated (in the next
+    iteration) based on the updated expectation value of the candidates.
+
+    For more information, see:
+        Brochu et al., "Portfolio Allocation for Bayesian Optimization",
+        https://arxiv.org/abs/1009.5419
 
     Parameters
     ----------
@@ -802,6 +739,7 @@ class GPHedge(AcquisitionFunction):
     random_state : int, RandomState, default None
         Set the random state for reproducibility.
     """
+
     def __init__(self, base_acquisitions: List[AcquisitionFunction], random_state=None) -> None:
         super().__init__(random_state)
         self.base_acquisitions = base_acquisitions
@@ -809,14 +747,14 @@ class GPHedge(AcquisitionFunction):
         self.gains = np.zeros(self.n_acq)
         self.previous_candidates = None
 
-    def base_acq(self):
-        """Raise an error, since the base acquisition function is ambiguous.
-        """
-        msg = ("GPHedge base acquisition function is ambiguous."
-               " You may use self.base_acquisitions[i].base_acq(mean, std)"
-               " to get the base acquisition function for the i-th acquisition."
+    def base_acq(self, *args, **kwargs):
+        """Raise an error, since the base acquisition function is ambiguous."""
+        msg = (
+            "GPHedge base acquisition function is ambiguous."
+            " You may use self.base_acquisitions[i].base_acq(mean, std)"
+            " to get the base acquisition function for the i-th acquisition."
         )
-        return ValueError(msg)
+        raise ValueError(msg)
 
     def _sample_idx_from_softmax_gains(self) -> int:
         """Sample an index weighted by the softmax of the gains."""
@@ -860,9 +798,13 @@ class GPHedge(AcquisitionFunction):
             Suggested point to probe next.
         """
         if len(target_space) == 0:
-            raise ValueError("Cannot suggest a point without previous samples. Use target_space.random_sample() to generate a point.")
+            msg = (
+                "Cannot suggest a point without previous samples. Use "
+                " target_space.random_sample() to generate a point and "
+                " target_space.probe(*) to evaluate it."
+            )
+            raise ValueError(msg)
         self.i += 1
-
         if fit_gp:
             self._fit_gp(gp=gp, target_space=target_space)
 

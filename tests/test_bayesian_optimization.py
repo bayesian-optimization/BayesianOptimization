@@ -5,6 +5,9 @@ from bayes_opt import acquisition
 from bayes_opt.logger import ScreenLogger
 from bayes_opt.event import Events, DEFAULT_EVENTS
 from bayes_opt.util import NotUniqueError
+from bayes_opt.target_space import TargetSpace
+from bayes_opt.acquisition import AcquisitionFunction
+
 import pickle
 import os
 
@@ -16,6 +19,12 @@ def target_func(**kwargs):
 
 PBOUNDS = {'p1': (0, 10), 'p2': (0, 10)}
 
+def test_properties():
+    optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
+    assert isinstance(optimizer.space, TargetSpace)
+    assert isinstance(optimizer.acquisition_function, AcquisitionFunction)
+    # constraint present tested in test_constraint.py
+    assert optimizer.constraint is None
 
 def test_register():
     optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)

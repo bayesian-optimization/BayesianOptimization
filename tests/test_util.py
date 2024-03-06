@@ -13,7 +13,6 @@ test_dir = Path(__file__).parent.resolve()
 
 
 def test_logs():
-    import pytest
     def f(x, y):
         return -x ** 2 - (y - 1) ** 2 + 1
 
@@ -35,6 +34,20 @@ def test_logs():
     )
     with pytest.raises(ValueError):
         load_logs(other_optimizer, [str(test_dir / "test_logs.log")])
+
+
+def test_logs_str():
+    def f(x, y):
+        return -x ** 2 - (y - 1) ** 2 + 1
+
+    optimizer = BayesianOptimization(
+        f=f,
+        pbounds={"x": (-200, 200), "y": (-200, 200)}
+    )
+    assert len(optimizer.space) == 0
+
+    load_logs(optimizer, str(test_dir / "test_logs.log"))
+    assert len(optimizer.space) == 5
 
 
 def test_logs_bounds():
