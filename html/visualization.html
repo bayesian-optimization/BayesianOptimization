@@ -112,8 +112,7 @@
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bayes_opt</span> <span class="kn">import</span> <span class="n">BayesianOptimization</span>
 <span class="kn">from</span> <span class="nn">bayes_opt</span> <span class="kn">import</span> <span class="n">UtilityFunction</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">gridspec</span>
 <span class="o">%</span><span class="k">matplotlib</span> inline
 </pre></div>
@@ -283,24 +282,15 @@
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |
 -------------------------------------
-| 3         | 0.5234    | -0.9694   |
+| 3         | 0.3142    | 9.455     |
 =====================================
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-C:\Users\Brendan\Documents\temp\temp\BayesianOptimization\venv\lib\site-packages\sklearn\gaussian_process\kernels.py:420: ConvergenceWarning: The optimal value found for dimension 0 of parameter length_scale is close to the specified lower bound 1e-05. Decreasing the bound and calling fit again may find a better value.
-  warnings.warn(
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/visualization_14_2.png" src="_images/visualization_14_2.png" />
+<img alt="_images/visualization_14_1.png" src="_images/visualization_14_1.png" />
 </div>
 </div>
 </section>
@@ -322,7 +312,7 @@ C:\Users\Brendan\Documents\temp\temp\BayesianOptimization\venv\lib\site-packages
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |
 -------------------------------------
-| 4         | 0.8164    | 3.116     |
+| <span class="ansi-magenta-intense-fg">4        </span> | <span class="ansi-magenta-intense-fg">0.8555   </span> | <span class="ansi-magenta-intense-fg">3.035    </span> |
 =====================================
 </pre></div></div>
 </div>
@@ -352,7 +342,7 @@ C:\Users\Brendan\Documents\temp\temp\BayesianOptimization\venv\lib\site-packages
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |
 -------------------------------------
-| <span class="ansi-magenta-intense-fg">5        </span> | <span class="ansi-magenta-intense-fg">1.243    </span> | <span class="ansi-magenta-intense-fg">2.449    </span> |
+| <span class="ansi-magenta-intense-fg">5        </span> | <span class="ansi-magenta-intense-fg">1.402    </span> | <span class="ansi-magenta-intense-fg">2.005    </span> |
 =====================================
 </pre></div></div>
 </div>
@@ -382,7 +372,7 @@ C:\Users\Brendan\Documents\temp\temp\BayesianOptimization\venv\lib\site-packages
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |
 -------------------------------------
-| <span class="ansi-magenta-intense-fg">6        </span> | <span class="ansi-magenta-intense-fg">1.283    </span> | <span class="ansi-magenta-intense-fg">1.61     </span> |
+| 6         | 1.007     | 0.3179    |
 =====================================
 </pre></div></div>
 </div>
@@ -412,7 +402,7 @@ C:\Users\Brendan\Documents\temp\temp\BayesianOptimization\venv\lib\site-packages
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |
 -------------------------------------
-| 7         | 0.2118    | 10.0      |
+| 7         | 0.2017    | -2.0      |
 =====================================
 </pre></div></div>
 </div>
@@ -442,7 +432,7 @@ C:\Users\Brendan\Documents\temp\temp\BayesianOptimization\venv\lib\site-packages
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |
 -------------------------------------
-| 8         | 1.021     | 5.704     |
+| 8         | 1.023     | 5.756     |
 =====================================
 </pre></div></div>
 </div>
@@ -472,7 +462,7 @@ C:\Users\Brendan\Documents\temp\temp\BayesianOptimization\venv\lib\site-packages
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |
 -------------------------------------
-| 9         | 0.9572    | 0.488     |
+| 9         | 1.057     | 1.237     |
 =====================================
 </pre></div></div>
 </div>
