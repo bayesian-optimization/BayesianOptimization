@@ -5,6 +5,11 @@ from .logger import ScreenLogger, JSONLogger
 from .constraint import ConstraintModel
 from . import acquisition
 
+import importlib.metadata
+__version__ = importlib.metadata.version('bayesian-optimization')
+
+
+
 __all__ = [
     "acquisition",
     "BayesianOptimization",
