@@ -89,7 +89,7 @@ All we need to get started is to instantiate a `bayesian_optimization` object sp
 
 
 ```python
-from bayes_opt import bayesian_optimization
+from bayes_opt.bayesian_optimization import BayesianOptimization
 
 # Bounded region of parameter space
 pbounds = {'x': (2, 4), 'y': (-3, 3)}
