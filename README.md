@@ -85,23 +85,23 @@ def black_box_function(x, y):
 
 ### 2. Getting Started
 
-All we need to get started is to instantiate a `BayesianOptimization` object specifying a function to be optimized `f`, and its parameters with their corresponding bounds, `pbounds`. This is a constrained optimization technique, so you must specify the minimum and maximum values that can be probed for each parameter in order for it to work
+All we need to get started is to instantiate a `bayesian_optimization` object specifying a function to be optimized `f`, and its parameters with their corresponding bounds, `pbounds`. This is a constrained optimization technique, so you must specify the minimum and maximum values that can be probed for each parameter in order for it to work
 
 
 ```python
-from bayes_opt import BayesianOptimization
+from bayes_opt import bayesian_optimization
 
 # Bounded region of parameter space
 pbounds = {'x': (2, 4), 'y': (-3, 3)}
 
-optimizer = BayesianOptimization(
+optimizer = bayesian_optimization(
     f=black_box_function,
     pbounds=pbounds,
     random_state=1,
 )
 ```
 
-The BayesianOptimization object will work out of the box without much tuning needed. The main method you should be aware of is `maximize`, which does exactly what you think it does.
+The bayesian_optimization object will work out of the box without much tuning needed. The main method you should be aware of is `maximize`, which does exactly what you think it does.
 
 There are many parameters you can pass to maximize, nonetheless, the most important ones are:
 - `n_iter`: How many steps of bayesian optimization you want to perform. The more steps the more likely to find a good maximum you are.
@@ -189,7 +189,7 @@ An example of using the `SequentialDomainReductionTransformer` is shown in the [
 
 ### 3. Guiding the optimization
 
-It is often the case that we have an idea of regions of the parameter space where the maximum of our function might lie. For these situations the `BayesianOptimization` object allows the user to specify points to be probed. By default these will be explored lazily (`lazy=True`), meaning these points will be evaluated only the next time you call `maximize`. This probing process happens before the gaussian process takes over.
+It is often the case that we have an idea of regions of the parameter space where the maximum of our function might lie. For these situations the `bayesian_optimization` object allows the user to specify points to be probed. By default these will be explored lazily (`lazy=True`), meaning these points will be evaluated only the next time you call `maximize`. This probing process happens before the gaussian process takes over.
 
 Parameters can be passed as dictionaries or as an iterable.
 
@@ -217,7 +217,7 @@ optimizer.maximize(init_points=0, n_iter=0)
 
 ### 4. Saving, loading and restarting
 
-By default you can follow the progress of your optimization by setting `verbose>0` when instantiating the `BayesianOptimization` object. If you need more control over logging/alerting you will need to use an observer. For more information about observers checkout the advanced tour notebook. Here we will only see how to use the native `JSONLogger` object to save to and load progress from files.
+By default you can follow the progress of your optimization by setting `verbose>0` when instantiating the `bayesian_optimization` object. If you need more control over logging/alerting you will need to use an observer. For more information about observers checkout the advanced tour notebook. Here we will only see how to use the native `JSONLogger` object to save to and load progress from files.
 
 #### 4.1 Saving progress
 
@@ -231,7 +231,7 @@ The observer paradigm works by:
 1. Instantiating an observer object.
 2. Tying the observer object to a particular event fired by an optimizer.
 
-The `BayesianOptimization` object fires a number of internal events during optimization, in particular, everytime it probes the function and obtains a new parameter-target combination it will fire an `Events.OPTIMIZATION_STEP` event, which our logger will listen to.
+The `bayesian_optimization` object fires a number of internal events during optimization, in particular, everytime it probes the function and obtains a new parameter-target combination it will fire an `Events.OPTIMIZATION_STEP` event, which our logger will listen to.
 
 **Caveat:** The logger will not look back at previously probed points.
 
@@ -251,14 +251,14 @@ By default the previous data in the json file is removed. If you want to keep wo
 
 #### 4.2 Loading progress
 
-Naturally, if you stored progress you will be able to load that onto a new instance of `BayesianOptimization`. The easiest way to do it is by invoking the `load_logs` function, from the `util` submodule.
+Naturally, if you stored progress you will be able to load that onto a new instance of `bayesian_optimization`. The easiest way to do it is by invoking the `load_logs` function, from the `util` submodule.
 
 
 ```python
 from bayes_opt.util import load_logs
 
 
-new_optimizer = BayesianOptimization(
+new_optimizer = bayesian_optimization(
     f=black_box_function,
     pbounds={"x": (-2, 2), "y": (-2, 2)},
     verbose=2,
