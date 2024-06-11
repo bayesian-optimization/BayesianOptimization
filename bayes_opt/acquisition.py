@@ -87,12 +87,12 @@ class AcquisitionFunction():
         if fit_gp:
             self._fit_gp(gp=gp, target_space=target_space)
 
-        acq = self._get_acq(self.base_acq, gp=gp, constraint=target_space.constraint)
+        acq = self._get_acq(gp=gp, constraint=target_space.constraint)
         x_max = self._acq_min(acq, target_space.bounds, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b)
         self._update_params()
         return x_max
 
-    def _get_acq(self, base_acq: Callable, gp: GaussianProcessRegressor, constraint: Union[ConstraintModel, None] = None) -> Callable:
+    def _get_acq(self, gp: GaussianProcessRegressor, constraint: Union[ConstraintModel, None] = None) -> Callable:
         """Prepare the acquisition function for minimization.
 
         This transformers a base_acq Callable, which takes `mean` and `std` as
@@ -102,10 +102,6 @@ class AcquisitionFunction():
 
         Parameters
         ----------
-        base_acq : Callable
-            The base acquisition function. Should be scalar and take `mean` and
-            `std` as arguments.
-
         gp : GaussianProcessRegressor
             A fitted Gaussian Process.
 
@@ -126,14 +122,14 @@ class AcquisitionFunction():
                     warnings.simplefilter("ignore")
                     mean, std = gp.predict(x, return_std=True)
                     p_constraints = constraint.predict(x)
-                return -1 * base_acq(mean, std) * p_constraints
+                return -1 * self.base_acq(mean, std) * p_constraints
         else:
             def acq(x):
                 x = x.reshape(-1, dim)
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore")
                     mean, std = gp.predict(x, return_std=True)
-                return -1 * base_acq(mean, std)
+                return -1 * self.base_acq(mean, std)
         return acq
 
     def _acq_min(self, acq: Callable, bounds: np.ndarray, n_random=10_000, n_l_bfgs_b=10) -> np.ndarray:
