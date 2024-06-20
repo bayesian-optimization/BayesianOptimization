@@ -2,6 +2,7 @@
 from __future__ import print_function
 import os
 import json
+import numpy as np
 from .observer import _Tracker
 from .event import Events
 from colorama import Fore, just_fix_windows_console
@@ -291,6 +292,9 @@ class JSONLogger(_Tracker):
 
             if "allowed" in data: # fix: github.com/fmfn/BayesianOptimization/issues/361
                 data["allowed"] = bool(data["allowed"])
+            
+            if "constraint" in data and isinstance(data["constraint"], np.ndarray):
+                data["constraint"] = data["constraint"].tolist()
 
             with open(self._path, "a") as f:
                 f.write(json.dumps(data) + "\n")
