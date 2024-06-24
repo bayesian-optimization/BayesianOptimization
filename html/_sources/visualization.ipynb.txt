@@ -140,7 +140,7 @@
     "    steps = len(optimizer.space)\n",
     "    fig.suptitle(\n",
     "        'Gaussian Process and Utility Function After {} Steps'.format(steps),\n",
-    "        fontdict={'size':30}\n",
+    "        fontsize=30\n",
     "    )\n",
     "    \n",
     "    gs = gridspec.GridSpec(2, 1, height_ratios=[3, 1]) \n",
