@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bayesian-optimization"
-version = "1.4.3"
+version = "1.5.0"
 description = "Bayesian Optimization package"
 authors = ["Fernando Nogueira"]
 license = "MIT"
@@ -9,11 +9,10 @@ packages = [{include = "bayes_opt"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-scikit-learn = ">=1.0.0"
-numpy = ">=1.9.0"
-scipy = ">=1.0.0"
+scikit-learn = "^1.0.0"
+numpy = "^1.9.0"
+scipy = "^1.0.0"
 colorama = "^0.4.6"
-
 
 
 [tool.poetry.group.dev]  # for testing/developing
