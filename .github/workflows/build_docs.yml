@@ -33,7 +33,7 @@ jobs:
       - name: build sphinx docs
         run: |
           cd docsrc
-          make github
+          poetry run make github
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.ref == 'refs/heads/master' }}
