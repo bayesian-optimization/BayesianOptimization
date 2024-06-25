@@ -31,6 +31,12 @@ nbformat = "^5.9.2"
 nbconvert = "^7.14.2"
 jupyter = "^1.0.0"
 matplotlib = "^3.0"
+sphinx = "^7.3.7"
+nbsphinx = "^0.9.4"
+sphinx-rtd-theme = "^2.0.0"
+jupyter = "^1.0.0"
+myst-parser = "^3.0.1"
+
 
 
 [build-system]
