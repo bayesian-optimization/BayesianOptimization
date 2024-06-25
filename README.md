@@ -6,7 +6,7 @@
 
 ![tests](https://github.com/bayesian-optimization/BayesianOptimization/actions/workflows/run_tests.yml/badge.svg)
 [![Codecov](https://codecov.io/github/bayesian-optimization/BayesianOptimization/badge.svg?branch=master&service=github)](https://codecov.io/github/bayesian-optimization/BayesianOptimization?branch=master)
-[![Pypi](https://img.shields.io/pypi/v/bayesian-optimization.svg)](https://pypi.python.org/pypi/bayesian-optimization)
+[![Pypi](https://img.shields.io/pypi/v/bayesian-optimization.svg)](https://pypi.python.org/pypi/bayesian-optimization)![PyPI - Python Version](https://img.shields.io/pypi/pyversions/bayesian-optimization)
 
 Pure Python implementation of bayesian global optimization with gaussian
 processes.

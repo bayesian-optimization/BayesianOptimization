@@ -89,6 +89,40 @@ def test_logs_constraint():
     assert len(optimizer.space) == 7
 
 
+def test_logs_constraint():
+
+    def f(x, y):
+        return -x ** 2 - (y - 1) ** 2 + 1
+
+    def c(x, y):
+        return np.array([
+            - np.cos(x) * np.cos(y) + np.sin(x) * np.sin(y),
+            - np.cos(x) * np.cos(-y) + np.sin(x) * np.sin(-y)
+        ])
+
+    constraint_lower = np.array([-np.inf, -np.inf])
+    constraint_upper = np.array([0.6, 0.6])
+
+    constraint = NonlinearConstraint(c, constraint_lower, constraint_upper)
+
+    optimizer = BayesianOptimization(
+        f=f,
+        pbounds={"x": (-200, 200), "y": (-200, 200)},
+        constraint=constraint
+    )
+
+    with pytest.raises(KeyError):
+        load_logs(optimizer, [str(test_dir / "test_logs.log")])
+    
+    with pytest.raises(ValueError):
+        load_logs(optimizer, [str(test_dir / "test_logs_constrained.log")])
+
+    load_logs(optimizer, [str(test_dir / "test_logs_multiple_constraints.log")])
+
+    print(optimizer.space)
+    assert len(optimizer.space) == 12
+
+
 if __name__ == '__main__':
     r"""
     CommandLine:

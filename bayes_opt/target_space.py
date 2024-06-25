@@ -312,21 +312,30 @@ class TargetSpace():
             if not np.all((self._bounds[:, 0] <= x) & (x <= self._bounds[:, 1])):
                 warn(f'\nData point {x} is outside the bounds of the parameter space. ', stacklevel=2)
 
-        self._params = np.concatenate([self._params, x.reshape(1, -1)])
-        self._target = np.concatenate([self._target, [target]])
+        # Make copies of the data, so as not to modify the originals incase something fails
+        # during the registration process. This prevents out-of-sync data.
+        params_copy = np.concatenate([self._params, x.reshape(1, -1)])
+        target_copy = np.concatenate([self._target, [target]])
+        cache_copy = self._cache.copy() # shallow copy suffices
 
         if self._constraint is None:
             # Insert data into unique dictionary
-            self._cache[_hashable(x.ravel())] = target
+            cache_copy[_hashable(x.ravel())] = target
         else:
             if constraint_value is None:
                 msg = ("When registering a point to a constrained TargetSpace" +
                        " a constraint value needs to be present.")
                 raise ValueError(msg)
             # Insert data into unique dictionary
-            self._cache[_hashable(x.ravel())] = (target, constraint_value)
-            self._constraint_values = np.concatenate([self._constraint_values,
-                                                      [constraint_value]])
+            cache_copy[_hashable(x.ravel())] = (target, constraint_value)
+            constraint_values_copy = np.concatenate([self._constraint_values,
+                                                     [constraint_value]])
+            self._constraint_values = constraint_values_copy
+
+        # Operations passed, update the variables
+        self._params = params_copy
+        self._target = target_copy
+        self._cache = cache_copy
 
     def probe(self, params):
         """Evaluate the target function on a point and register the result.
