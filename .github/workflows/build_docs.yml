@@ -24,12 +24,9 @@ jobs:
         run: sudo apt-get install -y pandoc
       - name: Install Poetry
         uses: snok/install-poetry@v1
-      - name: Install test dependencies
+      - name: Install package and test dependencies
         run: |
           poetry install --with dev,nbtools
-      - name: Install package
-        run: |
-          poetry install
       - name: build sphinx docs
         run: |
           cd docsrc
