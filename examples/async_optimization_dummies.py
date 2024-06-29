@@ -10,8 +10,8 @@ from bayes_opt import BayesianOptimization
 from bayes_opt import acquisition
 from scipy.optimize import rosen
 
-ASYNC_METHOD = 'believe' # 'lie_max'
-assert ASYNC_METHOD in ['believe', 'lie_max', 'none']
+ASYNC_METHOD = 'lie_max'
+assert ASYNC_METHOD in ['lie_max', 'none']
 def _closest_distance(point, points):
     return min(np.linalg.norm(point - p) for p in points if p is not point)
 
@@ -31,8 +31,7 @@ def optimize(
 
     if ASYNC_METHOD == 'lie_max':
         acquisition_function = acquisition.ConstantLiar(acquisition_function, 'max')
-    elif ASYNC_METHOD == 'believe':
-        acquisition_function = acquisition.KrigingBeliever(acquisition_function)
+
 
     optimizer = BayesianOptimization(
         f=None,
@@ -72,10 +71,8 @@ for num_workers in workers_each:
     all_results[num_workers] = samples
 
 fig, axs = plt.subplots(2, 2)
-if ASYNC_METHOD == 'believe':
-    acquisition_function_str = "Kriging Believer (UCB)"
-elif ASYNC_METHOD == 'lie_max':
-    acquisition_function_str = "Constant Max Lier (UCB)"
+if ASYNC_METHOD == 'lie_max':
+    acquisition_function_str = "Constant Max Liar (UCB)"
 else:
     acquisition_function_str = "UCB"
 
