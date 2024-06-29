@@ -1,7 +1,6 @@
 """Contains utility functions."""
 import json
 import numpy as np
-import json
 
 
 class NotUniqueError(Exception):

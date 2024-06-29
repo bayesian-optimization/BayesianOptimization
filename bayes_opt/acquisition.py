@@ -62,7 +62,7 @@ class AcquisitionFunction():
             if target_space.constraint is not None:
                 target_space.constraint.fit(target_space.params, target_space._constraint_values)
 
-    def suggest(self, gp: GaussianProcessRegressor, target_space: TargetSpace, n_random=10_000, n_l_bfgs_b=10, fit_gp:bool=True):
+    def suggest(self, gp: GaussianProcessRegressor, target_space: TargetSpace, n_random=10_000, n_l_bfgs_b=10, fit_gp: bool=True):
         """Suggest a promising point to probe next.
 
         Parameters
@@ -311,7 +311,7 @@ class UpperConfidenceBound(AcquisitionFunction):
         """
         return mean + self.kappa * std
 
-    def suggest(self, gp: GaussianProcessRegressor, target_space: TargetSpace, n_random=10_000, n_l_bfgs_b=10, fit_gp:bool=True) -> np.ndarray:
+    def suggest(self, gp: GaussianProcessRegressor, target_space: TargetSpace, n_random=10_000, n_l_bfgs_b=10, fit_gp: bool=True) -> np.ndarray:
         """Suggest a promising point to probe next.
 
         Parameters
@@ -413,7 +413,7 @@ class ProbabilityOfImprovement(AcquisitionFunction):
         z = (mean - self.y_max - self.xi)/std
         return norm.cdf(z)
  
-    def suggest(self, gp: GaussianProcessRegressor, target_space: TargetSpace, n_random=10_000, n_l_bfgs_b=10, fit_gp:bool=True) -> np.ndarray:
+    def suggest(self, gp: GaussianProcessRegressor, target_space: TargetSpace, n_random=10_000, n_l_bfgs_b=10, fit_gp: bool=True) -> np.ndarray:
         """Suggest a promising point to probe next.
 
         Parameters
@@ -440,7 +440,7 @@ class ProbabilityOfImprovement(AcquisitionFunction):
             Suggested point to probe next.
         """
         y_max = target_space._target_max()
-        if not target_space.empty and y_max is None:
+        if y_max is None and not target_space.empty:
             # If target space is empty, let base class handle the error
             msg = (
                 "Cannot suggest a point without an allowed point. Use " +
@@ -527,7 +527,7 @@ class ExpectedImprovement(AcquisitionFunction):
         z = a / std
         return a * norm.cdf(z) + std * norm.pdf(z)
 
-    def suggest(self, gp: GaussianProcessRegressor, target_space: TargetSpace, n_random=10_000, n_l_bfgs_b=10, fit_gp:bool=True) -> np.ndarray:
+    def suggest(self, gp: GaussianProcessRegressor, target_space: TargetSpace, n_random=10_000, n_l_bfgs_b=10, fit_gp: bool=True) -> np.ndarray:
         """Suggest a promising point to probe next.
 
         Parameters
@@ -554,7 +554,7 @@ class ExpectedImprovement(AcquisitionFunction):
             Suggested point to probe next.
         """
         y_max = target_space._target_max()
-        if not target_space.empty and y_max is None:
+        if y_max is None and not target_space.empty:
             # If target space is empty, let base class handle the error
             msg = (
                 "Cannot suggest a point without an allowed point. Use " +
@@ -671,7 +671,7 @@ class ConstantLiar(AcquisitionFunction):
                 dummies.append(dummy)
         self.dummies = dummies
         
-    def suggest(self, gp: GaussianProcessRegressor, target_space: TargetSpace, n_random=10_000, n_l_bfgs_b=10, fit_gp:bool=True) -> np.ndarray:
+    def suggest(self, gp: GaussianProcessRegressor, target_space: TargetSpace, n_random=10_000, n_l_bfgs_b=10, fit_gp: bool=True) -> np.ndarray:
         """Suggest a promising point to probe next.
 
         Parameters
@@ -796,7 +796,7 @@ class GPHedge(AcquisitionFunction):
         self.gains += rewards
         self.previous_candidates = None
 
-    def suggest(self, gp: GaussianProcessRegressor, target_space: TargetSpace, n_random=10_000, n_l_bfgs_b=10, fit_gp:bool=True) -> np.ndarray:
+    def suggest(self, gp: GaussianProcessRegressor, target_space: TargetSpace, n_random=10_000, n_l_bfgs_b=10, fit_gp: bool=True) -> np.ndarray:
         """Suggest a promising point to probe next.
 
         Parameters
