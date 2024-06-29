@@ -18,6 +18,18 @@ class ConstraintNotSupportedError(Exception):
     pass
 
 
+class NoValidPointRegisteredError(Exception):
+    """Raised when an acquisition function depends on previous points but none are registered."""
+
+    pass
+
+
+class TargetSpaceEmptyError(Exception):
+    """Raised when the target space is empty."""
+
+    pass
+
+
 class AcquisitionFunction():
     """Base class for acquisition functions.
 
@@ -82,7 +94,7 @@ class AcquisitionFunction():
                 " target_space.random_sample() to generate a point and "
                 " target_space.probe(*) to evaluate it."
             )
-            raise ValueError(msg)
+            raise TargetSpaceEmptyError(msg)
         self.i += 1
         if fit_gp:
             self._fit_gp(gp=gp, target_space=target_space)
@@ -427,10 +439,16 @@ class ProbabilityOfImprovement(AcquisitionFunction):
         np.ndarray
             Suggested point to probe next.
         """
-        y_max = target_space.max()
-        if y_max is None:
-            raise ValueError("Cannot suggest a point without previous samples. Use target_space.random_sample() to generate a point.")
-        self.y_max = y_max['target']
+        y_max = target_space._target_max()
+        if not target_space.empty and y_max is None:
+            # If target space is empty, let base class handle the error
+            msg = (
+                "Cannot suggest a point without an allowed point. Use " +
+                "target_space.random_sample() to generate a point until " +
+                " at least one point that satisfies the constraints is found."
+            )
+            raise NoValidPointRegisteredError(msg)
+        self.y_max = y_max
         return super().suggest(gp=gp, target_space=target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=fit_gp)
 
     def _update_params(self) -> None:
@@ -535,10 +553,16 @@ class ExpectedImprovement(AcquisitionFunction):
         np.ndarray
             Suggested point to probe next.
         """
-        y_max = target_space.max()
-        if y_max is None:
-            raise ValueError("Cannot suggest a point without previous samples. Use target_space.random_sample() to generate a point.")
-        self.y_max = y_max['target']
+        y_max = target_space._target_max()
+        if not target_space.empty and y_max is None:
+            # If target space is empty, let base class handle the error
+            msg = (
+                "Cannot suggest a point without an allowed point. Use " +
+                "target_space.random_sample() to generate a point until " +
+                " at least one point that satisfies the constraints is found."
+            )
+            raise NoValidPointRegisteredError(msg)
+        self.y_max = y_max
 
         return super().suggest(gp=gp, target_space=target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=fit_gp)
 
@@ -674,7 +698,12 @@ class ConstantLiar(AcquisitionFunction):
             Suggested point to probe next.
         """
         if len(target_space) == 0:
-            raise ValueError("Cannot suggest a point without previous samples. Use target_space.random_sample() to generate a point.")
+            msg = (
+                "Cannot suggest a point without previous samples. Use "
+                " target_space.random_sample() to generate a point and "
+                " target_space.probe(*) to evaluate it."
+            )
+            raise TargetSpaceEmptyError(msg)
 
         if target_space.constraint is not None:
             msg = (
@@ -750,7 +779,7 @@ class GPHedge(AcquisitionFunction):
             " You may use self.base_acquisitions[i].base_acq(mean, std)"
             " to get the base acquisition function for the i-th acquisition."
         )
-        raise ValueError(msg)
+        raise TypeError(msg)
 
     def _sample_idx_from_softmax_gains(self) -> int:
         """Sample an index weighted by the softmax of the gains."""
@@ -799,7 +828,7 @@ class GPHedge(AcquisitionFunction):
                 " target_space.random_sample() to generate a point and "
                 " target_space.probe(*) to evaluate it."
             )
-            raise ValueError(msg)
+            raise TargetSpaceEmptyError(msg)
         self.i += 1
         if fit_gp:
             self._fit_gp(gp=gp, target_space=target_space)
