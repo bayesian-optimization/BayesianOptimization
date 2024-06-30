@@ -53,7 +53,7 @@ class AcquisitionFunction(abc.ABC):
     @abc.abstractmethod
     def base_acq(self, *args, **kwargs):
         """Provide access to the base acquisition function."""
-        pass
+        pass # pragma: no cover
 
     def _fit_gp(self, gp: GaussianProcessRegressor, target_space: TargetSpace) -> None:
         # Sklearn's GP throws a large number of warnings at times, but
@@ -175,6 +175,8 @@ class AcquisitionFunction(abc.ABC):
             Parameters maximizing the acquisition function.
 
         """
+        if n_random == 0 and n_l_bfgs_b == 0:
+            raise ValueError("Either n_random or n_l_bfgs_b needs to be greater than 0.")
         x_min_r, min_acq_r = self._random_sample_minimize(acq, bounds, n_random=n_random)
         x_min_l, min_acq_l = self._l_bfgs_b_minimize(acq, bounds, n_x_seeds=n_l_bfgs_b)
         if min_acq_r < min_acq_l:
@@ -200,9 +202,14 @@ class AcquisitionFunction(abc.ABC):
 
         Returns
         -------
-        np.ndarray
+        x_min : np.ndarray
             Random sample minimizing the acquisition function.
+
+        min_acq : float
+            Acquisition function value at `x_min`
         """
+        if n_random == 0:
+            return None, np.inf
         x_tries = self.random_state.uniform(bounds[:, 0], bounds[:, 1], size=(n_random, bounds.shape[0]))
         ys = acq(x_tries)
         x_min = x_tries[ys.argmin()]
@@ -227,12 +234,17 @@ class AcquisitionFunction(abc.ABC):
 
         Returns
         -------
-        np.ndarray
+        x_min : np.ndarray
             Minimal result of the L-BFGS-B optimizer.
+
+        min_acq : float
+            Acquisition function value at `x_min`
         """
+        if n_x_seeds == 0:
+            return None, np.inf
         x_seeds = self.random_state.uniform(bounds[:, 0], bounds[:, 1], size=(n_x_seeds, bounds.shape[0]))
         
-        max_acq = None
+        min_acq = None
         for x_try in x_seeds:
             # Find the minimum of minus the acquisition function
             res = minimize(acq,
@@ -245,17 +257,17 @@ class AcquisitionFunction(abc.ABC):
                 continue
 
             # Store it if better than previous minimum(maximum).
-            if max_acq is None or np.squeeze(res.fun) >= max_acq:
-                x_max = res.x
-                max_acq = np.squeeze(res.fun)
+            if min_acq is None or np.squeeze(res.fun) >= min_acq:
+                x_min = res.x
+                min_acq = np.squeeze(res.fun)
 
-        if max_acq is None:
-            max_acq = np.inf
-            x_max = np.array([np.nan]*bounds.shape[0])
+        if min_acq is None:
+            min_acq = np.inf
+            x_min = np.array([np.nan]*bounds.shape[0])
 
         # Clip output to make sure it lies within the bounds. Due to floating
         # point technicalities this is not always the case.
-        return np.clip(x_max, bounds[:, 0], bounds[:, 1]), max_acq
+        return np.clip(x_min, bounds[:, 0], bounds[:, 1]), min_acq
 
     def _update_params(self) -> None:
         """Update the parameters of the acquisition function."""

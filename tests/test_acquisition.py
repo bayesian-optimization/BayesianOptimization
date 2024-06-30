@@ -5,8 +5,8 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from bayes_opt.target_space import TargetSpace
 from bayes_opt.constraint import ConstraintModel
 from scipy.spatial.distance import pdist
-from bayes_opt import acquisition 
-# TODO: Add tests that checks that the acq_max actually returns the maximum
+from bayes_opt import acquisition
+
 
 @pytest.fixture
 def target_func():
@@ -34,11 +34,49 @@ def constrained_target_space(target_func):
     return TargetSpace(target_func=target_func, pbounds={'x': (1, 4), 'y': (0, 3)}, constraint=constraint_model)
 
 
+class MockAcquisition(acquisition.AcquisitionFunction):
+    def __init__(self, random_state=None):
+        super().__init__(random_state=random_state)
+
+    def _get_acq(self, gp: GaussianProcessRegressor, constraint: ConstraintModel | None = None):
+        def mock_acq(x: np.ndarray):
+            return (3-x[..., 0])**2 + (1-x[..., 1])**2
+        return mock_acq
+
+    def base_acq(self, mean, std):
+        pass
+
+
 def test_base_acquisition():
     acq = acquisition.UpperConfidenceBound()
     assert isinstance(acq.random_state, np.random.RandomState)
     acq = acquisition.UpperConfidenceBound(random_state=42)
     assert isinstance(acq.random_state, np.random.RandomState)
+
+
+def test_acquisition_optimization(gp, target_space):
+    acq = MockAcquisition(random_state=42)
+    target_space.register(params={'x': 2.5, 'y': 0.5}, target=3.0)
+    res = acq.suggest(gp=gp, target_space=target_space)
+    assert np.array([3., 1.]) == pytest.approx(res)
+
+    with pytest.raises(ValueError):
+        acq.suggest(gp=gp, target_space=target_space, n_random=0, n_l_bfgs_b=0)
+
+
+def test_acquisition_optimization_only_random(gp, target_space):
+    acq = MockAcquisition(random_state=42)
+    target_space.register(params={'x': 2.5, 'y': 0.5}, target=3.0)
+    res = acq.suggest(gp=gp, target_space=target_space, n_l_bfgs_b=0, n_random=10_000)
+    # very lenient comparison as we're just considering random samples
+    assert np.array([3., 1.]) == pytest.approx(res, abs=1e-1, rel=1e-1)
+
+
+def test_acquisition_optimization_only_l_bfgs_b(gp, target_space):
+    acq = MockAcquisition(random_state=42)
+    target_space.register(params={'x': 2.5, 'y': 0.5}, target=3.0)
+    res = acq.suggest(gp=gp, target_space=target_space, n_l_bfgs_b=10, n_random=0)
+    assert np.array([3., 1.]) == pytest.approx(res)
 
 
 def test_upper_confidence_bound(gp, target_space, random_state):
@@ -180,6 +218,14 @@ def test_constant_liar(gp, target_space, target_func, random_state, strategy):
     acq.suggest(gp=gp, target_space=target_space)
 
     assert len(acq.dummies) == 1
+
+
+def test_constant_liar_invalid_strategy():
+    with pytest.raises(ValueError):
+        acquisition.ConstantLiar(
+            acquisition.UpperConfidenceBound,
+            strategy="definitely-an-invalid-strategy"
+        )
 
 
 def test_constant_liar_with_constraints(gp, constrained_target_space, random_state):
