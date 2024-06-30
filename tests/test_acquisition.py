@@ -38,7 +38,7 @@ class MockAcquisition(acquisition.AcquisitionFunction):
     def __init__(self, random_state=None):
         super().__init__(random_state=random_state)
 
-    def _get_acq(self, gp: GaussianProcessRegressor, constraint: ConstraintModel | None = None):
+    def _get_acq(self, gp, constraint=None):
         def mock_acq(x: np.ndarray):
             return (3-x[..., 0])**2 + (1-x[..., 1])**2
         return mock_acq
