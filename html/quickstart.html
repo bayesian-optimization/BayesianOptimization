@@ -154,9 +154,9 @@ for ideas on how to implement bayesian optimization in a distributed fashion usi
 <section id="how-does-it-work">
 <h2>How does it work?<a class="headerlink" href="#how-does-it-work" title="Link to this heading"></a></h2>
 <p>Bayesian optimization works by constructing a posterior distribution of functions (gaussian process) that best describes the function you want to optimize. As the number of observations grows, the posterior distribution improves, and the algorithm becomes more certain of which regions in parameter space are worth exploring and which are not, as seen in the picture below.</p>
-<p><img alt="BayesianOptimization in action" src="_images/bo_example.png" /></p>
+<p><img alt="BayesianOptimization in action" src="docsrc/static/bo_example.png" /></p>
 <p>As you iterate over and over, the algorithm balances its needs of exploration and exploitation taking into account what it knows about the target function. At each step a Gaussian Process is fitted to the known samples (points previously explored), and the posterior distribution, combined with a exploration strategy (such as UCB (Upper Confidence Bound), or EI (Expected Improvement)), are used to determine the next point that should be explored (see the gif below).</p>
-<p><img alt="BayesianOptimization in action" src="_images/bayesian_optimization.gif" /></p>
+<p><img alt="BayesianOptimization in action" src="docsrc/static/bayesian_optimization.gif" /></p>
 <p>This process is designed to minimize the number of steps required to find a combination of parameters that are close to the optimal combination. To do so, this method uses a proxy optimization problem (finding the maximum of the acquisition function) that, albeit still a hard problem, is cheaper (in the computational sense) and common tools can be employed. Therefore Bayesian Optimization is most adequate for situations where sampling the function to be optimized is a very expensive endeavor. See the references for a proper discussion of this method.</p>
 <p>This project is under active development, if you find a bug, or anything that
 needs correction, please let me know.</p>
@@ -262,7 +262,7 @@ needs correction, please let me know.</p>
 <h4>2.2 Sequential Domain Reduction<a class="headerlink" href="#sequential-domain-reduction" title="Link to this heading"></a></h4>
 <p>Sometimes the initial boundaries specified for a problem are too wide, and adding points to improve the response surface in regions of the solution domain is extraneous. Other times the cost function is very expensive to compute, and minimizing the number of calls is extremely beneficial.</p>
 <p>When it’s worthwhile to converge on an optimal point quickly rather than try to find the optimal point, contracting the domain around the current optimal value as the search progresses can speed up the search progress considerably. Using the <code class="docutils literal notranslate"><span class="pre">SequentialDomainReductionTransformer</span></code> the bounds of the problem can be panned and zoomed dynamically in an attempt to improve convergence.</p>
-<p><img alt="sequential domain reduction" src="_images/sdr.png" /></p>
+<p><img alt="sequential domain reduction" src="docsrc/static/sdr.png" /></p>
 <p>An example of using the <code class="docutils literal notranslate"><span class="pre">SequentialDomainReductionTransformer</span></code> is shown in the <a class="reference external" href="http://bayesian-optimization.github.io/BayesianOptimization/domain_reduction.html">domain reduction notebook</a>. More information about this method can be found in the paper <a class="reference external" href="http://www.truegrid.com/srsm_revised.pdf">“On the robustness of a simple domain reduction scheme for simulation‐based optimization”</a>.</p>
 </section>
 </section>
