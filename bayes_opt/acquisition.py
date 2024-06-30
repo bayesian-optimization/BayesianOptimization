@@ -1,5 +1,6 @@
 """Acquisition functions for Bayesian Optimization."""
 import warnings
+import abc
 import numpy as np
 from numpy.random import RandomState
 from scipy.optimize import minimize
@@ -30,7 +31,7 @@ class TargetSpaceEmptyError(Exception):
     pass
 
 
-class AcquisitionFunction():
+class AcquisitionFunction(abc.ABC):
     """Base class for acquisition functions.
 
     Parameters
@@ -49,9 +50,10 @@ class AcquisitionFunction():
             self.random_state = RandomState()
         self.i = 0
 
+    @abc.abstractmethod
     def base_acq(self, *args, **kwargs):
         """Provide access to the base acquisition function."""
-        raise NotImplementedError
+        pass
 
     def _fit_gp(self, gp: GaussianProcessRegressor, target_space: TargetSpace) -> None:
         # Sklearn's GP throws a large number of warnings at times, but

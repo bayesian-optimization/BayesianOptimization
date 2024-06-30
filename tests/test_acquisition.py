@@ -35,9 +35,9 @@ def constrained_target_space(target_func):
 
 
 def test_base_acquisition():
-    acq = acquisition.AcquisitionFunction()
+    acq = acquisition.UpperConfidenceBound()
     assert isinstance(acq.random_state, np.random.RandomState)
-    acq = acquisition.AcquisitionFunction(random_state=42)
+    acq = acquisition.UpperConfidenceBound(random_state=42)
     assert isinstance(acq.random_state, np.random.RandomState)
 
 
@@ -57,7 +57,7 @@ def test_upper_confidence_bound(gp, target_space, random_state):
 
 
 def test_l_bfgs_fails(target_space, random_state):
-    acq = acquisition.AcquisitionFunction(random_state=random_state)
+    acq = acquisition.UpperConfidenceBound(random_state=random_state)
 
     def fun(x):
         try:
