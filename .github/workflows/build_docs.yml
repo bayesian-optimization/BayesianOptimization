@@ -22,21 +22,15 @@ jobs:
           python-version: '3.10'
       - name: Install pandoc
         run: sudo apt-get install -y pandoc
-      - name: Install dependencies
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+      - name: Install package and test dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install sphinx
-          pip install nbsphinx
-          pip install sphinx_rtd_theme
-          pip install jupyter
-          pip install myst-parser
-      - name: Install package
-        run: |
-          pip install -e .
+          poetry install --with dev,nbtools
       - name: build sphinx docs
         run: |
           cd docsrc
-          make github
+          poetry run make github
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.ref == 'refs/heads/master' }}
