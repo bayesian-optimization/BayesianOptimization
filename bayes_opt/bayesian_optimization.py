@@ -3,18 +3,16 @@
 Holds the `BayesianOptimization` class, which handles the maximization of a
 function over a specific target space.
 """
-import warnings
-
 from bayes_opt.constraint import ConstraintModel
 
 from .target_space import TargetSpace
 from .event import Events, DEFAULT_EVENTS
 from .logger import _get_default_logger
-from .util import UtilityFunction, acq_max, ensure_rng
+from .util import ensure_rng
 
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
-
+from . import acquisition
 
 class Queue:
     """Queue datastructure.
@@ -128,6 +126,7 @@ class BayesianOptimization(Observable):
     def __init__(self,
                  f,
                  pbounds,
+                 acquisition_function=None,
                  constraint=None,
                  random_state=None,
                  verbose=2,
@@ -136,6 +135,14 @@ class BayesianOptimization(Observable):
         self._random_state = ensure_rng(random_state)
         self._allow_duplicate_points = allow_duplicate_points
         self._queue = Queue()
+
+        if acquisition_function is None:
+            if constraint is None:
+                self._acquisition_function = acquisition.UpperConfidenceBound(kappa=2.576, random_state=self._random_state)
+            else:
+                self._acquisition_function = acquisition.ExpectedImprovement(xi=0.01, random_state=self._random_state)
+        else:
+            self._acquisition_function = acquisition_function
 
         # Internal GP regressor
         self._gp = GaussianProcessRegressor(
@@ -184,6 +191,11 @@ class BayesianOptimization(Observable):
     def space(self):
         """Return the target space associated with the optimizer."""
         return self._space
+
+    @property
+    def acquisition_function(self):
+        """Return the acquisition function associated with the optimizer."""
+        return self._acquisition_function
 
     @property
     def constraint(self):
@@ -245,35 +257,17 @@ class BayesianOptimization(Observable):
             self._space.probe(params)
             self.dispatch(Events.OPTIMIZATION_STEP)
 
-    def suggest(self, utility_function):
-        """Suggest a promising point to probe next.
-        
-        Parameters
-        ----------
-        utility_function:
-            Surrogate function which suggests parameters to probe the target
-            function at.
-        """
+    def suggest(self):
+        """Suggest a promising point to probe next."""
         if len(self._space) == 0:
             return self._space.array_to_params(self._space.random_sample())
 
-        # Sklearn's GP throws a large number of warnings at times, but
-        # we don't really need to see them here.
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            self._gp.fit(self._space.params, self._space.target)
-            if self.is_constrained:
-                self.constraint.fit(self._space.params,
-                                    self._space._constraint_values)
-
         # Finding argmax of the acquisition function.
-        suggestion = acq_max(ac=utility_function.utility,
-                             gp=self._gp,
-                             constraint=self.constraint,
-                             y_max=self._space._target_max(),
-                             bounds=self._space.bounds,
-                             random_state=self._random_state,
-                             y_max_params=self._space.params_to_array(self._space.max()['params']))
+        suggestion = self._acquisition_function.suggest(
+            gp=self._gp,
+            target_space=self._space,
+            fit_gp=True
+        )
 
         return self._space.array_to_params(suggestion)
 
@@ -298,16 +292,7 @@ class BayesianOptimization(Observable):
             self.subscribe(Events.OPTIMIZATION_STEP, _logger)
             self.subscribe(Events.OPTIMIZATION_END, _logger)
 
-    def maximize(self,
-                 init_points=5,
-                 n_iter=25,
-                 acquisition_function=None,
-                 acq=None,
-                 kappa=None,
-                 kappa_decay=None,
-                 kappa_decay_delay=None,
-                 xi=None,
-                 **gp_params):
+    def maximize(self, init_points=5, n_iter=25):
         r"""
         Maximize the given function over the target space.
 
@@ -320,56 +305,17 @@ class BayesianOptimization(Observable):
         n_iter: int, optional(default=25)
             Number of iterations where the method attempts to find the maximum
             value.
-
-        acquisition_function: object, optional
-            An instance of bayes_opt.util.UtilityFunction.
-            If nothing is passed, a default using ucb is used
-
-        acq:
-            Deprecated, unused and slated for deletion.
-
-        kappa:
-            Deprecated, unused and slated for deletion.
-
-        kappa_decay:
-            Deprecated, unused and slated for deletion.
-
-        kappa_decay_delay:
-            Deprecated, unused and slated for deletion.
-
-        xi:
-            Deprecated, unused and slated for deletion.
-
-        \*\*gp_params:
-            Deprecated, unused and slated for deletion.
         """
         self._prime_subscriptions()
         self.dispatch(Events.OPTIMIZATION_START)
         self._prime_queue(init_points)
-
-        old_params_used = any([param is not None for param in [acq, kappa, kappa_decay, kappa_decay_delay, xi]])
-        if old_params_used or gp_params:
-            raise Exception('\nPassing acquisition function parameters or gaussian process parameters to maximize'
-                                     '\nis no longer supported. Instead,please use the "set_gp_params" method to set'
-                                     '\n the gp params, and pass an instance of bayes_opt.util.UtilityFunction'
-                                     '\n using the acquisition_function argument\n')
-
-        if acquisition_function is None:
-            util = UtilityFunction(kind='ucb',
-                                   kappa=2.576,
-                                   xi=0.0,
-                                   kappa_decay=1,
-                                   kappa_decay_delay=0)
-        else:
-            util = acquisition_function
 
         iteration = 0
         while not self._queue.empty or iteration < n_iter:
             try:
                 x_probe = next(self._queue)
             except StopIteration:
-                util.update_params()
-                x_probe = self.suggest(util)
+                x_probe = self.suggest()
                 iteration += 1
             self.probe(x_probe, lazy=False)
 
