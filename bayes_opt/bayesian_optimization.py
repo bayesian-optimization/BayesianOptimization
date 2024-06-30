@@ -292,14 +292,7 @@ class BayesianOptimization(Observable):
             self.subscribe(Events.OPTIMIZATION_STEP, _logger)
             self.subscribe(Events.OPTIMIZATION_END, _logger)
 
-    def maximize(self,
-                 init_points=5,
-                 n_iter=25,
-                 kappa=None,
-                 kappa_decay=None,
-                 kappa_decay_delay=None,
-                 xi=None,
-                 **gp_params):
+    def maximize(self, init_points=5, n_iter=25):
         r"""
         Maximize the given function over the target space.
 
@@ -312,40 +305,10 @@ class BayesianOptimization(Observable):
         n_iter: int, optional(default=25)
             Number of iterations where the method attempts to find the maximum
             value.
-
-        acquisition_function: object, optional
-            An instance of bayes_opt.util.UtilityFunction.
-            If nothing is passed, a default using ucb is used
-
-        acq:
-            Deprecated, unused and slated for deletion.
-
-        kappa:
-            Deprecated, unused and slated for deletion.
-
-        kappa_decay:
-            Deprecated, unused and slated for deletion.
-
-        kappa_decay_delay:
-            Deprecated, unused and slated for deletion.
-
-        xi:
-            Deprecated, unused and slated for deletion.
-
-        \*\*gp_params:
-            Deprecated, unused and slated for deletion.
         """
         self._prime_subscriptions()
         self.dispatch(Events.OPTIMIZATION_START)
         self._prime_queue(init_points)
-
-        old_params_used = any([param is not None for param in [kappa, kappa_decay, kappa_decay_delay, xi]])
-        if old_params_used or gp_params:
-            raise Exception('\nPassing acquisition function parameters or gaussian process parameters to maximize'
-                                     '\nis no longer supported. Instead,please use the "set_gp_params" method to set'
-                                     '\n the gp params, and pass an instance of bayes_opt.util.UtilityFunction'
-                                     '\n using the acquisition_function argument\n')
-
 
         iteration = 0
         while not self._queue.empty or iteration < n_iter:
