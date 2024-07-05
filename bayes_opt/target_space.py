@@ -302,7 +302,7 @@ class TargetSpace():
                 self.n_duplicate_points = self.n_duplicate_points + 1
 
                 print(Fore.RED + f'Data point {x} is not unique. {self.n_duplicate_points}'
-                              ' duplicates registered. Continuing ...')
+                              ' duplicates registered. Continuing ...' + Fore.RESET)
             else:
                 raise NotUniqueError(f'Data point {x} is not unique. You can set'
                                      ' "allow_duplicate_points=True" to avoid this error')
