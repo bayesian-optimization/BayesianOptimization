@@ -5,7 +5,7 @@ name: tests
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "chore-support-numpy-v2-with-action" ]
   pull_request:
 
 permissions:
@@ -35,5 +35,3 @@ jobs:
     - name: Test with pytest
       run: |
         poetry run pytest --cov-report xml --cov=bayes_opt/
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
