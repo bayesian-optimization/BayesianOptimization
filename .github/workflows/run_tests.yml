@@ -18,6 +18,7 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
+        numpy-version: [">=1.25,<2", ">=2"]
 
     steps:
     - uses: actions/checkout@v3
@@ -29,6 +30,7 @@ jobs:
       uses: snok/install-poetry@v1
     - name: Install test dependencies
       run: |
+        poetry add "numpy${{ matrix.numpy-version }}"
         poetry install --with dev,nbtools
     - name: Test with pytest
       run: |
