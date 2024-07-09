@@ -13,7 +13,7 @@ scikit-learn = "^1.0.0"
 numpy = "^1.9.0"
 scipy = "^1.0.0"
 colorama = "^0.4.6"
-typing_extensions = ">=4.4"
+typing_extensions = ">=4.8"
 
 
 [tool.poetry.group.dev]  # for testing/developing
