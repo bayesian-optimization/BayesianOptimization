@@ -37,6 +37,11 @@ nbsphinx = "^0.9.4"
 sphinx-rtd-theme = "^2.0.0"
 myst-parser = "^3.0.1"
 
+[tool.poetry.group.typing]  # for static type checking
+optional = true
+[tool.poetry.group.typing.dependencies]
+mypy = "1.10.1"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
