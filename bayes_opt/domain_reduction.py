@@ -14,14 +14,14 @@ import numpy as np
 from typing_extensions import TypeVar
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Iterable, Sequence
 
     from numpy.typing import NDArray
 
     from .constraint import ConstraintModel
     from .target_space import TargetSpace
 
-_T = TypeVar("_T", bound="ConstraintModel[..., Any] | None", infer_variance=True)
+_T = TypeVar("_T", bound="ConstraintModel[..., Any] | None")
 
 
 class DomainTransformer(Generic[_T]):
@@ -73,6 +73,7 @@ class SequentialDomainReductionTransformer(DomainTransformer[Any]):
         self.gamma_osc = gamma_osc
         self.gamma_pan = gamma_pan
         self.eta = eta
+        self.minimum_window_value: list[float] | float | None
         if isinstance(minimum_window, dict):
             self.minimum_window_value = [
                 item[1] for item in sorted(minimum_window.items(), key=lambda x: x[0])
@@ -93,6 +94,7 @@ class SequentialDomainReductionTransformer(DomainTransformer[Any]):
         self.bounds = [self.original_bounds]
 
         # Set the minimum window to an array of length bounds
+        self.minimum_window: Sequence[float | None]
         if isinstance(self.minimum_window_value, (list, np.ndarray)):
             if len(self.minimum_window_value) != len(target_space.bounds):
                 error_msg = (
