@@ -7,41 +7,37 @@ simple domain reduction scheme for simulation-based optimization"
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Generic
+from typing import TYPE_CHECKING, Any
 from warnings import warn
 
 import numpy as np
-from typing_extensions import TypeVar
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from collections.abc import Iterable, Sequence
 
     from numpy.typing import NDArray
 
-    from .constraint import ConstraintModel
     from .target_space import TargetSpace
 
-_T = TypeVar("_T", bound="ConstraintModel[..., Any] | None")
 
-
-class DomainTransformer(Generic[_T]):
+class DomainTransformer:
     """Base class."""
 
     def __init__(self, **kwargs: Any) -> None:
         """To override with specific implementation."""
 
-    def initialize(self, target_space: TargetSpace[_T]) -> None:
+    def initialize(self, target_space: TargetSpace[Any]) -> None:
         """To override with specific implementation."""
         raise NotImplementedError
 
     def transform(
-        self, target_space: TargetSpace[_T]
+        self, target_space: TargetSpace[Any]
     ) -> dict[str, NDArray[np.float64]]:
         """To override with specific implementation."""
         raise NotImplementedError
 
 
-class SequentialDomainReductionTransformer(DomainTransformer[Any]):
+class SequentialDomainReductionTransformer(DomainTransformer):
     """Reduce the searchable space.
 
     A sequential domain reduction transformer based on the work by Stander, N. and Craig, K:

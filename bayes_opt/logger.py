@@ -13,7 +13,7 @@ from colorama import Fore, just_fix_windows_console
 from .event import Events
 from .observer import _Tracker
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from .bayesian_optimization import BayesianOptimization
 
 just_fix_windows_console()

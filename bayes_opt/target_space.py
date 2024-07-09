@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Generic, overload
+from typing import TYPE_CHECKING, Any, Generic
 from warnings import warn
 
 import numpy as np
@@ -10,15 +10,17 @@ from colorama import Fore
 from typing_extensions import (
     NotRequired,
     Required,
+    TypeAlias,
     TypedDict,
     TypeGuard,
     TypeVar,
-    override,
 )
 
 from .util import NotUniqueError, ensure_rng
 
-if TYPE_CHECKING:
+_ConstT = TypeVar("_ConstT", bound="float | NDArray[np.float64]")
+
+if TYPE_CHECKING:  # pragma: no cover
     from collections.abc import Callable
 
     from numpy.random import RandomState
@@ -26,27 +28,28 @@ if TYPE_CHECKING:
 
     from .constraint import ConstraintModel
 
-    class MaxResult(TypedDict):
+    class MaxResult(TypedDict, Generic[_ConstT]):  # noqa: D101,RUF100
         target: Required[float]
         params: Required[dict[str, float]]
-        constraint: NotRequired[float | NDArray[np.float64]]
+        constraint: NotRequired[_ConstT]
         allowed: NotRequired[bool]
 
-    class MaxResultWithConstraint(TypedDict):
+    class MaxResultWithConstraint(TypedDict, Generic[_ConstT]):  # noqa: D101,RUF100
         target: Required[float]
         params: Required[dict[str, float]]
-        constraint: Required[float | NDArray[np.float64]]
+        constraint: Required[_ConstT]
         allowed: NotRequired[bool]
 
-    class MaxResultWithConstraintAndAllowed(TypedDict):
+    class MaxResultWithConstraintAndAllowed(TypedDict, Generic[_ConstT]):  # noqa: D101,RUF100
         target: Required[float]
         params: Required[dict[str, float]]
-        constraint: Required[float | NDArray[np.float64]]
+        constraint: Required[_ConstT]
         allowed: Required[bool]
 
 
-_T = TypeVar("_T", bound="ConstraintModel[..., float] | None")
-_ConstT = TypeVar("_ConstT", bound="ConstraintModel[..., float]")
+FloatArray: TypeAlias = "NDArray[np.float64]"
+_T = TypeVar("_T", bound="float | FloatArray", default=float)
+_ConstModelT = TypeVar("_ConstModelT", bound="ConstraintModel[..., Any]")
 
 
 def _hashable(x: NDArray[np.float64]) -> tuple[float, ...]:
@@ -94,7 +97,7 @@ class TargetSpace(Generic[_T]):
         self,
         target_func: Callable[..., float],
         pbounds: dict[str, tuple[float, float]],
-        constraint: ConstraintModel[..., float] | None = None,
+        constraint: ConstraintModel[..., _T] | None = None,
         random_state: int | RandomState | None = None,
         allow_duplicate_points: bool = False,
     ) -> None:
@@ -118,10 +121,11 @@ class TargetSpace(Generic[_T]):
         self._target = np.empty(shape=(0,), dtype=np.float64)
 
         # keep track of unique points we have seen so far
-        self._cache: dict[tuple[float, ...], float | tuple[float, float]] = {}
+        self._cache: dict[tuple[float, ...], float | tuple[float, _T]] = {}
 
         self._constraint = constraint
 
+        self._constraint_values: NDArray[np.float64]
         if _ensure_constraint(constraint):
             # preallocated memory for constraint fulfillment
             if constraint.lb.size == 1:
@@ -216,14 +220,14 @@ class TargetSpace(Generic[_T]):
         return self._bounds
 
     @property
-    def constraint(self) -> _T:
+    def constraint(self) -> ConstraintModel[..., _T] | None:
         """Get the constraint model.
 
         Returns
         -------
         ConstraintModel
         """
-        return self._constraint  # type: ignore[return-value]
+        return self._constraint
 
     @property
     def constraint_values(self) -> NDArray[np.float64]:
@@ -326,7 +330,7 @@ class TargetSpace(Generic[_T]):
         self,
         params: NDArray[np.float64],
         target: float,
-        constraint_value: float | None = None,
+        constraint_value: _T | None = None,
     ) -> None:
         """Append a point and its target value to the known data.
 
@@ -338,7 +342,7 @@ class TargetSpace(Generic[_T]):
         target : float
             target function value
 
-        constraint_value : float or None
+        constraint_value : float or np.ndarray or None
             Constraint function value
 
         Raises
@@ -396,7 +400,7 @@ class TargetSpace(Generic[_T]):
         target_copy = np.concatenate([self._target, [target]])
         cache_copy = self._cache.copy()  # shallow copy suffices
 
-        if self._constraint is None:
+        if not _ensure_constraint(self._constraint):
             # Insert data into unique dictionary
             cache_copy[_hashable(x.ravel())] = target
         else:
@@ -408,8 +412,9 @@ class TargetSpace(Generic[_T]):
                 raise ValueError(error_msg)
             # Insert data into unique dictionary
             cache_copy[_hashable(x.ravel())] = (target, constraint_value)
-            constraint_values_copy = np.concatenate(
-                [self._constraint_values, [constraint_value]], dtype=np.float64
+            constraint_values_copy: NDArray[np.float64] = np.concatenate(
+                [self._constraint_values, [constraint_value]],  # type: ignore[list-item]
+                dtype=np.float64,
             )
             self._constraint_values = constraint_values_copy
 
@@ -418,15 +423,7 @@ class TargetSpace(Generic[_T]):
         self._target = target_copy
         self._cache = cache_copy
 
-    @overload
-    def probe(self: TargetSpace[None], params: NDArray[np.float64]) -> float: ...
-    @overload
-    def probe(
-        self: TargetSpace[ConstraintModel[..., Any]], params: NDArray[np.float64]
-    ) -> tuple[float, float]: ...
-    @overload
-    def probe(self, params: NDArray[np.float64]) -> float | tuple[float, float]: ...
-    def probe(self, params: NDArray[np.float64]) -> float | tuple[float, float]:
+    def probe(self, params: NDArray[np.float64]) -> float | tuple[float, _T]:
         """Evaluate the target function on a point and register the result.
 
         Notes
@@ -464,7 +461,7 @@ class TargetSpace(Generic[_T]):
             self.register(x, target)
             return target
 
-        constraint_value: float = self._constraint.eval(**dict_params)
+        constraint_value: _T = self._constraint.eval(**dict_params)
         self.register(x, target, constraint_value)
         return target, constraint_value
 
@@ -509,15 +506,7 @@ class TargetSpace(Generic[_T]):
 
         return self.target[self.mask].max()
 
-    @overload
-    def max(self: TargetSpace[None]) -> MaxResult | None: ...
-    @overload
-    def max(
-        self: TargetSpace[ConstraintModel[..., Any]],
-    ) -> MaxResultWithConstraint | None: ...
-    @overload
-    def max(self) -> MaxResult | MaxResultWithConstraint | None: ...
-    def max(self) -> MaxResult | MaxResultWithConstraint | None:
+    def max(self) -> MaxResult[_T] | MaxResultWithConstraint[_T] | None:
         """Get maximum target value found and corresponding parameters.
 
         If there is a constraint present, the maximum value that fulfills the
@@ -539,7 +528,7 @@ class TargetSpace(Generic[_T]):
         params = self.params[self.mask]
         target_max_idx = np.argmax(target)
 
-        res: MaxResult = {
+        res: MaxResult[_T] = {
             "target": target_max,
             "params": dict(zip(self.keys, params[target_max_idx])),
         }
@@ -550,15 +539,7 @@ class TargetSpace(Generic[_T]):
 
         return res
 
-    @overload
-    def res(self: TargetSpace[None]) -> list[MaxResult]: ...
-    @overload
-    def res(
-        self: TargetSpace[ConstraintModel[..., Any]],
-    ) -> list[MaxResultWithConstraintAndAllowed]: ...
-    @overload
-    def res(self) -> list[MaxResult] | list[MaxResultWithConstraintAndAllowed]: ...
-    def res(self) -> list[MaxResult] | list[MaxResultWithConstraintAndAllowed]:
+    def res(self) -> list[MaxResult[_T]] | list[MaxResultWithConstraintAndAllowed[_T]]:
         """Get all target values and constraint fulfillment for all parameters.
 
         Returns
@@ -611,53 +592,6 @@ class TargetSpace(Generic[_T]):
             if key in new_bounds:
                 self._bounds[row] = new_bounds[key]
 
-    if TYPE_CHECKING:
 
-        @overload
-        def __new__(
-            cls,
-            target_func: Callable[..., float],
-            pbounds: dict[str, tuple[float, float]],
-            random_state: int | RandomState | None = ...,
-            allow_duplicate_points: bool = ...,
-        ) -> TargetSpace[None]: ...
-        @overload
-        def __new__(
-            cls,
-            target_func: Callable[..., float],
-            pbounds: dict[str, tuple[float, float]],
-            constraint: _ConstT,
-            random_state: int | RandomState | None = ...,
-            allow_duplicate_points: bool = ...,
-        ) -> TargetSpace[_ConstT]: ...
-        @overload
-        def __new__(
-            cls,
-            target_func: Callable[..., float],
-            pbounds: dict[str, tuple[float, float]],
-            constraint: None,
-            random_state: int | RandomState | None = ...,
-            allow_duplicate_points: bool = ...,
-        ) -> TargetSpace[None]: ...
-        @overload
-        def __new__(
-            cls,
-            target_func: Callable[..., float],
-            pbounds: dict[str, tuple[float, float]],
-            constraint: ConstraintModel[..., float] | None = ...,
-            random_state: int | RandomState | None = ...,
-            allow_duplicate_points: bool = ...,
-        ) -> TargetSpace[Any]: ...
-        @override  # type: ignore[misc]
-        def __new__(
-            cls,
-            target_func: Callable[..., float],
-            pbounds: dict[str, tuple[float, float]],
-            constraint: ConstraintModel[..., float] | None = ...,
-            random_state: int | RandomState | None = ...,
-            allow_duplicate_points: bool = ...,
-        ) -> TargetSpace[Any]: ...
-
-
-def _ensure_constraint(constraint: _ConstT | None) -> TypeGuard[_ConstT]:
+def _ensure_constraint(constraint: _ConstModelT | None) -> TypeGuard[_ConstModelT]:
     return constraint is not None

@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 from .event import Events
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from .bayesian_optimization import BayesianOptimization
 
 
