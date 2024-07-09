@@ -83,12 +83,15 @@ ignore = [
     "ISC001", # single-line-implicit-string-concatenation
     "ISC002", # multi-line-implicit-string-concatenation
     # bayes opt
-    "N803",   # invalid-argument-name
-    "N806",   # non-lowercase-variable-in-function
-    "FBT001", # boolean-type-hint-positional-argument
-    "S101",   # assert
-    "T201",   # print
-    "D101",   # undocumented-public-class
+    "N803",    # invalid-argument-name
+    "N806",    # non-lowercase-variable-in-function
+    "FBT001",  # boolean-type-hint-positional-argument
+    "S101",    # assert
+    "T201",    # print
+    "D101",    # undocumented-public-class
+    "PERF401", # manual-list-comprehension
+    "PTH107",  # os-remove
+    "PTH123",  # builtin-open
 ]
 
 
