@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from contextlib import suppress
 from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING
 
@@ -40,7 +41,9 @@ class _Tracker:
         instance : bayesian_optimization.BayesianOptimization
             The instance associated with the step.
         """
-        event = Events(event)
+        with suppress(ValueError):
+            event = Events(event)
+
         if event == Events.OPTIMIZATION_STEP:
             self._iterations += 1
 
