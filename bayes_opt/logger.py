@@ -1,15 +1,25 @@
 """Contains classes and functions for logging."""
-from __future__ import print_function
-import os
+
+from __future__ import annotations
+
 import json
+import os
+from contextlib import suppress
+from typing import TYPE_CHECKING
+
 import numpy as np
-from .observer import _Tracker
-from .event import Events
 from colorama import Fore, just_fix_windows_console
+
+from .event import Events
+from .observer import _Tracker
+
+if TYPE_CHECKING:
+    from .bayesian_optimization import BayesianOptimization
 
 just_fix_windows_console()
 
-def _get_default_logger(verbose, is_constrained):
+
+def _get_default_logger(verbose: int, is_constrained: bool) -> ScreenLogger:
     """
     Return the default logger.
 
@@ -33,7 +43,7 @@ def _get_default_logger(verbose, is_constrained):
 
 class ScreenLogger(_Tracker):
     """Logger that outputs text, e.g. to log to a terminal.
-    
+
     Parameters
     ----------
     verbose : int
@@ -47,19 +57,19 @@ class ScreenLogger(_Tracker):
     _default_cell_size = 9
     _default_precision = 4
 
-    def __init__(self, verbose=2, is_constrained=False):
+    def __init__(self, verbose: int = 2, is_constrained: bool = False) -> None:
         self._verbose = verbose
         self._is_constrained = is_constrained
-        self._header_length = None
+        self._header_length = 0
         super().__init__()
 
     @property
-    def verbose(self):
+    def verbose(self) -> int:
         """Return the verbosity level."""
         return self._verbose
 
     @verbose.setter
-    def verbose(self, v):
+    def verbose(self, v: int) -> None:
         """Set the verbosity level.
 
         Parameters
@@ -70,11 +80,11 @@ class ScreenLogger(_Tracker):
         self._verbose = v
 
     @property
-    def is_constrained(self):
+    def is_constrained(self) -> bool:
         """Return whether the logger is constrained."""
         return self._is_constrained
 
-    def _format_number(self, x):
+    def _format_number(self, x: float) -> str:
         """Format a number.
 
         Parameters
@@ -93,11 +103,11 @@ class ScreenLogger(_Tracker):
 
         if len(s) > self._default_cell_size:
             if "." in s:
-                return s[:self._default_cell_size]
-            return s[:self._default_cell_size - 3] + "..."
+                return s[: self._default_cell_size]
+            return s[: self._default_cell_size - 3] + "..."
         return s
 
-    def _format_bool(self, x):
+    def _format_bool(self, x: bool) -> str:
         """Format a boolean.
 
         Parameters
@@ -109,17 +119,10 @@ class ScreenLogger(_Tracker):
         -------
         A stringified, formatted version of `x`.
         """
-        if 5 > self._default_cell_size:
-            if x:
-                x_ = 'T'
-            else:
-                x_ = 'F'
-        else:
-            x_ = str(x)
-        s = f"{x_:<{self._default_cell_size}}"
-        return s
+        x_ = ("T" if x else "F") if self._default_cell_size < 5 else str(x)
+        return f"{x_:<{self._default_cell_size}}"
 
-    def _format_key(self, key):
+    def _format_key(self, key: str) -> str:
         """Format a key.
 
         Parameters
@@ -133,17 +136,17 @@ class ScreenLogger(_Tracker):
         """
         s = f"{key:^{self._default_cell_size}}"
         if len(s) > self._default_cell_size:
-            return s[:self._default_cell_size - 3] + "..."
+            return s[: self._default_cell_size - 3] + "..."
         return s
 
-    def _step(self, instance, colour=Fore.BLACK):
+    def _step(self, instance: BayesianOptimization, colour: str = Fore.BLACK) -> str:
         """Log a step.
 
         Parameters
         ----------
         instance : bayesian_optimization.BayesianOptimization
             The instance associated with the event.
-            
+
         colour :
             (Default value = Fore.BLACK)
 
@@ -152,6 +155,7 @@ class ScreenLogger(_Tracker):
         A stringified, formatted version of the most recent optimization step.
         """
         res = instance.res[-1]
+        assert "allowed" in res
         cells = []
 
         cells.append(self._format_number(self._iterations + 1))
@@ -159,13 +163,12 @@ class ScreenLogger(_Tracker):
         if self._is_constrained:
             cells.append(self._format_bool(res["allowed"]))
 
-
         for key in instance.space.keys:
             cells.append(self._format_number(res["params"][key]))
 
         return "| " + " | ".join([colour + cells[i] for i in range(len(cells))]) + " |"
 
-    def _header(self, instance):
+    def _header(self, instance: BayesianOptimization) -> str:
         """Print the header of the log.
 
         Parameters
@@ -191,7 +194,7 @@ class ScreenLogger(_Tracker):
         self._header_length = len(line)
         return line + "\n" + ("-" * self._header_length)
 
-    def _is_new_max(self, instance):
+    def _is_new_max(self, instance: BayesianOptimization) -> bool:
         """Check if the step to log produced a new maximum.
 
         Parameters
@@ -212,7 +215,7 @@ class ScreenLogger(_Tracker):
             self._previous_max = instance.max["target"]
         return instance.max["target"] > self._previous_max
 
-    def update(self, event, instance):
+    def update(self, event: Events, instance: BayesianOptimization) -> None:
         """Handle incoming events.
 
         Parameters
@@ -220,7 +223,7 @@ class ScreenLogger(_Tracker):
         event : str
             One of the values associated with `Events.OPTIMIZATION_START`,
             `Events.OPTIMIZATION_STEP` or `Events.OPTIMIZATION_END`.
-            
+
         instance : bayesian_optimization.BayesianOptimization
             The instance associated with the step.
         """
@@ -257,16 +260,16 @@ class JSONLogger(_Tracker):
 
     """
 
-    def __init__(self, path, reset=True):
+    def __init__(
+        self, path: os.PathLike[str] | os.PathLike[bytes], reset: bool = True
+    ) -> None:
         self._path = path
         if reset:
-            try:
+            with suppress(OSError):
                 os.remove(self._path)
-            except OSError:
-                pass
         super().__init__()
 
-    def update(self, event, instance):
+    def update(self, event: Events, instance: BayesianOptimization) -> None:
         """
         Handle incoming events.
 
@@ -275,7 +278,7 @@ class JSONLogger(_Tracker):
         event : str
             One of the values associated with `Events.OPTIMIZATION_START`,
             `Events.OPTIMIZATION_STEP` or `Events.OPTIMIZATION_END`.
-            
+
         instance : bayesian_optimization.BayesianOptimization
             The instance associated with the step.
 
@@ -290,9 +293,11 @@ class JSONLogger(_Tracker):
                 "delta": time_delta,
             }
 
-            if "allowed" in data: # fix: github.com/fmfn/BayesianOptimization/issues/361
+            if (
+                "allowed" in data
+            ):  # fix: github.com/fmfn/BayesianOptimization/issues/361
                 data["allowed"] = bool(data["allowed"])
-            
+
             if "constraint" in data and isinstance(data["constraint"], np.ndarray):
                 data["constraint"] = data["constraint"].tolist()
 
