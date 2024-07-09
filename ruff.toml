@@ -1,0 +1,111 @@
+line-length = 88
+unsafe-fixes = true
+target-version = "py39"
+
+[lint]
+select = ['ALL']
+fixable = [
+    'UP',
+    'F401',    # unused imports
+    "F522",    # string-dot-format-extra-named-arguments
+    "F541",    # f-string-missing-placeholders
+    "W292",    # no-new-line-at-end-of-file
+    "E711",    # none-comparison
+    "E712",    # true-false-comparison
+    "E713",    # not-in-test
+    "E714",    # not-is-test
+    "I001",    # unsorted-imports
+    "COM812",  # trailing-comma-missing
+    "Q000",    # bad-quotes-inline-string
+    "Q001",    # bad-quotes-multiline-string
+    "SIM108",  # if-else-block-instead-of-if-exp	
+    "E501",    # line-too-long
+    "FLY002",  # static-join-to-f-string
+    "PLW3301", # nested-min-max
+    "RUF010",  # explicit-f-string-type-conversion 
+    "RUF100",  # unused-noqa
+    "SIM110",  # reimplemented-builtin
+    "RET504",  # unnecessary-assign
+    "I002",    # missing-required-import
+    "PIE808",  # unnecessary-range-start
+    "RUF020",  # never-union 
+    "NPY201",  # numpy2-deprecation
+]
+ignore = [
+    "TD",
+    'E712',    # TrueFalseComparison # sqlalchemy
+    "E711",    # none-comparison # sqlalchemy
+    "D100",    # public-module
+    "D104",    # public-package
+    "D107",    # public-init
+    "D201",    # no-blank-line-before-function
+    "D202",    # no-blank-line-after-function
+    "D203",    # one-blank-line-before-class
+    "D204",    # one-blank-line-after-class
+    "D211",    # no-blank-line-before-class
+    "D212",    # multi-line-summary-first-line
+    "D213",    # multi-line-summary-second-line
+    "D400",    # ends-in-period
+    "D401",    # non-imperative-mood
+    "D403",    # first-line-capitalized
+    "D406",    # new-line-after-section-name
+    "D407",    # dashed-underline-after-section
+    "D413",    # blank-line-after-last-section
+    "D415",    # ends-in-punctuation
+    "EM101",   # raw-string-in-exception
+    "TRY003",  # raise-vanilla-args
+    "ANN101",  # missing-type-self
+    "ANN102",  # missing-type-cls
+    "ANN401",  # dynamically-typed-expression
+    "FBT002",  # boolean-default-value-in-function-definition
+    "PGH003",  # blanket-type-ignore
+    "SIM117",  # multiple-with-statements # python3.8
+    "B905",    # zip-without-explicit-strict
+    "PD010",   # use-of-dot-pivot-or-unstack
+    "D417",    # undocumented-param
+    "D105",    # undocumented-magic-method
+    "TD",      # flake8-todos
+    "FIX",     # flake8-fixme
+    "PLR2044", # empty-comment
+    # ruff format
+    "W191",   # tab-indentation
+    "E111",   # indentation-with-invalid-multiple
+    "E114",   # indentation-with-invalid-multiple-comment
+    "E117",   # over-indented
+    "D206",   # indent-with-spaces
+    "D300",   # triple-single-quotes
+    "Q000",   # bad-quotes-inline-string
+    "Q001",   # bad-quotes-multiline-string
+    "Q002",   # bad-quotes-docstring
+    "Q003",   # avoidable-escaped-quote
+    "COM812", # missing-trailing-comma
+    "COM819", # prohibited-trailing-comma
+    "ISC001", # single-line-implicit-string-concatenation
+    "ISC002", # multi-line-implicit-string-concatenation
+    "N806",
+    "N803",
+    "D101",
+    "T201",
+    "FBT001",
+    "PLR2004",
+    "PERF401",
+    "PTH107",
+    "PTH123"
+]
+
+[format]
+indent-style = "space"
+preview = true
+quote-style = "double"
+skip-magic-trailing-comma = true
+
+[lint.pylint]
+max-args = 10
+
+[lint.isort]
+known-local-folder = ["bayes_opt"]
+required-imports = ["from __future__ import annotations"]
+# ruff format
+force-single-line = false
+force-wrap-aliases = false
+split-on-trailing-comma = false
