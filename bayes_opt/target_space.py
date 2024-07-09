@@ -10,7 +10,6 @@ from colorama import Fore
 from typing_extensions import (
     NotRequired,
     Required,
-    TypeAlias,
     TypedDict,
     TypeGuard,
     TypeVar,
@@ -47,8 +46,7 @@ if TYPE_CHECKING:  # pragma: no cover
         allowed: Required[bool]
 
 
-FloatArray: TypeAlias = "NDArray[np.float64]"
-_T = TypeVar("_T", bound="float | FloatArray", default=float)
+_T = TypeVar("_T", bound="float | NDArray[np.float64]", default=float)
 _ConstModelT = TypeVar("_ConstModelT", bound="ConstraintModel[..., Any]")
 
 
