@@ -18,12 +18,12 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
 _P = ParamSpec("_P", default=...)
-_T = TypeVar(
-    "_T", bound="float | NDArray[np.float64]", infer_variance=True, default=Any
+_T_co = TypeVar(
+    "_T_co", bound="float | NDArray[np.float64]", covariant=True, default=Any
 )
 
 
-class ConstraintModel(Generic[_P, _T]):
+class ConstraintModel(Generic[_P, _T_co]):
     """Model constraints using GP regressors.
 
     This class takes the function to optimize as well as the parameters bounds
@@ -58,7 +58,7 @@ class ConstraintModel(Generic[_P, _T]):
 
     def __init__(
         self,
-        fun: Callable[_P, _T],
+        fun: Callable[_P, _T_co],
         lb: float | NDArray[np.float64],
         ub: float | NDArray[np.float64],
         random_state: int | RandomState | None = None,
@@ -90,7 +90,7 @@ class ConstraintModel(Generic[_P, _T]):
         """Return GP regressors of the constraint function."""
         return self._model
 
-    def eval(self, *args: _P.args, **kwargs: _P.kwargs) -> _T:
+    def eval(self, *args: _P.args, **kwargs: _P.kwargs) -> _T_co:
         r"""Evaluate the constraint function.
 
         Parameters
@@ -180,17 +180,20 @@ class ConstraintModel(Generic[_P, _T]):
         X = X.reshape((-1, self._model[0].n_features_in_))
 
         result: NDArray[np.float64]
+        y_mean: NDArray[np.float64]
+        y_std: NDArray[np.float64]
+        p_lower: NDArray[np.float64]
+        p_upper: NDArray[np.float64]
+
         if len(self._model) == 1:
-            y_mean: NDArray[np.float64]
-            y_std: NDArray[np.float64]
             y_mean, y_std = self._model[0].predict(X, return_std=True)  # type: ignore # FIXME
 
-            p_lower: NDArray[np.float64] = (
+            p_lower = (
                 norm(loc=y_mean, scale=y_std).cdf(self._lb[0])
                 if self._lb[0] != -np.inf
                 else np.array([0], dtype=np.float64)
             )
-            p_upper: NDArray[np.float64] = (
+            p_upper = (
                 norm(loc=y_mean, scale=y_std).cdf(self._ub[0])
                 if self._lb[0] != np.inf
                 else np.array([1], dtype=np.float64)
@@ -200,16 +203,14 @@ class ConstraintModel(Generic[_P, _T]):
 
         result = np.ones(X.shape[0], dtype=np.float64)
         for j, gp in enumerate(self._model):
-            y_mean: NDArray[np.float64]
-            y_std: NDArray[np.float64]
             y_mean, y_std = gp.predict(X, return_std=True)  # type: ignore # FIXME
 
-            p_lower: NDArray[np.float64] = (
+            p_lower = (
                 norm(loc=y_mean, scale=y_std).cdf(self._lb[j])
                 if self._lb[j] != -np.inf
                 else np.array([0], dtype=np.float64)
             )
-            p_upper: NDArray[np.float64] = (
+            p_upper = (
                 norm(loc=y_mean, scale=y_std).cdf(self._ub[j])
                 if self._lb[j] != np.inf
                 else np.array([1], dtype=np.float64)

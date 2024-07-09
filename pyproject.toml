@@ -45,3 +45,8 @@ mypy = "1.10.1"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+python_version = "3.9"
+strict = true
+disable_error_code = "import-untyped,no-any-return"
