@@ -7,13 +7,21 @@ from warnings import warn
 
 import numpy as np
 from colorama import Fore
-from typing_extensions import NotRequired, Required, TypedDict, TypeGuard, TypeVar
+from typing_extensions import (
+    NotRequired,
+    Required,
+    TypedDict,
+    TypeGuard,
+    TypeVar,
+    override,
+)
 
 from .util import NotUniqueError, ensure_rng
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from numpy.random import RandomState
     from numpy.typing import NDArray
 
     from .constraint import ConstraintModel
@@ -37,7 +45,8 @@ if TYPE_CHECKING:
         allowed: Required[bool]
 
 
-_T = TypeVar("_T", bound="ConstraintModel[..., Any] | None", default=None)
+_T = TypeVar("_T", bound="ConstraintModel[..., float] | None")
+_ConstT = TypeVar("_ConstT", bound="ConstraintModel[..., float]")
 
 
 def _hashable(x: NDArray[np.float64]) -> tuple[float, ...]:
@@ -85,8 +94,8 @@ class TargetSpace(Generic[_T]):
         self,
         target_func: Callable[..., float],
         pbounds: dict[str, tuple[float, float]],
-        constraint: _T = None,  # type: ignore[assignment]
-        random_state: int | None = None,
+        constraint: ConstraintModel[..., float] | None = None,
+        random_state: int | RandomState | None = None,
         allow_duplicate_points: bool = False,
     ) -> None:
         self.random_state = ensure_rng(random_state)
@@ -214,7 +223,7 @@ class TargetSpace(Generic[_T]):
         -------
         ConstraintModel
         """
-        return self._constraint
+        return self._constraint  # type: ignore[return-value]
 
     @property
     def constraint_values(self) -> NDArray[np.float64]:
@@ -455,7 +464,7 @@ class TargetSpace(Generic[_T]):
             self.register(x, target)
             return target
 
-        constraint_value = self._constraint.eval(**dict_params)
+        constraint_value: float = self._constraint.eval(**dict_params)
         self.register(x, target, constraint_value)
         return target, constraint_value
 
@@ -602,8 +611,53 @@ class TargetSpace(Generic[_T]):
             if key in new_bounds:
                 self._bounds[row] = new_bounds[key]
 
+    if TYPE_CHECKING:
 
-def _ensure_constraint(
-    constraint: ConstraintModel[..., Any] | None,
-) -> TypeGuard[ConstraintModel[..., Any]]:
+        @overload
+        def __new__(
+            cls,
+            target_func: Callable[..., float],
+            pbounds: dict[str, tuple[float, float]],
+            random_state: int | RandomState | None = ...,
+            allow_duplicate_points: bool = ...,
+        ) -> TargetSpace[None]: ...
+        @overload
+        def __new__(
+            cls,
+            target_func: Callable[..., float],
+            pbounds: dict[str, tuple[float, float]],
+            constraint: _ConstT,
+            random_state: int | RandomState | None = ...,
+            allow_duplicate_points: bool = ...,
+        ) -> TargetSpace[_ConstT]: ...
+        @overload
+        def __new__(
+            cls,
+            target_func: Callable[..., float],
+            pbounds: dict[str, tuple[float, float]],
+            constraint: None,
+            random_state: int | RandomState | None = ...,
+            allow_duplicate_points: bool = ...,
+        ) -> TargetSpace[None]: ...
+        @overload
+        def __new__(
+            cls,
+            target_func: Callable[..., float],
+            pbounds: dict[str, tuple[float, float]],
+            constraint: ConstraintModel[..., float] | None = ...,
+            random_state: int | RandomState | None = ...,
+            allow_duplicate_points: bool = ...,
+        ) -> TargetSpace[Any]: ...
+        @override  # type: ignore[misc]
+        def __new__(
+            cls,
+            target_func: Callable[..., float],
+            pbounds: dict[str, tuple[float, float]],
+            constraint: ConstraintModel[..., float] | None = ...,
+            random_state: int | RandomState | None = ...,
+            allow_duplicate_points: bool = ...,
+        ) -> TargetSpace[Any]: ...
+
+
+def _ensure_constraint(constraint: _ConstT | None) -> TypeGuard[_ConstT]:
     return constraint is not None
