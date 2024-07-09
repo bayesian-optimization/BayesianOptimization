@@ -2,12 +2,7 @@
 
 from __future__ import annotations
 
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Generic,
-    overload,
-)
+from typing import TYPE_CHECKING, Any, Generic, overload
 from warnings import warn
 
 import numpy as np
@@ -45,7 +40,7 @@ if TYPE_CHECKING:
 _T = TypeVar("_T", bound="ConstraintModel[..., Any] | None", infer_variance=True)
 
 
-def _hashable(x: NDArray[np.float64]):
+def _hashable(x: NDArray[np.float64]) -> tuple[float, ...]:
     """Ensure that a point is hashable by a python dict."""
     return tuple(map(float, x))
 
@@ -93,7 +88,7 @@ class TargetSpace(Generic[_T]):
         constraint: _T = None,
         random_state: int | None = None,
         allow_duplicate_points: bool = False,
-    ):
+    ) -> None:
         self.random_state = ensure_rng(random_state)
         self._allow_duplicate_points = allow_duplicate_points
         self.n_duplicate_points = 0
@@ -207,7 +202,7 @@ class TargetSpace(Generic[_T]):
         return self._bounds
 
     @property
-    def constraint(self):
+    def constraint(self) -> _T:
         """Get the constraint model.
 
         Returns
@@ -269,11 +264,12 @@ class TargetSpace(Generic[_T]):
         np.ndarray
             Representation of the parameters as an array.
         """
-        if not set(params) == set(self.keys):
-            raise ValueError(
+        if set(params) != set(self.keys):
+            error_msg = (
                 f"Parameters' keys ({sorted(params)}) do "
-                + f"not match the expected set of keys ({self.keys})."
+                f"not match the expected set of keys ({self.keys})."
             )
+            raise ValueError(error_msg)
         return np.asarray([params[key] for key in self.keys], dtype=np.float64)
 
     def array_to_params(self, x: NDArray[np.float64]) -> dict[str, float]:
@@ -289,11 +285,12 @@ class TargetSpace(Generic[_T]):
         dict
             Representation of the parameters as dictionary.
         """
-        if not len(x) == len(self.keys):
-            raise ValueError(
+        if len(x) != len(self.keys):
+            error_msg = (
                 f"Size of array ({len(x)}) is different than the "
-                + f"expected number of parameters ({len(self.keys)})."
+                f"expected number of parameters ({len(self.keys)})."
             )
+            raise ValueError(error_msg)
         return dict(zip(self.keys, x))
 
     def _as_array(self, x: Any) -> NDArray[np.float64]:
@@ -303,11 +300,12 @@ class TargetSpace(Generic[_T]):
             array_x = self.params_to_array(x)
 
         array_x = array_x.ravel()
-        if not array_x.size == self.dim:
-            raise ValueError(
+        if array_x.size != self.dim:
+            error_msg = (
                 f"Size of array ({len(array_x)}) is different than the "
-                + f"expected number of parameters ({len(self.keys)})."
+                f"expected number of parameters ({len(self.keys)})."
             )
+            raise ValueError(error_msg)
         return array_x
 
     def register(
@@ -362,21 +360,24 @@ class TargetSpace(Generic[_T]):
                     " duplicates registered. Continuing ..."
                 )
             else:
-                raise NotUniqueError(
+                error_msg = (
                     f"Data point {x} is not unique. You can set"
                     ' "allow_duplicate_points=True" to avoid this error'
                 )
+                raise NotUniqueError(error_msg)
 
         # if x is not within the bounds of the parameter space, warn the user
-        if self._bounds is not None:
-            if not np.all((self._bounds[:, 0] <= x) & (x <= self._bounds[:, 1])):
-                warn(
-                    f"\nData point {x} is outside the bounds of the parameter space. ",
-                    stacklevel=2,
-                )
+        if self._bounds is not None and not np.all(
+            (self._bounds[:, 0] <= x) & (x <= self._bounds[:, 1])
+        ):
+            warn(
+                f"\nData point {x} is outside the bounds of the parameter space. ",
+                stacklevel=2,
+            )
 
-        # Make copies of the data, so as not to modify the originals incase something fails
-        # during the registration process. This prevents out-of-sync data.
+        # Make copies of the data, so as not to modify the originals incase
+        # something fails during the registration process.
+        # This prevents out-of-sync data.
         params_copy = np.concatenate([self._params, x.reshape(1, -1)])
         target_copy = np.concatenate([self._target, [target]])
         cache_copy = self._cache.copy()  # shallow copy suffices
@@ -386,16 +387,17 @@ class TargetSpace(Generic[_T]):
             cache_copy[_hashable(x.ravel())] = target
         else:
             if constraint_value is None:
-                msg = (
+                error_msg = (
                     "When registering a point to a constrained TargetSpace"
-                    + " a constraint value needs to be present."
+                    " a constraint value needs to be present."
                 )
-                raise ValueError(msg)
+                raise ValueError(error_msg)
             # Insert data into unique dictionary
             cache_copy[_hashable(x.ravel())] = (target, constraint_value)
-            constraint_values_copy = np.concatenate(
-                [self._constraint_values, [constraint_value]]
-            )
+            constraint_values_copy = np.concatenate([
+                self._constraint_values,
+                [constraint_value],
+            ])
             self._constraint_values = constraint_values_copy
 
         # Operations passed, update the variables
@@ -439,9 +441,8 @@ class TargetSpace(Generic[_T]):
         >>> assert self.max()['params'] == {'p1': 1.0, 'p2': 5.0}
         """
         x = self._as_array(params)
-        if x in self:
-            if not self._allow_duplicate_points:
-                return self._cache[_hashable(x.ravel())]
+        if x in self and not self._allow_duplicate_points:
+            return self._cache[_hashable(x.ravel())]
 
         dict_params = dict(zip(self._keys, x))
         target = self.target_func(**dict_params)

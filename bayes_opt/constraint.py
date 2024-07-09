@@ -18,12 +18,12 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
 _P = ParamSpec("_P", default=...)
-_T_co = TypeVar(
-    "_T_co", bound="float | NDArray[np.float64]", infer_variance=True, default=Any
+_T = TypeVar(
+    "_T", bound="float | NDArray[np.float64]", infer_variance=True, default=Any
 )
 
 
-class ConstraintModel(Generic[_P, _T_co]):
+class ConstraintModel(Generic[_P, _T]):
     """Model constraints using GP regressors.
 
     This class takes the function to optimize as well as the parameters bounds
@@ -58,7 +58,7 @@ class ConstraintModel(Generic[_P, _T_co]):
 
     def __init__(
         self,
-        fun: Callable[_P, _T_co],
+        fun: Callable[_P, _T],
         lb: float | NDArray[np.float64],
         ub: float | NDArray[np.float64],
         random_state: int | RandomState | None = None,
@@ -90,7 +90,7 @@ class ConstraintModel(Generic[_P, _T_co]):
         """Return GP regressors of the constraint function."""
         return self._model
 
-    def eval(self, *args: _P.args, **kwargs: _P.kwargs) -> _T_co:
+    def eval(self, *args: _P.args, **kwargs: _P.kwargs) -> _T:
         r"""Evaluate the constraint function.
 
         Parameters
@@ -113,18 +113,14 @@ class ConstraintModel(Generic[_P, _T_co]):
         except TypeError as e:
             msg = (
                 "Encountered TypeError when evaluating constraint "
-                + "function. This could be because your constraint function "
-                + "doesn't use the same keyword arguments as the target "
-                + f"function. Original error message:\n\n{e}"
+                "function. This could be because your constraint function "
+                "doesn't use the same keyword arguments as the target "
+                f"function. Original error message:\n\n{e}"
             )
             e.args = (msg,)
             raise
 
-    def fit(
-        self,
-        X: NDArray[np.float64],
-        Y: NDArray[np.float64],
-    ) -> None:
+    def fit(self, X: NDArray[np.float64], Y: NDArray[np.float64]) -> None:
         """Fit internal GPRs to the data.
 
         Parameters
