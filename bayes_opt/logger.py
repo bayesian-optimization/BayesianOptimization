@@ -155,7 +155,13 @@ class ScreenLogger(_Tracker):
         A stringified, formatted version of the most recent optimization step.
         """
         res = instance.res[-1]
-        assert "allowed" in res
+        if "allowed" not in res:
+            error_msg = (
+                f"Key 'allowed' not found in {res}. "
+                "This might be due to the optimizer not being constrained."
+            )
+            raise KeyError(error_msg)
+
         cells = []
 
         cells.append(self._format_number(self._iterations + 1))

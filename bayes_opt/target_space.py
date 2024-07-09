@@ -138,7 +138,12 @@ class TargetSpace(Generic[_T]):
         -------
         int
         """
-        assert len(self._params) == len(self._target)
+        if len(self._params) != len(self._target):
+            error_msg = (
+                f"Number of parameters ({len(self._params)}) and "
+                f"number of targets ({len(self._target)}) do not match."
+            )
+            raise ValueError(error_msg)
         return len(self._target)
 
     @property

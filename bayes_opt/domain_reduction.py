@@ -94,7 +94,14 @@ class SequentialDomainReductionTransformer(DomainTransformer[Any]):
 
         # Set the minimum window to an array of length bounds
         if isinstance(self.minimum_window_value, (list, np.ndarray)):
-            assert len(self.minimum_window_value) == len(target_space.bounds)
+            if len(self.minimum_window_value) != len(target_space.bounds):
+                error_msg = (
+                    "minimum_window must have the same length "
+                    "as the number of parameters in the target space. "
+                    f"Expected {len(target_space.bounds)} values, "
+                    f"got {len(self.minimum_window_value)}."
+                )
+                raise ValueError(error_msg)
             self.minimum_window = self.minimum_window_value
         else:
             self.minimum_window = [self.minimum_window_value] * len(target_space.bounds)
@@ -137,7 +144,10 @@ class SequentialDomainReductionTransformer(DomainTransformer[Any]):
         self.previous_d = self.current_d
 
         target_space_max = target_space.max()
-        assert target_space_max is not None
+        if target_space_max is None:
+            error_msg = "Target space is empty. Cannot update the transformer."
+            raise ValueError(error_msg)
+
         self.current_optimal = target_space.params_to_array(target_space_max["params"])
 
         self.current_d = 2.0 * (self.current_optimal - self.previous_optimal) / self.r
