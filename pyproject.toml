@@ -49,4 +49,5 @@ build-backend = "poetry.core.masonry.api"
 [tool.mypy]
 python_version = "3.9"
 strict = true
-disable_error_code = "import-untyped,no-any-return"
+disable_error_code = "import-untyped,no-any-return,no-untyped-call"
+no_implicit_optional = true

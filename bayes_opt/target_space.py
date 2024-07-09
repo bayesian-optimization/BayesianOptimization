@@ -7,7 +7,7 @@ from warnings import warn
 
 import numpy as np
 from colorama import Fore
-from typing_extensions import NotRequired, Required, TypedDict, TypeVar
+from typing_extensions import NotRequired, Required, TypedDict, TypeGuard, TypeVar
 
 from .util import NotUniqueError, ensure_rng
 
@@ -37,7 +37,7 @@ if TYPE_CHECKING:
         allowed: Required[bool]
 
 
-_T = TypeVar("_T", bound="ConstraintModel[..., Any] | None", infer_variance=True)
+_T = TypeVar("_T", bound="ConstraintModel[..., Any] | None", default=None)
 
 
 def _hashable(x: NDArray[np.float64]) -> tuple[float, ...]:
@@ -85,7 +85,7 @@ class TargetSpace(Generic[_T]):
         self,
         target_func: Callable[..., float],
         pbounds: dict[str, tuple[float, float]],
-        constraint: _T = None,
+        constraint: _T = None,  # type: ignore[assignment]
         random_state: int | None = None,
         allow_duplicate_points: bool = False,
     ) -> None:
@@ -109,11 +109,11 @@ class TargetSpace(Generic[_T]):
         self._target = np.empty(shape=(0,), dtype=np.float64)
 
         # keep track of unique points we have seen so far
-        self._cache = {}
+        self._cache: dict[tuple[float, ...], float | tuple[float, float]] = {}
 
         self._constraint = constraint
 
-        if constraint is not None:
+        if _ensure_constraint(constraint):
             # preallocated memory for constraint fulfillment
             if constraint.lb.size == 1:
                 self._constraint_values = np.empty(shape=(0), dtype=np.float64)
@@ -242,7 +242,7 @@ class TargetSpace(Generic[_T]):
         mask = np.ones_like(self.target, dtype=np.bool_)
 
         # mask points that don't satisfy the constraint
-        if self._constraint is not None:
+        if _ensure_constraint(self._constraint):
             mask &= self._constraint.allowed(self._constraint_values)
 
         # mask points that are outside the bounds
@@ -452,7 +452,7 @@ class TargetSpace(Generic[_T]):
         dict_params = dict(zip(self._keys, x))
         target = self.target_func(**dict_params)
 
-        if self._constraint is None:
+        if not _ensure_constraint(self._constraint):
             self.register(x, target)
             return target
 
@@ -566,17 +566,17 @@ class TargetSpace(Generic[_T]):
         -----
         Does not report if points are within the bounds of the parameter space.
         """
-        if self._constraint is None:
+        if not _ensure_constraint(self._constraint):
             params = [dict(zip(self.keys, p)) for p in self.params]
 
-            return [
+            return [  # type: ignore[return-value]
                 {"target": target, "params": param}
                 for target, param in zip(self.target, params)
             ]
 
         params = [dict(zip(self.keys, p)) for p in self.params]
 
-        return [
+        return [  # type: ignore[return-value]
             {
                 "target": target,
                 "constraint": constraint_value,
@@ -602,3 +602,9 @@ class TargetSpace(Generic[_T]):
         for row, key in enumerate(self.keys):
             if key in new_bounds:
                 self._bounds[row] = new_bounds[key]
+
+
+def _ensure_constraint(
+    constraint: ConstraintModel[..., Any] | None,
+) -> TypeGuard[ConstraintModel[..., Any]]:
+    return constraint is not None
