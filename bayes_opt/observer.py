@@ -10,7 +10,6 @@ from .event import Events
 if TYPE_CHECKING:
     from .bayesian_optimization import BayesianOptimization
 
-__all__ = ["_Tracker"]
 
 _UTC = timezone(timedelta())
 
