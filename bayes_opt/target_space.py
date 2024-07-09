@@ -21,19 +21,19 @@ if TYPE_CHECKING:
     class MaxResult(TypedDict):
         target: Required[float]
         params: Required[dict[str, float]]
-        constraint: NotRequired[float]
+        constraint: NotRequired[float | NDArray[np.float64]]
         allowed: NotRequired[bool]
 
     class MaxResultWithConstraint(TypedDict):
         target: Required[float]
         params: Required[dict[str, float]]
-        constraint: Required[float]
+        constraint: Required[float | NDArray[np.float64]]
         allowed: NotRequired[bool]
 
     class MaxResultWithConstraintAndAllowed(TypedDict):
         target: Required[float]
         params: Required[dict[str, float]]
-        constraint: Required[float]
+        constraint: Required[float | NDArray[np.float64]]
         allowed: Required[bool]
 
 
@@ -399,10 +399,9 @@ class TargetSpace(Generic[_T]):
                 raise ValueError(error_msg)
             # Insert data into unique dictionary
             cache_copy[_hashable(x.ravel())] = (target, constraint_value)
-            constraint_values_copy = np.concatenate([
-                self._constraint_values,
-                [constraint_value],
-            ])
+            constraint_values_copy = np.concatenate(
+                [self._constraint_values, [constraint_value]], dtype=np.float64
+            )
             self._constraint_values = constraint_values_copy
 
         # Operations passed, update the variables
