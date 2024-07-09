@@ -24,8 +24,8 @@ class _Tracker:
         self._previous_max = None
         self._previous_max_params = None
 
-        self._start_time = None
-        self._previous_time = None
+        self._start_time: datetime | None = None
+        self._previous_time: datetime | None = None
 
     def _update_tracker(
         self, event: Events | str, instance: BayesianOptimization
