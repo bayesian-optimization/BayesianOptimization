@@ -13,6 +13,7 @@ scikit-learn = "^1.0.0"
 numpy = "^1.9.0"
 scipy = "^1.0.0"
 colorama = "^0.4.6"
+typing_extensions = ">=4.8"
 
 
 [tool.poetry.group.dev]  # for testing/developing
@@ -36,7 +37,16 @@ nbsphinx = "^0.9.4"
 sphinx-rtd-theme = "^2.0.0"
 myst-parser = "^3.0.1"
 
+[tool.poetry.group.typing]  # for static type checking
+optional = true
+[tool.poetry.group.typing.dependencies]
+mypy = "1.10.1"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+python_version = "3.9"
+strict = true
+disable_error_code = "import-untyped,no-any-return,no-untyped-call"

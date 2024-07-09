@@ -1,14 +1,19 @@
 """Register optimization events variables."""
 
-class Events:
+from __future__ import annotations
+
+from enum import Enum
+
+
+class Events(Enum):
     """Define optimization events.
 
     Behaves similar to enums.
     """
 
-    OPTIMIZATION_START = 'optimization:start'
-    OPTIMIZATION_STEP = 'optimization:step'
-    OPTIMIZATION_END = 'optimization:end'
+    OPTIMIZATION_START = "optimization:start"
+    OPTIMIZATION_STEP = "optimization:step"
+    OPTIMIZATION_END = "optimization:end"
 
 
 DEFAULT_EVENTS = [
