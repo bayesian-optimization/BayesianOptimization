@@ -186,7 +186,7 @@ class ConstraintModel(Generic[_P, _T_co]):
         p_upper: NDArray[np.float64]
 
         if len(self._model) == 1:
-            y_mean, y_std = self._model[0].predict(X, return_std=True)  # type: ignore # FIXME
+            y_mean, y_std = self._model[0].predict(X, return_std=True)
 
             p_lower = (
                 norm(loc=y_mean, scale=y_std).cdf(self._lb[0])
@@ -203,7 +203,7 @@ class ConstraintModel(Generic[_P, _T_co]):
 
         result = np.ones(X.shape[0], dtype=np.float64)
         for j, gp in enumerate(self._model):
-            y_mean, y_std = gp.predict(X, return_std=True)  # type: ignore # FIXME
+            y_mean, y_std = gp.predict(X, return_std=True)
 
             p_lower = (
                 norm(loc=y_mean, scale=y_std).cdf(self._lb[j])
