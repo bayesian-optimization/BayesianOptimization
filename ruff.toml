@@ -34,12 +34,27 @@ extend-select = [
     "S",      # flake8-bandit
     "DTZ",    # flake8-datetimez
     "EM",     # flake8-errmsg 
+    "LOG",    # flake8-logging 
     "TRY002", # raise-vanilla-class
 ]
 ignore = [
     "PT011", # TODO
 ]
-fixable = ["I", "UP", "ISC", "G", "LOG", "PT", "E", "W", "PGH", "B", "SIM", "S"]
+fixable = [
+    "I",
+    "UP",
+    "ISC",
+    "G",
+    "LOG",
+    "PT",
+    "E",
+    "W",
+    "PGH",
+    "B",
+    "SIM",
+    "S",
+    "LOG",
+]
 
 [lint.per-file-ignores]
 "tests/test_*.py" = ["S101"]
