@@ -21,7 +21,7 @@ optional = true
 pytest = "^8.0.0"
 pytest-cov = "^4.1.0"
 coverage = "^7.4.1"
-pydocstyle = "^6.3.0"
+ruff = "0.5.1"
 
 
 [tool.poetry.group.nbtools]  # for running/converting notebooks
