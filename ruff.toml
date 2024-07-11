@@ -43,6 +43,7 @@ extend-select = [
     "PTH",    # flake8-use-pathlib
     "F",      # Pyflakes
     "NPY",    # NumPy-specific rules
+    "PERF",   # Perflint
     "TRY002", # raise-vanilla-class
 ]
 ignore = [
@@ -70,6 +71,7 @@ fixable = [
     "PTH",
     "F",
     "NPY",
+    "PERF",
 ]
 
 [lint.per-file-ignores]

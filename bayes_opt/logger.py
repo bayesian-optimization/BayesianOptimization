@@ -154,17 +154,16 @@ class ScreenLogger(_Tracker):
         A stringified, formatted version of the most recent optimization step.
         """
         res = instance.res[-1]
-        cells = []
+        cells: list[str | None] = [None, None, None, None]
 
-        cells.append(self._format_number(self._iterations + 1))
-        cells.append(self._format_number(res["target"]))
+        cells[:2] = self._format_number(self._iterations + 1), self._format_number(res["target"])
         if self._is_constrained:
-            cells.append(self._format_bool(res["allowed"]))
+            cells[2] = self._format_bool(res["allowed"])
 
         for key in instance.space.keys:
-            cells.append(self._format_number(res["params"][key]))
+            cells[3] = self._format_number(res["params"][key])
 
-        return "| " + " | ".join([colour + cells[i] + self._colour_reset for i in range(len(cells))]) + " |"
+        return "| " + " | ".join(colour + x + self._colour_reset for x in cells if x is not None) + " |"
 
     def _header(self, instance):
         """Print the header of the log.
@@ -178,17 +177,16 @@ class ScreenLogger(_Tracker):
         -------
         A stringified, formatted version of the most header.
         """
-        cells = []
-        cells.append(self._format_key("iter"))
-        cells.append(self._format_key("target"))
+        cells: list[str | None] = [None, None, None, None]
 
+        cells[:2] = self._format_key("iter"), self._format_key("target")
         if self._is_constrained:
-            cells.append(self._format_key("allowed"))
+            cells[2] = self._format_key("allowed")
 
         for key in instance.space.keys:
-            cells.append(self._format_key(key))
+            cells[3] = self._format_key(key)
 
-        line = "| " + " | ".join(cells) + " |"
+        line = "| " + " | ".join(x for x in cells if x is not None) + " |"
         self._header_length = len(line)
         return line + "\n" + ("-" * self._header_length)
 
