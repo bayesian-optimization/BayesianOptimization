@@ -1,5 +1,8 @@
 """Constraint handling."""
+
 from __future__ import annotations
+
+from functools import partial
 
 import numpy as np
 from scipy.stats import norm
@@ -50,13 +53,7 @@ class ConstraintModel:
             msg = "Lower bounds must be less than upper bounds."
             raise ValueError(msg)
 
-        basis = lambda: GaussianProcessRegressor(
-            kernel=Matern(nu=2.5),
-            alpha=1e-6,
-            normalize_y=True,
-            n_restarts_optimizer=5,
-            random_state=random_state,
-        )
+        basis = partial(_create_gaussian_process_regressor, random_state=random_state)
         self._model = [basis() for _ in range(len(self._lb))]
 
     @property
@@ -79,7 +76,7 @@ class ConstraintModel:
 
         Parameters
         ----------
-        \*\*kwargs :
+        **kwargs : any
             Function arguments to evaluate the constraint function on.
 
 
@@ -239,3 +236,15 @@ class ConstraintModel:
         return np.all(constraint_values <= self._ub, axis=-1) & np.all(
             constraint_values >= self._lb, axis=-1
         )
+
+
+def _create_gaussian_process_regressor(
+    random_state: np.random.RandomState | int | None,
+) -> GaussianProcessRegressor:
+    return GaussianProcessRegressor(
+        kernel=Matern(nu=2.5),
+        alpha=1e-6,
+        normalize_y=True,
+        n_restarts_optimizer=5,
+        random_state=random_state,
+    )
