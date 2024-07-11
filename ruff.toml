@@ -4,7 +4,7 @@ target-version = "py39"
 extend = "./pyproject.toml"
 
 [lint]
-select = []
+select = ["D417"]
 ignore = []
 fixable = []
 
@@ -25,3 +25,6 @@ required-imports = ["from __future__ import annotations"]
 force-single-line = false
 force-wrap-aliases = false
 split-on-trailing-comma = false
+
+[lint.pydocstyle]
+convention = "numpy"
