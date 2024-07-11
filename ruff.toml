@@ -45,6 +45,7 @@ extend-select = [
     "NPY",    # NumPy-specific rules
     "PERF",   # Perflint
     "FURB",   # refurb
+    "RUF",    # Ruff-specific rules
     "TRY002", # raise-vanilla-class
 ]
 ignore = [
@@ -74,6 +75,7 @@ fixable = [
     "NPY",
     "PERF",
     "FURB",
+    "RUF",
 ]
 
 [lint.per-file-ignores]
