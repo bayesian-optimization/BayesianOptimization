@@ -46,7 +46,10 @@ class ScreenLogger(_Tracker):
 
     _default_cell_size = 9
     _default_precision = 4
-
+    _colour_new_max = Fore.MAGENTA
+    _colour_regular_message = Fore.RESET
+    _colour_reset = Fore.RESET
+    
     def __init__(self, verbose=2, is_constrained=False):
         self._verbose = verbose
         self._is_constrained = is_constrained
@@ -136,7 +139,7 @@ class ScreenLogger(_Tracker):
             return s[:self._default_cell_size - 3] + "..."
         return s
 
-    def _step(self, instance, colour=Fore.BLACK):
+    def _step(self, instance, colour=_colour_regular_message):
         """Log a step.
 
         Parameters
@@ -145,7 +148,7 @@ class ScreenLogger(_Tracker):
             The instance associated with the event.
             
         colour :
-            (Default value = Fore.BLACK)
+            (Default value = _colour_regular_message, equivalent to Fore.RESET)
 
         Returns
         -------
@@ -163,7 +166,7 @@ class ScreenLogger(_Tracker):
         for key in instance.space.keys:
             cells.append(self._format_number(res["params"][key]))
 
-        return "| " + " | ".join([colour + cells[i] for i in range(len(cells))]) + " |"
+        return "| " + " | ".join([colour + cells[i] + self._colour_reset for i in range(len(cells))]) + " |"
 
     def _header(self, instance):
         """Print the header of the log.
@@ -231,7 +234,7 @@ class ScreenLogger(_Tracker):
             if self._verbose == 1 and not is_new_max:
                 line = ""
             else:
-                colour = Fore.MAGENTA if is_new_max else Fore.BLACK
+                colour = self._colour_new_max if is_new_max else self._colour_regular_message
                 line = self._step(instance, colour=colour) + "\n"
         elif event == Events.OPTIMIZATION_END:
             line = "=" * self._header_length + "\n"

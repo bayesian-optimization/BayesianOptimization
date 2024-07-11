@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/bayesian-optimization/BayesianOptimization/master/static/func.png"><br><br>
+  <img src="https://raw.githubusercontent.com/bayesian-optimization/BayesianOptimization/master/docsrc/static/func.png"><br><br>
 </div>
 
 # Bayesian Optimization
