@@ -39,6 +39,7 @@ extend-select = [
     "PIE",    # flake8-pie
     "Q",      # flake8-quotes
     "RET",    # flake8-return
+    "TID",    # flake8-tidy-imports 
     "TRY002", # raise-vanilla-class
 ]
 ignore = [
@@ -62,6 +63,7 @@ fixable = [
     "PIE",
     "Q",
     "RET",
+    "TID",
 ]
 
 [lint.per-file-ignores]
