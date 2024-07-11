@@ -130,7 +130,7 @@ def test_exceeded_bounds():
         minimum_window=window_ranges
     )
     pbounds = {"x": (-0.5, 0.5), "y": (-0.7, 0.0)}
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011 # FIXME: add match text
         _ = BayesianOptimization(
             f=black_box_function,
             pbounds=pbounds,
