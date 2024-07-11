@@ -1,0 +1,31 @@
+# This workflow will install Python dependencies and check docstrings with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Check docstrings
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+    - name: Install dependencies
+      run: |
+        poetry install --with dev
+    - name: Check docstyle
+      run : poetry run pydocstyle --convention=numpy --add-select D417 bayes_opt/*
+    #- name: Run linting
+    #  run : pylint bayes_opt/* --disable=C0103 # ignore no snake_case conformity of arguments
