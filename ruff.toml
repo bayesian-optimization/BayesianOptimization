@@ -4,9 +4,23 @@ target-version = "py39"
 extend = "./pyproject.toml"
 
 [lint]
-select = ["D417"]
+extend-select = [
+    "D417", # undocumented-param
+    "I",    # isort
+    "UP",   # pyupgrade
+    "ISC",  # flake8-implicit-str-concat
+    "G",    # flake8-logging-format
+    "LOG",  # flake8-logging
+    "PT",   # flake8-pytest-style
+    "E",    # pycodestyle
+    "W",    # pycodestyle
+    "PGH",  # pygrep-hooks
+    "B",    # flake8-bugbear
+    "TRY",  # tryceratops
+    "S101", # assert
+]
 ignore = []
-fixable = []
+fixable = ["I", "UP", "ISC", "G", "LOG", "PT", "E", "W", "PGH", "B"]
 
 [format]
 indent-style = "space"
