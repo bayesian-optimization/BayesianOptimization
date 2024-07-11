@@ -19,7 +19,6 @@ class DomainTransformer:
 
     def __init__(self, **kwargs) -> None:
         """To override with specific implementation."""
-        pass  # pragma: no cover
 
     def initialize(self, target_space: TargetSpace) -> None:
         """To override with specific implementation."""
