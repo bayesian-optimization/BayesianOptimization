@@ -182,7 +182,7 @@ def test_random_sample():
 
 def test_y_max():
     space = TargetSpace(target_func, PBOUNDS)
-    assert space._target_max() == None
+    assert space._target_max() is None
     space.probe(params={"p1": 1, "p2": 7})
     space.probe(params={"p1": 0.5, "p2": 1})
     space.probe(params={"p1": 0, "p2": 1})
@@ -193,7 +193,7 @@ def test_y_max_with_constraint():
     PBOUNDS = {"p1": (0, 10), "p2": (1, 100)}
     constraint = ConstraintModel(lambda p1, p2: p1 - p2, -2, 2)
     space = TargetSpace(target_func, PBOUNDS, constraint)
-    assert space._target_max() == None
+    assert space._target_max() is None
     space.probe(params={"p1": 1, "p2": 2})  # Feasible
     space.probe(params={"p1": 5, "p2": 1})  # Unfeasible
     space.probe(params={"p1": 0, "p2": 1})  # Feasible
@@ -203,7 +203,7 @@ def test_y_max_with_constraint():
 def test_y_max_within_pbounds():
     PBOUNDS = {"p1": (0, 2), "p2": (1, 100)}
     space = TargetSpace(target_func, PBOUNDS)
-    assert space._target_max() == None
+    assert space._target_max() is None
     space.probe(params={"p1": 1, "p2": 2})
     space.probe(params={"p1": 0, "p2": 1})
     with pytest.warns(UserWarning):
@@ -215,7 +215,7 @@ def test_max():
     PBOUNDS = {"p1": (0, 10), "p2": (1, 100)}
     space = TargetSpace(target_func, PBOUNDS)
 
-    assert space.max() == None
+    assert space.max() is None
     space.probe(params={"p1": 1, "p2": 2})
     space.probe(params={"p1": 5, "p2": 4})
     space.probe(params={"p1": 2, "p2": 3})
@@ -228,7 +228,7 @@ def test_max_with_constraint():
     constraint = ConstraintModel(lambda p1, p2: p1 - p2, -2, 2)
     space = TargetSpace(target_func, PBOUNDS, constraint=constraint)
 
-    assert space.max() == None
+    assert space.max() is None
     space.probe(params={"p1": 1, "p2": 2})  # Feasible
     space.probe(params={"p1": 5, "p2": 8})  # Unfeasible
     space.probe(params={"p1": 2, "p2": 3})  # Feasible
@@ -241,7 +241,7 @@ def test_max_with_constraint_identical_target_value():
     constraint = ConstraintModel(lambda p1, p2: p1 - p2, -2, 2)
     space = TargetSpace(target_func, PBOUNDS, constraint=constraint)
 
-    assert space.max() == None
+    assert space.max() is None
     space.probe(params={"p1": 1, "p2": 2})  # Feasible
     space.probe(
         params={"p1": 0, "p2": 5}

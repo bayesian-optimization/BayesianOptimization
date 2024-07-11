@@ -28,7 +28,9 @@ extend-select = [
     "TRY002", # raise-vanilla-class
     "S101",    # assert
 ]
-ignore = []
+ignore = [
+    "PT011" # TODO
+]
 fixable = ["I", "UP", "ISC", "G", "LOG", "PT", "E", "W", "PGH", "B"]
 
 [lint.per-file-ignores]
