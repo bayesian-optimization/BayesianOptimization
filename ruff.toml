@@ -35,6 +35,7 @@ extend-select = [
     "DTZ",    # flake8-datetimez
     "EM",     # flake8-errmsg 
     "LOG",    # flake8-logging 
+    "G",      # flake8-logging-format
     "TRY002", # raise-vanilla-class
 ]
 ignore = [
@@ -54,6 +55,7 @@ fixable = [
     "SIM",
     "S",
     "LOG",
+    "G",
 ]
 
 [lint.per-file-ignores]
