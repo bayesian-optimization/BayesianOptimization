@@ -1,4 +1,5 @@
 """Manages the optimization domain and holds points."""
+
 from __future__ import annotations
 
 from warnings import warn
@@ -107,7 +108,8 @@ class TargetSpace:
         -------
         int
         """
-        assert len(self._params) == len(self._target)
+        if len(self._params) != len(self._target):
+            raise ValueError("The number of parameters and targets do not match.")
         return len(self._target)
 
     @property
