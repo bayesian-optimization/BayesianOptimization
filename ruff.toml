@@ -41,6 +41,7 @@ extend-select = [
     "RET",    # flake8-return
     "TID",    # flake8-tidy-imports 
     "PTH",    # flake8-use-pathlib
+    "F",      # Pyflakes
     "TRY002", # raise-vanilla-class
 ]
 ignore = [
@@ -66,6 +67,7 @@ fixable = [
     "RET",
     "TID",
     "PTH",
+    "F",
 ]
 
 [lint.per-file-ignores]
