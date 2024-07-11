@@ -40,6 +40,7 @@ extend-select = [
     "Q",      # flake8-quotes
     "RET",    # flake8-return
     "TID",    # flake8-tidy-imports 
+    "PTH",    # flake8-use-pathlib
     "TRY002", # raise-vanilla-class
 ]
 ignore = [
@@ -64,6 +65,7 @@ fixable = [
     "Q",
     "RET",
     "TID",
+    "PTH",
 ]
 
 [lint.per-file-ignores]

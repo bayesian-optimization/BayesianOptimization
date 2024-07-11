@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import json
-import os
 from contextlib import suppress
+from pathlib import Path
 
 import numpy as np
 from colorama import Fore, just_fix_windows_console
@@ -259,10 +259,10 @@ class JSONLogger(_Tracker):
     """
 
     def __init__(self, path, reset=True):
-        self._path = path
+        self._path = Path(path)
         if reset:
             with suppress(OSError):
-                os.remove(self._path)
+                self._path.unlink(missing_ok=True)
         super().__init__()
 
     def update(self, event, instance):
@@ -291,7 +291,7 @@ class JSONLogger(_Tracker):
             if "constraint" in data and isinstance(data["constraint"], np.ndarray):
                 data["constraint"] = data["constraint"].tolist()
 
-            with open(self._path, "a") as f:
+            with self._path.open("a") as f:
                 f.write(json.dumps(data) + "\n")
 
         self._update_tracker(event, instance)
