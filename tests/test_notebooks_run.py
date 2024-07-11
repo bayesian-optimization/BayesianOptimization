@@ -1,13 +1,13 @@
 """
 collect all notebooks in examples, and check that they run without error
 """
+
 from __future__ import annotations
 
 from glob import glob
 from pathlib import Path
 
 import nbformat
-from matplotlib import pyplot as plt
 from nbconvert.preprocessors import ExecutePreprocessor
 
 this_file_loc = Path(__file__).parent
@@ -20,9 +20,10 @@ def check_notebook_runs(notebook_loc):
             nb = nbformat.read(f, as_version=4)
         ep = ExecutePreprocessor(timeout=600, kernel_name="python3")
         ep.preprocess(nb, {"metadata": {"path": Path(notebook_loc).parent}})
-    except Exception as e:
-        raise Exception(f"failed to run notebook {notebook_loc}")
-    print(f"success!")
+    except Exception as exc:
+        error_msg = f"failed to run notebook {notebook_loc}"
+        raise Exception(error_msg) from exc  # noqa: TRY002 # FIXME
+    print("success!")
 
 
 def test_all_notebooks_run():
