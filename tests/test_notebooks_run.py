@@ -27,9 +27,9 @@ def check_notebook_runs(notebook_loc: Path):
 
 def test_all_notebooks_run():
     # get all notebooks:
-    examples = this_file_loc.parent / "examples"
     notebooks_not_to_run = ["put_notebooks_to_skip_here"]
-    for notebook in examples.glob("*.ipynb"):
-        if any([nb in str(notebook) for nb in notebooks_not_to_run]):
+    for notebook in this_file_loc.with_name("examples").glob("*.ipynb"):
+        as_string = str(notebook)
+        if any([nb in as_string for nb in notebooks_not_to_run]):
             continue
         check_notebook_runs(notebook)
