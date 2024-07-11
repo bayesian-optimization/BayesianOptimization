@@ -318,9 +318,8 @@ class TargetSpace:
                 )
 
         # if x is not within the bounds of the parameter space, warn the user
-        if self._bounds is not None:
-            if not np.all((self._bounds[:, 0] <= x) & (x <= self._bounds[:, 1])):
-                warn(f"\nData point {x} is outside the bounds of the parameter space. ", stacklevel=2)
+        if self._bounds is not None and not np.all((self._bounds[:, 0] <= x) & (x <= self._bounds[:, 1])):
+            warn(f"\nData point {x} is outside the bounds of the parameter space. ", stacklevel=2)
 
         # Make copies of the data, so as not to modify the originals incase something fails
         # during the registration process. This prevents out-of-sync data.
@@ -376,9 +375,8 @@ class TargetSpace:
         >>> assert self.max()["params"] == {"p1": 1.0, "p2": 5.0}
         """
         x = self._as_array(params)
-        if x in self:
-            if not self._allow_duplicate_points:
-                return self._cache[_hashable(x.ravel())]
+        if x in self and not self._allow_duplicate_points:
+            return self._cache[_hashable(x.ravel())]
 
         params = dict(zip(self._keys, x))
         target = self.target_func(**params)

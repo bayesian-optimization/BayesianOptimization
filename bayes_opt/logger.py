@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+from contextlib import suppress
 
 import numpy as np
 from colorama import Fore, just_fix_windows_console
@@ -117,13 +118,7 @@ class ScreenLogger(_Tracker):
         -------
         A stringified, formatted version of `x`.
         """
-        if 5 > self._default_cell_size:
-            if x:
-                x_ = "T"
-            else:
-                x_ = "F"
-        else:
-            x_ = str(x)
+        x_ = ("T" if x else "F") if self._default_cell_size < 5 else str(x)
         s = f"{x_:<{self._default_cell_size}}"
         return s
 
@@ -267,10 +262,8 @@ class JSONLogger(_Tracker):
     def __init__(self, path, reset=True):
         self._path = path
         if reset:
-            try:
+            with suppress(OSError):
                 os.remove(self._path)
-            except OSError:
-                pass
         super().__init__()
 
     def update(self, event, instance):

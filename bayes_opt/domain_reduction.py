@@ -19,7 +19,7 @@ class DomainTransformer:
 
     def __init__(self, **kwargs) -> None:
         """To override with specific implementation."""
-        pass
+        pass  # pragma: no cover
 
     def initialize(self, target_space: TargetSpace) -> None:
         """To override with specific implementation."""
@@ -82,9 +82,9 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         self.bounds = [self.original_bounds]
 
         # Set the minimum window to an array of length bounds
-        if isinstance(self.minimum_window_value, list) or isinstance(self.minimum_window_value, np.ndarray):
+        if isinstance(self.minimum_window_value, (list, np.ndarray)):
             if len(self.minimum_window_value) != len(target_space.bounds):
-                raise ValueError("Length of minimum_window must be the same " "as the number of parameters")
+                raise ValueError("Length of minimum_window must be the same as the number of parameters")
             self.minimum_window = self.minimum_window_value
         else:
             self.minimum_window = [self.minimum_window_value] * len(target_space.bounds)
