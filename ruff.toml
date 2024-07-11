@@ -31,13 +31,13 @@ extend-select = [
     "PGH",    # pygrep-hooks
     "B",      # flake8-bugbear
     "SIM",    # flake8-simplify
+    "S",      # flake8-bandit
     "TRY002", # raise-vanilla-class
-    "S101",   # assert
 ]
 ignore = [
     "PT011", # TODO
 ]
-fixable = ["I", "UP", "ISC", "G", "LOG", "PT", "E", "W", "PGH", "B", "SIM"]
+fixable = ["I", "UP", "ISC", "G", "LOG", "PT", "E", "W", "PGH", "B", "SIM", "S"]
 
 [lint.per-file-ignores]
 "tests/test_*.py" = ["S101"]
