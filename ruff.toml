@@ -11,6 +11,10 @@ exclude = [
     "tests/test_bayesian_optimization.py",
     "tests/test_constraint.py",
     "tests/test_util.py",
+    # docs
+    "docsrc/**/*",
+    # examples
+    "examples/**/*",
 ]
 
 [lint]
