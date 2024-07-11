@@ -1,0 +1,27 @@
+line-length = 88
+unsafe-fixes = false
+target-version = "py39"
+extend = "./pyproject.toml"
+
+[lint]
+select = []
+ignore = []
+fixable = []
+
+[format]
+indent-style = "space"
+quote-style = "double"
+skip-magic-trailing-comma = true
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
+
+[lint.pylint]
+max-args = 10
+
+[lint.isort]
+known-local-folder = ["bayes_opt"]
+required-imports = ["from __future__ import annotations"]
+# ruff format
+force-single-line = false
+force-wrap-aliases = false
+split-on-trailing-comma = false
