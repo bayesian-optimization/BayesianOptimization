@@ -37,6 +37,7 @@ extend-select = [
     "LOG",    # flake8-logging 
     "G",      # flake8-logging-format
     "PIE",    # flake8-pie
+    "Q",      # flake8-quotes
     "TRY002", # raise-vanilla-class
 ]
 ignore = [
@@ -58,6 +59,7 @@ fixable = [
     "LOG",
     "G",
     "PIE",
+    "Q",
 ]
 
 [lint.per-file-ignores]
