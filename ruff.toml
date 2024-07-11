@@ -44,6 +44,7 @@ extend-select = [
     "F",      # Pyflakes
     "NPY",    # NumPy-specific rules
     "PERF",   # Perflint
+    "FURB",   # refurb
     "TRY002", # raise-vanilla-class
 ]
 ignore = [
@@ -72,6 +73,7 @@ fixable = [
     "F",
     "NPY",
     "PERF",
+    "FURB",
 ]
 
 [lint.per-file-ignores]
