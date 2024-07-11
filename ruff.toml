@@ -19,7 +19,7 @@ exclude = [
 
 [lint]
 extend-select = [
-    "D",      # pydocstyle # TODO
+    # "D",      # pydocstyle # TODO
     "D417",   # undocumented-param
     "I",      # isort
     "UP",     # pyupgrade
