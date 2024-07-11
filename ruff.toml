@@ -19,21 +19,22 @@ exclude = [
 
 [lint]
 extend-select = [
-    "D417",    # undocumented-param
-    "I",       # isort
-    "UP",      # pyupgrade
-    "G",       # flake8-logging-format
-    "LOG",     # flake8-logging
-    "PT",      # flake8-pytest-style
-    "E",       # pycodestyle
-    "W",       # pycodestyle
-    "PGH",     # pygrep-hooks
-    "B",       # flake8-bugbear
+    "D",      # pydocstyle # TODO
+    "D417",   # undocumented-param
+    "I",      # isort
+    "UP",     # pyupgrade
+    "G",      # flake8-logging-format
+    "LOG",    # flake8-logging
+    "PT",     # flake8-pytest-style
+    "E",      # pycodestyle
+    "W",      # pycodestyle
+    "PGH",    # pygrep-hooks
+    "B",      # flake8-bugbear
     "TRY002", # raise-vanilla-class
-    "S101",    # assert
+    "S101",   # assert
 ]
 ignore = [
-    "PT011" # TODO
+    "PT011", # TODO
 ]
 fixable = ["I", "UP", "ISC", "G", "LOG", "PT", "E", "W", "PGH", "B"]
 
