@@ -4,9 +4,9 @@ In particular, this provides a base transformer class and a sequential domain
 reduction transformer as based on Stander and Craig's "On the robustness of a
 simple domain reduction scheme for simulation-based optimization"
 """
+
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Union
 from warnings import warn
 
 import numpy as np
@@ -56,7 +56,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         gamma_osc: float = 0.7,
         gamma_pan: float = 1.0,
         eta: float = 0.9,
-        minimum_window: Optional[Union[List[float], float, Dict[str, float]]] = 0.0,
+        minimum_window: list[float] | float | dict[str, float] | None = 0.0,
     ) -> None:
         self.gamma_osc = gamma_osc
         self.gamma_pan = gamma_pan
@@ -84,7 +84,12 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         if isinstance(self.minimum_window_value, list) or isinstance(
             self.minimum_window_value, np.ndarray
         ):
-            assert len(self.minimum_window_value) == len(target_space.bounds)
+            if len(self.minimum_window_value) != len(target_space.bounds):
+                error_msg = (
+                    f"Length of minimum_window({len(self.minimum_window_value)}) must "
+                    f"be the same as the number of parameters({len(target_space.bounds)})"
+                )
+                raise ValueError(error_msg)
             self.minimum_window = self.minimum_window_value
         else:
             self.minimum_window = [self.minimum_window_value] * len(target_space.bounds)
@@ -243,9 +248,11 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         for i, entry in enumerate(global_bounds):
             global_window_width = abs(entry[1] - entry[0])
             if global_window_width < self.minimum_window[i]:
-                raise ValueError(
-                    "Global bounds are not compatible with the minimum window size."
+                error_msg = (
+                    f"Global bounds({global_bounds}) are not compatible with the "
+                    f"minimum window size({self.minimum_window[i]})."
                 )
+                raise ValueError(error_msg)
 
     def _create_bounds(self, parameters: dict, bounds: np.ndarray) -> dict:
         """Create a dictionary of bounds for each parameter.
