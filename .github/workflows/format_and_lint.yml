@@ -2,7 +2,7 @@ name: Code format and lint
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "feat-apply-ruff" ]
   pull_request:
 
 permissions:
