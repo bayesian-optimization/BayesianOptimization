@@ -109,7 +109,7 @@ class AcquisitionFunction(abc.ABC):
     def _get_acq(self, gp: GaussianProcessRegressor, constraint: Union[ConstraintModel, None] = None) -> Callable:
         """Prepare the acquisition function for minimization.
 
-        This transformers a base_acq Callable, which takes `mean` and `std` as
+        Transforms a base_acq Callable, which takes `mean` and `std` as
         input, into an acquisition function that only requires an array of
         parameters.
         Handles GP predictions and constraints.
@@ -149,7 +149,7 @@ class AcquisitionFunction(abc.ABC):
     def _acq_min(self, acq: Callable, bounds: np.ndarray, n_random=10_000, n_l_bfgs_b=10) -> np.ndarray:
         """Find the maximum of the acquisition function.
 
-        It uses a combination of random sampling (cheap) and the 'L-BFGS-B'
+        Uses a combination of random sampling (cheap) and the 'L-BFGS-B'
         optimization method. First by sampling `n_warmup` (1e5) points at random,
         and then running L-BFGS-B from `n_iter` (10) random starting points.
 
@@ -275,7 +275,7 @@ class AcquisitionFunction(abc.ABC):
 
 
 class UpperConfidenceBound(AcquisitionFunction):
-    r"""Calculate Upper Confidence Bound acquisition function.
+    r"""Upper Confidence Bound acquisition function.
 
     The upper confidence bound is calculated as
 
