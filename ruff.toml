@@ -33,6 +33,7 @@ extend-select = [
     "SIM",    # flake8-simplify
     "S",      # flake8-bandit
     "DTZ",    # flake8-datetimez
+    "EM",     # flake8-errmsg 
     "TRY002", # raise-vanilla-class
 ]
 ignore = [

@@ -84,7 +84,8 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         # Set the minimum window to an array of length bounds
         if isinstance(self.minimum_window_value, (list, np.ndarray)):
             if len(self.minimum_window_value) != len(target_space.bounds):
-                raise ValueError("Length of minimum_window must be the same as the number of parameters")
+                error_msg = "Length of minimum_window must be the same as the number of parameters"
+                raise ValueError(error_msg)
             self.minimum_window = self.minimum_window_value
         else:
             self.minimum_window = [self.minimum_window_value] * len(target_space.bounds)
@@ -236,7 +237,8 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         for i, entry in enumerate(global_bounds):
             global_window_width = abs(entry[1] - entry[0])
             if global_window_width < self.minimum_window[i]:
-                raise ValueError("Global bounds are not compatible with the minimum window size.")
+                error_msg = "Global bounds are not compatible with the minimum window size."
+                raise ValueError(error_msg)
 
     def _create_bounds(self, parameters: dict, bounds: np.ndarray) -> dict:
         """Create a dictionary of bounds for each parameter.

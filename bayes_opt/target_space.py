@@ -101,7 +101,8 @@ class TargetSpace:
         int
         """
         if len(self._params) != len(self._target):
-            raise ValueError("The number of parameters and targets do not match.")
+            error_msg = "The number of parameters and targets do not match."
+            raise ValueError(error_msg)
         return len(self._target)
 
     @property
@@ -183,7 +184,8 @@ class TargetSpace:
         np.ndarray
         """
         if self._constraint is None:
-            raise AttributeError("TargetSpace belongs to an unconstrained optimization")
+            error_msg = "TargetSpace belongs to an unconstrained optimization"
+            raise AttributeError(error_msg)
 
         return self._constraint_values
 
@@ -312,10 +314,11 @@ class TargetSpace:
                     " duplicates registered. Continuing ..." + Fore.RESET
                 )
             else:
-                raise NotUniqueError(
+                error_msg = (
                     f"Data point {x} is not unique. You can set"
                     ' "allow_duplicate_points=True" to avoid this error'
                 )
+                raise NotUniqueError(error_msg)
 
         # if x is not within the bounds of the parameter space, warn the user
         if self._bounds is not None and not np.all((self._bounds[:, 0] <= x) & (x <= self._bounds[:, 1])):
