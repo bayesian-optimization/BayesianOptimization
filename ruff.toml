@@ -32,6 +32,7 @@ extend-select = [
     "B",      # flake8-bugbear
     "SIM",    # flake8-simplify
     "S",      # flake8-bandit
+    "DTZ",    # flake8-datetimez
     "TRY002", # raise-vanilla-class
 ]
 ignore = [
