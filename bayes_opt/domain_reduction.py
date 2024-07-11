@@ -48,7 +48,8 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         Zooming parameter used to shrink the region of interest.
 
     minimum_window : float or np.ndarray or dict, default=0.0
-        Minimum window size for each parameter. If a float is provided, the same value is used for all parameters.
+        Minimum window size for each parameter. If a float is provided,
+        the same value is used for all parameters.
     """
 
     def __init__(
@@ -81,14 +82,9 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         self.bounds = [self.original_bounds]
 
         # Set the minimum window to an array of length bounds
-        if isinstance(self.minimum_window_value, list) or isinstance(
-            self.minimum_window_value, np.ndarray
-        ):
+        if isinstance(self.minimum_window_value, list) or isinstance(self.minimum_window_value, np.ndarray):
             if len(self.minimum_window_value) != len(target_space.bounds):
-                raise ValueError(
-                    "Length of minimum_window must be the same "
-                    "as the number of parameters"
-                )
+                raise ValueError("Length of minimum_window must be the same " "as the number of parameters")
             self.minimum_window = self.minimum_window_value
         else:
             self.minimum_window = [self.minimum_window_value] * len(target_space.bounds)
@@ -105,13 +101,9 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         self.c = self.current_d * self.previous_d
         self.c_hat = np.sqrt(np.abs(self.c)) * np.sign(self.c)
 
-        self.gamma = 0.5 * (
-            self.gamma_pan * (1.0 + self.c_hat) + self.gamma_osc * (1.0 - self.c_hat)
-        )
+        self.gamma = 0.5 * (self.gamma_pan * (1.0 + self.c_hat) + self.gamma_osc * (1.0 - self.c_hat))
 
-        self.contraction_rate = self.eta + np.abs(self.current_d) * (
-            self.gamma - self.eta
-        )
+        self.contraction_rate = self.eta + np.abs(self.current_d) * (self.gamma - self.eta)
 
         self.r = self.contraction_rate * self.r
 
@@ -130,9 +122,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         self.previous_optimal = self.current_optimal
         self.previous_d = self.current_d
 
-        self.current_optimal = target_space.params_to_array(
-            target_space.max()["params"]
-        )
+        self.current_optimal = target_space.params_to_array(target_space.max()["params"])
 
         self.current_d = 2.0 * (self.current_optimal - self.previous_optimal) / self.r
 
@@ -140,13 +130,9 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
         self.c_hat = np.sqrt(np.abs(self.c)) * np.sign(self.c)
 
-        self.gamma = 0.5 * (
-            self.gamma_pan * (1.0 + self.c_hat) + self.gamma_osc * (1.0 - self.c_hat)
-        )
+        self.gamma = 0.5 * (self.gamma_pan * (1.0 + self.c_hat) + self.gamma_osc * (1.0 - self.c_hat))
 
-        self.contraction_rate = self.eta + np.abs(self.current_d) * (
-            self.gamma - self.eta
-        )
+        self.contraction_rate = self.eta + np.abs(self.current_d) * (self.gamma - self.eta)
 
         self.r = self.contraction_rate * self.r
 
@@ -180,7 +166,8 @@ class SequentialDomainReductionTransformer(DomainTransformer):
             if pbounds[1] > global_bounds[i, 1]:
                 pbounds[1] = global_bounds[i, 1]
 
-            # If a lower bound is greater than the associated global upper bound, reset it to the global lower bound
+            # If a lower bound is greater than the associated global upper bound,
+            # reset it to the global lower bound
             if pbounds[0] > global_bounds[i, 1]:
                 pbounds[0] = global_bounds[i, 0]
                 warn(
@@ -191,7 +178,8 @@ class SequentialDomainReductionTransformer(DomainTransformer):
                     stacklevel=2,
                 )
 
-            # If an upper bound is less than the associated global lower bound, reset it to the global upper bound
+            # If an upper bound is less than the associated global lower bound,
+            # reset it to the global upper bound
             if pbounds[1] < global_bounds[i, 0]:
                 pbounds[1] = global_bounds[i, 1]
                 warn(
@@ -207,7 +195,8 @@ class SequentialDomainReductionTransformer(DomainTransformer):
             current_window_width = abs(pbounds[0] - pbounds[1])
 
             # If the window width is less than the minimum allowable width, adjust it
-            # Note that when minimum_window < width of the global bounds one side always has more space than required
+            # Note that when minimum_window < width of the global bounds one side
+            # always has more space than required
             if current_window_width < self.minimum_window[i]:
                 width_deficit = (self.minimum_window[i] - current_window_width) / 2.0
                 available_left_space = abs(global_bounds[i, 0] - pbounds[0])
@@ -247,9 +236,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         for i, entry in enumerate(global_bounds):
             global_window_width = abs(entry[1] - entry[0])
             if global_window_width < self.minimum_window[i]:
-                raise ValueError(
-                    "Global bounds are not compatible with the minimum window size."
-                )
+                raise ValueError("Global bounds are not compatible with the minimum window size.")
 
     def _create_bounds(self, parameters: dict, bounds: np.ndarray) -> dict:
         """Create a dictionary of bounds for each parameter.
@@ -279,9 +266,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         """
         self._update(target_space)
 
-        new_bounds = np.array(
-            [self.current_optimal - 0.5 * self.r, self.current_optimal + 0.5 * self.r]
-        ).T
+        new_bounds = np.array([self.current_optimal - 0.5 * self.r, self.current_optimal + 0.5 * self.r]).T
 
         new_bounds = self._trim(new_bounds, self.original_bounds)
         self.bounds.append(new_bounds)

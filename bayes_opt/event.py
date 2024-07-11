@@ -1,4 +1,5 @@
 """Register optimization events variables."""
+
 from __future__ import annotations
 
 
@@ -13,8 +14,4 @@ class Events:
     OPTIMIZATION_END = "optimization:end"
 
 
-DEFAULT_EVENTS = [
-    Events.OPTIMIZATION_START,
-    Events.OPTIMIZATION_STEP,
-    Events.OPTIMIZATION_END,
-]
+DEFAULT_EVENTS = [Events.OPTIMIZATION_START, Events.OPTIMIZATION_STEP, Events.OPTIMIZATION_END]

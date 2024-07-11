@@ -52,12 +52,7 @@ class TargetSpace:
     """
 
     def __init__(
-        self,
-        target_func,
-        pbounds,
-        constraint=None,
-        random_state=None,
-        allow_duplicate_points=False,
+        self, target_func, pbounds, constraint=None, random_state=None, allow_duplicate_points=False
     ):
         self.random_state = ensure_rng(random_state)
         self._allow_duplicate_points = allow_duplicate_points
@@ -70,8 +65,7 @@ class TargetSpace:
         self._keys = sorted(pbounds)
         # Create an array with parameters bounds
         self._bounds = np.array(
-            [item[1] for item in sorted(pbounds.items(), key=lambda x: x[0])],
-            dtype=float,
+            [item[1] for item in sorted(pbounds.items(), key=lambda x: x[0])], dtype=float
         )
 
         # preallocated memory for X and Y points
@@ -88,9 +82,7 @@ class TargetSpace:
             if constraint.lb.size == 1:
                 self._constraint_values = np.empty(shape=(0), dtype=float)
             else:
-                self._constraint_values = np.empty(
-                    shape=(0, constraint.lb.size), dtype=float
-                )
+                self._constraint_values = np.empty(shape=(0, constraint.lb.size), dtype=float)
 
     def __contains__(self, x):
         """Check if this parameter has already been registered.
@@ -214,9 +206,7 @@ class TargetSpace:
         # mask points that are outside the bounds
         if self._bounds is not None:
             within_bounds = np.all(
-                (self._bounds[:, 0] <= self._params)
-                & (self._params <= self._bounds[:, 1]),
-                axis=1,
+                (self._bounds[:, 0] <= self._params) & (self._params <= self._bounds[:, 1]), axis=1
             )
             mask &= within_bounds
 
@@ -318,8 +308,7 @@ class TargetSpace:
                 self.n_duplicate_points = self.n_duplicate_points + 1
 
                 print(
-                    Fore.RED
-                    + f"Data point {x} is not unique. {self.n_duplicate_points}"
+                    Fore.RED + f"Data point {x} is not unique. {self.n_duplicate_points}"
                     " duplicates registered. Continuing ..." + Fore.RESET
                 )
             else:
@@ -331,10 +320,7 @@ class TargetSpace:
         # if x is not within the bounds of the parameter space, warn the user
         if self._bounds is not None:
             if not np.all((self._bounds[:, 0] <= x) & (x <= self._bounds[:, 1])):
-                warn(
-                    f"\nData point {x} is outside the bounds of the parameter space. ",
-                    stacklevel=2,
-                )
+                warn(f"\nData point {x} is outside the bounds of the parameter space. ", stacklevel=2)
 
         # Make copies of the data, so as not to modify the originals incase something fails
         # during the registration process. This prevents out-of-sync data.
@@ -354,9 +340,7 @@ class TargetSpace:
                 raise ValueError(msg)
             # Insert data into unique dictionary
             cache_copy[_hashable(x.ravel())] = (target, constraint_value)
-            constraint_values_copy = np.concatenate(
-                [self._constraint_values, [constraint_value]]
-            )
+            constraint_values_copy = np.concatenate([self._constraint_values, [constraint_value]])
             self._constraint_values = constraint_values_copy
 
         # Operations passed, update the variables
@@ -470,10 +454,7 @@ class TargetSpace:
         params = self.params[self.mask]
         target_max_idx = np.argmax(target)
 
-        res = {
-            "target": target_max,
-            "params": dict(zip(self.keys, params[target_max_idx])),
-        }
+        res = {"target": target_max, "params": dict(zip(self.keys, params[target_max_idx]))}
 
         if self._constraint is not None:
             constraint_values = self.constraint_values[self.mask]
@@ -500,20 +481,12 @@ class TargetSpace:
         if self._constraint is None:
             params = [dict(zip(self.keys, p)) for p in self.params]
 
-            return [
-                {"target": target, "params": param}
-                for target, param in zip(self.target, params)
-            ]
+            return [{"target": target, "params": param} for target, param in zip(self.target, params)]
 
         params = [dict(zip(self.keys, p)) for p in self.params]
 
         return [
-            {
-                "target": target,
-                "constraint": constraint_value,
-                "params": param,
-                "allowed": allowed,
-            }
+            {"target": target, "constraint": constraint_value, "params": param, "allowed": allowed}
             for target, constraint_value, param, allowed in zip(
                 self.target,
                 self._constraint_values,

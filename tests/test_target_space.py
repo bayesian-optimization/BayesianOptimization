@@ -243,9 +243,7 @@ def test_max_with_constraint_identical_target_value():
 
     assert space.max() is None
     space.probe(params={"p1": 1, "p2": 2})  # Feasible
-    space.probe(
-        params={"p1": 0, "p2": 5}
-    )  # Unfeasible, target value is 5, should not be selected
+    space.probe(params={"p1": 0, "p2": 5})  # Unfeasible, target value is 5, should not be selected
     space.probe(params={"p1": 5, "p2": 8})  # Unfeasible
     space.probe(params={"p1": 2, "p2": 3})  # Feasible, target value is also 5
     space.probe(params={"p1": 1, "p2": 6})  # Unfeasible

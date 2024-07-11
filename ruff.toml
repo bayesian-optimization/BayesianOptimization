@@ -1,4 +1,4 @@
-line-length = 88
+line-length = 110
 unsafe-fixes = false
 target-version = "py39"
 extend = "./pyproject.toml"

@@ -57,9 +57,7 @@ def test_bound_x_maximize():
     mutated_optimizer.maximize(init_points=2, n_iter=n_iter)
 
     assert len(standard_optimizer.space) == len(mutated_optimizer.space)
-    assert not (
-        standard_optimizer._space.bounds == mutated_optimizer._space.bounds
-    ).any()
+    assert not (standard_optimizer._space.bounds == mutated_optimizer._space.bounds).any()
 
 
 def test_minimum_window_is_kept():
@@ -80,9 +78,7 @@ def test_minimum_window_is_kept():
 
 def test_minimum_window_array_is_kept():
     window_ranges = [1.0, 0.5]
-    bounds_transformer = SequentialDomainReductionTransformer(
-        minimum_window=window_ranges
-    )
+    bounds_transformer = SequentialDomainReductionTransformer(minimum_window=window_ranges)
     pbounds = {"x": (-0.5, 0.5), "y": (-1.0, 0.0)}
     mutated_optimizer = BayesianOptimization(
         f=black_box_function,
@@ -105,13 +101,7 @@ def test_trimming_bounds():
 
     min_window = 1.0
     bounds_transformer = SequentialDomainReductionTransformer(minimum_window=min_window)
-    pbounds = {
-        "x1": (-1, 0.6),
-        "x2": (-1, 0.5),
-        "x3": (-0.4, 0.6),
-        "x4": (0.3, 1.3),
-        "x5": (-1, 0.8),
-    }
+    pbounds = {"x1": (-1, 0.6), "x2": (-1, 0.5), "x3": (-0.4, 0.6), "x4": (0.3, 1.3), "x5": (-1, 0.8)}
     target_sp = TargetSpace(target_func=dummy_function, pbounds=pbounds)
     bounds_transformer.initialize(target_sp)
     new_bounds = np.concatenate((np.ones((5, 1)) * 0.1, np.ones((5, 1))), axis=1)
@@ -126,9 +116,7 @@ def test_trimming_bounds():
 def test_exceeded_bounds():
     """Raises Value Error if the bounds are exceeded."""
     window_ranges = [1.01, 0.72]
-    bounds_transformer = SequentialDomainReductionTransformer(
-        minimum_window=window_ranges
-    )
+    bounds_transformer = SequentialDomainReductionTransformer(minimum_window=window_ranges)
     pbounds = {"x": (-0.5, 0.5), "y": (-0.7, 0.0)}
     with pytest.raises(ValueError):
         _ = BayesianOptimization(
@@ -183,17 +171,11 @@ def test_trim_when_both_new_bounds_exceed_global_bounds():
 def test_minimum_window_dict_ordering():
     """Tests if dictionary input for minimum_window is reordered the same as pbounds"""
     window_ranges = {"y": 1, "x": 3, "w": 1e5}
-    bounds_transformer = SequentialDomainReductionTransformer(
-        minimum_window=window_ranges
-    )
+    bounds_transformer = SequentialDomainReductionTransformer(minimum_window=window_ranges)
     pbounds = {"y": (-1, 1), "w": (-1e6, 1e6), "x": (-10, 10)}
 
     _ = BayesianOptimization(
-        f=None,
-        pbounds=pbounds,
-        verbose=0,
-        random_state=1,
-        bounds_transformer=bounds_transformer,
+        f=None, pbounds=pbounds, verbose=0, random_state=1, bounds_transformer=bounds_transformer
     )
 
 

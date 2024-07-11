@@ -1,4 +1,5 @@
 """Holds the parent class for loggers."""
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -54,8 +55,4 @@ class _Tracker:
         time_delta = now - self._previous_time
 
         self._previous_time = now
-        return (
-            now.strftime("%Y-%m-%d %H:%M:%S"),
-            time_elapsed.total_seconds(),
-            time_delta.total_seconds(),
-        )
+        return (now.strftime("%Y-%m-%d %H:%M:%S"), time_elapsed.total_seconds(), time_delta.total_seconds())

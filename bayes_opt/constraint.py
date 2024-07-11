@@ -163,14 +163,10 @@ class ConstraintModel:
             y_mean, y_std = self._model[0].predict(X, return_std=True)
 
             p_lower = (
-                norm(loc=y_mean, scale=y_std).cdf(self._lb[0])
-                if self._lb[0] != -np.inf
-                else np.array([0])
+                norm(loc=y_mean, scale=y_std).cdf(self._lb[0]) if self._lb[0] != -np.inf else np.array([0])
             )
             p_upper = (
-                norm(loc=y_mean, scale=y_std).cdf(self._ub[0])
-                if self._lb[0] != np.inf
-                else np.array([1])
+                norm(loc=y_mean, scale=y_std).cdf(self._ub[0]) if self._lb[0] != np.inf else np.array([1])
             )
             result = p_upper - p_lower
             return result.reshape(X_shape[:-1])
@@ -179,14 +175,10 @@ class ConstraintModel:
         for j, gp in enumerate(self._model):
             y_mean, y_std = gp.predict(X, return_std=True)
             p_lower = (
-                norm(loc=y_mean, scale=y_std).cdf(self._lb[j])
-                if self._lb[j] != -np.inf
-                else np.array([0])
+                norm(loc=y_mean, scale=y_std).cdf(self._lb[j]) if self._lb[j] != -np.inf else np.array([0])
             )
             p_upper = (
-                norm(loc=y_mean, scale=y_std).cdf(self._ub[j])
-                if self._lb[j] != np.inf
-                else np.array([1])
+                norm(loc=y_mean, scale=y_std).cdf(self._ub[j]) if self._lb[j] != np.inf else np.array([1])
             )
             result = result * (p_upper - p_lower)
         return result.reshape(X_shape[:-1])
@@ -229,22 +221,14 @@ class ConstraintModel:
 
         """
         if self._lb.size == 1:
-            return np.less_equal(self._lb, constraint_values) & np.less_equal(
-                constraint_values, self._ub
-            )
+            return np.less_equal(self._lb, constraint_values) & np.less_equal(constraint_values, self._ub)
 
-        return np.all(constraint_values <= self._ub, axis=-1) & np.all(
-            constraint_values >= self._lb, axis=-1
-        )
+        return np.all(constraint_values <= self._ub, axis=-1) & np.all(constraint_values >= self._lb, axis=-1)
 
 
 def _create_gaussian_process_regressor(
     random_state: np.random.RandomState | int | None,
 ) -> GaussianProcessRegressor:
     return GaussianProcessRegressor(
-        kernel=Matern(nu=2.5),
-        alpha=1e-6,
-        normalize_y=True,
-        n_restarts_optimizer=5,
-        random_state=random_state,
+        kernel=Matern(nu=2.5), alpha=1e-6, normalize_y=True, n_restarts_optimizer=5, random_state=random_state
     )

@@ -1,4 +1,5 @@
 """Contains classes and functions for logging."""
+
 from __future__ import annotations
 
 import json
@@ -169,13 +170,7 @@ class ScreenLogger(_Tracker):
         for key in instance.space.keys:
             cells.append(self._format_number(res["params"][key]))
 
-        return (
-            "| "
-            + " | ".join(
-                [colour + cells[i] + self._colour_reset for i in range(len(cells))]
-            )
-            + " |"
-        )
+        return "| " + " | ".join([colour + cells[i] + self._colour_reset for i in range(len(cells))]) + " |"
 
     def _header(self, instance):
         """Print the header of the log.
@@ -243,9 +238,7 @@ class ScreenLogger(_Tracker):
             if self._verbose == 1 and not is_new_max:
                 line = ""
             else:
-                colour = (
-                    self._colour_new_max if is_new_max else self._colour_regular_message
-                )
+                colour = self._colour_new_max if is_new_max else self._colour_regular_message
                 line = self._step(instance, colour=colour) + "\n"
         elif event == Events.OPTIMIZATION_END:
             line = "=" * self._header_length + "\n"
@@ -298,15 +291,9 @@ class JSONLogger(_Tracker):
             data = dict(instance.res[-1])
 
             now, time_elapsed, time_delta = self._time_metrics()
-            data["datetime"] = {
-                "datetime": now,
-                "elapsed": time_elapsed,
-                "delta": time_delta,
-            }
+            data["datetime"] = {"datetime": now, "elapsed": time_elapsed, "delta": time_delta}
 
-            if (
-                "allowed" in data
-            ):  # fix: github.com/fmfn/BayesianOptimization/issues/361
+            if "allowed" in data:  # fix: github.com/fmfn/BayesianOptimization/issues/361
                 data["allowed"] = bool(data["allowed"])
 
             if "constraint" in data and isinstance(data["constraint"], np.ndarray):
