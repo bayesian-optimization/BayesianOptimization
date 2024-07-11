@@ -42,6 +42,7 @@ extend-select = [
     "TID",    # flake8-tidy-imports 
     "PTH",    # flake8-use-pathlib
     "F",      # Pyflakes
+    "NPY",    # NumPy-specific rules
     "TRY002", # raise-vanilla-class
 ]
 ignore = [
@@ -68,6 +69,7 @@ fixable = [
     "TID",
     "PTH",
     "F",
+    "NPY",
 ]
 
 [lint.per-file-ignores]
