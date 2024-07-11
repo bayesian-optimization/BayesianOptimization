@@ -2,7 +2,7 @@ name: Code format and lint
 
 on:
   push:
-    branches: [ "feat-apply-ruff" ]
+    branches: [ "master" ]
   pull_request:
 
 permissions:
@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python 3.10
+    - name: Set up Python 3.9
       uses: actions/setup-python@v3
       with:
-        python-version: "3.10"
+        python-version: "3.9"
     - name: Install Poetry
       uses: snok/install-poetry@v1
     - name: Install dependencies
