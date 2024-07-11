@@ -18,7 +18,6 @@ extend-select = [
     "D417", # undocumented-param
     "I",    # isort
     "UP",   # pyupgrade
-    "ISC",  # flake8-implicit-str-concat
     "G",    # flake8-logging-format
     "LOG",  # flake8-logging
     "PT",   # flake8-pytest-style

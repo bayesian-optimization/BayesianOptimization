@@ -1,13 +1,17 @@
 """Contains classes and functions for logging."""
-from __future__ import print_function
-import os
+from __future__ import annotations
+
 import json
+import os
+
 import numpy as np
-from .observer import _Tracker
-from .event import Events
 from colorama import Fore, just_fix_windows_console
 
+from .event import Events
+from .observer import _Tracker
+
 just_fix_windows_console()
+
 
 def _get_default_logger(verbose, is_constrained):
     """
@@ -33,7 +37,7 @@ def _get_default_logger(verbose, is_constrained):
 
 class ScreenLogger(_Tracker):
     """Logger that outputs text, e.g. to log to a terminal.
-    
+
     Parameters
     ----------
     verbose : int
@@ -49,7 +53,7 @@ class ScreenLogger(_Tracker):
     _colour_new_max = Fore.MAGENTA
     _colour_regular_message = Fore.RESET
     _colour_reset = Fore.RESET
-    
+
     def __init__(self, verbose=2, is_constrained=False):
         self._verbose = verbose
         self._is_constrained = is_constrained
@@ -96,8 +100,8 @@ class ScreenLogger(_Tracker):
 
         if len(s) > self._default_cell_size:
             if "." in s:
-                return s[:self._default_cell_size]
-            return s[:self._default_cell_size - 3] + "..."
+                return s[: self._default_cell_size]
+            return s[: self._default_cell_size - 3] + "..."
         return s
 
     def _format_bool(self, x):
@@ -114,9 +118,9 @@ class ScreenLogger(_Tracker):
         """
         if 5 > self._default_cell_size:
             if x:
-                x_ = 'T'
+                x_ = "T"
             else:
-                x_ = 'F'
+                x_ = "F"
         else:
             x_ = str(x)
         s = f"{x_:<{self._default_cell_size}}"
@@ -136,7 +140,7 @@ class ScreenLogger(_Tracker):
         """
         s = f"{key:^{self._default_cell_size}}"
         if len(s) > self._default_cell_size:
-            return s[:self._default_cell_size - 3] + "..."
+            return s[: self._default_cell_size - 3] + "..."
         return s
 
     def _step(self, instance, colour=_colour_regular_message):
@@ -146,7 +150,7 @@ class ScreenLogger(_Tracker):
         ----------
         instance : bayesian_optimization.BayesianOptimization
             The instance associated with the event.
-            
+
         colour :
             (Default value = _colour_regular_message, equivalent to Fore.RESET)
 
@@ -162,11 +166,16 @@ class ScreenLogger(_Tracker):
         if self._is_constrained:
             cells.append(self._format_bool(res["allowed"]))
 
-
         for key in instance.space.keys:
             cells.append(self._format_number(res["params"][key]))
 
-        return "| " + " | ".join([colour + cells[i] + self._colour_reset for i in range(len(cells))]) + " |"
+        return (
+            "| "
+            + " | ".join(
+                [colour + cells[i] + self._colour_reset for i in range(len(cells))]
+            )
+            + " |"
+        )
 
     def _header(self, instance):
         """Print the header of the log.
@@ -223,7 +232,7 @@ class ScreenLogger(_Tracker):
         event : str
             One of the values associated with `Events.OPTIMIZATION_START`,
             `Events.OPTIMIZATION_STEP` or `Events.OPTIMIZATION_END`.
-            
+
         instance : bayesian_optimization.BayesianOptimization
             The instance associated with the step.
         """
@@ -234,7 +243,9 @@ class ScreenLogger(_Tracker):
             if self._verbose == 1 and not is_new_max:
                 line = ""
             else:
-                colour = self._colour_new_max if is_new_max else self._colour_regular_message
+                colour = (
+                    self._colour_new_max if is_new_max else self._colour_regular_message
+                )
                 line = self._step(instance, colour=colour) + "\n"
         elif event == Events.OPTIMIZATION_END:
             line = "=" * self._header_length + "\n"
@@ -278,7 +289,7 @@ class JSONLogger(_Tracker):
         event : str
             One of the values associated with `Events.OPTIMIZATION_START`,
             `Events.OPTIMIZATION_STEP` or `Events.OPTIMIZATION_END`.
-            
+
         instance : bayesian_optimization.BayesianOptimization
             The instance associated with the step.
 
@@ -293,9 +304,11 @@ class JSONLogger(_Tracker):
                 "delta": time_delta,
             }
 
-            if "allowed" in data: # fix: github.com/fmfn/BayesianOptimization/issues/361
+            if (
+                "allowed" in data
+            ):  # fix: github.com/fmfn/BayesianOptimization/issues/361
                 data["allowed"] = bool(data["allowed"])
-            
+
             if "constraint" in data and isinstance(data["constraint"], np.ndarray):
                 data["constraint"] = data["constraint"].tolist()
 
