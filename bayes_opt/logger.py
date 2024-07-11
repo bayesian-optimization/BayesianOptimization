@@ -119,8 +119,7 @@ class ScreenLogger(_Tracker):
         A stringified, formatted version of `x`.
         """
         x_ = ("T" if x else "F") if self._default_cell_size < 5 else str(x)
-        s = f"{x_:<{self._default_cell_size}}"
-        return s
+        return f"{x_:<{self._default_cell_size}}"
 
     def _format_key(self, key):
         """Format a key.
