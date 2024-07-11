@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import os
+import sys
 
 from bayes_opt.bayesian_optimization import Observable
 from bayes_opt.event import Events
@@ -70,9 +70,9 @@ def test_dispatch():
 
 def test_tracker():
     class MockInstance:
-        def __init__(self, max_target=1, max_params=[1, 1]):
+        def __init__(self, max_target=1, max_params=None):
             self._max_target = max_target
-            self._max_params = max_params
+            self._max_params = max_params or [1, 1]
 
         @property
         def max(self):
@@ -112,7 +112,7 @@ def test_tracker():
 
     tracker._time_metrics()
     assert start_time == tracker._start_time
-    if "win" not in os.sys.platform:
+    if "win" not in sys.platform:
         assert previous_time < tracker._previous_time
 
 

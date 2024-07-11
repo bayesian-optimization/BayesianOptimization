@@ -31,6 +31,9 @@ extend-select = [
 ignore = []
 fixable = ["I", "UP", "ISC", "G", "LOG", "PT", "E", "W", "PGH", "B"]
 
+[lint.per-file-ignores]
+"tests/test_*.py" = ["S101"]
+
 [format]
 indent-style = "space"
 quote-style = "double"
