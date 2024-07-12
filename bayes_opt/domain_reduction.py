@@ -172,9 +172,9 @@ class SequentialDomainReductionTransformer(DomainTransformer):
                 pbounds[0] = global_bounds[i, 0]
                 warn(
                     "\nDomain Reduction Warning:\n"
-                    + "A parameter's lower bound is greater than the global upper bound."
-                    + "The offensive boundary has been reset."
-                    + "Be cautious of subsequent reductions.",
+                    "A parameter's lower bound is greater than the global upper bound."
+                    "The offensive boundary has been reset."
+                    "Be cautious of subsequent reductions.",
                     stacklevel=2,
                 )
 
@@ -184,9 +184,9 @@ class SequentialDomainReductionTransformer(DomainTransformer):
                 pbounds[1] = global_bounds[i, 1]
                 warn(
                     "\nDomain Reduction Warning:\n"
-                    + "A parameter's lower bound is greater than the global upper bound."
-                    + "The offensive boundary has been reset."
-                    + "Be cautious of subsequent reductions.",
+                    "A parameter's lower bound is greater than the global upper bound."
+                    "The offensive boundary has been reset."
+                    "Be cautious of subsequent reductions.",
                     stacklevel=2,
                 )
 

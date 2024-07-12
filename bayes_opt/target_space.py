@@ -227,11 +227,12 @@ class TargetSpace:
         np.ndarray
             Representation of the parameters as an array.
         """
-        if not set(params) == set(self.keys):
-            raise ValueError(
+        if set(params) != set(self.keys):
+            error_msg = (
                 f"Parameters' keys ({sorted(params)}) do "
-                + f"not match the expected set of keys ({self.keys})."
+                f"not match the expected set of keys ({self.keys})."
             )
+            raise ValueError(error_msg)
         return np.asarray([params[key] for key in self.keys])
 
     def array_to_params(self, x):
@@ -247,11 +248,12 @@ class TargetSpace:
         dict
             Representation of the parameters as dictionary.
         """
-        if not len(x) == len(self.keys):
-            raise ValueError(
+        if len(x) != len(self.keys):
+            error_msg = (
                 f"Size of array ({len(x)}) is different than the "
-                + f"expected number of parameters ({len(self.keys)})."
+                f"expected number of parameters ({len(self.keys)})."
             )
+            raise ValueError(error_msg)
         return dict(zip(self.keys, x))
 
     def _as_array(self, x):
@@ -261,11 +263,12 @@ class TargetSpace:
             x = self.params_to_array(x)
 
         x = x.ravel()
-        if not x.size == self.dim:
-            raise ValueError(
+        if x.size != self.dim:
+            error_msg = (
                 f"Size of array ({len(x)}) is different than the "
-                + f"expected number of parameters ({len(self.keys)})."
+                f"expected number of parameters ({len(self.keys)})."
             )
+            raise ValueError(error_msg)
         return x
 
     def register(self, params, target, constraint_value=None):
@@ -337,7 +340,7 @@ class TargetSpace:
             if constraint_value is None:
                 msg = (
                     "When registering a point to a constrained TargetSpace"
-                    + " a constraint value needs to be present."
+                    " a constraint value needs to be present."
                 )
                 raise ValueError(msg)
             # Insert data into unique dictionary

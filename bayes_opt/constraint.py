@@ -94,9 +94,9 @@ class ConstraintModel:
         except TypeError as e:
             msg = (
                 "Encountered TypeError when evaluating constraint "
-                + "function. This could be because your constraint function "
-                + "doesn't use the same keyword arguments as the target "
-                + f"function. Original error message:\n\n{e}"
+                "function. This could be because your constraint function "
+                "doesn't use the same keyword arguments as the target "
+                f"function. Original error message:\n\n{e}"
             )
             e.args = (msg,)
             raise
