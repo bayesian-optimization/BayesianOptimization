@@ -127,28 +127,29 @@
 </pre></div>
 </div>
 </div>
-<p>Notice that the evaluation of the blackbox function will NOT be carried out by the optimizer object. We are simulating a situation where this function could be being executed in a different machine, maybe it is written in another language, or it could even be the result of a chemistry experiment. Whatever the case may be, you can take charge of it and as long as you don’t invoke the <code class="docutils literal notranslate"><span class="pre">probe</span></code> or <code class="docutils literal notranslate"><span class="pre">maximize</span></code> methods directly, the optimizer object will ignore the blackbox function.</p>
+<p>One extra ingredient we will need is an <code class="docutils literal notranslate"><span class="pre">AcquisitionFunction</span></code>, such as <code class="docutils literal notranslate"><span class="pre">acquisition.UpperConfidenceBound</span></code>. In case it is not clear why, take a look at the literature to understand better how this method works.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span>
-    <span class="n">f</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">pbounds</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)},</span>
-    <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-    <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-<span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bayes_opt</span> <span class="kn">import</span> <span class="n">acquisition</span>
+
+<span class="n">acq</span> <span class="o">=</span> <span class="n">acquisition</span><span class="o">.</span><span class="n">UpperConfidenceBound</span><span class="p">(</span><span class="n">kappa</span><span class="o">=</span><span class="mf">2.5</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<p>One extra ingredient we will need is an <code class="docutils literal notranslate"><span class="pre">UtilityFunction</span></code> instance. In case it is not clear why, take a look at the literature to understand better how this method works.</p>
+<p>Notice that the evaluation of the blackbox function will NOT be carried out by the optimizer object. We are simulating a situation where this function could be being executed in a different machine, maybe it is written in another language, or it could even be the result of a chemistry experiment. Whatever the case may be, you can take charge of it and as long as you don’t invoke the <code class="docutils literal notranslate"><span class="pre">probe</span></code> or <code class="docutils literal notranslate"><span class="pre">maximize</span></code> methods directly, the optimizer object will ignore the blackbox function.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bayes_opt</span> <span class="kn">import</span> <span class="n">UtilityFunction</span>
-
-<span class="n">utility</span> <span class="o">=</span> <span class="n">UtilityFunction</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s2">&quot;ucb&quot;</span><span class="p">,</span> <span class="n">kappa</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">xi</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span>
+    <span class="n">f</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">acquisition_function</span><span class="o">=</span><span class="n">acq</span><span class="p">,</span>
+    <span class="n">pbounds</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)},</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -158,7 +159,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">next_point_to_probe</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">suggest</span><span class="p">(</span><span class="n">utility</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">next_point_to_probe</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">suggest</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Next point to probe is:&quot;</span><span class="p">,</span> <span class="n">next_point_to_probe</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -168,7 +169,7 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Next point to probe is: {&#39;x&#39;: -0.331911981189704, &#39;y&#39;: 1.3219469606529488}
+Next point to probe is: {&#39;x&#39;: -0.331911981189704, &#39;y&#39;: 1.3219469606529486}
 </pre></div></div>
 </div>
 <p>You are now free to evaluate your function at the suggested point however/whenever you like.</p>
@@ -186,7 +187,7 @@ Next point to probe is: {&#39;x&#39;: -0.331911981189704, &#39;y&#39;: 1.3219469
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Found the target value to be: 0.7861845912690542
+Found the target value to be: 0.7861845912690544
 </pre></div></div>
 </div>
 <p>Last thing left to do is to tell the optimizer what target value was observed.</p>
@@ -209,7 +210,7 @@ Found the target value to be: 0.7861845912690542
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
-    <span class="n">next_point</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">suggest</span><span class="p">(</span><span class="n">utility</span><span class="p">)</span>
+    <span class="n">next_point</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">suggest</span><span class="p">()</span>
     <span class="n">target</span> <span class="o">=</span> <span class="n">black_box_function</span><span class="p">(</span><span class="o">**</span><span class="n">next_point</span><span class="p">)</span>
     <span class="n">optimizer</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="n">next_point</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">)</span>
 
@@ -223,12 +224,12 @@ Found the target value to be: 0.7861845912690542
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
--18.49187152919165 {&#39;x&#39;: 1.8861546000771092, &#39;y&#39;: -2.9917780942581977}
-0.7911494590443674 {&#39;x&#39;: -0.31764604716962586, &#39;y&#39;: 1.3285597809731806}
--6.999999999999999 {&#39;x&#39;: -1.9999999999999998, &#39;y&#39;: 3.0}
--7.0 {&#39;x&#39;: 2.0, &#39;y&#39;: 3.0}
--7.503866814436659 {&#39;x&#39;: -2.0, &#39;y&#39;: -1.1222315647536345}
-{&#39;target&#39;: 0.7911494590443674, &#39;params&#39;: {&#39;x&#39;: -0.31764604716962586, &#39;y&#39;: 1.3285597809731806}}
+-18.503835804889988 {&#39;x&#39;: 1.953072105336, &#39;y&#39;: -2.9609778030491904}
+-1.0819533157901717 {&#39;x&#39;: 0.22703572807626315, &#39;y&#39;: 2.4249238905875123}
+-6.50219704520679 {&#39;x&#39;: -1.9991881984624875, &#39;y&#39;: 2.872282989383577}
+-5.747604713731052 {&#39;x&#39;: -1.994467585936897, &#39;y&#39;: -0.664242699361514}
+-2.9682431497650823 {&#39;x&#39;: 1.9737252084307952, &#39;y&#39;: 1.269540259274744}
+{&#39;target&#39;: 0.7861845912690544, &#39;params&#39;: {&#39;x&#39;: -0.331911981189704, &#39;y&#39;: 1.3219469606529486}}
 </pre></div></div>
 </div>
 </section>
@@ -288,43 +289,43 @@ Found the target value to be: 0.7861845912690542
 <div class="highlight"><pre>
 |   iter    |  target   |     w     |     x     |     y     |
 -------------------------------------------------------------
-| 1         | -0.06199  | 2.085     | 4.406     | -9.998    |
-| <span class="ansi-magenta-intense-fg">2        </span> | <span class="ansi-magenta-intense-fg">-0.0344  </span> | <span class="ansi-magenta-intense-fg">1.512    </span> | <span class="ansi-magenta-intense-fg">-7.065   </span> | <span class="ansi-magenta-intense-fg">-8.153   </span> |
-| 3         | -0.2177   | 0.9313    | -3.089    | -2.065    |
-| <span class="ansi-magenta-intense-fg">4        </span> | <span class="ansi-magenta-intense-fg">0.1865   </span> | <span class="ansi-magenta-intense-fg">2.694    </span> | <span class="ansi-magenta-intense-fg">-1.616   </span> | <span class="ansi-magenta-intense-fg">3.704    </span> |
-| 5         | -0.2187   | 1.022     | 7.562     | -9.452    |
-| <span class="ansi-magenta-intense-fg">6        </span> | <span class="ansi-magenta-intense-fg">0.1868   </span> | <span class="ansi-magenta-intense-fg">2.533    </span> | <span class="ansi-magenta-intense-fg">-1.728   </span> | <span class="ansi-magenta-intense-fg">3.815    </span> |
-| 7         | 0.05119   | 3.957     | -0.6151   | 6.785     |
-| 8         | 0.1761    | 0.5799    | 1.181     | 4.054     |
-| 9         | 0.04045   | 4.004     | 4.304     | 2.656     |
-| 10        | 0.07509   | 0.0       | 4.843     | 7.759     |
-| <span class="ansi-magenta-intense-fg">11       </span> | <span class="ansi-magenta-intense-fg">0.3512   </span> | <span class="ansi-magenta-intense-fg">0.0      </span> | <span class="ansi-magenta-intense-fg">-5.713   </span> | <span class="ansi-magenta-intense-fg">7.072    </span> |
-| 12        | -0.8068   | 0.0       | -9.09     | 8.6       |
-| <span class="ansi-magenta-intense-fg">13       </span> | <span class="ansi-magenta-intense-fg">0.3774   </span> | <span class="ansi-magenta-intense-fg">0.3974   </span> | <span class="ansi-magenta-intense-fg">-4.19    </span> | <span class="ansi-magenta-intense-fg">6.264    </span> |
-| 14        | 0.157     | 0.0       | -3.587    | 8.534     |
-| 15        | -0.7891   | 0.4794    | -5.536    | 4.298     |
-| 16        | 0.1176    | 1.038     | -4.671    | 7.41      |
-| 17        | 0.1815    | 0.4815    | -2.66     | 6.6       |
-| 18        | 0.08677   | 1.933     | -0.1438   | 4.839     |
-| 19        | 0.1687    | 1.139     | -0.4707   | 2.69      |
-| 20        | 0.1133    | 2.363     | 1.344     | 2.736     |
-| 21        | 0.2401    | 0.0       | 1.441     | 1.949     |
-| 22        | 0.1568    | 0.1832    | 3.2       | 2.904     |
-| 23        | 0.2722    | 0.9731    | 2.625     | 0.5406    |
-| 24        | 0.0       | 1.149     | 0.7191    | 0.2267    |
-| 25        | 0.1686    | 0.0       | 4.181     | 0.5867    |
-| 26        | 0.0644    | 2.276     | 3.975     | -0.1631   |
-| <span class="ansi-magenta-intense-fg">27       </span> | <span class="ansi-magenta-intense-fg">0.4397   </span> | <span class="ansi-magenta-intense-fg">0.08737  </span> | <span class="ansi-magenta-intense-fg">2.66     </span> | <span class="ansi-magenta-intense-fg">-1.531   </span> |
-| 28        | 0.2904    | 0.0       | 3.913     | -2.35     |
-| 29        | -0.9874   | 0.0       | 1.992     | -3.005    |
-| 30        | 0.3001    | 0.2116    | 3.375     | -0.9955   |
-=============================================================
+| <span class="ansi-black-fg">1         | </span><span class="ansi-black-fg">-0.06199  | </span><span class="ansi-black-fg">2.085     | </span><span class="ansi-black-fg">4.406     | </span><span class="ansi-black-fg">-9.998    |
+| </span><span class="ansi-magenta-fg">2         | </span><span class="ansi-magenta-fg">-0.0344   | </span><span class="ansi-magenta-fg">1.512     | </span><span class="ansi-magenta-fg">-7.065    | </span><span class="ansi-magenta-fg">-8.153    |
+| </span><span class="ansi-black-fg">3         | </span><span class="ansi-black-fg">-0.2177   | </span><span class="ansi-black-fg">0.9313    | </span><span class="ansi-black-fg">-3.089    | </span><span class="ansi-black-fg">-2.065    |
+| </span><span class="ansi-magenta-fg">4         | </span><span class="ansi-magenta-fg">0.1865    | </span><span class="ansi-magenta-fg">2.694     | </span><span class="ansi-magenta-fg">-1.616    | </span><span class="ansi-magenta-fg">3.704     |
+| </span><span class="ansi-black-fg">5         | </span><span class="ansi-black-fg">-0.2187   | </span><span class="ansi-black-fg">1.022     | </span><span class="ansi-black-fg">7.562     | </span><span class="ansi-black-fg">-9.452    |
+| </span><span class="ansi-magenta-fg">6         | </span><span class="ansi-magenta-fg">0.2488    | </span><span class="ansi-magenta-fg">2.684     | </span><span class="ansi-magenta-fg">-2.188    | </span><span class="ansi-magenta-fg">3.925     |
+| </span><span class="ansi-magenta-fg">7         | </span><span class="ansi-magenta-fg">0.2948    | </span><span class="ansi-magenta-fg">2.683     | </span><span class="ansi-magenta-fg">-2.534    | </span><span class="ansi-magenta-fg">4.08      |
+| </span><span class="ansi-magenta-fg">8         | </span><span class="ansi-magenta-fg">0.3202    | </span><span class="ansi-magenta-fg">2.514     | </span><span class="ansi-magenta-fg">-3.83     | </span><span class="ansi-magenta-fg">5.287     |
+| </span><span class="ansi-black-fg">9         | </span><span class="ansi-black-fg">0.0       | </span><span class="ansi-black-fg">4.057     | </span><span class="ansi-black-fg">-4.458    | </span><span class="ansi-black-fg">3.928     |
+| </span><span class="ansi-magenta-fg">10        | </span><span class="ansi-magenta-fg">0.4802    | </span><span class="ansi-magenta-fg">2.296     | </span><span class="ansi-magenta-fg">-3.518    | </span><span class="ansi-magenta-fg">4.558     |
+| </span><span class="ansi-black-fg">11        | </span><span class="ansi-black-fg">0.0       | </span><span class="ansi-black-fg">1.084     | </span><span class="ansi-black-fg">-3.737    | </span><span class="ansi-black-fg">4.472     |
+| </span><span class="ansi-black-fg">12        | </span><span class="ansi-black-fg">0.0       | </span><span class="ansi-black-fg">2.649     | </span><span class="ansi-black-fg">-3.861    | </span><span class="ansi-black-fg">4.353     |
+| </span><span class="ansi-black-fg">13        | </span><span class="ansi-black-fg">0.0       | </span><span class="ansi-black-fg">2.442     | </span><span class="ansi-black-fg">-3.658    | </span><span class="ansi-black-fg">4.599     |
+| </span><span class="ansi-black-fg">14        | </span><span class="ansi-black-fg">-0.05801  | </span><span class="ansi-black-fg">1.935     | </span><span class="ansi-black-fg">-0.4758   | </span><span class="ansi-black-fg">-8.755    |
+| </span><span class="ansi-black-fg">15        | </span><span class="ansi-black-fg">0.0       | </span><span class="ansi-black-fg">2.337     | </span><span class="ansi-black-fg">7.973     | </span><span class="ansi-black-fg">-8.96     |
+| </span><span class="ansi-black-fg">16        | </span><span class="ansi-black-fg">0.07699   | </span><span class="ansi-black-fg">0.6926    | </span><span class="ansi-black-fg">5.59      | </span><span class="ansi-black-fg">6.854     |
+| </span><span class="ansi-black-fg">17        | </span><span class="ansi-black-fg">-0.02025  | </span><span class="ansi-black-fg">3.534     | </span><span class="ansi-black-fg">-8.943    | </span><span class="ansi-black-fg">1.987     |
+| </span><span class="ansi-black-fg">18        | </span><span class="ansi-black-fg">0.0       | </span><span class="ansi-black-fg">2.59      | </span><span class="ansi-black-fg">-7.339    | </span><span class="ansi-black-fg">5.941     |
+| </span><span class="ansi-black-fg">19        | </span><span class="ansi-black-fg">0.0929    | </span><span class="ansi-black-fg">2.237     | </span><span class="ansi-black-fg">-4.535    | </span><span class="ansi-black-fg">9.065     |
+| </span><span class="ansi-black-fg">20        | </span><span class="ansi-black-fg">0.1538    | </span><span class="ansi-black-fg">0.477     | </span><span class="ansi-black-fg">2.931     | </span><span class="ansi-black-fg">2.683     |
+| </span><span class="ansi-black-fg">21        | </span><span class="ansi-black-fg">0.0       | </span><span class="ansi-black-fg">0.9999    | </span><span class="ansi-black-fg">4.397     | </span><span class="ansi-black-fg">-3.971    |
+| </span><span class="ansi-black-fg">22        | </span><span class="ansi-black-fg">-0.01894  | </span><span class="ansi-black-fg">3.764     | </span><span class="ansi-black-fg">-7.043    | </span><span class="ansi-black-fg">-3.184    |
+| </span><span class="ansi-black-fg">23        | </span><span class="ansi-black-fg">0.03683   | </span><span class="ansi-black-fg">1.851     | </span><span class="ansi-black-fg">5.783     | </span><span class="ansi-black-fg">7.966     |
+| </span><span class="ansi-black-fg">24        | </span><span class="ansi-black-fg">-0.04359  | </span><span class="ansi-black-fg">1.615     | </span><span class="ansi-black-fg">-5.133    | </span><span class="ansi-black-fg">-6.556    |
+| </span><span class="ansi-black-fg">25        | </span><span class="ansi-black-fg">0.02617   | </span><span class="ansi-black-fg">3.863     | </span><span class="ansi-black-fg">0.1052    | </span><span class="ansi-black-fg">8.579     |
+| </span><span class="ansi-black-fg">26        | </span><span class="ansi-black-fg">-0.1071   | </span><span class="ansi-black-fg">0.8131    | </span><span class="ansi-black-fg">-0.7949   | </span><span class="ansi-black-fg">-9.292    |
+| </span><span class="ansi-black-fg">27        | </span><span class="ansi-black-fg">0.0       | </span><span class="ansi-black-fg">4.969     | </span><span class="ansi-black-fg">8.778     | </span><span class="ansi-black-fg">-8.467    |
+| </span><span class="ansi-black-fg">28        | </span><span class="ansi-black-fg">-0.1372   | </span><span class="ansi-black-fg">0.9475    | </span><span class="ansi-black-fg">-1.019    | </span><span class="ansi-black-fg">-7.018    |
+| </span><span class="ansi-black-fg">29        | </span><span class="ansi-black-fg">0.08078   | </span><span class="ansi-black-fg">1.917     | </span><span class="ansi-black-fg">-0.2606   | </span><span class="ansi-black-fg">6.272     |
+| </span><span class="ansi-black-fg">30        | </span><span class="ansi-black-fg">0.02003   | </span><span class="ansi-black-fg">4.278     | </span><span class="ansi-black-fg">3.8       | </span><span class="ansi-black-fg">8.398     |
+=============================================================</span>
 </pre></div></div>
 </div>
 </section>
 <section id="3.-Tuning-the-underlying-Gaussian-Process">
 <h2>3. Tuning the underlying Gaussian Process<a class="headerlink" href="#3.-Tuning-the-underlying-Gaussian-Process" title="Link to this heading"></a></h2>
-<p>The bayesian optimization algorithm works by performing a gaussian process regression of the observed combination of parameters and their associated target values. The predicted parameter<span class="math notranslate nohighlight">\(\rightarrow\)</span>target hyper-surface (and its uncertainty) is then used to guide the next best point to probe.</p>
+<p>The bayesian optimization algorithm works by performing a gaussian process regression of the observed combination of parameters and their associated target values. The predicted parameter <span class="math notranslate nohighlight">\(\rightarrow\)</span> target hyper-surface (and its uncertainty) is then used to guide the next best point to probe.</p>
 <section id="3.1-Passing-parameter-to-the-GP">
 <h3>3.1 Passing parameter to the GP<a class="headerlink" href="#3.1-Passing-parameter-to-the-GP" title="Link to this heading"></a></h3>
 <p>Depending on the problem it could be beneficial to change the default parameters of the underlying GP. You can use the <code class="docutils literal notranslate"><span class="pre">optimizer.set_gp_params</span></code> method to do this:</p>
@@ -353,13 +354,13 @@ Found the target value to be: 0.7861845912690542
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |     y     |
 -------------------------------------------------
-| 1         | 0.7862    | -0.3319   | 1.322     |
-| 2         | -18.49    | 1.886     | -2.992    |
-| <span class="ansi-magenta-intense-fg">3        </span> | <span class="ansi-magenta-intense-fg">0.7911   </span> | <span class="ansi-magenta-intense-fg">-0.3176  </span> | <span class="ansi-magenta-intense-fg">1.329    </span> |
-| 4         | -6.11     | -1.763    | 3.0       |
-| 5         | -2.895    | 1.533     | 2.243     |
-| 6         | -4.806    | -2.0      | -0.3439   |
-=================================================
+| <span class="ansi-black-fg">1         | </span><span class="ansi-black-fg">0.7862    | </span><span class="ansi-black-fg">-0.3319   | </span><span class="ansi-black-fg">1.322     |
+| </span><span class="ansi-black-fg">2         | </span><span class="ansi-black-fg">-18.19    | </span><span class="ansi-black-fg">1.957     | </span><span class="ansi-black-fg">-2.919    |
+| </span><span class="ansi-black-fg">3         | </span><span class="ansi-black-fg">-12.05    | </span><span class="ansi-black-fg">-1.969    | </span><span class="ansi-black-fg">-2.029    |
+| </span><span class="ansi-black-fg">4         | </span><span class="ansi-black-fg">-7.463    | </span><span class="ansi-black-fg">0.6032    | </span><span class="ansi-black-fg">-1.846    |
+| </span><span class="ansi-black-fg">5         | </span><span class="ansi-black-fg">-1.093    | </span><span class="ansi-black-fg">1.444     | </span><span class="ansi-black-fg">1.096     |
+| </span><span class="ansi-magenta-fg">6         | </span><span class="ansi-magenta-fg">0.8586    | </span><span class="ansi-magenta-fg">-0.2165   | </span><span class="ansi-magenta-fg">1.307     |
+=================================================</span>
 </pre></div></div>
 </div>
 </section>
@@ -369,7 +370,7 @@ Found the target value to be: 0.7861845912690542
 </section>
 <section id="3.3-Changing-kernels">
 <h3>3.3 Changing kernels<a class="headerlink" href="#3.3-Changing-kernels" title="Link to this heading"></a></h3>
-<p>By default this package uses the Matern 2.5 kernel. Depending on your use case you may find that tunning the GP kernel could be beneficial. You’re on your own here since these are very specific solutions to very specific problems. You should start with the <a class="reference external" href="https://scikit-learn.org/stable/modules/gaussian_process.html#kernels-for-gaussian-processes">scikit learn docs</a></p>
+<p>By default this package uses the Matern 2.5 kernel. Depending on your use case you may find that tuning the GP kernel could be beneficial. You’re on your own here since these are very specific solutions to very specific problems. You should start with the <a class="reference external" href="https://scikit-learn.org/stable/modules/gaussian_process.html#kernels-for-gaussian-processes">scikit learn docs</a>.</p>
 </section>
 </section>
 <section id="Observers-Continued">

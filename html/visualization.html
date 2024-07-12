@@ -110,9 +110,10 @@
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bayes_opt</span> <span class="kn">import</span> <span class="n">BayesianOptimization</span>
-<span class="kn">from</span> <span class="nn">bayes_opt</span> <span class="kn">import</span> <span class="n">UtilityFunction</span>
+<span class="kn">from</span> <span class="nn">bayes_opt</span> <span class="kn">import</span> <span class="n">acquisition</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">gridspec</span>
 <span class="o">%</span><span class="k">matplotlib</span> inline
 </pre></div>
@@ -121,9 +122,7 @@
 <section id="Visualization">
 <h1>Visualization<a class="headerlink" href="#Visualization" title="Link to this heading"></a></h1>
 <p>Lets create a target 1-D function with multiple local maxima to test and visualize how the <a class="reference external" href="https://github.com/fmfn/BayesianOptimization">BayesianOptimization</a> package works. The target function we will try to maximize is the following:</p>
-<div class="math notranslate nohighlight">
-\[f(x) = e^{-(x - 2)^2} + e^{-\frac{(x - 6)^2}{10}} + \frac{1}{x^2 + 1},\]</div>
-<p>its maximum is at <span class="math notranslate nohighlight">\(x = 2\)</span> and we will restrict the interval of interest to <span class="math notranslate nohighlight">\(x \in (-2, 10)\)</span>.</p>
+<p>$f(x) = e^{-(x - 2)^2} + e^{-<span class="math">\frac{(x - 6)^2}{10}</span>} + <span class="math">\frac{1}{x^2 + 1}</span>, $ its maximum is at <span class="math notranslate nohighlight">\(x = 2\)</span> and we will restrict the interval of interest to <span class="math notranslate nohighlight">\(x \in (-2, 10)\)</span>.</p>
 <p>Notice that, in practice, this function is unknown, the only information we have is obtained by sequentially probing it at different points. Bayesian Optimization works by constructing a posterior distribution of functions that best fit the data observed and choosing the next probing point by balancing exploration and exploitation.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
@@ -159,7 +158,8 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">)},</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">27</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acquisition_function</span> <span class="o">=</span> <span class="n">acquisition</span><span class="o">.</span><span class="n">UpperConfidenceBound</span><span class="p">(</span><span class="n">kappa</span><span class="o">=</span><span class="mf">5.</span><span class="p">)</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">)},</span> <span class="n">acquisition_function</span><span class="o">=</span><span class="n">acquisition_function</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">27</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -168,8 +168,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acq_function</span> <span class="o">=</span> <span class="n">UtilityFunction</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s2">&quot;ucb&quot;</span><span class="p">,</span> <span class="n">kappa</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-<span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">acquisition_function</span> <span class="o">=</span> <span class="n">acq_function</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -180,9 +179,9 @@
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |
 -------------------------------------
-| 1         | 0.8198    | 3.109     |
-| 2         | 0.746     | 7.775     |
-=====================================
+| <span class="ansi-black-fg">1         | </span><span class="ansi-black-fg">0.8198    | </span><span class="ansi-black-fg">3.109     |
+| </span><span class="ansi-black-fg">2         | </span><span class="ansi-black-fg">0.746     | </span><span class="ansi-black-fg">7.775     |
+=====================================</span>
 </pre></div></div>
 </div>
 </section>
@@ -194,9 +193,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">posterior</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">x_obs</span><span class="p">,</span> <span class="n">y_obs</span><span class="p">,</span> <span class="n">grid</span><span class="p">):</span>
-    <span class="n">optimizer</span><span class="o">.</span><span class="n">_gp</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_obs</span><span class="p">,</span> <span class="n">y_obs</span><span class="p">)</span>
-
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">posterior</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">grid</span><span class="p">):</span>
     <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">_gp</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">return_std</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span>
 
@@ -215,7 +212,9 @@
     <span class="n">x_obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;params&quot;</span><span class="p">][</span><span class="s2">&quot;x&quot;</span><span class="p">]]</span> <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">res</span><span class="p">])</span>
     <span class="n">y_obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;target&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">res</span><span class="p">])</span>
 
-    <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">posterior</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">x_obs</span><span class="p">,</span> <span class="n">y_obs</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">acquisition_function</span><span class="o">.</span><span class="n">_fit_gp</span><span class="p">(</span><span class="n">optimizer</span><span class="o">.</span><span class="n">_gp</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">_space</span><span class="p">)</span>
+    <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">posterior</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
     <span class="n">axis</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Target&#39;</span><span class="p">)</span>
     <span class="n">axis</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_obs</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">y_obs</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;Observations&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
     <span class="n">axis</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Prediction&#39;</span><span class="p">)</span>
@@ -229,13 +228,16 @@
     <span class="n">axis</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;f(x)&#39;</span><span class="p">,</span> <span class="n">fontdict</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;size&#39;</span><span class="p">:</span><span class="mi">20</span><span class="p">})</span>
     <span class="n">axis</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">fontdict</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;size&#39;</span><span class="p">:</span><span class="mi">20</span><span class="p">})</span>
 
-    <span class="n">utility_function</span> <span class="o">=</span> <span class="n">UtilityFunction</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s2">&quot;ucb&quot;</span><span class="p">,</span> <span class="n">kappa</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">xi</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">utility</span> <span class="o">=</span> <span class="n">utility_function</span><span class="o">.</span><span class="n">utility</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">_gp</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">utility_function</span> <span class="o">=</span> <span class="n">acquisition</span><span class="o">.</span><span class="n">UpperConfidenceBound</span><span class="p">(</span><span class="n">kappa</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">utility</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">utility_function</span><span class="o">.</span><span class="n">_get_acq</span><span class="p">(</span><span class="n">gp</span><span class="o">=</span><span class="n">optimizer</span><span class="o">.</span><span class="n">_gp</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
     <span class="n">acq</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">utility</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Utility Function&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;purple&#39;</span><span class="p">)</span>
     <span class="n">acq</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">utility</span><span class="p">)],</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">utility</span><span class="p">),</span> <span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
              <span class="n">label</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;Next Best Guess&#39;</span><span class="p">,</span> <span class="n">markerfacecolor</span><span class="o">=</span><span class="s1">&#39;gold&#39;</span><span class="p">,</span> <span class="n">markeredgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">markeredgewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">acq</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">((</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
-    <span class="n">acq</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">utility</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">))</span>
+    <span class="c1">#acq.set_ylim((0, np.max(utility) + 0.5))</span>
     <span class="n">acq</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Utility&#39;</span><span class="p">,</span> <span class="n">fontdict</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;size&#39;</span><span class="p">:</span><span class="mi">20</span><span class="p">})</span>
     <span class="n">acq</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">fontdict</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;size&#39;</span><span class="p">:</span><span class="mi">20</span><span class="p">})</span>
 
@@ -282,8 +284,8 @@
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |
 -------------------------------------
-| 3         | 0.3142    | 9.455     |
-=====================================
+| <span class="ansi-magenta-fg">3         | </span><span class="ansi-magenta-fg">0.8198    | </span><span class="ansi-magenta-fg">3.109     |
+=====================================</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -300,7 +302,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">acquisition_function</span><span class="o">=</span><span class="n">acq_function</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">plot_gp</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -312,8 +314,8 @@
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |
 -------------------------------------
-| <span class="ansi-magenta-intense-fg">4        </span> | <span class="ansi-magenta-intense-fg">0.8555   </span> | <span class="ansi-magenta-intense-fg">3.035    </span> |
-=====================================
+| <span class="ansi-magenta-fg">4         | </span><span class="ansi-magenta-fg">0.9675    | </span><span class="ansi-magenta-fg">2.848     |
+=====================================</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -330,7 +332,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">acquisition_function</span><span class="o">=</span><span class="n">acq_function</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">plot_gp</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -342,8 +344,8 @@
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |
 -------------------------------------
-| <span class="ansi-magenta-intense-fg">5        </span> | <span class="ansi-magenta-intense-fg">1.402    </span> | <span class="ansi-magenta-intense-fg">2.005    </span> |
-=====================================
+| <span class="ansi-magenta-fg">5         | </span><span class="ansi-magenta-fg">1.133     | </span><span class="ansi-magenta-fg">2.612     |
+=====================================</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -360,7 +362,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">acquisition_function</span><span class="o">=</span><span class="n">acq_function</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">plot_gp</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -372,8 +374,8 @@
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |
 -------------------------------------
-| 6         | 1.007     | 0.3179    |
-=====================================
+| <span class="ansi-magenta-fg">6         | </span><span class="ansi-magenta-fg">1.385     | </span><span class="ansi-magenta-fg">2.141     |
+=====================================</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -390,7 +392,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">acquisition_function</span><span class="o">=</span><span class="n">acq_function</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">plot_gp</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -402,8 +404,8 @@
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |
 -------------------------------------
-| 7         | 0.2017    | -2.0      |
-=====================================
+| <span class="ansi-black-fg">7         | </span><span class="ansi-black-fg">0.9135    | </span><span class="ansi-black-fg">0.7971    |
+=====================================</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -420,7 +422,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">acquisition_function</span><span class="o">=</span><span class="n">acq_function</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">plot_gp</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -432,8 +434,8 @@
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |
 -------------------------------------
-| 8         | 1.023     | 5.756     |
-=====================================
+| <span class="ansi-black-fg">8         | </span><span class="ansi-black-fg">0.202     | </span><span class="ansi-black-fg">-1.998    |
+=====================================</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -450,7 +452,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">acquisition_function</span><span class="o">=</span><span class="n">acq_function</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">plot_gp</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -462,8 +464,8 @@
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |
 -------------------------------------
-| 9         | 1.057     | 1.237     |
-=====================================
+| <span class="ansi-black-fg">9         | </span><span class="ansi-black-fg">0.212     | </span><span class="ansi-black-fg">9.999     |
+=====================================</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">

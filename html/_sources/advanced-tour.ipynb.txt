@@ -42,7 +42,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "Notice that the evaluation of the blackbox function will NOT be carried out by the optimizer object. We are simulating a situation where this function could be being executed in a different machine, maybe it is written in another language, or it could even be the result of a chemistry experiment. Whatever the case may be, you can take charge of it and as long as you don't invoke the `probe` or `maximize` methods directly, the optimizer object will ignore the blackbox function."
+    "One extra ingredient we will need is an `AcquisitionFunction`, such as `acquisition.UpperConfidenceBound`. In case it is not clear why, take a look at the literature to understand better how this method works."
    ]
   },
   {
@@ -51,19 +51,16 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "optimizer = BayesianOptimization(\n",
-    "    f=None,\n",
-    "    pbounds={'x': (-2, 2), 'y': (-3, 3)},\n",
-    "    verbose=2,\n",
-    "    random_state=1,\n",
-    ")"
+    "from bayes_opt import acquisition\n",
+    "\n",
+    "acq = acquisition.UpperConfidenceBound(kappa=2.5)"
    ]
   },
   {
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "One extra ingredient we will need is an `UtilityFunction` instance. In case it is not clear why, take a look at the literature to understand better how this method works."
+    "Notice that the evaluation of the blackbox function will NOT be carried out by the optimizer object. We are simulating a situation where this function could be being executed in a different machine, maybe it is written in another language, or it could even be the result of a chemistry experiment. Whatever the case may be, you can take charge of it and as long as you don't invoke the `probe` or `maximize` methods directly, the optimizer object will ignore the blackbox function."
    ]
   },
   {
@@ -72,9 +69,13 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "from bayes_opt import UtilityFunction\n",
-    "\n",
-    "utility = UtilityFunction(kind=\"ucb\", kappa=2.5, xi=0.0)"
+    "optimizer = BayesianOptimization(\n",
+    "    f=None,\n",
+    "    acquisition_function=acq,\n",
+    "    pbounds={'x': (-2, 2), 'y': (-3, 3)},\n",
+    "    verbose=2,\n",
+    "    random_state=1,\n",
+    ")"
    ]
   },
   {
@@ -95,12 +96,12 @@
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Next point to probe is: {'x': -0.331911981189704, 'y': 1.3219469606529488}\n"
+      "Next point to probe is: {'x': -0.331911981189704, 'y': 1.3219469606529486}\n"
      ]
     }
    ],
    "source": [
-    "next_point_to_probe = optimizer.suggest(utility)\n",
+    "next_point_to_probe = optimizer.suggest()\n",
     "print(\"Next point to probe is:\", next_point_to_probe)"
    ]
   },
@@ -120,7 +121,7 @@
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Found the target value to be: 0.7861845912690542\n"
+      "Found the target value to be: 0.7861845912690544\n"
      ]
     }
    ],
@@ -166,18 +167,18 @@
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "-18.49187152919165 {'x': 1.8861546000771092, 'y': -2.9917780942581977}\n",
-      "0.7911494590443674 {'x': -0.31764604716962586, 'y': 1.3285597809731806}\n",
-      "-6.999999999999999 {'x': -1.9999999999999998, 'y': 3.0}\n",
-      "-7.0 {'x': 2.0, 'y': 3.0}\n",
-      "-7.503866814436659 {'x': -2.0, 'y': -1.1222315647536345}\n",
-      "{'target': 0.7911494590443674, 'params': {'x': -0.31764604716962586, 'y': 1.3285597809731806}}\n"
+      "-18.503835804889988 {'x': 1.953072105336, 'y': -2.9609778030491904}\n",
+      "-1.0819533157901717 {'x': 0.22703572807626315, 'y': 2.4249238905875123}\n",
+      "-6.50219704520679 {'x': -1.9991881984624875, 'y': 2.872282989383577}\n",
+      "-5.747604713731052 {'x': -1.994467585936897, 'y': -0.664242699361514}\n",
+      "-2.9682431497650823 {'x': 1.9737252084307952, 'y': 1.269540259274744}\n",
+      "{'target': 0.7861845912690544, 'params': {'x': -0.331911981189704, 'y': 1.3219469606529486}}\n"
      ]
     }
    ],
    "source": [
     "for _ in range(5):\n",
-    "    next_point = optimizer.suggest(utility)\n",
+    "    next_point = optimizer.suggest()\n",
     "    target = black_box_function(**next_point)\n",
     "    optimizer.register(params=next_point, target=target)\n",
     "    \n",
@@ -245,36 +246,42 @@
      "text": [
       "|   iter    |  target   |     w     |     x     |     y     |\n",
       "-------------------------------------------------------------\n",
-      "| \u001b[0m1        \u001b[0m | \u001b[0m-0.06199 \u001b[0m | \u001b[0m2.085    \u001b[0m | \u001b[0m4.406    \u001b[0m | \u001b[0m-9.998   \u001b[0m |\n",
-      "| \u001b[95m2        \u001b[0m | \u001b[95m-0.0344  \u001b[0m | \u001b[95m1.512    \u001b[0m | \u001b[95m-7.065   \u001b[0m | \u001b[95m-8.153   \u001b[0m |\n",
-      "| \u001b[0m3        \u001b[0m | \u001b[0m-0.2177  \u001b[0m | \u001b[0m0.9313   \u001b[0m | \u001b[0m-3.089   \u001b[0m | \u001b[0m-2.065   \u001b[0m |\n",
-      "| \u001b[95m4        \u001b[0m | \u001b[95m0.1865   \u001b[0m | \u001b[95m2.694    \u001b[0m | \u001b[95m-1.616   \u001b[0m | \u001b[95m3.704    \u001b[0m |\n",
-      "| \u001b[0m5        \u001b[0m | \u001b[0m-0.2187  \u001b[0m | \u001b[0m1.022    \u001b[0m | \u001b[0m7.562    \u001b[0m | \u001b[0m-9.452   \u001b[0m |\n",
-      "| \u001b[95m6        \u001b[0m | \u001b[95m0.1868   \u001b[0m | \u001b[95m2.533    \u001b[0m | \u001b[95m-1.728   \u001b[0m | \u001b[95m3.815    \u001b[0m |\n",
-      "| \u001b[0m7        \u001b[0m | \u001b[0m0.05119  \u001b[0m | \u001b[0m3.957    \u001b[0m | \u001b[0m-0.6151  \u001b[0m | \u001b[0m6.785    \u001b[0m |\n",
-      "| \u001b[0m8        \u001b[0m | \u001b[0m0.1761   \u001b[0m | \u001b[0m0.5799   \u001b[0m | \u001b[0m1.181    \u001b[0m | \u001b[0m4.054    \u001b[0m |\n",
-      "| \u001b[0m9        \u001b[0m | \u001b[0m0.04045  \u001b[0m | \u001b[0m4.004    \u001b[0m | \u001b[0m4.304    \u001b[0m | \u001b[0m2.656    \u001b[0m |\n",
-      "| \u001b[0m10       \u001b[0m | \u001b[0m0.07509  \u001b[0m | \u001b[0m0.0      \u001b[0m | \u001b[0m4.843    \u001b[0m | \u001b[0m7.759    \u001b[0m |\n",
-      "| \u001b[95m11       \u001b[0m | \u001b[95m0.3512   \u001b[0m | \u001b[95m0.0      \u001b[0m | \u001b[95m-5.713   \u001b[0m | \u001b[95m7.072    \u001b[0m |\n",
-      "| \u001b[0m12       \u001b[0m | \u001b[0m-0.8068  \u001b[0m | \u001b[0m0.0      \u001b[0m | \u001b[0m-9.09    \u001b[0m | \u001b[0m8.6      \u001b[0m |\n",
-      "| \u001b[95m13       \u001b[0m | \u001b[95m0.3774   \u001b[0m | \u001b[95m0.3974   \u001b[0m | \u001b[95m-4.19    \u001b[0m | \u001b[95m6.264    \u001b[0m |\n",
-      "| \u001b[0m14       \u001b[0m | \u001b[0m0.157    \u001b[0m | \u001b[0m0.0      \u001b[0m | \u001b[0m-3.587   \u001b[0m | \u001b[0m8.534    \u001b[0m |\n",
-      "| \u001b[0m15       \u001b[0m | \u001b[0m-0.7891  \u001b[0m | \u001b[0m0.4794   \u001b[0m | \u001b[0m-5.536   \u001b[0m | \u001b[0m4.298    \u001b[0m |\n",
-      "| \u001b[0m16       \u001b[0m | \u001b[0m0.1176   \u001b[0m | \u001b[0m1.038    \u001b[0m | \u001b[0m-4.671   \u001b[0m | \u001b[0m7.41     \u001b[0m |\n",
-      "| \u001b[0m17       \u001b[0m | \u001b[0m0.1815   \u001b[0m | \u001b[0m0.4815   \u001b[0m | \u001b[0m-2.66    \u001b[0m | \u001b[0m6.6      \u001b[0m |\n",
-      "| \u001b[0m18       \u001b[0m | \u001b[0m0.08677  \u001b[0m | \u001b[0m1.933    \u001b[0m | \u001b[0m-0.1438  \u001b[0m | \u001b[0m4.839    \u001b[0m |\n",
-      "| \u001b[0m19       \u001b[0m | \u001b[0m0.1687   \u001b[0m | \u001b[0m1.139    \u001b[0m | \u001b[0m-0.4707  \u001b[0m | \u001b[0m2.69     \u001b[0m |\n",
-      "| \u001b[0m20       \u001b[0m | \u001b[0m0.1133   \u001b[0m | \u001b[0m2.363    \u001b[0m | \u001b[0m1.344    \u001b[0m | \u001b[0m2.736    \u001b[0m |\n",
-      "| \u001b[0m21       \u001b[0m | \u001b[0m0.2401   \u001b[0m | \u001b[0m0.0      \u001b[0m | \u001b[0m1.441    \u001b[0m | \u001b[0m1.949    \u001b[0m |\n",
-      "| \u001b[0m22       \u001b[0m | \u001b[0m0.1568   \u001b[0m | \u001b[0m0.1832   \u001b[0m | \u001b[0m3.2      \u001b[0m | \u001b[0m2.904    \u001b[0m |\n",
-      "| \u001b[0m23       \u001b[0m | \u001b[0m0.2722   \u001b[0m | \u001b[0m0.9731   \u001b[0m | \u001b[0m2.625    \u001b[0m | \u001b[0m0.5406   \u001b[0m |\n",
-      "| \u001b[0m24       \u001b[0m | \u001b[0m0.0      \u001b[0m | \u001b[0m1.149    \u001b[0m | \u001b[0m0.7191   \u001b[0m | \u001b[0m0.2267   \u001b[0m |\n",
-      "| \u001b[0m25       \u001b[0m | \u001b[0m0.1686   \u001b[0m | \u001b[0m0.0      \u001b[0m | \u001b[0m4.181    \u001b[0m | \u001b[0m0.5867   \u001b[0m |\n",
-      "| \u001b[0m26       \u001b[0m | \u001b[0m0.0644   \u001b[0m | \u001b[0m2.276    \u001b[0m | \u001b[0m3.975    \u001b[0m | \u001b[0m-0.1631  \u001b[0m |\n",
-      "| \u001b[95m27       \u001b[0m | \u001b[95m0.4397   \u001b[0m | \u001b[95m0.08737  \u001b[0m | \u001b[95m2.66     \u001b[0m | \u001b[95m-1.531   \u001b[0m |\n",
-      "| \u001b[0m28       \u001b[0m | \u001b[0m0.2904   \u001b[0m | \u001b[0m0.0      \u001b[0m | \u001b[0m3.913    \u001b[0m | \u001b[0m-2.35    \u001b[0m |\n",
-      "| \u001b[0m29       \u001b[0m | \u001b[0m-0.9874  \u001b[0m | \u001b[0m0.0      \u001b[0m | \u001b[0m1.992    \u001b[0m | \u001b[0m-3.005   \u001b[0m |\n",
-      "| \u001b[0m30       \u001b[0m | \u001b[0m0.3001   \u001b[0m | \u001b[0m0.2116   \u001b[0m | \u001b[0m3.375    \u001b[0m | \u001b[0m-0.9955  \u001b[0m |\n",
+      "| \u001b[30m1         | \u001b[30m-0.06199  | \u001b[30m2.085     | \u001b[30m4.406     | \u001b[30m-9.998    |\n",
+      "| \u001b[35m2         | \u001b[35m-0.0344   | \u001b[35m1.512     | \u001b[35m-7.065    | \u001b[35m-8.153    |\n",
+      "| \u001b[30m3         | \u001b[30m-0.2177   | \u001b[30m0.9313    | \u001b[30m-3.089    | \u001b[30m-2.065    |\n",
+      "| \u001b[35m4         | \u001b[35m0.1865    | \u001b[35m2.694     | \u001b[35m-1.616    | \u001b[35m3.704     |\n",
+      "| \u001b[30m5         | \u001b[30m-0.2187   | \u001b[30m1.022     | \u001b[30m7.562     | \u001b[30m-9.452    |\n",
+      "| \u001b[35m6         | \u001b[35m0.2488    | \u001b[35m2.684     | \u001b[35m-2.188    | \u001b[35m3.925     |\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "| \u001b[35m7         | \u001b[35m0.2948    | \u001b[35m2.683     | \u001b[35m-2.534    | \u001b[35m4.08      |\n",
+      "| \u001b[35m8         | \u001b[35m0.3202    | \u001b[35m2.514     | \u001b[35m-3.83     | \u001b[35m5.287     |\n",
+      "| \u001b[30m9         | \u001b[30m0.0       | \u001b[30m4.057     | \u001b[30m-4.458    | \u001b[30m3.928     |\n",
+      "| \u001b[35m10        | \u001b[35m0.4802    | \u001b[35m2.296     | \u001b[35m-3.518    | \u001b[35m4.558     |\n",
+      "| \u001b[30m11        | \u001b[30m0.0       | \u001b[30m1.084     | \u001b[30m-3.737    | \u001b[30m4.472     |\n",
+      "| \u001b[30m12        | \u001b[30m0.0       | \u001b[30m2.649     | \u001b[30m-3.861    | \u001b[30m4.353     |\n",
+      "| \u001b[30m13        | \u001b[30m0.0       | \u001b[30m2.442     | \u001b[30m-3.658    | \u001b[30m4.599     |\n",
+      "| \u001b[30m14        | \u001b[30m-0.05801  | \u001b[30m1.935     | \u001b[30m-0.4758   | \u001b[30m-8.755    |\n",
+      "| \u001b[30m15        | \u001b[30m0.0       | \u001b[30m2.337     | \u001b[30m7.973     | \u001b[30m-8.96     |\n",
+      "| \u001b[30m16        | \u001b[30m0.07699   | \u001b[30m0.6926    | \u001b[30m5.59      | \u001b[30m6.854     |\n",
+      "| \u001b[30m17        | \u001b[30m-0.02025  | \u001b[30m3.534     | \u001b[30m-8.943    | \u001b[30m1.987     |\n",
+      "| \u001b[30m18        | \u001b[30m0.0       | \u001b[30m2.59      | \u001b[30m-7.339    | \u001b[30m5.941     |\n",
+      "| \u001b[30m19        | \u001b[30m0.0929    | \u001b[30m2.237     | \u001b[30m-4.535    | \u001b[30m9.065     |\n",
+      "| \u001b[30m20        | \u001b[30m0.1538    | \u001b[30m0.477     | \u001b[30m2.931     | \u001b[30m2.683     |\n",
+      "| \u001b[30m21        | \u001b[30m0.0       | \u001b[30m0.9999    | \u001b[30m4.397     | \u001b[30m-3.971    |\n",
+      "| \u001b[30m22        | \u001b[30m-0.01894  | \u001b[30m3.764     | \u001b[30m-7.043    | \u001b[30m-3.184    |\n",
+      "| \u001b[30m23        | \u001b[30m0.03683   | \u001b[30m1.851     | \u001b[30m5.783     | \u001b[30m7.966     |\n",
+      "| \u001b[30m24        | \u001b[30m-0.04359  | \u001b[30m1.615     | \u001b[30m-5.133    | \u001b[30m-6.556    |\n",
+      "| \u001b[30m25        | \u001b[30m0.02617   | \u001b[30m3.863     | \u001b[30m0.1052    | \u001b[30m8.579     |\n",
+      "| \u001b[30m26        | \u001b[30m-0.1071   | \u001b[30m0.8131    | \u001b[30m-0.7949   | \u001b[30m-9.292    |\n",
+      "| \u001b[30m27        | \u001b[30m0.0       | \u001b[30m4.969     | \u001b[30m8.778     | \u001b[30m-8.467    |\n",
+      "| \u001b[30m28        | \u001b[30m-0.1372   | \u001b[30m0.9475    | \u001b[30m-1.019    | \u001b[30m-7.018    |\n",
+      "| \u001b[30m29        | \u001b[30m0.08078   | \u001b[30m1.917     | \u001b[30m-0.2606   | \u001b[30m6.272     |\n",
+      "| \u001b[30m30        | \u001b[30m0.02003   | \u001b[30m4.278     | \u001b[30m3.8       | \u001b[30m8.398     |\n",
       "=============================================================\n"
      ]
     }
@@ -290,7 +297,7 @@
    "source": [
     "## 3. Tuning the underlying Gaussian Process\n",
     "\n",
-    "The bayesian optimization algorithm works by performing a gaussian process regression of the observed combination of parameters and their associated target values. The predicted parameter$\\rightarrow$target hyper-surface (and its uncertainty) is then used to guide the next best point to probe."
+    "The bayesian optimization algorithm works by performing a gaussian process regression of the observed combination of parameters and their associated target values. The predicted parameter $\\rightarrow$ target hyper-surface (and its uncertainty) is then used to guide the next best point to probe."
    ]
   },
   {
@@ -313,12 +320,12 @@
      "text": [
       "|   iter    |  target   |     x     |     y     |\n",
       "-------------------------------------------------\n",
-      "| \u001b[0m1        \u001b[0m | \u001b[0m0.7862   \u001b[0m | \u001b[0m-0.3319  \u001b[0m | \u001b[0m1.322    \u001b[0m |\n",
-      "| \u001b[0m2        \u001b[0m | \u001b[0m-18.49   \u001b[0m | \u001b[0m1.886    \u001b[0m | \u001b[0m-2.992   \u001b[0m |\n",
-      "| \u001b[95m3        \u001b[0m | \u001b[95m0.7911   \u001b[0m | \u001b[95m-0.3176  \u001b[0m | \u001b[95m1.329    \u001b[0m |\n",
-      "| \u001b[0m4        \u001b[0m | \u001b[0m-6.11    \u001b[0m | \u001b[0m-1.763   \u001b[0m | \u001b[0m3.0      \u001b[0m |\n",
-      "| \u001b[0m5        \u001b[0m | \u001b[0m-2.895   \u001b[0m | \u001b[0m1.533    \u001b[0m | \u001b[0m2.243    \u001b[0m |\n",
-      "| \u001b[0m6        \u001b[0m | \u001b[0m-4.806   \u001b[0m | \u001b[0m-2.0     \u001b[0m | \u001b[0m-0.3439  \u001b[0m |\n",
+      "| \u001b[30m1         | \u001b[30m0.7862    | \u001b[30m-0.3319   | \u001b[30m1.322     |\n",
+      "| \u001b[30m2         | \u001b[30m-18.19    | \u001b[30m1.957     | \u001b[30m-2.919    |\n",
+      "| \u001b[30m3         | \u001b[30m-12.05    | \u001b[30m-1.969    | \u001b[30m-2.029    |\n",
+      "| \u001b[30m4         | \u001b[30m-7.463    | \u001b[30m0.6032    | \u001b[30m-1.846    |\n",
+      "| \u001b[30m5         | \u001b[30m-1.093    | \u001b[30m1.444     | \u001b[30m1.096     |\n",
+      "| \u001b[35m6         | \u001b[35m0.8586    | \u001b[35m-0.2165   | \u001b[35m1.307     |\n",
       "=================================================\n"
      ]
     }
@@ -353,7 +360,7 @@
    "source": [
     "### 3.3 Changing kernels\n",
     "\n",
-    "By default this package uses the Matern 2.5 kernel. Depending on your use case you may find that tunning the GP kernel could be beneficial. You're on your own here since these are very specific solutions to very specific problems. You should start with the [scikit learn docs](https://scikit-learn.org/stable/modules/gaussian_process.html#kernels-for-gaussian-processes)"
+    "By default this package uses the Matern 2.5 kernel. Depending on your use case you may find that tuning the GP kernel could be beneficial. You're on your own here since these are very specific solutions to very specific problems. You should start with the [scikit learn docs](https://scikit-learn.org/stable/modules/gaussian_process.html#kernels-for-gaussian-processes)."
    ]
   },
   {
@@ -504,7 +511,61 @@
    "name": "python",
    "nbconvert_exporter": "python",
    "pygments_lexer": "ipython3",
-   "version": "3.10.12"
+   "version": "3.1.undefined"
+  },
+  "nbdime-conflicts": {
+   "local_diff": [
+    {
+     "diff": [
+      {
+       "diff": [
+        {
+         "key": 0,
+         "op": "addrange",
+         "valuelist": [
+          "3.1.0"
+         ]
+        },
+        {
+         "key": 0,
+         "length": 1,
+         "op": "removerange"
+        }
+       ],
+       "key": "version",
+       "op": "patch"
+      }
+     ],
+     "key": "language_info",
+     "op": "patch"
+    }
+   ],
+   "remote_diff": [
+    {
+     "diff": [
+      {
+       "diff": [
+        {
+         "key": 0,
+         "op": "addrange",
+         "valuelist": [
+          "3.10.12"
+         ]
+        },
+        {
+         "key": 0,
+         "length": 1,
+         "op": "removerange"
+        }
+       ],
+       "key": "version",
+       "op": "patch"
+      }
+     ],
+     "key": "language_info",
+     "op": "patch"
+    }
+   ]
   }
  },
  "nbformat": 4,
