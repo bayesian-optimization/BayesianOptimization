@@ -12,23 +12,7 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from typing import Callable, List, Union, Tuple
 from copy import deepcopy
 from numbers import Number
-
-class ConstraintNotSupportedError(Exception):
-    """Raised when constrained optimization is not supported."""
-
-    pass
-
-
-class NoValidPointRegisteredError(Exception):
-    """Raised when an acquisition function depends on previous points but none are registered."""
-
-    pass
-
-
-class TargetSpaceEmptyError(Exception):
-    """Raised when the target space is empty."""
-
-    pass
+from .util import ConstraintNotSupportedError, NoValidPointRegisteredError, TargetSpaceEmptyError
 
 
 class AcquisitionFunction(abc.ABC):
