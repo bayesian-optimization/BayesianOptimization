@@ -72,7 +72,7 @@ def test_logs_constraint():
     assert len(optimizer.space) == 7
 
 
-def test_logs_constraint():
+def test_logs_constraint_new_array():
     def f(x, y):
         return -(x**2) - (y - 1) ** 2 + 1
 
