@@ -805,8 +805,6 @@ class ConstantLiar(AcquisitionFunction):
 
         return x_max
 
-    def _update_params(self) -> None: ...
-
 
 class GPHedge(AcquisitionFunction):
     """GPHedge acquisition function.
@@ -922,5 +920,3 @@ class GPHedge(AcquisitionFunction):
         self.previous_candidates = np.array(x_max)
         idx = self._sample_idx_from_softmax_gains()
         return x_max[idx]
-
-    def _update_params(self) -> None: ...
