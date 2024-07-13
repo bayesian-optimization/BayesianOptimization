@@ -3,6 +3,7 @@
 Holds the `BayesianOptimization` class, which handles the maximization of a
 function over a specific target space.
 """
+
 from __future__ import annotations
 
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -37,7 +38,8 @@ class Queue:
     def __next__(self):
         """Remove and return first item in the Queue."""
         if self.empty:
-            raise StopIteration("Queue is empty, no more objects to retrieve.")
+            error_msg = "Queue is empty, no more objects to retrieve."
+            raise StopIteration(error_msg)
         obj = self._queue[0]
         self._queue = self._queue[1:]
         return obj
@@ -71,7 +73,7 @@ class Observable:
 
     def dispatch(self, event):
         """Trigger callbacks for subscribers of an event."""
-        for _, callback in self.get_subscribers(event).items():
+        for callback in self.get_subscribers(event).values():
             callback(event, self)
 
 
@@ -187,10 +189,11 @@ class BayesianOptimization(Observable):
         if self._bounds_transformer:
             try:
                 self._bounds_transformer.initialize(self._space)
-            except (AttributeError, TypeError):
-                raise TypeError("The transformer must be an instance of " "DomainTransformer")
+            except (AttributeError, TypeError) as exc:
+                error_msg = "The transformer must be an instance of DomainTransformer"
+                raise TypeError(error_msg) from exc
 
-        super(BayesianOptimization, self).__init__(events=DEFAULT_EVENTS)
+        super().__init__(events=DEFAULT_EVENTS)
 
     @property
     def space(self):
