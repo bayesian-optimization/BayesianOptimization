@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -163,8 +163,8 @@ def test_prime_subscriptions():
 
     # Test that the default observer is correctly subscribed
     for event in DEFAULT_EVENTS:
-        assert all([isinstance(k, ScreenLogger) for k in optimizer._events[event].keys()])
-        assert all([hasattr(k, "update") for k in optimizer._events[event].keys()])
+        assert all([isinstance(k, ScreenLogger) for k in optimizer._events[event]])
+        assert all([hasattr(k, "update") for k in optimizer._events[event]])
 
     test_subscriber = "test_subscriber"
 
@@ -174,12 +174,12 @@ def test_prime_subscriptions():
     optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
     optimizer.subscribe(event=Events.OPTIMIZATION_START, subscriber=test_subscriber, callback=test_callback)
     # Test that the desired observer is subscribed
-    assert all([k == test_subscriber for k in optimizer._events[Events.OPTIMIZATION_START].keys()])
+    assert all([k == test_subscriber for k in optimizer._events[Events.OPTIMIZATION_START]])
     assert all([v == test_callback for v in optimizer._events[Events.OPTIMIZATION_START].values()])
 
     # Check that prime subscriptions won't overwrite manual subscriptions
     optimizer._prime_subscriptions()
-    assert all([k == test_subscriber for k in optimizer._events[Events.OPTIMIZATION_START].keys()])
+    assert all([k == test_subscriber for k in optimizer._events[Events.OPTIMIZATION_START]])
     assert all([v == test_callback for v in optimizer._events[Events.OPTIMIZATION_START].values()])
 
     assert optimizer._events[Events.OPTIMIZATION_STEP] == {}
@@ -219,7 +219,6 @@ def test_set_gp_params():
 
 
 def test_maximize():
-
     class Tracker:
         def __init__(self):
             self.start_count = 0
@@ -274,7 +273,7 @@ def test_maximize():
 
 def test_define_wrong_transformer():
     with pytest.raises(TypeError):
-        optimizer = BayesianOptimization(
+        BayesianOptimization(
             target_func, PBOUNDS, random_state=np.random.RandomState(1), bounds_transformer=3
         )
 
@@ -298,9 +297,10 @@ def test_pickle():
     This tests that this is the case
     """
     optimizer = BayesianOptimization(f=None, pbounds={"x": (-10, 10)}, verbose=2, random_state=1)
-    with open("test_dump.obj", "wb") as filehandler:
+    test_dump = Path("test_dump.obj")
+    with test_dump.open("wb") as filehandler:
         pickle.dump(optimizer, filehandler)
-    os.remove("test_dump.obj")
+    test_dump.unlink()
 
 
 def test_duplicate_points():
