@@ -2,12 +2,9 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from pytest import approx, raises
 from scipy.optimize import NonlinearConstraint
 
 from bayes_opt import BayesianOptimization, ConstraintModel
-
-np.random.seed(42)
 
 
 @pytest.fixture()
@@ -92,8 +89,10 @@ def test_single_constraint_lower_upper(target_function, constraint_function):
     y = res[:, 3]
 
     # Check accuracy of approximation for sampled points
-    assert constraint_function(x, y) == approx(optimizer.constraint.approx(xy), rel=1e-5, abs=1e-5)
-    assert constraint_function(x, y) == approx(optimizer.space.constraint_values[:-1], rel=1e-5, abs=1e-5)
+    assert constraint_function(x, y) == pytest.approx(optimizer.constraint.approx(xy), rel=1e-5, abs=1e-5)
+    assert constraint_function(x, y) == pytest.approx(
+        optimizer.space.constraint_values[:-1], rel=1e-5, abs=1e-5
+    )
 
 
 def test_multiple_constraints(target_function):
@@ -122,7 +121,7 @@ def test_multiple_constraints(target_function):
     params = optimizer.res[0]["params"]
     x, y = params["x"], params["y"]
 
-    assert constraint_function_2_dim(x, y) == approx(
+    assert constraint_function_2_dim(x, y) == pytest.approx(
         optimizer.constraint.approx(np.array([x, y])), rel=1e-3, abs=1e-3
     )
 
@@ -142,7 +141,7 @@ def test_kwargs_not_the_same(target_function):
     optimizer = BayesianOptimization(
         f=target_function, constraint=constraint, pbounds=pbounds, verbose=0, random_state=1
     )
-    with raises(TypeError, match="Encountered TypeError when evaluating"):
+    with pytest.raises(TypeError, match="Encountered TypeError when evaluating"):
         optimizer.maximize(init_points=2, n_iter=10)
 
 
@@ -161,7 +160,5 @@ def test_lower_less_than_upper(target_function):
     conmod = NonlinearConstraint(constraint_function_2_dim, constraint_limit_lower, constraint_limit_upper)
     pbounds = {"x": (0, 6), "y": (0, 6)}
 
-    with raises(ValueError):
-        optimizer = BayesianOptimization(
-            f=target_function, constraint=conmod, pbounds=pbounds, verbose=0, random_state=1
-        )
+    with pytest.raises(ValueError):
+        BayesianOptimization(f=target_function, constraint=conmod, pbounds=pbounds, verbose=0, random_state=1)
