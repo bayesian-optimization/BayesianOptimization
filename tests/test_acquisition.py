@@ -51,6 +51,8 @@ class MockAcquisition(acquisition.AcquisitionFunction):
     def base_acq(self, mean, std):
         pass
 
+    def _update_params(self) -> None: ...
+
 
 def test_base_acquisition():
     acq = acquisition.UpperConfidenceBound()
@@ -219,7 +221,7 @@ def test_constant_liar(gp, target_space, target_func, random_state, strategy):
     samples = []
 
     assert len(acq.dummies) == 0
-    for i in range(10):
+    for _ in range(10):
         samples.append(acq.suggest(gp=gp, target_space=target_space))
         assert len(acq.dummies) == len(samples)
 
@@ -293,7 +295,8 @@ def test_gphedge_update_gains(random_state):
             self.gains = np.zeros(n)
 
         def predict(self, x):
-            res = np.random.rand(x.shape[0])
+            rng = np.random.default_rng()
+            res = rng.random(x.shape[0], np.float64)
             self.gains += res
             return res
 
