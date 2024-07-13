@@ -42,7 +42,6 @@ class AcquisitionFunction(abc.ABC):
     @abc.abstractmethod
     def base_acq(self, *args, **kwargs):
         """Provide access to the base acquisition function."""
-        # pragma: no cover
 
     def _fit_gp(self, gp: GaussianProcessRegressor, target_space: TargetSpace) -> None:
         # Sklearn's GP throws a large number of warnings at times, but

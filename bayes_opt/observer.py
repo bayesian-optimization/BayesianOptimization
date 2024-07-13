@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 
 from .event import Events
-
-_UTC = timezone(timedelta(0))
 
 
 class _Tracker:
@@ -47,7 +45,7 @@ class _Tracker:
 
     def _time_metrics(self):
         """Return time passed since last call."""
-        now = datetime.now(_UTC)
+        now = datetime.now()  # noqa: DTZ005
         if self._start_time is None:
             self._start_time = now
         if self._previous_time is None:

@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from functools import partial
-
 import numpy as np
 from scipy.stats import norm
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -53,8 +51,16 @@ class ConstraintModel:
             msg = "Lower bounds must be less than upper bounds."
             raise ValueError(msg)
 
-        basis = partial(_create_gaussian_process_regressor, random_state=random_state)
-        self._model = [basis() for _ in range(len(self._lb))]
+        self._model = [
+            GaussianProcessRegressor(
+                kernel=Matern(nu=2.5),
+                alpha=1e-6,
+                normalize_y=True,
+                n_restarts_optimizer=5,
+                random_state=random_state,
+            )
+            for _ in range(len(self._lb))
+        ]
 
     @property
     def lb(self):
@@ -71,12 +77,12 @@ class ConstraintModel:
         """Return GP regressors of the constraint function."""
         return self._model
 
-    def eval(self, **kwargs: dict):
+    def eval(self, **kwargs: dict):  # noqa: D417
         r"""Evaluate the constraint function.
 
         Parameters
         ----------
-        **kwargs : any
+        \*\*kwargs : any
             Function arguments to evaluate the constraint function on.
 
 
@@ -224,11 +230,3 @@ class ConstraintModel:
             return np.less_equal(self._lb, constraint_values) & np.less_equal(constraint_values, self._ub)
 
         return np.all(constraint_values <= self._ub, axis=-1) & np.all(constraint_values >= self._lb, axis=-1)
-
-
-def _create_gaussian_process_regressor(
-    random_state: np.random.RandomState | int | None,
-) -> GaussianProcessRegressor:
-    return GaussianProcessRegressor(
-        kernel=Matern(nu=2.5), alpha=1e-6, normalize_y=True, n_restarts_optimizer=5, random_state=random_state
-    )

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import numpy as np
 
@@ -49,7 +50,7 @@ def load_logs(optimizer, logs):
         logs = [logs]
 
     for log in logs:
-        with open(log) as j:  # noqa: PTH123
+        with Path(log).open("r") as j:
             while True:
                 try:
                     iteration = next(j)

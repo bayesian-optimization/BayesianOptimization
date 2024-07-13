@@ -56,7 +56,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         gamma_osc: float = 0.7,
         gamma_pan: float = 1.0,
         eta: float = 0.9,
-        minimum_window: list[float] | float | dict[str, float] | None = 0.0,
+        minimum_window: np.ndarray | list[float] | float | dict[str, float] | None = 0.0,
     ) -> None:
         self.gamma_osc = gamma_osc
         self.gamma_pan = gamma_pan
