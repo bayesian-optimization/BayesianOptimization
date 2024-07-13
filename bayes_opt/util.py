@@ -1,4 +1,5 @@
 """Contains utility functions."""
+
 from __future__ import annotations
 
 import json
@@ -48,7 +49,7 @@ def load_logs(optimizer, logs):
         logs = [logs]
 
     for log in logs:
-        with open(log) as j:
+        with open(log) as j:  # noqa: PTH123
             while True:
                 try:
                     iteration = next(j)
@@ -87,6 +88,7 @@ def ensure_rng(random_state=None):
         random_state = np.random.RandomState()
     elif isinstance(random_state, int):
         random_state = np.random.RandomState(random_state)
-    else:
-        assert isinstance(random_state, np.random.RandomState)
+    elif not isinstance(random_state, np.random.RandomState):
+        error_msg = "random_state should be an instance of np.random.RandomState, an int, or None."
+        raise TypeError(error_msg)
     return random_state
