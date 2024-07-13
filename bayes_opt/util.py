@@ -1,5 +1,8 @@
 """Contains utility functions."""
+from __future__ import annotations
+
 import json
+
 import numpy as np
 
 
@@ -39,13 +42,13 @@ def load_logs(optimizer, logs):
     Returns
     -------
     The optimizer with the state loaded.
-    
+
     """
     if isinstance(logs, str):
         logs = [logs]
 
     for log in logs:
-        with open(log, "r") as j:
+        with open(log) as j:
             while True:
                 try:
                     iteration = next(j)
@@ -57,10 +60,7 @@ def load_logs(optimizer, logs):
                     optimizer.register(
                         params=iteration["params"],
                         target=iteration["target"],
-                        constraint_value=(
-                            iteration["constraint"]
-                            if optimizer.is_constrained else None
-                        )
+                        constraint_value=(iteration["constraint"] if optimizer.is_constrained else None),
                     )
                 except NotUniqueError:
                     continue
@@ -81,7 +81,7 @@ def ensure_rng(random_state=None):
     Returns
     -------
     np.random.RandomState
-    
+
     """
     if random_state is None:
         random_state = np.random.RandomState()
@@ -90,4 +90,3 @@ def ensure_rng(random_state=None):
     else:
         assert isinstance(random_state, np.random.RandomState)
     return random_state
-

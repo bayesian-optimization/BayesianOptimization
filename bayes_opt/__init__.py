@@ -1,4 +1,4 @@
-"""Pure Python implementation of bayesian global optimization with gaussian processes."""  # noqa: E501
+"""Pure Python implementation of bayesian global optimization with gaussian processes."""
 
 from __future__ import annotations
 

@@ -3,16 +3,18 @@
 Holds the `BayesianOptimization` class, which handles the maximization of a
 function over a specific target space.
 """
+from __future__ import annotations
+
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import Matern
+
+from . import acquisition
+from .event import DEFAULT_EVENTS, Events
+from .logger import _get_default_logger
+from .target_space import TargetSpace
+from .util import ensure_rng
 from bayes_opt.constraint import ConstraintModel
 
-from .target_space import TargetSpace
-from .event import Events, DEFAULT_EVENTS
-from .logger import _get_default_logger
-from .util import ensure_rng
-
-from sklearn.gaussian_process.kernels import Matern
-from sklearn.gaussian_process import GaussianProcessRegressor
-from . import acquisition
 
 class Queue:
     """Queue datastructure.
@@ -45,7 +47,7 @@ class Queue:
         self._queue.append(obj)
 
 
-class Observable(object):
+class Observable:
     """Inspired by https://www.protechtraining.com/blog/post/879#simple-observer."""
 
     def __init__(self, events):
@@ -60,7 +62,7 @@ class Observable(object):
     def subscribe(self, event, subscriber, callback=None):
         """Add subscriber to an event."""
         if callback is None:
-            callback = getattr(subscriber, 'update')
+            callback = subscriber.update
         self.get_subscribers(event)[subscriber] = callback
 
     def unsubscribe(self, event, subscriber):
@@ -123,24 +125,30 @@ class BayesianOptimization(Observable):
         Allows changing the lower and upper searching bounds
     """
 
-    def __init__(self,
-                 f,
-                 pbounds,
-                 acquisition_function=None,
-                 constraint=None,
-                 random_state=None,
-                 verbose=2,
-                 bounds_transformer=None,
-                 allow_duplicate_points=False):
+    def __init__(
+        self,
+        f,
+        pbounds,
+        acquisition_function=None,
+        constraint=None,
+        random_state=None,
+        verbose=2,
+        bounds_transformer=None,
+        allow_duplicate_points=False,
+    ):
         self._random_state = ensure_rng(random_state)
         self._allow_duplicate_points = allow_duplicate_points
         self._queue = Queue()
 
         if acquisition_function is None:
             if constraint is None:
-                self._acquisition_function = acquisition.UpperConfidenceBound(kappa=2.576, random_state=self._random_state)
+                self._acquisition_function = acquisition.UpperConfidenceBound(
+                    kappa=2.576, random_state=self._random_state
+                )
             else:
-                self._acquisition_function = acquisition.ExpectedImprovement(xi=0.01, random_state=self._random_state)
+                self._acquisition_function = acquisition.ExpectedImprovement(
+                    xi=0.01, random_state=self._random_state
+                )
         else:
             self._acquisition_function = acquisition_function
 
@@ -157,22 +165,20 @@ class BayesianOptimization(Observable):
             # Data structure containing the function to be optimized, the
             # bounds of its domain, and a record of the evaluations we have
             # done so far
-            self._space = TargetSpace(f, pbounds, random_state=random_state,
-                                      allow_duplicate_points=self._allow_duplicate_points)
+            self._space = TargetSpace(
+                f, pbounds, random_state=random_state, allow_duplicate_points=self._allow_duplicate_points
+            )
             self.is_constrained = False
         else:
             constraint_ = ConstraintModel(
-                constraint.fun,
-                constraint.lb,
-                constraint.ub,
-                random_state=random_state
+                constraint.fun, constraint.lb, constraint.ub, random_state=random_state
             )
             self._space = TargetSpace(
                 f,
                 pbounds,
                 constraint=constraint_,
                 random_state=random_state,
-                allow_duplicate_points=self._allow_duplicate_points
+                allow_duplicate_points=self._allow_duplicate_points,
             )
             self.is_constrained = True
 
@@ -182,8 +188,7 @@ class BayesianOptimization(Observable):
             try:
                 self._bounds_transformer.initialize(self._space)
             except (AttributeError, TypeError):
-                raise TypeError('The transformer must be an instance of '
-                                'DomainTransformer')
+                raise TypeError("The transformer must be an instance of " "DomainTransformer")
 
         super(BayesianOptimization, self).__init__(events=DEFAULT_EVENTS)
 
@@ -263,11 +268,7 @@ class BayesianOptimization(Observable):
             return self._space.array_to_params(self._space.random_sample())
 
         # Finding argmax of the acquisition function.
-        suggestion = self._acquisition_function.suggest(
-            gp=self._gp,
-            target_space=self._space,
-            fit_gp=True
-        )
+        suggestion = self._acquisition_function.suggest(gp=self._gp, target_space=self._space, fit_gp=True)
 
         return self._space.array_to_params(suggestion)
 
@@ -322,8 +323,7 @@ class BayesianOptimization(Observable):
             if self._bounds_transformer and iteration > 0:
                 # The bounds transformer should only modify the bounds after
                 # the init_points points (only for the true iterations)
-                self.set_bounds(
-                    self._bounds_transformer.transform(self._space))
+                self.set_bounds(self._bounds_transformer.transform(self._space))
 
         self.dispatch(Events.OPTIMIZATION_END)
 
