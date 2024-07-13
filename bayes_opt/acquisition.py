@@ -6,7 +6,7 @@ import abc
 import warnings
 from copy import deepcopy
 from numbers import Number
-from typing import Callable, List, Tuple, Union
+from typing import Callable
 
 import numpy as np
 from numpy.random import RandomState
@@ -100,9 +100,7 @@ class AcquisitionFunction(abc.ABC):
         acq = self._get_acq(gp=gp, constraint=target_space.constraint)
         return self._acq_min(acq, target_space.bounds, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b)
 
-    def _get_acq(
-        self, gp: GaussianProcessRegressor, constraint: Union[ConstraintModel, None] = None
-    ) -> Callable:
+    def _get_acq(self, gp: GaussianProcessRegressor, constraint: ConstraintModel | None = None) -> Callable:
         """Prepare the acquisition function for minimization.
 
         Transforms a base_acq Callable, which takes `mean` and `std` as
@@ -175,17 +173,17 @@ class AcquisitionFunction(abc.ABC):
 
         """
         if n_random == 0 and n_l_bfgs_b == 0:
-            raise ValueError("Either n_random or n_l_bfgs_b needs to be greater than 0.")
+            error_msg = "Either n_random or n_l_bfgs_b needs to be greater than 0."
+            raise ValueError(error_msg)
         x_min_r, min_acq_r = self._random_sample_minimize(acq, bounds, n_random=n_random)
         x_min_l, min_acq_l = self._l_bfgs_b_minimize(acq, bounds, n_x_seeds=n_l_bfgs_b)
         if min_acq_r < min_acq_l:
             return x_min_r
-        else:
-            return x_min_l
+        return x_min_l
 
     def _random_sample_minimize(
         self, acq: Callable, bounds: np.ndarray, n_random: int
-    ) -> Tuple[np.ndarray, float]:
+    ) -> tuple[np.ndarray, float]:
         """Random search to find the minimum of `acq` function.
 
         Parameters
@@ -219,7 +217,7 @@ class AcquisitionFunction(abc.ABC):
 
     def _l_bfgs_b_minimize(
         self, acq: Callable, bounds: np.ndarray, n_x_seeds: int = 10
-    ) -> Tuple[np.ndarray, float]:
+    ) -> tuple[np.ndarray, float]:
         """Random search to find the minimum of `acq` function.
 
         Parameters
@@ -298,9 +296,11 @@ class UpperConfidenceBound(AcquisitionFunction):
     def __init__(
         self, kappa=2.576, exploration_decay=None, exploration_decay_delay=None, random_state=None
     ) -> None:
-        super().__init__(random_state=random_state)
-        assert kappa >= 0, "kappa must be greater than or equal to 0."
+        if kappa < 0:
+            error_msg = "kappa must be greater than or equal to 0."
+            raise ValueError(error_msg)
 
+        super().__init__(random_state=random_state)
         self.kappa = kappa
         self.exploration_decay = exploration_decay
         self.exploration_decay_delay = exploration_decay_delay
@@ -359,7 +359,7 @@ class UpperConfidenceBound(AcquisitionFunction):
         if target_space.constraint is not None:
             msg = (
                 f"Received constraints, but acquisition function {type(self)} "
-                + "does not support constrained optimization."
+                "does not support constrained optimization."
             )
             raise ConstraintNotSupportedError(msg)
         x_max = super().suggest(gp=gp, target_space=target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=fit_gp)
@@ -476,8 +476,8 @@ class ProbabilityOfImprovement(AcquisitionFunction):
             # If target space is empty, let base class handle the error
             msg = (
                 "Cannot suggest a point without an allowed point. Use "
-                + "target_space.random_sample() to generate a point until "
-                + " at least one point that satisfies the constraints is found."
+                "target_space.random_sample() to generate a point until "
+                " at least one point that satisfies the constraints is found."
             )
             raise NoValidPointRegisteredError(msg)
         self.y_max = y_max
@@ -602,8 +602,8 @@ class ExpectedImprovement(AcquisitionFunction):
             # If target space is empty, let base class handle the error
             msg = (
                 "Cannot suggest a point without an allowed point. Use "
-                + "target_space.random_sample() to generate a point until "
-                + " at least one point that satisfies the constraints is found."
+                "target_space.random_sample() to generate a point until "
+                " at least one point that satisfies the constraints is found."
             )
             raise NoValidPointRegisteredError(msg)
         self.y_max = y_max
@@ -660,7 +660,8 @@ class ConstantLiar(AcquisitionFunction):
         self.base_acquisition = base_acquisition
         self.dummies = []
         if not isinstance(strategy, Number) and strategy not in ["min", "mean", "max"]:
-            raise ValueError(f"Received invalid argument {strategy} for strategy.")
+            error_msg = f"Received invalid argument {strategy} for strategy."
+            raise ValueError(error_msg)
         self.strategy = strategy
         self.atol = atol
         self.rtol = rtol
@@ -766,7 +767,7 @@ class ConstantLiar(AcquisitionFunction):
         if target_space.constraint is not None:
             msg = (
                 f"Received constraints, but acquisition function {type(self)} "
-                + "does not support constrained optimization."
+                "does not support constrained optimization."
             )
             raise ConstraintNotSupportedError(msg)
 
@@ -783,8 +784,10 @@ class ConstantLiar(AcquisitionFunction):
             dummy_target = target_space.target.min()
         elif self.strategy == "mean":
             dummy_target = target_space.target.mean()
+        elif self.strategy != "max":
+            error_msg = f"Received invalid argument {self.strategy} for strategy."
+            raise ValueError(error_msg)
         else:
-            assert self.strategy == "max"
             dummy_target = target_space.target.max()
 
         # Register the dummies to the dummy target space
@@ -825,7 +828,7 @@ class GPHedge(AcquisitionFunction):
         Set the random state for reproducibility.
     """
 
-    def __init__(self, base_acquisitions: List[AcquisitionFunction], random_state=None) -> None:
+    def __init__(self, base_acquisitions: list[AcquisitionFunction], random_state=None) -> None:
         super().__init__(random_state)
         self.base_acquisitions = base_acquisitions
         self.n_acq = len(self.base_acquisitions)
@@ -845,8 +848,7 @@ class GPHedge(AcquisitionFunction):
         """Sample an index weighted by the softmax of the gains."""
         cumsum_softmax_g = np.cumsum(softmax(self.gains))
         r = self.random_state.rand()
-        idx = np.argmax(r <= cumsum_softmax_g)  # Returns the first True value
-        return idx
+        return np.argmax(r <= cumsum_softmax_g)  # Returns the first True value
 
     def _update_gains(self, gp: GaussianProcessRegressor) -> None:
         """Update the gains of the base acquisition functions."""
@@ -905,17 +907,16 @@ class GPHedge(AcquisitionFunction):
             self._update_gains(gp)
 
         # Suggest a point using each base acquisition function
-        x_max = []
-        for base_acq in self.base_acquisitions:
-            x_max.append(
-                base_acq.suggest(
-                    gp=gp,
-                    target_space=target_space,
-                    n_random=n_random // self.n_acq,
-                    n_l_bfgs_b=n_l_bfgs_b // self.n_acq,
-                    fit_gp=False,
-                )
+        x_max = [
+            base_acq.suggest(
+                gp=gp,
+                target_space=target_space,
+                n_random=n_random // self.n_acq,
+                n_l_bfgs_b=n_l_bfgs_b // self.n_acq,
+                fit_gp=False,
             )
+            for base_acq in self.base_acquisitions
+        ]
         self.previous_candidates = np.array(x_max)
         idx = self._sample_idx_from_softmax_gains()
         return x_max[idx]
