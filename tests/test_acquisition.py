@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import sys
+
 import numpy as np
 import pytest
 from scipy.spatial.distance import pdist
@@ -343,3 +345,9 @@ def test_gphedge_integration(gp, target_space, random_state):
     for _ in range(5):
         p = acq.suggest(gp=gp, target_space=target_space)
         target_space.register(p, sum(p))
+
+
+@pytest.mark.parametrize("kappa", [-1.0, -sys.float_info.epsilon, -np.inf])
+def test_upper_confidence_bound_invalid_kappa_error(kappa: float):
+    with pytest.raises(ValueError, match="kappa must be greater than or equal to 0."):
+        acquisition.UpperConfidenceBound(kappa=kappa)
