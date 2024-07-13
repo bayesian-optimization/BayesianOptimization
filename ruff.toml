@@ -3,14 +3,6 @@ unsafe-fixes = false
 target-version = "py39"
 extend = "./pyproject.toml"
 exclude = [
-    # related: PR#447
-    "bayes_opt/acquisition.py",
-    "bayes_opt/bayesian_optimization.py",
-    "bayes_opt/util.py",
-    "tests/test_acquisition.py",
-    "tests/test_bayesian_optimization.py",
-    "tests/test_constraint.py",
-    "tests/test_util.py",
     # docs
     "docsrc/**/*",
     # examples
