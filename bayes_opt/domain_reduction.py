@@ -11,7 +11,7 @@ from warnings import warn
 
 import numpy as np
 
-from .target_space import TargetSpace
+from bayes_opt.target_space import TargetSpace
 
 
 class DomainTransformer:

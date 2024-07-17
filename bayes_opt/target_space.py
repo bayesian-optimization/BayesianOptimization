@@ -7,7 +7,7 @@ from warnings import warn
 import numpy as np
 from colorama import Fore
 
-from .util import NotUniqueError, ensure_rng
+from bayes_opt.util import NotUniqueError, ensure_rng
 
 
 def _hashable(x):

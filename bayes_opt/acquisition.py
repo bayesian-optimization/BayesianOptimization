@@ -15,7 +15,7 @@ from scipy.special import softmax
 from scipy.stats import norm
 from sklearn.gaussian_process import GaussianProcessRegressor
 
-from .util import ConstraintNotSupportedError, NoValidPointRegisteredError, TargetSpaceEmptyError
+from bayes_opt.util import ConstraintNotSupportedError, NoValidPointRegisteredError, TargetSpaceEmptyError
 
 if TYPE_CHECKING:
     from bayes_opt.constraint import ConstraintModel

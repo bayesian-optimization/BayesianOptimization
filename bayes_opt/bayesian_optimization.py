@@ -9,12 +9,12 @@ from __future__ import annotations
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
 
-from . import acquisition
-from .event import DEFAULT_EVENTS, Events
-from .logger import _get_default_logger
-from .target_space import TargetSpace
-from .util import ensure_rng
+from bayes_opt import acquisition
 from bayes_opt.constraint import ConstraintModel
+from bayes_opt.event import DEFAULT_EVENTS, Events
+from bayes_opt.logger import _get_default_logger
+from bayes_opt.target_space import TargetSpace
+from bayes_opt.util import ensure_rng
 
 
 class Queue:

@@ -9,8 +9,8 @@ from pathlib import Path
 import numpy as np
 from colorama import Fore, just_fix_windows_console
 
-from .event import Events
-from .observer import _Tracker
+from bayes_opt.event import Events
+from bayes_opt.observer import _Tracker
 
 just_fix_windows_console()
 

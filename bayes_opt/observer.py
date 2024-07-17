@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from .event import Events
+from bayes_opt.event import Events
 
 
 class _Tracker:

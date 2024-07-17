@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import importlib.metadata
 
-from . import acquisition
-from .bayesian_optimization import BayesianOptimization, Events
-from .constraint import ConstraintModel
-from .domain_reduction import SequentialDomainReductionTransformer
-from .logger import JSONLogger, ScreenLogger
+from bayes_opt import acquisition
+from bayes_opt.bayesian_optimization import BayesianOptimization, Events
+from bayes_opt.constraint import ConstraintModel
+from bayes_opt.domain_reduction import SequentialDomainReductionTransformer
+from bayes_opt.logger import JSONLogger, ScreenLogger
 
 __version__ = importlib.metadata.version("bayesian-optimization")
 
