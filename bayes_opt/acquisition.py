@@ -15,11 +15,11 @@ from scipy.special import softmax
 from scipy.stats import norm
 from sklearn.gaussian_process import GaussianProcessRegressor
 
+from bayes_opt.target_space import TargetSpace
 from bayes_opt.util import ConstraintNotSupportedError, NoValidPointRegisteredError, TargetSpaceEmptyError
 
 if TYPE_CHECKING:
     from bayes_opt.constraint import ConstraintModel
-    from bayes_opt.target_space import TargetSpace
 
 
 class AcquisitionFunction(abc.ABC):
