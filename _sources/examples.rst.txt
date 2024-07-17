@@ -8,6 +8,7 @@ Examples
    /basic-tour
    /advanced-tour
    /exploitation_vs_exploration
+   /acquisition_functions
    /visualization
    /constraints
    /domain_reduction

@@ -9,10 +9,10 @@ Bayesian Optimization
 .. automodule:: bayes_opt.bayesian_optimization
    :members:
 
-Acquisition function
---------------------
+Acquisition Functions
+---------------------
 
-.. autoclass:: bayes_opt.util.UtilityFunction
+.. automodule:: bayes_opt.acquisition
    :members:
 
 Target Space

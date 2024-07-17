@@ -81,7 +81,42 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#acquisition-function">Acquisition function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-bayes_opt.acquisition">Acquisition Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#bayes_opt.acquisition.AcquisitionFunction"><code class="docutils literal notranslate"><span class="pre">AcquisitionFunction</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bayes_opt.acquisition.AcquisitionFunction.base_acq"><code class="docutils literal notranslate"><span class="pre">AcquisitionFunction.base_acq()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bayes_opt.acquisition.AcquisitionFunction.suggest"><code class="docutils literal notranslate"><span class="pre">AcquisitionFunction.suggest()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#bayes_opt.acquisition.ConstantLiar"><code class="docutils literal notranslate"><span class="pre">ConstantLiar</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bayes_opt.acquisition.ConstantLiar.base_acq"><code class="docutils literal notranslate"><span class="pre">ConstantLiar.base_acq()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bayes_opt.acquisition.ConstantLiar.suggest"><code class="docutils literal notranslate"><span class="pre">ConstantLiar.suggest()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#bayes_opt.acquisition.ExpectedImprovement"><code class="docutils literal notranslate"><span class="pre">ExpectedImprovement</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bayes_opt.acquisition.ExpectedImprovement.base_acq"><code class="docutils literal notranslate"><span class="pre">ExpectedImprovement.base_acq()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bayes_opt.acquisition.ExpectedImprovement.decay_exploration"><code class="docutils literal notranslate"><span class="pre">ExpectedImprovement.decay_exploration()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bayes_opt.acquisition.ExpectedImprovement.suggest"><code class="docutils literal notranslate"><span class="pre">ExpectedImprovement.suggest()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#bayes_opt.acquisition.GPHedge"><code class="docutils literal notranslate"><span class="pre">GPHedge</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bayes_opt.acquisition.GPHedge.base_acq"><code class="docutils literal notranslate"><span class="pre">GPHedge.base_acq()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bayes_opt.acquisition.GPHedge.suggest"><code class="docutils literal notranslate"><span class="pre">GPHedge.suggest()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#bayes_opt.acquisition.ProbabilityOfImprovement"><code class="docutils literal notranslate"><span class="pre">ProbabilityOfImprovement</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bayes_opt.acquisition.ProbabilityOfImprovement.base_acq"><code class="docutils literal notranslate"><span class="pre">ProbabilityOfImprovement.base_acq()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bayes_opt.acquisition.ProbabilityOfImprovement.decay_exploration"><code class="docutils literal notranslate"><span class="pre">ProbabilityOfImprovement.decay_exploration()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bayes_opt.acquisition.ProbabilityOfImprovement.suggest"><code class="docutils literal notranslate"><span class="pre">ProbabilityOfImprovement.suggest()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#bayes_opt.acquisition.UpperConfidenceBound"><code class="docutils literal notranslate"><span class="pre">UpperConfidenceBound</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bayes_opt.acquisition.UpperConfidenceBound.base_acq"><code class="docutils literal notranslate"><span class="pre">UpperConfidenceBound.base_acq()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bayes_opt.acquisition.UpperConfidenceBound.decay_exploration"><code class="docutils literal notranslate"><span class="pre">UpperConfidenceBound.decay_exploration()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bayes_opt.acquisition.UpperConfidenceBound.suggest"><code class="docutils literal notranslate"><span class="pre">UpperConfidenceBound.suggest()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#target-space">Target Space</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#bayes_opt.target_space.TargetSpace"><code class="docutils literal notranslate"><span class="pre">TargetSpace</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#bayes_opt.target_space.TargetSpace.array_to_params"><code class="docutils literal notranslate"><span class="pre">TargetSpace.array_to_params()</span></code></a></li>
@@ -368,8 +403,456 @@ maximize(). Otherwise it will evaluate it at the moment.</p>
 </dd></dl>
 
 </section>
-<section id="acquisition-function">
-<h2>Acquisition function<a class="headerlink" href="#acquisition-function" title="Link to this heading"></a></h2>
+<section id="module-bayes_opt.acquisition">
+<span id="acquisition-functions"></span><h2>Acquisition Functions<a class="headerlink" href="#module-bayes_opt.acquisition" title="Link to this heading"></a></h2>
+<p>Acquisition functions for Bayesian Optimization.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="bayes_opt.acquisition.AcquisitionFunction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bayes_opt.acquisition.</span></span><span class="sig-name descname"><span class="pre">AcquisitionFunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.acquisition.AcquisitionFunction" title="Link to this definition"></a></dt>
+<dd><p>Base class for acquisition functions.</p>
+<section id="id5">
+<h3>Parameters<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>random_state<span class="classifier">int, RandomState, default None</span></dt><dd><p>Set the random state for reproducibility.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_opt.acquisition.AcquisitionFunction.base_acq">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_acq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.acquisition.AcquisitionFunction.base_acq" title="Link to this definition"></a></dt>
+<dd><p>Provide access to the base acquisition function.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_opt.acquisition.AcquisitionFunction.suggest">
+<span class="sig-name descname"><span class="pre">suggest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GaussianProcessRegressor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_space</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#bayes_opt.target_space.TargetSpace" title="bayes_opt.target_space.TargetSpace"><span class="pre">TargetSpace</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_random</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_l_bfgs_b</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit_gp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.acquisition.AcquisitionFunction.suggest" title="Link to this definition"></a></dt>
+<dd><p>Suggest a promising point to probe next.</p>
+<section id="id6">
+<h4>Parameters<a class="headerlink" href="#id6" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>gp<span class="classifier">GaussianProcessRegressor</span></dt><dd><p>A fitted Gaussian Process.</p>
+</dd>
+<dt>target_space<span class="classifier">TargetSpace</span></dt><dd><p>The target space to probe.</p>
+</dd>
+<dt>n_random<span class="classifier">int, default 10_000</span></dt><dd><p>Number of random samples to use.</p>
+</dd>
+<dt>n_l_bfgs_b<span class="classifier">int, default 10</span></dt><dd><p>Number of starting points for the L-BFGS-B optimizer.</p>
+</dd>
+<dt>fit_gp<span class="classifier">bool, default True</span></dt><dd><p>Whether to fit the Gaussian Process to the target space.
+Set to False if the GP is already fitted.</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h4>Returns<a class="headerlink" href="#returns" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>np.ndarray</dt><dd><p>Suggested point to probe next.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+</section>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bayes_opt.acquisition.ConstantLiar">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bayes_opt.acquisition.</span></span><span class="sig-name descname"><span class="pre">ConstantLiar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_acquisition</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#bayes_opt.acquisition.AcquisitionFunction" title="bayes_opt.acquisition.AcquisitionFunction"><span class="pre">AcquisitionFunction</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'max'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.acquisition.ConstantLiar" title="Link to this definition"></a></dt>
+<dd><p>Constant Liar acquisition function.</p>
+<p>Used for asynchronous optimization. It operates on a copy of the target space
+that includes the previously suggested points that have not been evaluated yet.
+A GP fitted to this target space is less likely to suggest the same point again,
+since the variance of the predictive distribution is lower at these points.
+This is discourages the optimization algorithm from suggesting the same point
+to multiple workers.</p>
+<section id="id7">
+<h3>Parameters<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>base_acquisition<span class="classifier">AcquisitionFunction</span></dt><dd><p>The acquisition function to use.</p>
+</dd>
+<dt>strategy<span class="classifier">float or str, default ‘max’</span></dt><dd><p>Strategy to use for the constant liar. If a float, the constant liar
+will always register dummies with this value. If ‘min’/’mean’/’max’,
+the constant liar will register dummies with the minimum/mean/maximum
+target value in the target space.</p>
+</dd>
+<dt>random_state<span class="classifier">int, RandomState, default None</span></dt><dd><p>Set the random state for reproducibility.</p>
+</dd>
+<dt>atol<span class="classifier">float, default 1e-5</span></dt><dd><p>Absolute tolerance to eliminate a dummy point.</p>
+</dd>
+<dt>rtol<span class="classifier">float, default 1e-8</span></dt><dd><p>Relative tolerance to eliminate a dummy point.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_opt.acquisition.ConstantLiar.base_acq">
+<span class="sig-name descname"><span class="pre">base_acq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.acquisition.ConstantLiar.base_acq" title="Link to this definition"></a></dt>
+<dd><p>Calculate the acquisition function.</p>
+<p>Calls the base acquisition function’s <cite>base_acq</cite> method.</p>
+<section id="id8">
+<h4>Returns<a class="headerlink" href="#id8" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>np.ndarray</dt><dd><p>Acquisition function value.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_opt.acquisition.ConstantLiar.suggest">
+<span class="sig-name descname"><span class="pre">suggest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GaussianProcessRegressor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_space</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#bayes_opt.target_space.TargetSpace" title="bayes_opt.target_space.TargetSpace"><span class="pre">TargetSpace</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_random</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_l_bfgs_b</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit_gp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#bayes_opt.acquisition.ConstantLiar.suggest" title="Link to this definition"></a></dt>
+<dd><p>Suggest a promising point to probe next.</p>
+<section id="id9">
+<h4>Parameters<a class="headerlink" href="#id9" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>gp<span class="classifier">GaussianProcessRegressor</span></dt><dd><p>A fitted Gaussian Process.</p>
+</dd>
+<dt>target_space<span class="classifier">TargetSpace</span></dt><dd><p>The target space to probe.</p>
+</dd>
+<dt>n_random<span class="classifier">int, default 10_000</span></dt><dd><p>Number of random samples to use.</p>
+</dd>
+<dt>n_l_bfgs_b<span class="classifier">int, default 10</span></dt><dd><p>Number of starting points for the L-BFGS-B optimizer.</p>
+</dd>
+<dt>fit_gp<span class="classifier">bool, default True</span></dt><dd><p>Whether to fit the Gaussian Process to the target space.
+Set to False if the GP is already fitted.</p>
+</dd>
+</dl>
+</section>
+<section id="id10">
+<h4>Returns<a class="headerlink" href="#id10" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>np.ndarray</dt><dd><p>Suggested point to probe next.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+</section>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bayes_opt.acquisition.ExpectedImprovement">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bayes_opt.acquisition.</span></span><span class="sig-name descname"><span class="pre">ExpectedImprovement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exploration_decay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exploration_decay_delay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.acquisition.ExpectedImprovement" title="Link to this definition"></a></dt>
+<dd><p>Expected Improvement acqusition function.</p>
+<p>Similar to Probability of Improvement (<cite>ProbabilityOfImprovement</cite>), but also considers the
+magnitude of improvement.
+Calculated as</p>
+<div class="math notranslate nohighlight">
+\[\text{EI}(x) = (\mu(x)-y_{\text{max}} - \xi) \Phi\left(
+    \frac{\mu(x)-y_{\text{max}} -  \xi }{\sigma(x)} \right)
+        + \sigma(x) \phi\left(
+        \frac{\mu(x)-y_{\text{max}} -  \xi }{\sigma(x)} \right)\]</div>
+<p>where <span class="math notranslate nohighlight">\(\Phi\)</span> is the CDF and <span class="math notranslate nohighlight">\(\phi\)</span> the PDF of the normal
+distribution.</p>
+<section id="id11">
+<h3>Parameters<a class="headerlink" href="#id11" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>xi<span class="classifier">float, positive</span></dt><dd><p>Governs the exploration/exploitation tradeoff. Lower prefers
+exploitation, higher prefers exploration.</p>
+</dd>
+<dt>exploration_decay<span class="classifier">float, default None</span></dt><dd><p>Decay rate for xi. If None, no decay is applied.</p>
+</dd>
+</dl>
+<p>exploration_decay_delay : int, default None</p>
+<dl class="simple">
+<dt>random_state<span class="classifier">int, RandomState, default None</span></dt><dd><p>Set the random state for reproducibility.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_opt.acquisition.ExpectedImprovement.base_acq">
+<span class="sig-name descname"><span class="pre">base_acq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.acquisition.ExpectedImprovement.base_acq" title="Link to this definition"></a></dt>
+<dd><p>Calculate the expected improvement.</p>
+<section id="id12">
+<h4>Parameters<a class="headerlink" href="#id12" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>mean<span class="classifier">np.ndarray</span></dt><dd><p>Mean of the predictive distribution.</p>
+</dd>
+<dt>std<span class="classifier">np.ndarray</span></dt><dd><p>Standard deviation of the predictive distribution.</p>
+</dd>
+</dl>
+</section>
+<section id="id13">
+<h4>Returns<a class="headerlink" href="#id13" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>np.ndarray</dt><dd><p>Acquisition function value.</p>
+</dd>
+</dl>
+</section>
+<section id="raises">
+<h4>Raises<a class="headerlink" href="#raises" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>ValueError</dt><dd><p>If y_max is not set.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_opt.acquisition.ExpectedImprovement.decay_exploration">
+<span class="sig-name descname"><span class="pre">decay_exploration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#bayes_opt.acquisition.ExpectedImprovement.decay_exploration" title="Link to this definition"></a></dt>
+<dd><p>Decay xi by a constant rate.</p>
+<p>Adjust exploration/exploitation trade-off by reducing xi.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_opt.acquisition.ExpectedImprovement.suggest">
+<span class="sig-name descname"><span class="pre">suggest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GaussianProcessRegressor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_space</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#bayes_opt.target_space.TargetSpace" title="bayes_opt.target_space.TargetSpace"><span class="pre">TargetSpace</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_random</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_l_bfgs_b</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit_gp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#bayes_opt.acquisition.ExpectedImprovement.suggest" title="Link to this definition"></a></dt>
+<dd><p>Suggest a promising point to probe next.</p>
+<section id="id14">
+<h4>Parameters<a class="headerlink" href="#id14" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>gp<span class="classifier">GaussianProcessRegressor</span></dt><dd><p>A fitted Gaussian Process.</p>
+</dd>
+<dt>target_space<span class="classifier">TargetSpace</span></dt><dd><p>The target space to probe.</p>
+</dd>
+<dt>n_random<span class="classifier">int, default 10_000</span></dt><dd><p>Number of random samples to use.</p>
+</dd>
+<dt>n_l_bfgs_b<span class="classifier">int, default 10</span></dt><dd><p>Number of starting points for the L-BFGS-B optimizer.</p>
+</dd>
+<dt>fit_gp<span class="classifier">bool, default True</span></dt><dd><p>Whether to fit the Gaussian Process to the target space.
+Set to False if the GP is already fitted.</p>
+</dd>
+</dl>
+</section>
+<section id="id15">
+<h4>Returns<a class="headerlink" href="#id15" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>np.ndarray</dt><dd><p>Suggested point to probe next.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+</section>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bayes_opt.acquisition.GPHedge">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bayes_opt.acquisition.</span></span><span class="sig-name descname"><span class="pre">GPHedge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_acquisitions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#bayes_opt.acquisition.AcquisitionFunction" title="bayes_opt.acquisition.AcquisitionFunction"><span class="pre">AcquisitionFunction</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.acquisition.GPHedge" title="Link to this definition"></a></dt>
+<dd><p>GPHedge acquisition function.</p>
+<p>At each suggestion step, GPHedge samples suggestions from each base
+acquisition function acq_i. Then a candidate is selected from the
+suggestions based on the on the cumulative rewards of each acq_i.
+After evaluating the candidate, the gains are updated (in the next
+iteration) based on the updated expectation value of the candidates.</p>
+<dl class="simple">
+<dt>For more information, see:</dt><dd><p>Brochu et al., “Portfolio Allocation for Bayesian Optimization”,
+<a class="reference external" href="https://arxiv.org/abs/1009.5419">https://arxiv.org/abs/1009.5419</a></p>
+</dd>
+</dl>
+<section id="id16">
+<h3>Parameters<a class="headerlink" href="#id16" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>base_acquisitions<span class="classifier">List[AcquisitionFunction]</span></dt><dd><p>List of base acquisition functions.</p>
+</dd>
+<dt>random_state<span class="classifier">int, RandomState, default None</span></dt><dd><p>Set the random state for reproducibility.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_opt.acquisition.GPHedge.base_acq">
+<span class="sig-name descname"><span class="pre">base_acq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.acquisition.GPHedge.base_acq" title="Link to this definition"></a></dt>
+<dd><p>Raise an error, since the base acquisition function is ambiguous.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_opt.acquisition.GPHedge.suggest">
+<span class="sig-name descname"><span class="pre">suggest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GaussianProcessRegressor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_space</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#bayes_opt.target_space.TargetSpace" title="bayes_opt.target_space.TargetSpace"><span class="pre">TargetSpace</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_random</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_l_bfgs_b</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit_gp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#bayes_opt.acquisition.GPHedge.suggest" title="Link to this definition"></a></dt>
+<dd><p>Suggest a promising point to probe next.</p>
+<section id="id17">
+<h4>Parameters<a class="headerlink" href="#id17" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>gp<span class="classifier">GaussianProcessRegressor</span></dt><dd><p>A fitted Gaussian Process.</p>
+</dd>
+<dt>target_space<span class="classifier">TargetSpace</span></dt><dd><p>The target space to probe.</p>
+</dd>
+<dt>n_random<span class="classifier">int, default 10_000</span></dt><dd><p>Number of random samples to use.</p>
+</dd>
+<dt>n_l_bfgs_b<span class="classifier">int, default 10</span></dt><dd><p>Number of starting points for the L-BFGS-B optimizer.</p>
+</dd>
+<dt>fit_gp<span class="classifier">bool, default True</span></dt><dd><p>Whether to fit the Gaussian Process to the target space.
+Set to False if the GP is already fitted.</p>
+</dd>
+</dl>
+</section>
+<section id="id18">
+<h4>Returns<a class="headerlink" href="#id18" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>np.ndarray</dt><dd><p>Suggested point to probe next.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+</section>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bayes_opt.acquisition.ProbabilityOfImprovement">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bayes_opt.acquisition.</span></span><span class="sig-name descname"><span class="pre">ProbabilityOfImprovement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exploration_decay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exploration_decay_delay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.acquisition.ProbabilityOfImprovement" title="Link to this definition"></a></dt>
+<dd><p>Probability of Improvement acqusition function.</p>
+<p>Calculated as</p>
+<div class="math notranslate nohighlight">
+\[\text{POI}(x) = \Phi\left( \frac{\mu(x)-y_{\text{max}} -  \xi }{\sigma(x)} \right)\]</div>
+<p>where <span class="math notranslate nohighlight">\(\Phi\)</span> is the CDF of the normal distribution.</p>
+<section id="id19">
+<h3>Parameters<a class="headerlink" href="#id19" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>xi<span class="classifier">float, positive</span></dt><dd><p>Governs the exploration/exploitation tradeoff. Lower prefers
+exploitation, higher prefers exploration.</p>
+</dd>
+<dt>exploration_decay<span class="classifier">float, default None</span></dt><dd><p>Decay rate for xi. If None, no decay is applied.</p>
+</dd>
+<dt>exploration_decay_delay<span class="classifier">int, default None</span></dt><dd><p>Delay for decay. If None, decay is applied from the start.</p>
+</dd>
+<dt>random_state<span class="classifier">int, RandomState, default None</span></dt><dd><p>Set the random state for reproducibility.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_opt.acquisition.ProbabilityOfImprovement.base_acq">
+<span class="sig-name descname"><span class="pre">base_acq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.acquisition.ProbabilityOfImprovement.base_acq" title="Link to this definition"></a></dt>
+<dd><p>Calculate the probability of improvement.</p>
+<section id="id20">
+<h4>Parameters<a class="headerlink" href="#id20" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>mean<span class="classifier">np.ndarray</span></dt><dd><p>Mean of the predictive distribution.</p>
+</dd>
+<dt>std<span class="classifier">np.ndarray</span></dt><dd><p>Standard deviation of the predictive distribution.</p>
+</dd>
+</dl>
+</section>
+<section id="id21">
+<h4>Returns<a class="headerlink" href="#id21" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>np.ndarray</dt><dd><p>Acquisition function value.</p>
+</dd>
+</dl>
+</section>
+<section id="id22">
+<h4>Raises<a class="headerlink" href="#id22" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>ValueError</dt><dd><p>If y_max is not set.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_opt.acquisition.ProbabilityOfImprovement.decay_exploration">
+<span class="sig-name descname"><span class="pre">decay_exploration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#bayes_opt.acquisition.ProbabilityOfImprovement.decay_exploration" title="Link to this definition"></a></dt>
+<dd><p>Decay xi by a constant rate.</p>
+<p>Adjust exploration/exploitation trade-off by reducing xi.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_opt.acquisition.ProbabilityOfImprovement.suggest">
+<span class="sig-name descname"><span class="pre">suggest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GaussianProcessRegressor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_space</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#bayes_opt.target_space.TargetSpace" title="bayes_opt.target_space.TargetSpace"><span class="pre">TargetSpace</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_random</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_l_bfgs_b</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit_gp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#bayes_opt.acquisition.ProbabilityOfImprovement.suggest" title="Link to this definition"></a></dt>
+<dd><p>Suggest a promising point to probe next.</p>
+<section id="id23">
+<h4>Parameters<a class="headerlink" href="#id23" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>gp<span class="classifier">GaussianProcessRegressor</span></dt><dd><p>A fitted Gaussian Process.</p>
+</dd>
+<dt>target_space<span class="classifier">TargetSpace</span></dt><dd><p>The target space to probe.</p>
+</dd>
+<dt>n_random<span class="classifier">int, default 10_000</span></dt><dd><p>Number of random samples to use.</p>
+</dd>
+<dt>n_l_bfgs_b<span class="classifier">int, default 10</span></dt><dd><p>Number of starting points for the L-BFGS-B optimizer.</p>
+</dd>
+<dt>fit_gp<span class="classifier">bool, default True</span></dt><dd><p>Whether to fit the Gaussian Process to the target space.
+Set to False if the GP is already fitted.</p>
+</dd>
+</dl>
+</section>
+<section id="id24">
+<h4>Returns<a class="headerlink" href="#id24" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>np.ndarray</dt><dd><p>Suggested point to probe next.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+</section>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bayes_opt.acquisition.UpperConfidenceBound">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bayes_opt.acquisition.</span></span><span class="sig-name descname"><span class="pre">UpperConfidenceBound</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kappa</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.576</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exploration_decay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exploration_decay_delay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.acquisition.UpperConfidenceBound" title="Link to this definition"></a></dt>
+<dd><p>Upper Confidence Bound acquisition function.</p>
+<p>The upper confidence bound is calculated as</p>
+<div class="math notranslate nohighlight">
+\[\text{UCB}(x) = \mu(x) + \kappa \sigma(x).\]</div>
+<section id="id25">
+<h3>Parameters<a class="headerlink" href="#id25" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>kappa<span class="classifier">float, default 2.576</span></dt><dd><p>Governs the exploration/exploitation tradeoff. Lower prefers
+exploitation, higher prefers exploration.</p>
+</dd>
+<dt>exploration_decay<span class="classifier">float, default None</span></dt><dd><p>Decay rate for kappa. If None, no decay is applied.</p>
+</dd>
+<dt>exploration_decay_delay<span class="classifier">int, default None</span></dt><dd><p>Delay for decay. If None, decay is applied from the start.</p>
+</dd>
+<dt>random_state<span class="classifier">int, RandomState, default None</span></dt><dd><p>Set the random state for reproducibility.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_opt.acquisition.UpperConfidenceBound.base_acq">
+<span class="sig-name descname"><span class="pre">base_acq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.acquisition.UpperConfidenceBound.base_acq" title="Link to this definition"></a></dt>
+<dd><p>Calculate the upper confidence bound.</p>
+<section id="id26">
+<h4>Parameters<a class="headerlink" href="#id26" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>mean<span class="classifier">np.ndarray</span></dt><dd><p>Mean of the predictive distribution.</p>
+</dd>
+<dt>std<span class="classifier">np.ndarray</span></dt><dd><p>Standard deviation of the predictive distribution.</p>
+</dd>
+</dl>
+</section>
+<section id="id27">
+<h4>Returns<a class="headerlink" href="#id27" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>np.ndarray</dt><dd><p>Acquisition function value.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_opt.acquisition.UpperConfidenceBound.decay_exploration">
+<span class="sig-name descname"><span class="pre">decay_exploration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#bayes_opt.acquisition.UpperConfidenceBound.decay_exploration" title="Link to this definition"></a></dt>
+<dd><p>Decay kappa by a constant rate.</p>
+<p>Adjust exploration/exploitation trade-off by reducing kappa.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_opt.acquisition.UpperConfidenceBound.suggest">
+<span class="sig-name descname"><span class="pre">suggest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GaussianProcessRegressor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_space</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#bayes_opt.target_space.TargetSpace" title="bayes_opt.target_space.TargetSpace"><span class="pre">TargetSpace</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_random</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_l_bfgs_b</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit_gp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#bayes_opt.acquisition.UpperConfidenceBound.suggest" title="Link to this definition"></a></dt>
+<dd><p>Suggest a promising point to probe next.</p>
+<section id="id28">
+<h4>Parameters<a class="headerlink" href="#id28" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>gp<span class="classifier">GaussianProcessRegressor</span></dt><dd><p>A fitted Gaussian Process.</p>
+</dd>
+<dt>target_space<span class="classifier">TargetSpace</span></dt><dd><p>The target space to probe.</p>
+</dd>
+<dt>n_random<span class="classifier">int, default 10_000</span></dt><dd><p>Number of random samples to use.</p>
+</dd>
+<dt>n_l_bfgs_b<span class="classifier">int, default 10</span></dt><dd><p>Number of starting points for the L-BFGS-B optimizer.</p>
+</dd>
+<dt>fit_gp<span class="classifier">bool, default True</span></dt><dd><p>Whether to fit the Gaussian Process to the target space.
+Set to False if the GP is already fitted.</p>
+</dd>
+</dl>
+</section>
+<section id="id29">
+<h4>Returns<a class="headerlink" href="#id29" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>np.ndarray</dt><dd><p>Suggested point to probe next.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+</section>
+</dd></dl>
+
 </section>
 <section id="target-space">
 <h2>Target Space<a class="headerlink" href="#target-space" title="Link to this heading"></a></h2>
@@ -378,8 +861,8 @@ maximize(). Otherwise it will evaluate it at the moment.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bayes_opt.target_space.</span></span><span class="sig-name descname"><span class="pre">TargetSpace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pbounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_duplicate_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace" title="Link to this definition"></a></dt>
 <dd><p>Holds the param-space coordinates (X) and target values (Y).</p>
 <p>Allows for constant-time appends.</p>
-<section id="id5">
-<h3>Parameters<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<section id="id30">
+<h3>Parameters<a class="headerlink" href="#id30" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>target_func<span class="classifier">function</span></dt><dd><p>Function to be maximized.</p>
 </dd>
@@ -412,15 +895,15 @@ may occasionally generate a duplicate point.</p>
 <dt class="sig sig-object py" id="bayes_opt.target_space.TargetSpace.array_to_params">
 <span class="sig-name descname"><span class="pre">array_to_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.array_to_params" title="Link to this definition"></a></dt>
 <dd><p>Convert an array representation of parameters into a dict version.</p>
-<section id="id6">
-<h4>Parameters<a class="headerlink" href="#id6" title="Link to this heading"></a></h4>
+<section id="id31">
+<h4>Parameters<a class="headerlink" href="#id31" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>x<span class="classifier">np.ndarray</span></dt><dd><p>a single point, with len(x) == self.dim.</p>
 </dd>
 </dl>
 </section>
-<section id="returns">
-<h4>Returns<a class="headerlink" href="#returns" title="Link to this heading"></a></h4>
+<section id="id32">
+<h4>Returns<a class="headerlink" href="#id32" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>dict</dt><dd><p>Representation of the parameters as dictionary.</p>
 </dd>
@@ -432,8 +915,8 @@ may occasionally generate a duplicate point.</p>
 <dt class="sig sig-object py" id="bayes_opt.target_space.TargetSpace.bounds">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bounds</span></span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.bounds" title="Link to this definition"></a></dt>
 <dd><p>Get the bounds of this TargetSpace.</p>
-<section id="id7">
-<h4>Returns<a class="headerlink" href="#id7" title="Link to this heading"></a></h4>
+<section id="id33">
+<h4>Returns<a class="headerlink" href="#id33" title="Link to this heading"></a></h4>
 <p>np.ndarray</p>
 </section>
 </dd></dl>
@@ -442,8 +925,8 @@ may occasionally generate a duplicate point.</p>
 <dt class="sig sig-object py" id="bayes_opt.target_space.TargetSpace.constraint">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">constraint</span></span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.constraint" title="Link to this definition"></a></dt>
 <dd><p>Get the constraint model.</p>
-<section id="id8">
-<h4>Returns<a class="headerlink" href="#id8" title="Link to this heading"></a></h4>
+<section id="id34">
+<h4>Returns<a class="headerlink" href="#id34" title="Link to this heading"></a></h4>
 <p>ConstraintModel</p>
 </section>
 </dd></dl>
@@ -452,8 +935,8 @@ may occasionally generate a duplicate point.</p>
 <dt class="sig sig-object py" id="bayes_opt.target_space.TargetSpace.constraint_values">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">constraint_values</span></span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.constraint_values" title="Link to this definition"></a></dt>
 <dd><p>Get the constraint values registered to this TargetSpace.</p>
-<section id="id9">
-<h4>Returns<a class="headerlink" href="#id9" title="Link to this heading"></a></h4>
+<section id="id35">
+<h4>Returns<a class="headerlink" href="#id35" title="Link to this heading"></a></h4>
 <p>np.ndarray</p>
 </section>
 </dd></dl>
@@ -462,8 +945,8 @@ may occasionally generate a duplicate point.</p>
 <dt class="sig sig-object py" id="bayes_opt.target_space.TargetSpace.dim">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dim</span></span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.dim" title="Link to this definition"></a></dt>
 <dd><p>Get the number of parameter names.</p>
-<section id="id10">
-<h4>Returns<a class="headerlink" href="#id10" title="Link to this heading"></a></h4>
+<section id="id36">
+<h4>Returns<a class="headerlink" href="#id36" title="Link to this heading"></a></h4>
 <p>int</p>
 </section>
 </dd></dl>
@@ -472,8 +955,8 @@ may occasionally generate a duplicate point.</p>
 <dt class="sig sig-object py" id="bayes_opt.target_space.TargetSpace.empty">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">empty</span></span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.empty" title="Link to this definition"></a></dt>
 <dd><p>Check if anything has been registered.</p>
-<section id="id11">
-<h4>Returns<a class="headerlink" href="#id11" title="Link to this heading"></a></h4>
+<section id="id37">
+<h4>Returns<a class="headerlink" href="#id37" title="Link to this heading"></a></h4>
 <p>bool</p>
 </section>
 </dd></dl>
@@ -482,8 +965,8 @@ may occasionally generate a duplicate point.</p>
 <dt class="sig sig-object py" id="bayes_opt.target_space.TargetSpace.keys">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">keys</span></span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.keys" title="Link to this definition"></a></dt>
 <dd><p>Get the keys (or parameter names).</p>
-<section id="id12">
-<h4>Returns<a class="headerlink" href="#id12" title="Link to this heading"></a></h4>
+<section id="id38">
+<h4>Returns<a class="headerlink" href="#id38" title="Link to this heading"></a></h4>
 <p>list of str</p>
 </section>
 </dd></dl>
@@ -493,8 +976,8 @@ may occasionally generate a duplicate point.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mask</span></span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.mask" title="Link to this definition"></a></dt>
 <dd><p>Return a boolean array of valid points.</p>
 <p>Points are valid if they satisfy both the constraint and boundary conditions.</p>
-<section id="id13">
-<h4>Returns<a class="headerlink" href="#id13" title="Link to this heading"></a></h4>
+<section id="id39">
+<h4>Returns<a class="headerlink" href="#id39" title="Link to this heading"></a></h4>
 <p>np.ndarray</p>
 </section>
 </dd></dl>
@@ -505,8 +988,8 @@ may occasionally generate a duplicate point.</p>
 <dd><p>Get maximum target value found and corresponding parameters.</p>
 <p>If there is a constraint present, the maximum value that fulfills the
 constraint within the parameter bounds is returned.</p>
-<section id="id14">
-<h4>Returns<a class="headerlink" href="#id14" title="Link to this heading"></a></h4>
+<section id="id40">
+<h4>Returns<a class="headerlink" href="#id40" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>res: dict</dt><dd><p>A dictionary with the keys ‘target’ and ‘params’. The value of
 ‘target’ is the maximum target value, and the value of ‘params’ is
@@ -521,8 +1004,8 @@ values as values.</p>
 <dt class="sig sig-object py" id="bayes_opt.target_space.TargetSpace.params">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">params</span></span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.params" title="Link to this definition"></a></dt>
 <dd><p>Get the parameter values registered to this TargetSpace.</p>
-<section id="id15">
-<h4>Returns<a class="headerlink" href="#id15" title="Link to this heading"></a></h4>
+<section id="id41">
+<h4>Returns<a class="headerlink" href="#id41" title="Link to this heading"></a></h4>
 <p>np.ndarray</p>
 </section>
 </dd></dl>
@@ -531,15 +1014,15 @@ values as values.</p>
 <dt class="sig sig-object py" id="bayes_opt.target_space.TargetSpace.params_to_array">
 <span class="sig-name descname"><span class="pre">params_to_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.params_to_array" title="Link to this definition"></a></dt>
 <dd><p>Convert a dict representation of parameters into an array version.</p>
-<section id="id16">
-<h4>Parameters<a class="headerlink" href="#id16" title="Link to this heading"></a></h4>
+<section id="id42">
+<h4>Parameters<a class="headerlink" href="#id42" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>params<span class="classifier">dict</span></dt><dd><p>a single point, with len(x) == self.dim.</p>
 </dd>
 </dl>
 </section>
-<section id="id17">
-<h4>Returns<a class="headerlink" href="#id17" title="Link to this heading"></a></h4>
+<section id="id43">
+<h4>Returns<a class="headerlink" href="#id43" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>np.ndarray</dt><dd><p>Representation of the parameters as an array.</p>
 </dd>
@@ -556,15 +1039,15 @@ values as values.</p>
 <p>If <cite>params</cite> has been previously seen and duplicate points are not allowed,
 returns a cached value of <cite>result</cite>.</p>
 </section>
-<section id="id18">
-<h4>Parameters<a class="headerlink" href="#id18" title="Link to this heading"></a></h4>
+<section id="id44">
+<h4>Parameters<a class="headerlink" href="#id44" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>params<span class="classifier">np.ndarray</span></dt><dd><p>a single point, with len(x) == self.dim</p>
 </dd>
 </dl>
 </section>
-<section id="id19">
-<h4>Returns<a class="headerlink" href="#id19" title="Link to this heading"></a></h4>
+<section id="id45">
+<h4>Returns<a class="headerlink" href="#id45" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>result<span class="classifier">float | Tuple(float, float)</span></dt><dd><p>target function value, or Tuple(target function value, constraint value)</p>
 </dd>
@@ -587,15 +1070,15 @@ returns a cached value of <cite>result</cite>.</p>
 <dt class="sig sig-object py" id="bayes_opt.target_space.TargetSpace.random_sample">
 <span class="sig-name descname"><span class="pre">random_sample</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.random_sample" title="Link to this definition"></a></dt>
 <dd><p>Sample a random point from within the bounds of the space.</p>
-<section id="id20">
-<h4>Returns<a class="headerlink" href="#id20" title="Link to this heading"></a></h4>
+<section id="id46">
+<h4>Returns<a class="headerlink" href="#id46" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>data: ndarray</dt><dd><p>[1 x dim] array with dimensions corresponding to <cite>self._keys</cite></p>
 </dd>
 </dl>
 </section>
-<section id="id21">
-<h4>Examples<a class="headerlink" href="#id21" title="Link to this heading"></a></h4>
+<section id="id47">
+<h4>Examples<a class="headerlink" href="#id47" title="Link to this heading"></a></h4>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">target_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">:</span> <span class="n">p1</span> <span class="o">+</span> <span class="n">p2</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pbounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;p1&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;p2&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">space</span> <span class="o">=</span> <span class="n">TargetSpace</span><span class="p">(</span><span class="n">target_func</span><span class="p">,</span> <span class="n">pbounds</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -610,8 +1093,8 @@ returns a cached value of <cite>result</cite>.</p>
 <dt class="sig sig-object py" id="bayes_opt.target_space.TargetSpace.register">
 <span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraint_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.register" title="Link to this definition"></a></dt>
 <dd><p>Append a point and its target value to the known data.</p>
-<section id="id22">
-<h4>Parameters<a class="headerlink" href="#id22" title="Link to this heading"></a></h4>
+<section id="id48">
+<h4>Parameters<a class="headerlink" href="#id48" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>params<span class="classifier">np.ndarray</span></dt><dd><p>a single point, with len(x) == self.dim.</p>
 </dd>
@@ -621,19 +1104,19 @@ returns a cached value of <cite>result</cite>.</p>
 </dd>
 </dl>
 </section>
-<section id="raises">
-<h4>Raises<a class="headerlink" href="#raises" title="Link to this heading"></a></h4>
+<section id="id49">
+<h4>Raises<a class="headerlink" href="#id49" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>NotUniqueError:</dt><dd><p>if the point is not unique</p>
 </dd>
 </dl>
 </section>
-<section id="id23">
-<h4>Notes<a class="headerlink" href="#id23" title="Link to this heading"></a></h4>
+<section id="id50">
+<h4>Notes<a class="headerlink" href="#id50" title="Link to this heading"></a></h4>
 <p>runs in amortized constant time</p>
 </section>
-<section id="id24">
-<h4>Examples<a class="headerlink" href="#id24" title="Link to this heading"></a></h4>
+<section id="id51">
+<h4>Examples<a class="headerlink" href="#id51" title="Link to this heading"></a></h4>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">target_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">:</span> <span class="n">p1</span> <span class="o">+</span> <span class="n">p2</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pbounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;p1&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;p2&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">space</span> <span class="o">=</span> <span class="n">TargetSpace</span><span class="p">(</span><span class="n">target_func</span><span class="p">,</span> <span class="n">pbounds</span><span class="p">)</span>
@@ -653,8 +1136,8 @@ returns a cached value of <cite>result</cite>.</p>
 <dt class="sig sig-object py" id="bayes_opt.target_space.TargetSpace.res">
 <span class="sig-name descname"><span class="pre">res</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.res" title="Link to this definition"></a></dt>
 <dd><p>Get all target values and constraint fulfillment for all parameters.</p>
-<section id="id25">
-<h4>Returns<a class="headerlink" href="#id25" title="Link to this heading"></a></h4>
+<section id="id52">
+<h4>Returns<a class="headerlink" href="#id52" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>res: list</dt><dd><p>A list of dictionaries with the keys ‘target’, ‘params’, and
 ‘constraint’. The value of ‘target’ is the target value, the value
@@ -664,8 +1147,8 @@ constraint fulfillment.</p>
 </dd>
 </dl>
 </section>
-<section id="id26">
-<h4>Notes<a class="headerlink" href="#id26" title="Link to this heading"></a></h4>
+<section id="id53">
+<h4>Notes<a class="headerlink" href="#id53" title="Link to this heading"></a></h4>
 <p>Does not report if points are within the bounds of the parameter space.</p>
 </section>
 </dd></dl>
@@ -674,8 +1157,8 @@ constraint fulfillment.</p>
 <dt class="sig sig-object py" id="bayes_opt.target_space.TargetSpace.set_bounds">
 <span class="sig-name descname"><span class="pre">set_bounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_bounds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.set_bounds" title="Link to this definition"></a></dt>
 <dd><p>Change the lower and upper search bounds.</p>
-<section id="id27">
-<h4>Parameters<a class="headerlink" href="#id27" title="Link to this heading"></a></h4>
+<section id="id54">
+<h4>Parameters<a class="headerlink" href="#id54" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>new_bounds<span class="classifier">dict</span></dt><dd><p>A dictionary with the parameter name and its new bounds</p>
 </dd>
@@ -687,8 +1170,8 @@ constraint fulfillment.</p>
 <dt class="sig sig-object py" id="bayes_opt.target_space.TargetSpace.target">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">target</span></span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.target" title="Link to this definition"></a></dt>
 <dd><p>Get the target function values registered to this TargetSpace.</p>
-<section id="id28">
-<h4>Returns<a class="headerlink" href="#id28" title="Link to this heading"></a></h4>
+<section id="id55">
+<h4>Returns<a class="headerlink" href="#id55" title="Link to this heading"></a></h4>
 <p>np.ndarray</p>
 </section>
 </dd></dl>
@@ -705,8 +1188,8 @@ constraint fulfillment.</p>
 <dd><p>Reduce the searchable space.</p>
 <p>A sequential domain reduction transformer based on the work by Stander, N. and Craig, K:
 “On the robustness of a simple domain reduction scheme for simulation-based optimization”</p>
-<section id="id29">
-<h3>Parameters<a class="headerlink" href="#id29" title="Link to this heading"></a></h3>
+<section id="id56">
+<h3>Parameters<a class="headerlink" href="#id56" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>gamma_osc<span class="classifier">float, default=0.7</span></dt><dd><p>Parameter used to scale (typically dampen) oscillations.</p>
 </dd>
@@ -721,8 +1204,8 @@ constraint fulfillment.</p>
 <dt class="sig sig-object py" id="bayes_opt.domain_reduction.SequentialDomainReductionTransformer.initialize">
 <span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_space</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#bayes_opt.target_space.TargetSpace" title="bayes_opt.target_space.TargetSpace"><span class="pre">TargetSpace</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#bayes_opt.domain_reduction.SequentialDomainReductionTransformer.initialize" title="Link to this definition"></a></dt>
 <dd><p>Initialize all of the parameters.</p>
-<section id="id30">
-<h4>Parameters<a class="headerlink" href="#id30" title="Link to this heading"></a></h4>
+<section id="id57">
+<h4>Parameters<a class="headerlink" href="#id57" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>target_space<span class="classifier">TargetSpace</span></dt><dd><p>TargetSpace this DomainTransformer operates on.</p>
 </dd>
@@ -734,15 +1217,15 @@ constraint fulfillment.</p>
 <dt class="sig sig-object py" id="bayes_opt.domain_reduction.SequentialDomainReductionTransformer.transform">
 <span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_space</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#bayes_opt.target_space.TargetSpace" title="bayes_opt.target_space.TargetSpace"><span class="pre">TargetSpace</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#bayes_opt.domain_reduction.SequentialDomainReductionTransformer.transform" title="Link to this definition"></a></dt>
 <dd><p>Transform the bounds of the target space.</p>
-<section id="id31">
-<h4>Parameters<a class="headerlink" href="#id31" title="Link to this heading"></a></h4>
+<section id="id58">
+<h4>Parameters<a class="headerlink" href="#id58" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>target_space<span class="classifier">TargetSpace</span></dt><dd><p>TargetSpace this DomainTransformer operates on.</p>
 </dd>
 </dl>
 </section>
-<section id="id32">
-<h4>Returns<a class="headerlink" href="#id32" title="Link to this heading"></a></h4>
+<section id="id59">
+<h4>Returns<a class="headerlink" href="#id59" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>dict</dt><dd><p>The new bounds of each parameter.</p>
 </dd>
@@ -763,8 +1246,8 @@ constraint fulfillment.</p>
 <p>This class takes the function to optimize as well as the parameters bounds
 in order to find which values for the parameters yield the maximum value
 using bayesian optimization.</p>
-<section id="id33">
-<h3>Parameters<a class="headerlink" href="#id33" title="Link to this heading"></a></h3>
+<section id="id60">
+<h3>Parameters<a class="headerlink" href="#id60" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>fun<span class="classifier">None or Callable -&gt; float or np.ndarray</span></dt><dd><p>The constraint function. Should be float-valued or array-valued (if
 multiple constraints are present). Needs to take the same parameters
@@ -780,8 +1263,8 @@ dimensionality as the return value of the constraint function.</p>
 </dd>
 </dl>
 </section>
-<section id="id34">
-<h3>Notes<a class="headerlink" href="#id34" title="Link to this heading"></a></h3>
+<section id="id61">
+<h3>Notes<a class="headerlink" href="#id61" title="Link to this heading"></a></h3>
 <p>In case of multiple constraints, this model assumes conditional
 independence. This means that for each constraint, the probability of
 fulfillment is the cdf of a univariate Gaussian. The overall probability
@@ -790,15 +1273,15 @@ is a simply the product of the individual probabilities.</p>
 <dt class="sig sig-object py" id="bayes_opt.constraint.ConstraintModel.allowed">
 <span class="sig-name descname"><span class="pre">allowed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constraint_values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.constraint.ConstraintModel.allowed" title="Link to this definition"></a></dt>
 <dd><p>Check whether <cite>constraint_values</cite> fulfills the specified limits.</p>
-<section id="id35">
-<h4>Parameters<a class="headerlink" href="#id35" title="Link to this heading"></a></h4>
+<section id="id62">
+<h4>Parameters<a class="headerlink" href="#id62" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>constraint_values<span class="classifier">np.ndarray of shape (n_samples, n_constraints)</span></dt><dd><p>The values of the constraint function.</p>
 </dd>
 </dl>
 </section>
-<section id="id36">
-<h4>Returns<a class="headerlink" href="#id36" title="Link to this heading"></a></h4>
+<section id="id63">
+<h4>Returns<a class="headerlink" href="#id63" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>np.ndarrray of shape (n_samples,)</dt><dd><p>Specifying wheter the constraints are fulfilled.</p>
 </dd>
@@ -810,15 +1293,15 @@ is a simply the product of the individual probabilities.</p>
 <dt class="sig sig-object py" id="bayes_opt.constraint.ConstraintModel.approx">
 <span class="sig-name descname"><span class="pre">approx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.constraint.ConstraintModel.approx" title="Link to this definition"></a></dt>
 <dd><p>Approximate the constraint function using the internal GPR model.</p>
-<section id="id37">
-<h4>Parameters<a class="headerlink" href="#id37" title="Link to this heading"></a></h4>
+<section id="id64">
+<h4>Parameters<a class="headerlink" href="#id64" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>X<span class="classifier">np.ndarray of shape (n_samples, n_features)</span></dt><dd><p>Parameters for which to estimate the constraint function value.</p>
 </dd>
 </dl>
 </section>
-<section id="id38">
-<h4>Returns<a class="headerlink" href="#id38" title="Link to this heading"></a></h4>
+<section id="id65">
+<h4>Returns<a class="headerlink" href="#id65" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>np.ndarray of shape (n_samples, n_constraints)</dt><dd><p>Constraint function value estimates.</p>
 </dd>
@@ -830,19 +1313,19 @@ is a simply the product of the individual probabilities.</p>
 <dt class="sig sig-object py" id="bayes_opt.constraint.ConstraintModel.eval">
 <span class="sig-name descname"><span class="pre">eval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.constraint.ConstraintModel.eval" title="Link to this definition"></a></dt>
 <dd><p>Evaluate the constraint function.</p>
-<section id="id39">
-<h4>Parameters<a class="headerlink" href="#id39" title="Link to this heading"></a></h4>
+<section id="id66">
+<h4>Parameters<a class="headerlink" href="#id66" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>**kwargs :</dt><dd><p>Function arguments to evaluate the constraint function on.</p>
 </dd>
 </dl>
 </section>
-<section id="id40">
-<h4>Returns<a class="headerlink" href="#id40" title="Link to this heading"></a></h4>
+<section id="id67">
+<h4>Returns<a class="headerlink" href="#id67" title="Link to this heading"></a></h4>
 <p>Value of the constraint function.</p>
 </section>
-<section id="id41">
-<h4>Raises<a class="headerlink" href="#id41" title="Link to this heading"></a></h4>
+<section id="id68">
+<h4>Raises<a class="headerlink" href="#id68" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>TypeError</dt><dd><p>If the kwargs’ keys don’t match the function argument names.</p>
 </dd>
@@ -854,8 +1337,8 @@ is a simply the product of the individual probabilities.</p>
 <dt class="sig sig-object py" id="bayes_opt.constraint.ConstraintModel.fit">
 <span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.constraint.ConstraintModel.fit" title="Link to this definition"></a></dt>
 <dd><p>Fit internal GPRs to the data.</p>
-<section id="id42">
-<h4>Parameters<a class="headerlink" href="#id42" title="Link to this heading"></a></h4>
+<section id="id69">
+<h4>Parameters<a class="headerlink" href="#id69" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>X :</dt><dd><p>Parameters of the constraint function.</p>
 </dd>
@@ -863,8 +1346,8 @@ is a simply the product of the individual probabilities.</p>
 </dd>
 </dl>
 </section>
-<section id="id43">
-<h4>Returns<a class="headerlink" href="#id43" title="Link to this heading"></a></h4>
+<section id="id70">
+<h4>Returns<a class="headerlink" href="#id70" title="Link to this heading"></a></h4>
 <p>None</p>
 </section>
 </dd></dl>
@@ -900,16 +1383,16 @@ respectively.</p>
 <p>In case of multiple constraints, we assume conditional independence.
 This means we calculate the probability of constraint fulfilment
 individually, with the joint probability given as their product.</p>
-<section id="id44">
-<h4>Parameters<a class="headerlink" href="#id44" title="Link to this heading"></a></h4>
+<section id="id71">
+<h4>Parameters<a class="headerlink" href="#id71" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>X<span class="classifier">np.ndarray of shape (n_samples, n_features)</span></dt><dd><p>Parameters for which to predict the probability of constraint
 fulfilment.</p>
 </dd>
 </dl>
 </section>
-<section id="id45">
-<h4>Returns<a class="headerlink" href="#id45" title="Link to this heading"></a></h4>
+<section id="id72">
+<h4>Returns<a class="headerlink" href="#id72" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>np.ndarray of shape (n_samples,)</dt><dd><p>Probability of constraint fulfilment.</p>
 </dd>
