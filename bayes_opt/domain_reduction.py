@@ -7,6 +7,7 @@ simple domain reduction scheme for simulation-based optimization"
 
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from warnings import warn
 
 import numpy as np
@@ -14,16 +15,19 @@ import numpy as np
 from bayes_opt.target_space import TargetSpace
 
 
-class DomainTransformer:
+class DomainTransformer(ABC):
     """Base class."""
 
+    @abstractmethod
     def __init__(self, **kwargs) -> None:
         """To override with specific implementation."""
 
+    @abstractmethod
     def initialize(self, target_space: TargetSpace) -> None:
         """To override with specific implementation."""
         raise NotImplementedError
 
+    @abstractmethod
     def transform(self, target_space: TargetSpace) -> dict:
         """To override with specific implementation."""
         raise NotImplementedError

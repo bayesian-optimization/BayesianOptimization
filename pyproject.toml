@@ -46,5 +46,4 @@ build-backend = "poetry.core.masonry.api"
 exclude_lines = [
     "pragma: no cover",
     "if TYPE_CHECKING:",
-    "raise NotImplementedError",
 ]
