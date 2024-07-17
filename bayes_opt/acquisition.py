@@ -6,7 +6,7 @@ import abc
 import warnings
 from copy import deepcopy
 from numbers import Number
-from typing import Callable
+from typing import TYPE_CHECKING, Callable
 
 import numpy as np
 from numpy.random import RandomState
@@ -14,10 +14,12 @@ from scipy.optimize import minimize
 from scipy.special import softmax
 from scipy.stats import norm
 from sklearn.gaussian_process import GaussianProcessRegressor
-from typing import Callable, List, Union, Tuple
-from copy import deepcopy
-from numbers import Number
+
 from .util import ConstraintNotSupportedError, NoValidPointRegisteredError, TargetSpaceEmptyError
+
+if TYPE_CHECKING:
+    from bayes_opt.constraint import ConstraintModel
+    from bayes_opt.target_space import TargetSpace
 
 
 class AcquisitionFunction(abc.ABC):
@@ -361,18 +363,21 @@ class UpperConfidenceBound(AcquisitionFunction):
                 "does not support constrained optimization."
             )
             raise ConstraintNotSupportedError(msg)
-        x_max = super().suggest(gp=gp, target_space=target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=fit_gp)
+        x_max = super().suggest(
+            gp=gp, target_space=target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=fit_gp
+        )
         self.decay_exploration()
         return x_max
-    
+
     def decay_exploration(self) -> None:
         """Decay kappa by a constant rate.
 
         Adjust exploration/exploitation trade-off by reducing kappa.
         """
-        if self.exploration_decay is not None:
-            if self.exploration_decay_delay is None or self.exploration_decay_delay <= self.i:
-                self.kappa = self.kappa * self.exploration_decay
+        if self.exploration_decay is not None and (
+            self.exploration_decay_delay is None or self.exploration_decay_delay <= self.i
+        ):
+            self.kappa = self.kappa * self.exploration_decay
 
 
 class ProbabilityOfImprovement(AcquisitionFunction):
@@ -480,7 +485,9 @@ class ProbabilityOfImprovement(AcquisitionFunction):
             )
             raise NoValidPointRegisteredError(msg)
         self.y_max = y_max
-        x_max = super().suggest(gp=gp, target_space=target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=fit_gp)
+        x_max = super().suggest(
+            gp=gp, target_space=target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=fit_gp
+        )
         self.decay_exploration()
         return x_max
 
@@ -489,9 +496,10 @@ class ProbabilityOfImprovement(AcquisitionFunction):
 
         Adjust exploration/exploitation trade-off by reducing xi.
         """
-        if self.exploration_decay is not None:
-            if self.exploration_decay_delay is None or self.exploration_decay_delay <= self.i:
-                self.xi = self.xi * self.exploration_decay
+        if self.exploration_decay is not None and (
+            self.exploration_decay_delay is None or self.exploration_decay_delay <= self.i
+        ):
+            self.xi = self.xi * self.exploration_decay
 
 
 class ExpectedImprovement(AcquisitionFunction):
@@ -607,7 +615,9 @@ class ExpectedImprovement(AcquisitionFunction):
             raise NoValidPointRegisteredError(msg)
         self.y_max = y_max
 
-        x_max = super().suggest(gp=gp, target_space=target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=fit_gp)
+        x_max = super().suggest(
+            gp=gp, target_space=target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=fit_gp
+        )
         self.decay_exploration()
         return x_max
 
@@ -616,9 +626,10 @@ class ExpectedImprovement(AcquisitionFunction):
 
         Adjust exploration/exploitation trade-off by reducing xi.
         """
-        if self.exploration_decay is not None:
-            if self.exploration_decay_delay is None or self.exploration_decay_delay <= self.i:
-                self.xi = self.xi * self.exploration_decay
+        if self.exploration_decay is not None and (
+            self.exploration_decay_delay is None or self.exploration_decay_delay <= self.i
+        ):
+            self.xi = self.xi * self.exploration_decay
 
 
 class ConstantLiar(AcquisitionFunction):
