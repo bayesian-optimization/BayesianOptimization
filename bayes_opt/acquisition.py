@@ -12,23 +12,7 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from typing import Callable, List, Union, Tuple
 from copy import deepcopy
 from numbers import Number
-
-class ConstraintNotSupportedError(Exception):
-    """Raised when constrained optimization is not supported."""
-
-    pass
-
-
-class NoValidPointRegisteredError(Exception):
-    """Raised when an acquisition function depends on previous points but none are registered."""
-
-    pass
-
-
-class TargetSpaceEmptyError(Exception):
-    """Raised when the target space is empty."""
-
-    pass
+from .util import ConstraintNotSupportedError, NoValidPointRegisteredError, TargetSpaceEmptyError
 
 
 class AcquisitionFunction(abc.ABC):
@@ -102,9 +86,7 @@ class AcquisitionFunction(abc.ABC):
             self._fit_gp(gp=gp, target_space=target_space)
 
         acq = self._get_acq(gp=gp, constraint=target_space.constraint)
-        x_max = self._acq_min(acq, target_space.bounds, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b)
-        self._update_params()
-        return x_max
+        return self._acq_min(acq, target_space.bounds, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b)
 
     def _get_acq(self, gp: GaussianProcessRegressor, constraint: Union[ConstraintModel, None] = None) -> Callable:
         """Prepare the acquisition function for minimization.
@@ -269,10 +251,6 @@ class AcquisitionFunction(abc.ABC):
         # point technicalities this is not always the case.
         return np.clip(x_min, bounds[:, 0], bounds[:, 1]), min_acq
 
-    def _update_params(self) -> None:
-        """Update the parameters of the acquisition function."""
-        pass
-
 
 class UpperConfidenceBound(AcquisitionFunction):
     r"""Upper Confidence Bound acquisition function.
@@ -357,10 +335,15 @@ class UpperConfidenceBound(AcquisitionFunction):
                 + "does not support constrained optimization."
             )
             raise ConstraintNotSupportedError(msg)
-        return super().suggest(gp=gp, target_space=target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=fit_gp)
+        x_max = super().suggest(gp=gp, target_space=target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=fit_gp)
+        self.decay_exploration()
+        return x_max
     
-    def _update_params(self) -> None:
-        """Update the parameters of the acquisition function."""
+    def decay_exploration(self) -> None:
+        """Decay kappa by a constant rate.
+
+        Adjust exploration/exploitation trade-off by reducing kappa.
+        """
         if self.exploration_decay is not None:
             if self.exploration_decay_delay is None or self.exploration_decay_delay <= self.i:
                 self.kappa = self.kappa*self.exploration_decay
@@ -463,10 +446,15 @@ class ProbabilityOfImprovement(AcquisitionFunction):
             )
             raise NoValidPointRegisteredError(msg)
         self.y_max = y_max
-        return super().suggest(gp=gp, target_space=target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=fit_gp)
+        x_max = super().suggest(gp=gp, target_space=target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=fit_gp)
+        self.decay_exploration()
+        return x_max
 
-    def _update_params(self) -> None:
-        """Update the parameters of the acquisition function."""
+    def decay_exploration(self) -> None:
+        r"""Decay xi by a constant rate.
+
+        Adjust exploration/exploitation trade-off by reducing xi.
+        """
         if self.exploration_decay is not None:
             if self.exploration_decay_delay is None or self.exploration_decay_delay <= self.i:
                 self.xi = self.xi*self.exploration_decay
@@ -578,10 +566,15 @@ class ExpectedImprovement(AcquisitionFunction):
             raise NoValidPointRegisteredError(msg)
         self.y_max = y_max
 
-        return super().suggest(gp=gp, target_space=target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=fit_gp)
+        x_max = super().suggest(gp=gp, target_space=target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b, fit_gp=fit_gp)
+        self.decay_exploration()
+        return x_max
 
-    def _update_params(self) -> None:
-        """Update the parameters of the acquisition function."""
+    def decay_exploration(self) -> None:
+        r"""Decay xi by a constant rate.
+
+        Adjust exploration/exploitation trade-off by reducing xi.
+        """
         if self.exploration_decay is not None:
             if self.exploration_decay_delay is None or self.exploration_decay_delay <= self.i:
                 self.xi = self.xi*self.exploration_decay

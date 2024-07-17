@@ -7,6 +7,24 @@ class NotUniqueError(Exception):
     """A point is non-unique."""
 
 
+class ConstraintNotSupportedError(Exception):
+    """Raised when constrained optimization is not supported."""
+
+    pass
+
+
+class NoValidPointRegisteredError(Exception):
+    """Raised when an acquisition function depends on previous points but none are registered."""
+
+    pass
+
+
+class TargetSpaceEmptyError(Exception):
+    """Raised when the target space is empty."""
+
+    pass
+
+
 def load_logs(optimizer, logs):
     """Load previous ...
 
