@@ -154,7 +154,7 @@ class ScreenLogger(_Tracker):
         A stringified, formatted version of the most recent optimization step.
         """
         res = instance.res[-1]
-        cells: list[str | None] = [None, None, None, None]
+        cells: list[str | None] = [None] * 4
 
         cells[:2] = self._format_number(self._iterations + 1), self._format_number(res["target"])
         if self._is_constrained:
@@ -177,7 +177,7 @@ class ScreenLogger(_Tracker):
         -------
         A stringified, formatted version of the most header.
         """
-        cells: list[str | None] = [None, None, None, None]
+        cells: list[str | None] = [None] * 4
 
         cells[:2] = self._format_key("iter"), self._format_key("target")
         if self._is_constrained:

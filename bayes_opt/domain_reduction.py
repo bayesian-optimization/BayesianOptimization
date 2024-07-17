@@ -25,12 +25,10 @@ class DomainTransformer(ABC):
     @abstractmethod
     def initialize(self, target_space: TargetSpace) -> None:
         """To override with specific implementation."""
-        raise NotImplementedError
 
     @abstractmethod
     def transform(self, target_space: TargetSpace) -> dict:
         """To override with specific implementation."""
-        raise NotImplementedError
 
 
 class SequentialDomainReductionTransformer(DomainTransformer):
