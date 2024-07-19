@@ -41,16 +41,19 @@ _OPTIMIZER = BayesianOptimization(
 )
 
 
-async def calculate_register_data(register_data: dict[str, Any]) -> dict[str, Any]:
-    with ThreadPoolExecutor(1) as pool:
-        with suppress(KeyError):
-            params, target = register_data["params"], register_data["target"]
-            future = pool.submit(_OPTIMIZER.register, params=params, target=target)
+async def calculate_register_data(
+    register_data: dict[str, Any], lock: asyncio.Lock
+) -> dict[str, Any]:
+    async with lock:
+        with ThreadPoolExecutor(1) as pool:
+            with suppress(KeyError):
+                params, target = register_data["params"], register_data["target"]
+                future = pool.submit(_OPTIMIZER.register, params=params, target=target)
+                awaitable = asyncio.wrap_future(future)
+                await awaitable
+            future = pool.submit(_OPTIMIZER.suggest)
             awaitable = asyncio.wrap_future(future)
-            await awaitable
-        future = pool.submit(_OPTIMIZER.suggest)
-        awaitable = asyncio.wrap_future(future)
-        return await awaitable
+            return await awaitable
 
 
 async def run_optimizer_per_config_process(register_data: dict[str, Any]) -> float:
@@ -61,7 +64,9 @@ async def run_optimizer_per_config_process(register_data: dict[str, Any]) -> flo
 
 
 async def run_optimizer_per_config(
-    config: dict[str, str], result: asyncio.Queue[tuple[str, float | None]]
+    config: dict[str, str],
+    result: asyncio.Queue[tuple[str, float | None]],
+    lock: asyncio.Lock,
 ) -> None:
     name, colour = config["name"], config["colour"]
 
@@ -70,7 +75,7 @@ async def run_optimizer_per_config(
     for _ in range(10):
         status = name + f" wants to register: {register_data}.\n"
 
-        register_data["params"] = await calculate_register_data(register_data)
+        register_data["params"] = await calculate_register_data(register_data, lock)
         target = register_data["target"] = await run_optimizer_per_config_process(
             register_data
         )
@@ -107,8 +112,11 @@ async def wait(awaitable: Awaitable[Any], event: asyncio.Event) -> None:
 
 async def main() -> None:
     result_queue = asyncio.Queue(len(OPTIMIZERS_CONFIG))
+    lock = asyncio.Lock()
+
     coro1, coro2, coro3 = (
-        run_optimizer_per_config(config, result_queue) for config in OPTIMIZERS_CONFIG
+        run_optimizer_per_config(config, result_queue, lock)
+        for config in OPTIMIZERS_CONFIG
     )
     gather_coro = asyncio.gather(coro1, coro2, coro3)
     event = asyncio.Event()
