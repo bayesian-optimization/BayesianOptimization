@@ -1,20 +1,21 @@
-# ruff: noqa: D401,D103
+# ruff: noqa: D401,D103,D101,D102
 """obtained from https://github.com/bayesian-optimization/BayesianOptimization/blob/v1.4.3/examples/async_optimization.py."""
 
 from __future__ import annotations
 
-import json
 import asyncio
-import threading
+import json
+import multiprocessing
 import secrets
+import threading
 import time
-from urllib.error import URLError
+from collections.abc import Awaitable
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import suppress
-from typing import Any, Awaitable
-from http.server import BaseHTTPRequestHandler, HTTPServer
 from http.client import HTTPResponse
-import multiprocessing
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from typing import Any
+from urllib.error import URLError
 from urllib.request import Request, urlopen
 
 from colorama import Fore
@@ -75,17 +76,13 @@ class BayesianOptimizationHandler(BaseHTTPRequestHandler):
     def _register(self, params: dict[str, Any]) -> dict[str, Any]:
         with self._lock:
             with suppress(KeyError):
-                self._optimizer.register(
-                    params=params["params"], target=params["target"]
-                )
+                self._optimizer.register(params=params["params"], target=params["target"])
             return self._optimizer.suggest()
 
 
 def run_server() -> None:
     server_address = (HOST, PORT)
-    httpd = HTTPServer(
-        server_address, BayesianOptimizationHandler, bind_and_activate=True
-    )
+    httpd = HTTPServer(server_address, BayesianOptimizationHandler, bind_and_activate=True)
     httpd.serve_forever()
 
 
@@ -94,21 +91,17 @@ def ping_to_server(max_try_count: int) -> bool:
     response: HTTPResponse
     for _ in range(max_try_count):
         try:
-            with urlopen(request, timeout=10) as response:
+            with urlopen(request, timeout=10) as response:  # noqa: S310
                 return response.status == 200
-        except URLError:
+        except URLError:  # noqa: PERF203
             time.sleep(1)
     return False
 
 
 def reqeust_to_server(data: bytes) -> bytes:
-    request = Request(
-        f"http://{HOST}:{PORT}/",
-        method="POST",
-        headers={"Content-Type": "application/json"},
-    )
+    request = Request(f"http://{HOST}:{PORT}/", method="POST", headers={"Content-Type": "application/json"})
     response: HTTPResponse
-    with urlopen(request, data=data, timeout=10) as response:
+    with urlopen(request, data=data, timeout=10) as response:  # noqa: S310
         return response.read()
 
 
@@ -129,8 +122,7 @@ async def run_optimizer_per_config_process(register_data: dict[str, Any]) -> flo
 
 
 async def run_optimizer_per_config(
-    config: dict[str, str],
-    result: asyncio.Queue[tuple[str, float | None]],
+    config: dict[str, str], result: asyncio.Queue[tuple[str, float | None]]
 ) -> None:
     name, colour = config["name"], config["colour"]
 
@@ -140,9 +132,7 @@ async def run_optimizer_per_config(
         status = name + f" wants to register: {register_data}.\n"
 
         register_data["params"] = await calculate_register_data(register_data)
-        target = register_data["target"] = await run_optimizer_per_config_process(
-            register_data
-        )
+        target = register_data["target"] = await run_optimizer_per_config_process(register_data)
 
         if max_target is None or target > max_target:
             max_target = target
@@ -177,9 +167,7 @@ async def wait(awaitable: Awaitable[Any], event: asyncio.Event) -> None:
 async def main() -> None:
     result_queue = asyncio.Queue(len(OPTIMIZERS_CONFIG))
 
-    coro1, coro2, coro3 = (
-        run_optimizer_per_config(config, result_queue) for config in OPTIMIZERS_CONFIG
-    )
+    coro1, coro2, coro3 = (run_optimizer_per_config(config, result_queue) for config in OPTIMIZERS_CONFIG)
     gather_coro = asyncio.gather(coro1, coro2, coro3)
     event = asyncio.Event()
 
@@ -194,7 +182,8 @@ if __name__ == "__main__":
     server.start()
     try:
         if not ping_to_server(MAX_TRY_COUNT):
-            raise RuntimeError("Server is not running.")
+            error_msg = "Server is not running."
+            raise RuntimeError(error_msg)
         asyncio.run(main())
     finally:
         server.terminate()
