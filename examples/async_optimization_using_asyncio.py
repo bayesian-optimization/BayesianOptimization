@@ -83,7 +83,7 @@ async def run_optimizer_per_config(
 
 
 async def consume_results(result_queue: asyncio.Queue[tuple[str, float | None]]) -> None:
-    while result_queue.empty():
+    while not result_queue.empty():
         result = await result_queue.get()
         print(result[0], f"found a maximum value of: {result[1]}")
 
