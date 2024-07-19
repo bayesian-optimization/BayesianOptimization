@@ -8,7 +8,7 @@ import secrets
 import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import suppress
-from typing import Any
+from typing import Any, Awaitable
 
 from colorama import Fore
 
@@ -35,7 +35,9 @@ def black_box_function(x: float, y: float) -> float:
 
 _ACQUISITION = UpperConfidenceBound(kappa=3)
 _OPTIMIZER = BayesianOptimization(
-    f=black_box_function, acquisition_function=_ACQUISITION, pbounds={"x": (-4, 4), "y": (-3, 3)}
+    f=black_box_function,
+    acquisition_function=_ACQUISITION,
+    pbounds={"x": (-4, 4), "y": (-3, 3)},
 )
 
 
@@ -69,7 +71,9 @@ async def run_optimizer_per_config(
         status = name + f" wants to register: {register_data}.\n"
 
         register_data["params"] = await calculate_register_data(register_data)
-        target = register_data["target"] = await run_optimizer_per_config_process(register_data)
+        target = register_data["target"] = await run_optimizer_per_config_process(
+            register_data
+        )
 
         if max_target is None or target > max_target:
             max_target = target
@@ -82,18 +86,37 @@ async def run_optimizer_per_config(
     print(colour + name + " is done!", end="\n\n")
 
 
-async def consume_results(result_queue: asyncio.Queue[tuple[str, float | None]]) -> None:
-    while not result_queue.empty():
-        result = await result_queue.get()
-        print(result[0], f"found a maximum value of: {result[1]}")
+async def consume_results(
+    result_queue: asyncio.Queue[tuple[str, float | None]], event: asyncio.Event
+) -> None:
+    while not event.is_set() or not result_queue.empty():
+        result = result_queue.get()
+        task = asyncio.create_task(result)
+        try:
+            result = await asyncio.wait_for(task, timeout=5)
+        except (TimeoutError, asyncio.TimeoutError):
+            task.cancel()
+        else:
+            print(result[0], f"found a maximum value of: {result[1]}")
+
+
+async def wait(awaitable: Awaitable[Any], event: asyncio.Event) -> None:
+    await awaitable
+    event.set()
 
 
 async def main() -> None:
     result_queue = asyncio.Queue(len(OPTIMIZERS_CONFIG))
-    coro1, coro2, coro3 = (run_optimizer_per_config(config, result_queue) for config in OPTIMIZERS_CONFIG)
-    gather = asyncio.gather(coro1, coro2, coro3)
-    await gather
-    await consume_results(result_queue)
+    coro1, coro2, coro3 = (
+        run_optimizer_per_config(config, result_queue) for config in OPTIMIZERS_CONFIG
+    )
+    gather_coro = asyncio.gather(coro1, coro2, coro3)
+    event = asyncio.Event()
+
+    gather_with_event = wait(gather_coro, event)
+    consume = consume_results(result_queue, event)
+
+    await asyncio.gather(gather_with_event, consume)
 
 
 if __name__ == "__main__":
