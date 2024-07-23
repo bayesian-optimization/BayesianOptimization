@@ -410,7 +410,7 @@ class TargetSpace:
         >>> pbounds = {"p1": (0, 1), "p2": (1, 100)}
         >>> space = TargetSpace(target_func, pbounds, random_state=0)
         >>> space.random_sample()
-        array([[ 55.33253689,   0.54488318]])
+        array([[ 0.54488318,   55.33253689]])
         """
         data = np.empty((1, self.dim))
         for col, (lower, upper) in enumerate(self._bounds):
