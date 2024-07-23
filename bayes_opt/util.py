@@ -1,5 +1,10 @@
 """Contains utility functions."""
+
+from __future__ import annotations
+
 import json
+from pathlib import Path
+
 import numpy as np
 
 
@@ -10,19 +15,13 @@ class NotUniqueError(Exception):
 class ConstraintNotSupportedError(Exception):
     """Raised when constrained optimization is not supported."""
 
-    pass
-
 
 class NoValidPointRegisteredError(Exception):
     """Raised when an acquisition function depends on previous points but none are registered."""
 
-    pass
-
 
 class TargetSpaceEmptyError(Exception):
     """Raised when the target space is empty."""
-
-    pass
 
 
 def load_logs(optimizer, logs):
@@ -39,13 +38,13 @@ def load_logs(optimizer, logs):
     Returns
     -------
     The optimizer with the state loaded.
-    
+
     """
     if isinstance(logs, str):
         logs = [logs]
 
     for log in logs:
-        with open(log, "r") as j:
+        with Path(log).open("r") as j:
             while True:
                 try:
                     iteration = next(j)
@@ -57,10 +56,7 @@ def load_logs(optimizer, logs):
                     optimizer.register(
                         params=iteration["params"],
                         target=iteration["target"],
-                        constraint_value=(
-                            iteration["constraint"]
-                            if optimizer.is_constrained else None
-                        )
+                        constraint_value=(iteration["constraint"] if optimizer.is_constrained else None),
                     )
                 except NotUniqueError:
                     continue
@@ -81,13 +77,13 @@ def ensure_rng(random_state=None):
     Returns
     -------
     np.random.RandomState
-    
+
     """
     if random_state is None:
         random_state = np.random.RandomState()
     elif isinstance(random_state, int):
         random_state = np.random.RandomState(random_state)
-    else:
-        assert isinstance(random_state, np.random.RandomState)
+    elif not isinstance(random_state, np.random.RandomState):
+        error_msg = "random_state should be an instance of np.random.RandomState, an int, or None."
+        raise TypeError(error_msg)
     return random_state
-
