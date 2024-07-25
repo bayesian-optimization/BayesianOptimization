@@ -6,7 +6,7 @@ function over a specific target space.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Protocol
 
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
@@ -22,11 +22,23 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Mapping, Sequence
 
     import numpy as np
-    from numpy.typing import NDArray
+    from numpy.typing import ArrayLike, NDArray
 
     from bayes_opt.acquisition import AcquisitionFunction
     from bayes_opt.constraint import ConstraintModel
     from bayes_opt.domain_reduction import DomainTransformer
+
+    class Constraint(Protocol):
+        """Compatibility for scipy constraints.
+
+        see more: scipy.optimize.NonlinearConstraint
+        """
+
+        lb: ArrayLike
+        ub: ArrayLike
+
+        def fun(self, x: ArrayLike) -> ArrayLike:  # noqa: D102
+            ...
 
     Float = np.floating[Any]
 
@@ -146,7 +158,7 @@ class BayesianOptimization(Observable):
         f: Callable[..., float],
         pbounds: Mapping[str, tuple[float, float]],
         acquisition_function: AcquisitionFunction | None = None,
-        constraint: ConstraintModel | None = None,
+        constraint: Constraint | None = None,
         random_state: int | np.random.RandomState | None = None,
         verbose: int = 2,
         bounds_transformer: DomainTransformer | None = None,
