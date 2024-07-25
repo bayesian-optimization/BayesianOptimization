@@ -19,18 +19,19 @@ class _Tracker:
         self._start_time = None
         self._previous_time = None
 
-    def _update_tracker(self, event, instance):
+    def _update_tracker(self, event: str | Events, instance):
         """Update the tracker.
 
         Parameters
         ----------
-        event : str
+        event : str or Events
             One of the values associated with `Events.OPTIMIZATION_START`,
             `Events.OPTIMIZATION_STEP` or `Events.OPTIMIZATION_END`.
 
         instance : bayesian_optimization.BayesianOptimization
             The instance associated with the step.
         """
+        event = Events(event)
         if event == Events.OPTIMIZATION_STEP:
             self._iterations += 1
 
