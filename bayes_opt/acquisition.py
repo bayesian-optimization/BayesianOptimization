@@ -24,7 +24,7 @@ import abc
 import warnings
 from copy import deepcopy
 from numbers import Number
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Any, Literal, NoReturn, overload
 
 import numpy as np
 from numpy.random import RandomState
@@ -41,7 +41,14 @@ from bayes_opt.exception import (
 from bayes_opt.target_space import TargetSpace
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from numpy.typing import NDArray
+    from scipy.optimize import OptimizeResult
+
     from bayes_opt.constraint import ConstraintModel
+
+    Float = np.floating[Any]
 
 
 class AcquisitionFunction(abc.ABC):
@@ -53,7 +60,7 @@ class AcquisitionFunction(abc.ABC):
         Set the random state for reproducibility.
     """
 
-    def __init__(self, random_state=None):
+    def __init__(self, random_state: int | RandomState | None = None):
         if random_state is not None:
             if isinstance(random_state, RandomState):
                 self.random_state = random_state
@@ -64,7 +71,7 @@ class AcquisitionFunction(abc.ABC):
         self.i = 0
 
     @abc.abstractmethod
-    def base_acq(self, *args, **kwargs):
+    def base_acq(self, *args: Any, **kwargs: Any) -> NDArray[Float]:
         """Provide access to the base acquisition function."""
 
     def _fit_gp(self, gp: GaussianProcessRegressor, target_space: TargetSpace) -> None:
@@ -80,8 +87,8 @@ class AcquisitionFunction(abc.ABC):
         self,
         gp: GaussianProcessRegressor,
         target_space: TargetSpace,
-        n_random=10_000,
-        n_l_bfgs_b=10,
+        n_random: int = 10_000,
+        n_l_bfgs_b: int = 10,
         fit_gp: bool = True,
     ):
         """Suggest a promising point to probe next.
@@ -123,7 +130,9 @@ class AcquisitionFunction(abc.ABC):
         acq = self._get_acq(gp=gp, constraint=target_space.constraint)
         return self._acq_min(acq, target_space.bounds, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b)
 
-    def _get_acq(self, gp: GaussianProcessRegressor, constraint: ConstraintModel | None = None) -> Callable:
+    def _get_acq(
+        self, gp: GaussianProcessRegressor, constraint: ConstraintModel | None = None
+    ) -> Callable[[NDArray[Float]], NDArray[Float]]:
         """Prepare the acquisition function for minimization.
 
         Transforms a base_acq Callable, which takes `mean` and `std` as
@@ -148,25 +157,36 @@ class AcquisitionFunction(abc.ABC):
         dim = gp.X_train_.shape[1]
         if constraint is not None:
 
-            def acq(x):
+            def acq(x: NDArray[Float]) -> NDArray[Float]:
                 x = x.reshape(-1, dim)
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore")
+                    mean: NDArray[Float]
+                    std: NDArray[Float]
+                    p_constraints: NDArray[Float]
                     mean, std = gp.predict(x, return_std=True)
                     p_constraints = constraint.predict(x)
                 return -1 * self.base_acq(mean, std) * p_constraints
         else:
 
-            def acq(x):
+            def acq(x: NDArray[Float]) -> NDArray[Float]:
                 x = x.reshape(-1, dim)
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore")
+                    mean: NDArray[Float]
+                    std: NDArray[Float]
                     mean, std = gp.predict(x, return_std=True)
                 return -1 * self.base_acq(mean, std)
 
         return acq
 
-    def _acq_min(self, acq: Callable, bounds: np.ndarray, n_random=10_000, n_l_bfgs_b=10) -> np.ndarray:
+    def _acq_min(
+        self,
+        acq: Callable[[NDArray[Float]], NDArray[Float]],
+        bounds: NDArray[Float],
+        n_random: int = 10_000,
+        n_l_bfgs_b: int = 10,
+    ) -> NDArray[Float]:
         """Find the maximum of the acquisition function.
 
         Uses a combination of random sampling (cheap) and the 'L-BFGS-B'
@@ -198,15 +218,28 @@ class AcquisitionFunction(abc.ABC):
         if n_random == 0 and n_l_bfgs_b == 0:
             error_msg = "Either n_random or n_l_bfgs_b needs to be greater than 0."
             raise ValueError(error_msg)
+        x_min_r: NDArray[Float] | None
+        x_min_l: NDArray[Float] | None
+        min_acq_r: float
+        min_acq_l: float
         x_min_r, min_acq_r = self._random_sample_minimize(acq, bounds, n_random=n_random)
         x_min_l, min_acq_l = self._l_bfgs_b_minimize(acq, bounds, n_x_seeds=n_l_bfgs_b)
+        # Either n_random or n_l_bfgs_b is not 0 => at least one of x_min_r and x_min_l is not None
         if min_acq_r < min_acq_l:
             return x_min_r
         return x_min_l
 
+    @overload
     def _random_sample_minimize(
-        self, acq: Callable, bounds: np.ndarray, n_random: int
-    ) -> tuple[np.ndarray, float]:
+        self, acq: Callable[[NDArray[Float]], NDArray[Float]], bounds: NDArray[Float], n_random: Literal[0]
+    ) -> tuple[None, float]: ...
+    @overload
+    def _random_sample_minimize(
+        self, acq: Callable[[NDArray[Float]], NDArray[Float]], bounds: NDArray[Float], n_random: int
+    ) -> tuple[NDArray[Float] | None, float]: ...
+    def _random_sample_minimize(
+        self, acq: Callable[[NDArray[Float]], NDArray[Float]], bounds: NDArray[Float], n_random: int
+    ) -> tuple[NDArray[Float] | None, float]:
         """Random search to find the minimum of `acq` function.
 
         Parameters
@@ -238,9 +271,17 @@ class AcquisitionFunction(abc.ABC):
         min_acq = ys.min()
         return x_min, min_acq
 
+    @overload
     def _l_bfgs_b_minimize(
-        self, acq: Callable, bounds: np.ndarray, n_x_seeds: int = 10
-    ) -> tuple[np.ndarray, float]:
+        self, acq: Callable[[NDArray[Float]], NDArray[Float]], bounds: NDArray[Float], n_x_seeds: Literal[0]
+    ) -> tuple[None, float]: ...
+    @overload
+    def _l_bfgs_b_minimize(
+        self, acq: Callable[[NDArray[Float]], NDArray[Float]], bounds: NDArray[Float], n_x_seeds: int = ...
+    ) -> tuple[NDArray[Float] | None, float]: ...
+    def _l_bfgs_b_minimize(
+        self, acq: Callable[[NDArray[Float]], NDArray[Float]], bounds: NDArray[Float], n_x_seeds: int = 10
+    ) -> tuple[NDArray[Float] | None, float]:
         """Random search to find the minimum of `acq` function.
 
         Parameters
@@ -268,10 +309,12 @@ class AcquisitionFunction(abc.ABC):
             return None, np.inf
         x_seeds = self.random_state.uniform(bounds[:, 0], bounds[:, 1], size=(n_x_seeds, bounds.shape[0]))
 
-        min_acq = None
+        min_acq: float | None = None
+        x_try: NDArray[Float]
+        x_min: NDArray[Float]
         for x_try in x_seeds:
             # Find the minimum of minus the acquisition function
-            res = minimize(acq, x_try, bounds=bounds, method="L-BFGS-B")
+            res: OptimizeResult = minimize(acq, x_try, bounds=bounds, method="L-BFGS-B")
 
             # See if success
             if not res.success:
@@ -317,7 +360,11 @@ class UpperConfidenceBound(AcquisitionFunction):
     """
 
     def __init__(
-        self, kappa=2.576, exploration_decay=None, exploration_decay_delay=None, random_state=None
+        self,
+        kappa: float = 2.576,
+        exploration_decay: float | None = None,
+        exploration_decay_delay: int | None = None,
+        random_state: int | RandomState | None = None,
     ) -> None:
         if kappa < 0:
             error_msg = "kappa must be greater than or equal to 0."
@@ -328,7 +375,7 @@ class UpperConfidenceBound(AcquisitionFunction):
         self.exploration_decay = exploration_decay
         self.exploration_decay_delay = exploration_decay_delay
 
-    def base_acq(self, mean, std):
+    def base_acq(self, mean: NDArray[Float], std: NDArray[Float]) -> NDArray[Float]:
         """Calculate the upper confidence bound.
 
         Parameters
@@ -350,10 +397,10 @@ class UpperConfidenceBound(AcquisitionFunction):
         self,
         gp: GaussianProcessRegressor,
         target_space: TargetSpace,
-        n_random=10_000,
-        n_l_bfgs_b=10,
+        n_random: int = 10_000,
+        n_l_bfgs_b: int = 10,
         fit_gp: bool = True,
-    ) -> np.ndarray:
+    ) -> NDArray[Float]:
         """Suggest a promising point to probe next.
 
         Parameters
@@ -432,14 +479,20 @@ class ProbabilityOfImprovement(AcquisitionFunction):
         Set the random state for reproducibility.
     """
 
-    def __init__(self, xi, exploration_decay=None, exploration_decay_delay=None, random_state=None) -> None:
+    def __init__(
+        self,
+        xi: float,
+        exploration_decay: float | None = None,
+        exploration_decay_delay: int | None = None,
+        random_state: int | RandomState | None = None,
+    ) -> None:
         super().__init__(random_state=random_state)
         self.xi = xi
         self.exploration_decay = exploration_decay
         self.exploration_decay_delay = exploration_decay_delay
         self.y_max = None
 
-    def base_acq(self, mean, std):
+    def base_acq(self, mean: NDArray[Float], std: NDArray[Float]) -> NDArray[Float]:
         """Calculate the probability of improvement.
 
         Parameters
@@ -473,10 +526,10 @@ class ProbabilityOfImprovement(AcquisitionFunction):
         self,
         gp: GaussianProcessRegressor,
         target_space: TargetSpace,
-        n_random=10_000,
-        n_l_bfgs_b=10,
+        n_random: int = 10_000,
+        n_l_bfgs_b: int = 10,
         fit_gp: bool = True,
-    ) -> np.ndarray:
+    ) -> NDArray[Float]:
         """Suggest a promising point to probe next.
 
         Parameters
@@ -565,14 +618,20 @@ class ExpectedImprovement(AcquisitionFunction):
         Set the random state for reproducibility.
     """
 
-    def __init__(self, xi, exploration_decay=None, exploration_decay_delay=None, random_state=None) -> None:
+    def __init__(
+        self,
+        xi: float,
+        exploration_decay: float | None = None,
+        exploration_decay_delay: int | None = None,
+        random_state: int | RandomState | None = None,
+    ) -> None:
         super().__init__(random_state=random_state)
         self.xi = xi
         self.exploration_decay = exploration_decay
         self.exploration_decay_delay = exploration_decay_delay
         self.y_max = None
 
-    def base_acq(self, mean, std):
+    def base_acq(self, mean: NDArray[Float], std: NDArray[Float]) -> NDArray[Float]:
         """Calculate the expected improvement.
 
         Parameters
@@ -607,10 +666,10 @@ class ExpectedImprovement(AcquisitionFunction):
         self,
         gp: GaussianProcessRegressor,
         target_space: TargetSpace,
-        n_random=10_000,
-        n_l_bfgs_b=10,
+        n_random: int = 10_000,
+        n_l_bfgs_b: int = 10,
         fit_gp: bool = True,
-    ) -> np.ndarray:
+    ) -> NDArray[Float]:
         """Suggest a promising point to probe next.
 
         Parameters
@@ -701,7 +760,12 @@ class ConstantLiar(AcquisitionFunction):
     """
 
     def __init__(
-        self, base_acquisition: AcquisitionFunction, strategy="max", random_state=None, atol=1e-5, rtol=1e-8
+        self,
+        base_acquisition: AcquisitionFunction,
+        strategy: Literal["min", "mean", "max"] | float = "max",
+        random_state: int | RandomState | None = None,
+        atol: float = 1e-5,
+        rtol: float = 1e-8,
     ) -> None:
         super().__init__(random_state)
         self.base_acquisition = base_acquisition
@@ -713,7 +777,7 @@ class ConstantLiar(AcquisitionFunction):
         self.atol = atol
         self.rtol = rtol
 
-    def base_acq(self, *args, **kwargs):
+    def base_acq(self, *args: Any, **kwargs: Any) -> NDArray[Float]:
         """Calculate the acquisition function.
 
         Calls the base acquisition function's `base_acq` method.
@@ -774,10 +838,10 @@ class ConstantLiar(AcquisitionFunction):
         self,
         gp: GaussianProcessRegressor,
         target_space: TargetSpace,
-        n_random=10_000,
-        n_l_bfgs_b=10,
+        n_random: int = 10_000,
+        n_l_bfgs_b: int = 10,
         fit_gp: bool = True,
-    ) -> np.ndarray:
+    ) -> NDArray[Float]:
         """Suggest a promising point to probe next.
 
         Parameters
@@ -875,14 +939,16 @@ class GPHedge(AcquisitionFunction):
         Set the random state for reproducibility.
     """
 
-    def __init__(self, base_acquisitions: list[AcquisitionFunction], random_state=None) -> None:
+    def __init__(
+        self, base_acquisitions: list[AcquisitionFunction], random_state: int | RandomState | None = None
+    ) -> None:
         super().__init__(random_state)
         self.base_acquisitions = base_acquisitions
         self.n_acq = len(self.base_acquisitions)
         self.gains = np.zeros(self.n_acq)
         self.previous_candidates = None
 
-    def base_acq(self, *args, **kwargs):
+    def base_acq(self, *args: Any, **kwargs: Any) -> NoReturn:
         """Raise an error, since the base acquisition function is ambiguous."""
         msg = (
             "GPHedge base acquisition function is ambiguous."
@@ -909,10 +975,10 @@ class GPHedge(AcquisitionFunction):
         self,
         gp: GaussianProcessRegressor,
         target_space: TargetSpace,
-        n_random=10_000,
-        n_l_bfgs_b=10,
+        n_random: int = 10_000,
+        n_l_bfgs_b: int = 10,
         fit_gp: bool = True,
-    ) -> np.ndarray:
+    ) -> NDArray[Float]:
         """Suggest a promising point to probe next.
 
         Parameters
