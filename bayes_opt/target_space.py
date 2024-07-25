@@ -33,7 +33,7 @@ class TargetSpace:
 
     Parameters
     ----------
-    target_func : function, optional
+    target_func : function
         Function to be maximized.
 
     pbounds : dict
@@ -64,7 +64,7 @@ class TargetSpace:
 
     def __init__(
         self,
-        target_func: Callable[..., float] | None,
+        target_func: Callable[..., float],
         pbounds: Mapping[str, tuple[float, float]],
         constraint: ConstraintModel | None = None,
         random_state: int | np.random.RandomState | None = None,
