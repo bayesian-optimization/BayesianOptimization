@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
 from warnings import warn
 
 import numpy as np
@@ -10,8 +11,17 @@ from colorama import Fore
 from bayes_opt.exception import NotUniqueError
 from bayes_opt.util import ensure_rng
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
-def _hashable(x):
+    from numpy.typing import NDArray
+
+    from bayes_opt.constraint import ConstraintModel
+
+    Float = np.floating[Any]
+
+
+def _hashable(x: NDArray[Float]) -> tuple[float, ...]:
     """Ensure that a point is hashable by a python dict."""
     return tuple(map(float, x))
 
@@ -53,39 +63,45 @@ class TargetSpace:
     """
 
     def __init__(
-        self, target_func, pbounds, constraint=None, random_state=None, allow_duplicate_points=False
-    ):
+        self,
+        target_func: Callable[..., float],
+        pbounds: dict[str, tuple[float, float]],
+        constraint: ConstraintModel | None = None,
+        random_state: int | np.random.RandomState | None = None,
+        allow_duplicate_points: bool | None = False,
+    ) -> None:
         self.random_state = ensure_rng(random_state)
-        self._allow_duplicate_points = allow_duplicate_points
+        self._allow_duplicate_points = allow_duplicate_points or False
         self.n_duplicate_points = 0
 
         # The function to be optimized
         self.target_func = target_func
 
         # Get the name of the parameters
-        self._keys = sorted(pbounds)
+        self._keys: list[str] = sorted(pbounds)
         # Create an array with parameters bounds
-        self._bounds = np.array(
+        self._bounds: NDArray[Float] = np.array(
             [item[1] for item in sorted(pbounds.items(), key=lambda x: x[0])], dtype=float
         )
 
         # preallocated memory for X and Y points
-        self._params = np.empty(shape=(0, self.dim))
-        self._target = np.empty(shape=(0,))
+        self._params: NDArray[Float] = np.empty(shape=(0, self.dim))
+        self._target: NDArray[Float] = np.empty(shape=(0,))
 
         # keep track of unique points we have seen so far
-        self._cache = {}
+        self._cache: dict[tuple[float, ...], float | tuple[float, float | NDArray[Float]]] = {}
 
-        self._constraint = constraint
+        self._constraint: ConstraintModel | None = constraint
 
         if constraint is not None:
             # preallocated memory for constraint fulfillment
+            self._constraint_values: NDArray[Float]
             if constraint.lb.size == 1:
                 self._constraint_values = np.empty(shape=(0), dtype=float)
             else:
                 self._constraint_values = np.empty(shape=(0, constraint.lb.size), dtype=float)
 
-    def __contains__(self, x):
+    def __contains__(self, x: NDArray[Float]) -> bool:
         """Check if this parameter has already been registered.
 
         Returns
@@ -94,7 +110,7 @@ class TargetSpace:
         """
         return _hashable(x) in self._cache
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Return number of observations registered.
 
         Returns
@@ -107,7 +123,7 @@ class TargetSpace:
         return len(self._target)
 
     @property
-    def empty(self):
+    def empty(self) -> bool:
         """Check if anything has been registered.
 
         Returns
@@ -117,7 +133,7 @@ class TargetSpace:
         return len(self) == 0
 
     @property
-    def params(self):
+    def params(self) -> NDArray[Float]:
         """Get the parameter values registered to this TargetSpace.
 
         Returns
@@ -127,7 +143,7 @@ class TargetSpace:
         return self._params
 
     @property
-    def target(self):
+    def target(self) -> NDArray[Float]:
         """Get the target function values registered to this TargetSpace.
 
         Returns
@@ -137,7 +153,7 @@ class TargetSpace:
         return self._target
 
     @property
-    def dim(self):
+    def dim(self) -> int:
         """Get the number of parameter names.
 
         Returns
@@ -147,7 +163,7 @@ class TargetSpace:
         return len(self._keys)
 
     @property
-    def keys(self):
+    def keys(self) -> list[str]:
         """Get the keys (or parameter names).
 
         Returns
@@ -157,7 +173,7 @@ class TargetSpace:
         return self._keys
 
     @property
-    def bounds(self):
+    def bounds(self) -> NDArray[Float]:
         """Get the bounds of this TargetSpace.
 
         Returns
@@ -167,7 +183,7 @@ class TargetSpace:
         return self._bounds
 
     @property
-    def constraint(self):
+    def constraint(self) -> ConstraintModel | None:
         """Get the constraint model.
 
         Returns
@@ -177,7 +193,7 @@ class TargetSpace:
         return self._constraint
 
     @property
-    def constraint_values(self):
+    def constraint_values(self) -> NDArray[Float]:
         """Get the constraint values registered to this TargetSpace.
 
         Returns
@@ -191,7 +207,7 @@ class TargetSpace:
         return self._constraint_values
 
     @property
-    def mask(self):
+    def mask(self) -> NDArray[np.bool_]:
         """Return a boolean array of valid points.
 
         Points are valid if they satisfy both the constraint and boundary conditions.
@@ -215,7 +231,7 @@ class TargetSpace:
 
         return mask
 
-    def params_to_array(self, params):
+    def params_to_array(self, params: dict[str, NDArray[Float]]) -> NDArray[Float]:
         """Convert a dict representation of parameters into an array version.
 
         Parameters
@@ -236,7 +252,7 @@ class TargetSpace:
             raise ValueError(error_msg)
         return np.asarray([params[key] for key in self.keys])
 
-    def array_to_params(self, x):
+    def array_to_params(self, x: NDArray[Float]) -> dict[str, NDArray[Float]]:
         """Convert an array representation of parameters into a dict version.
 
         Parameters
@@ -257,7 +273,7 @@ class TargetSpace:
             raise ValueError(error_msg)
         return dict(zip(self.keys, x))
 
-    def _as_array(self, x):
+    def _as_array(self, x: Any) -> NDArray[Float]:
         try:
             x = np.asarray(x, dtype=float)
         except TypeError:
@@ -272,7 +288,9 @@ class TargetSpace:
             raise ValueError(error_msg)
         return x
 
-    def register(self, params, target, constraint_value=None):
+    def register(
+        self, params: NDArray[Float], target: float, constraint_value: float | NDArray[Float] | None = None
+    ):
         """Append a point and its target value to the known data.
 
         Parameters
@@ -283,7 +301,7 @@ class TargetSpace:
         target : float
             target function value
 
-        constraint_value : float or None
+        constraint_value : float or np.ndarray or None
             Constraint function value
 
         Raises
@@ -330,8 +348,8 @@ class TargetSpace:
 
         # Make copies of the data, so as not to modify the originals incase something fails
         # during the registration process. This prevents out-of-sync data.
-        params_copy = np.concatenate([self._params, x.reshape(1, -1)])
-        target_copy = np.concatenate([self._target, [target]])
+        params_copy: NDArray[Float] = np.concatenate([self._params, x.reshape(1, -1)])
+        target_copy: NDArray[Float] = np.concatenate([self._target, [target]])
         cache_copy = self._cache.copy()  # shallow copy suffices
 
         if self._constraint is None:
@@ -346,7 +364,9 @@ class TargetSpace:
                 raise ValueError(msg)
             # Insert data into unique dictionary
             cache_copy[_hashable(x.ravel())] = (target, constraint_value)
-            constraint_values_copy = np.concatenate([self._constraint_values, [constraint_value]])
+            constraint_values_copy: NDArray[Float] = np.concatenate(
+                [self._constraint_values, [constraint_value]]
+            )
             self._constraint_values = constraint_values_copy
 
         # Operations passed, update the variables
@@ -354,7 +374,7 @@ class TargetSpace:
         self._target = target_copy
         self._cache = cache_copy
 
-    def probe(self, params):
+    def probe(self, params: NDArray[Float]) -> float | tuple[float, float | NDArray[Float]]:
         """Evaluate the target function on a point and register the result.
 
         Notes
@@ -385,18 +405,18 @@ class TargetSpace:
         if x in self and not self._allow_duplicate_points:
             return self._cache[_hashable(x.ravel())]
 
-        params = dict(zip(self._keys, x))
-        target = self.target_func(**params)
+        dict_params = self.array_to_params(x)
+        target = self.target_func(**dict_params)
 
         if self._constraint is None:
             self.register(x, target)
             return target
 
-        constraint_value = self._constraint.eval(**params)
+        constraint_value = self._constraint.eval(**dict_params)
         self.register(x, target, constraint_value)
         return target, constraint_value
 
-    def random_sample(self):
+    def random_sample(self) -> NDArray[Float]:
         """
         Sample a random point from within the bounds of the space.
 
@@ -418,7 +438,7 @@ class TargetSpace:
             data.T[col] = self.random_state.uniform(lower, upper, size=1)
         return data.ravel()
 
-    def _target_max(self):
+    def _target_max(self) -> float | None:
         """Get the maximum target value within the current parameter bounds.
 
         If there is a constraint present, the maximum value that fulfills the
@@ -437,7 +457,7 @@ class TargetSpace:
 
         return self.target[self.mask].max()
 
-    def max(self):
+    def max(self) -> dict[str, Any] | None:
         """Get maximum target value found and corresponding parameters.
 
         If there is a constraint present, the maximum value that fulfills the
@@ -467,7 +487,7 @@ class TargetSpace:
 
         return res
 
-    def res(self):
+    def res(self) -> list[dict[str, Any]]:
         """Get all target values and constraint fulfillment for all parameters.
 
         Returns
@@ -500,7 +520,7 @@ class TargetSpace:
             )
         ]
 
-    def set_bounds(self, new_bounds):
+    def set_bounds(self, new_bounds: dict[str, tuple[float, float]]) -> None:
         """Change the lower and upper search bounds.
 
         Parameters
