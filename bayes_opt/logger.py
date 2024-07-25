@@ -213,18 +213,19 @@ class ScreenLogger(_Tracker):
             self._previous_max = instance.max["target"]
         return instance.max["target"] > self._previous_max
 
-    def update(self, event, instance):
+    def update(self, event: str | Events, instance):
         """Handle incoming events.
 
         Parameters
         ----------
-        event : str
+        event : str or Events
             One of the values associated with `Events.OPTIMIZATION_START`,
             `Events.OPTIMIZATION_STEP` or `Events.OPTIMIZATION_END`.
 
         instance : bayesian_optimization.BayesianOptimization
             The instance associated with the step.
         """
+        event = Events(event)
         if event == Events.OPTIMIZATION_START:
             line = self._header(instance) + "\n"
         elif event == Events.OPTIMIZATION_STEP:
@@ -235,7 +236,7 @@ class ScreenLogger(_Tracker):
                 colour = self._colour_new_max if is_new_max else self._colour_regular_message
                 line = self._step(instance, colour=colour) + "\n"
         elif event == Events.OPTIMIZATION_END:
-            line = "=" * self._header_length + "\n"
+            line = "=" * (self._header_length or 0) + "\n"
 
         if self._verbose:
             print(line, end="")
@@ -265,13 +266,13 @@ class JSONLogger(_Tracker):
                 self._path.unlink(missing_ok=True)
         super().__init__()
 
-    def update(self, event, instance):
+    def update(self, event: str | Events, instance):
         """
         Handle incoming events.
 
         Parameters
         ----------
-        event : str
+        event : str or Events
             One of the values associated with `Events.OPTIMIZATION_START`,
             `Events.OPTIMIZATION_STEP` or `Events.OPTIMIZATION_END`.
 
@@ -279,6 +280,7 @@ class JSONLogger(_Tracker):
             The instance associated with the step.
 
         """
+        event = Events(event)
         if event == Events.OPTIMIZATION_STEP:
             data = dict(instance.res[-1])
 
