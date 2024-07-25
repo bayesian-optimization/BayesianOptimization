@@ -2,10 +2,19 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
+
 import numpy as np
 from scipy.stats import norm
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from numpy.typing import NDArray
+
+    Float = np.floating[Any]
 
 
 class ConstraintModel:
@@ -40,7 +49,13 @@ class ConstraintModel:
     simply the product of the individual probabilities.
     """
 
-    def __init__(self, fun, lb, ub, random_state=None):
+    def __init__(
+        self,
+        fun: Callable[..., float] | Callable[..., NDArray[Float]],
+        lb: float | NDArray[Float],
+        ub: float | NDArray[Float],
+        random_state: int | np.random.RandomState | None = None,
+    ) -> None:
         self.fun = fun
 
         self._lb = np.atleast_1d(lb)
@@ -62,21 +77,21 @@ class ConstraintModel:
         ]
 
     @property
-    def lb(self):
+    def lb(self) -> NDArray[Float]:
         """Return lower bounds."""
         return self._lb
 
     @property
-    def ub(self):
+    def ub(self) -> NDArray[Float]:
         """Return upper bounds."""
         return self._ub
 
     @property
-    def model(self):
+    def model(self) -> list[GaussianProcessRegressor]:
         """Return GP regressors of the constraint function."""
         return self._model
 
-    def eval(self, **kwargs: dict):  # noqa: D417
+    def eval(self, **kwargs: Any) -> float | NDArray[Float]:  # noqa: D417
         r"""Evaluate the constraint function.
 
         Parameters
@@ -106,7 +121,7 @@ class ConstraintModel:
             e.args = (msg,)
             raise
 
-    def fit(self, X, Y):
+    def fit(self, X: NDArray[Float], Y: NDArray[Float]) -> None:
         """Fit internal GPRs to the data.
 
         Parameters
@@ -127,7 +142,7 @@ class ConstraintModel:
             for i, gp in enumerate(self._model):
                 gp.fit(X, Y[:, i])
 
-    def predict(self, X):
+    def predict(self, X: NDArray[Float]) -> NDArray[Float]:
         r"""Calculate the probability that the constraint is fulfilled at `X`.
 
         Note that this does not try to approximate the values of the
@@ -167,6 +182,12 @@ class ConstraintModel:
         """
         X_shape = X.shape
         X = X.reshape((-1, self._model[0].n_features_in_))
+
+        result: NDArray[Float]
+        y_mean: NDArray[Float]
+        y_std: NDArray[Float]
+        p_lower: NDArray[Float]
+        p_upper: NDArray[Float]
         if len(self._model) == 1:
             y_mean, y_std = self._model[0].predict(X, return_std=True)
 
@@ -191,7 +212,7 @@ class ConstraintModel:
             result = result * (p_upper - p_lower)
         return result.reshape(X_shape[:-1])
 
-    def approx(self, X):
+    def approx(self, X: NDArray[Float]) -> NDArray[Float]:
         """
         Approximate the constraint function using the internal GPR model.
 
@@ -213,7 +234,7 @@ class ConstraintModel:
         result = np.column_stack([gp.predict(X) for gp in self._model])
         return result.reshape(X_shape[:-1] + (len(self._lb),))
 
-    def allowed(self, constraint_values):
+    def allowed(self, constraint_values: NDArray[Float]) -> NDArray[np.bool_]:
         """Check whether `constraint_values` fulfills the specified limits.
 
         Parameters
