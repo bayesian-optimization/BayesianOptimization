@@ -2,8 +2,24 @@
 
 from __future__ import annotations
 
+import sys
 
-class Events:
+if sys.version_info >= (3, 11):
+    from enum import StrEnum
+else:
+    from enum import Enum
+
+    class StrEnum(str, Enum):
+        __slots__ = ()
+
+        def __str__(self) -> str:
+            return str(self.value)
+
+
+__all__ = ["Events", "DEFAULT_EVENTS"]
+
+
+class Events(StrEnum):
     """Define optimization events.
 
     Behaves similar to enums.
@@ -14,4 +30,4 @@ class Events:
     OPTIMIZATION_END = "optimization:end"
 
 
-DEFAULT_EVENTS = [Events.OPTIMIZATION_START, Events.OPTIMIZATION_STEP, Events.OPTIMIZATION_END]
+DEFAULT_EVENTS: frozenset[Events] = frozenset(Events)
