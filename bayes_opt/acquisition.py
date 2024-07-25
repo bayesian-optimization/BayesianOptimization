@@ -804,7 +804,7 @@ class ConstantLiar(AcquisitionFunction):
         keys = target_space.keys
         pbounds = {key: bound for key, bound in zip(keys, target_space.bounds)}
         target_space_copy = TargetSpace(
-            None,
+            None,  # FIXME
             pbounds=pbounds,
             constraint=target_space.constraint,
             allow_duplicate_points=target_space._allow_duplicate_points,

@@ -12,7 +12,7 @@ from sklearn.gaussian_process.kernels import Matern
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from numpy.typing import NDArray
+    from numpy.typing import ArrayLike, NDArray
 
     Float = np.floating[Any]
 
@@ -51,9 +51,9 @@ class ConstraintModel:
 
     def __init__(
         self,
-        fun: Callable[..., float] | Callable[..., NDArray[Float]],
-        lb: float | NDArray[Float],
-        ub: float | NDArray[Float],
+        fun: Callable[..., float] | Callable[..., ArrayLike],
+        lb: float | ArrayLike,
+        ub: float | ArrayLike,
         random_state: int | np.random.RandomState | None = None,
     ) -> None:
         self.fun = fun
@@ -91,7 +91,7 @@ class ConstraintModel:
         """Return GP regressors of the constraint function."""
         return self._model
 
-    def eval(self, **kwargs: Any) -> float | NDArray[Float]:  # noqa: D417
+    def eval(self, **kwargs: Any) -> float | ArrayLike:  # noqa: D417
         r"""Evaluate the constraint function.
 
         Parameters
