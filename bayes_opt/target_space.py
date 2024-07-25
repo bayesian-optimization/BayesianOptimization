@@ -11,7 +11,7 @@ from colorama import Fore
 from bayes_opt.util import NotUniqueError, ensure_rng
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Mapping
+    from collections.abc import Callable, Mapping, Sequence
 
     from numpy.typing import NDArray
 
@@ -519,7 +519,7 @@ class TargetSpace:
             )
         ]
 
-    def set_bounds(self, new_bounds: Mapping[str, NDArray[Float]]) -> None:
+    def set_bounds(self, new_bounds: Mapping[str, NDArray[Float] | Sequence[float]]) -> None:
         """Change the lower and upper search bounds.
 
         Parameters
