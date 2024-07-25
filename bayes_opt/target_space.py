@@ -14,7 +14,7 @@ from bayes_opt.util import ensure_rng
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping, Sequence
 
-    from numpy.typing import ArrayLike, NDArray
+    from numpy.typing import NDArray
 
     from bayes_opt.constraint import ConstraintModel
 
@@ -288,7 +288,9 @@ class TargetSpace:
             raise ValueError(error_msg)
         return x
 
-    def register(self, params: Any, target: float, constraint_value: float | ArrayLike | None = None) -> None:
+    def register(
+        self, params: Any, target: float, constraint_value: float | NDArray[Float] | None = None
+    ) -> None:
         """Append a point and its target value to the known data.
 
         Parameters

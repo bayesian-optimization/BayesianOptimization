@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Mapping, Sequence
 
     import numpy as np
-    from numpy.typing import ArrayLike, NDArray
+    from numpy.typing import NDArray
 
     from bayes_opt.acquisition import AcquisitionFunction
     from bayes_opt.constraint import ConstraintModel
@@ -35,10 +35,10 @@ if TYPE_CHECKING:
         see more: scipy.optimize.NonlinearConstraint
         """
 
-        lb: ArrayLike
-        ub: ArrayLike
+        lb: Any
+        ub: Any
 
-        def fun(self, x: ArrayLike) -> ArrayLike:  # noqa: D102
+        def fun(self, x: Any) -> Any:  # noqa: D102
             ...
 
     Float = np.floating[Any]
