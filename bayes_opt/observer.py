@@ -3,14 +3,18 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from bayes_opt.event import Events
+
+if TYPE_CHECKING:
+    from bayes_opt.bayesian_optimization import BayesianOptimization
 
 
 class _Tracker:
     """Parent class for ScreenLogger and JSONLogger."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._iterations = 0
 
         self._previous_max = None
@@ -19,7 +23,7 @@ class _Tracker:
         self._start_time = None
         self._previous_time = None
 
-    def _update_tracker(self, event, instance):
+    def _update_tracker(self, event: str, instance: BayesianOptimization) -> None:
         """Update the tracker.
 
         Parameters
@@ -43,7 +47,7 @@ class _Tracker:
                 self._previous_max = current_max["target"]
                 self._previous_max_params = current_max["params"]
 
-    def _time_metrics(self):
+    def _time_metrics(self) -> tuple[str, float, float]:
         """Return time passed since last call."""
         now = datetime.now()  # noqa: DTZ005
         if self._start_time is None:

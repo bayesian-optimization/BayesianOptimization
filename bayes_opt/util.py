@@ -3,9 +3,16 @@
 from __future__ import annotations
 
 import json
+from os import PathLike
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import numpy as np
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from bayes_opt.bayesian_optimization import BayesianOptimization
 
 
 class NotUniqueError(Exception):
@@ -24,7 +31,9 @@ class TargetSpaceEmptyError(Exception):
     """Raised when the target space is empty."""
 
 
-def load_logs(optimizer, logs):
+def load_logs(
+    optimizer: BayesianOptimization, logs: str | PathLike[str] | Iterable[str | PathLike[str]]
+) -> BayesianOptimization:
     """Load previous ...
 
     Parameters
@@ -32,7 +41,7 @@ def load_logs(optimizer, logs):
     optimizer : BayesianOptimizer
         Optimizer the register the previous observations with.
 
-    logs : str or bytes or os.PathLike
+    logs : str or os.PathLike
         File to load the logs from.
 
     Returns
@@ -40,7 +49,7 @@ def load_logs(optimizer, logs):
     The optimizer with the state loaded.
 
     """
-    if isinstance(logs, str):
+    if isinstance(logs, (str, PathLike)):
         logs = [logs]
 
     for log in logs:
@@ -64,7 +73,7 @@ def load_logs(optimizer, logs):
     return optimizer
 
 
-def ensure_rng(random_state=None):
+def ensure_rng(random_state: int | np.random.RandomState | None = None) -> np.random.RandomState:
     """Create a random number generator based on an optional seed.
 
     Parameters
