@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from contextlib import suppress
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from colorama import Fore, just_fix_windows_console
@@ -13,10 +13,15 @@ from colorama import Fore, just_fix_windows_console
 from bayes_opt.event import Events
 from bayes_opt.observer import _Tracker
 
+if TYPE_CHECKING:
+    from os import PathLike
+
+    from bayes_opt.bayesian_optimization import BayesianOptimization
+
 just_fix_windows_console()
 
 
-def _get_default_logger(verbose, is_constrained):
+def _get_default_logger(verbose: int, is_constrained: bool) -> ScreenLogger:
     """
     Return the default logger.
 
@@ -57,19 +62,19 @@ class ScreenLogger(_Tracker):
     _colour_regular_message = Fore.RESET
     _colour_reset = Fore.RESET
 
-    def __init__(self, verbose=2, is_constrained=False):
+    def __init__(self, verbose: int = 2, is_constrained: bool = False) -> None:
         self._verbose = verbose
         self._is_constrained = is_constrained
         self._header_length = None
         super().__init__()
 
     @property
-    def verbose(self):
+    def verbose(self) -> int:
         """Return the verbosity level."""
         return self._verbose
 
     @verbose.setter
-    def verbose(self, v):
+    def verbose(self, v: int) -> None:
         """Set the verbosity level.
 
         Parameters
@@ -80,11 +85,11 @@ class ScreenLogger(_Tracker):
         self._verbose = v
 
     @property
-    def is_constrained(self):
+    def is_constrained(self) -> bool:
         """Return whether the logger is constrained."""
         return self._is_constrained
 
-    def _format_number(self, x):
+    def _format_number(self, x: float) -> str:
         """Format a number.
 
         Parameters
@@ -107,7 +112,7 @@ class ScreenLogger(_Tracker):
             return s[: self._default_cell_size - 3] + "..."
         return s
 
-    def _format_bool(self, x):
+    def _format_bool(self, x: bool) -> str:
         """Format a boolean.
 
         Parameters
@@ -122,7 +127,7 @@ class ScreenLogger(_Tracker):
         x_ = ("T" if x else "F") if self._default_cell_size < 5 else str(x)
         return f"{x_:<{self._default_cell_size}}"
 
-    def _format_key(self, key):
+    def _format_key(self, key: str) -> str:
         """Format a key.
 
         Parameters
@@ -139,7 +144,7 @@ class ScreenLogger(_Tracker):
             return s[: self._default_cell_size - 3] + "..."
         return s
 
-    def _step(self, instance, colour=_colour_regular_message):
+    def _step(self, instance: BayesianOptimization, colour: str = _colour_regular_message) -> str:
         """Log a step.
 
         Parameters
@@ -167,7 +172,7 @@ class ScreenLogger(_Tracker):
 
         return "| " + " | ".join(colour + x + self._colour_reset for x in cells if x is not None) + " |"
 
-    def _header(self, instance):
+    def _header(self, instance: BayesianOptimization) -> str:
         """Print the header of the log.
 
         Parameters
@@ -192,7 +197,7 @@ class ScreenLogger(_Tracker):
         self._header_length = len(line)
         return line + "\n" + ("-" * self._header_length)
 
-    def _is_new_max(self, instance):
+    def _is_new_max(self, instance: BayesianOptimization) -> bool:
         """Check if the step to log produced a new maximum.
 
         Parameters
@@ -213,7 +218,7 @@ class ScreenLogger(_Tracker):
             self._previous_max = instance.max["target"]
         return instance.max["target"] > self._previous_max
 
-    def update(self, event, instance):
+    def update(self, event: str, instance: BayesianOptimization) -> None:
         """Handle incoming events.
 
         Parameters
@@ -236,6 +241,9 @@ class ScreenLogger(_Tracker):
                 line = self._step(instance, colour=colour) + "\n"
         elif event == Events.OPTIMIZATION_END:
             line = "=" * self._header_length + "\n"
+        else:
+            self._update_tracker(event, instance)
+            return
 
         if self._verbose:
             print(line, end="")
@@ -250,7 +258,7 @@ class JSONLogger(_Tracker):
 
     Parameters
     ----------
-    path : str or bytes or os.PathLike
+    path : str or os.PathLike
         Path to the file to write to.
 
     reset : bool
@@ -258,14 +266,14 @@ class JSONLogger(_Tracker):
 
     """
 
-    def __init__(self, path, reset=True):
+    def __init__(self, path: str | PathLike[str], reset: bool = True):
         self._path = Path(path)
         if reset:
             with suppress(OSError):
                 self._path.unlink(missing_ok=True)
         super().__init__()
 
-    def update(self, event, instance):
+    def update(self, event: str, instance: BayesianOptimization) -> None:
         """
         Handle incoming events.
 
