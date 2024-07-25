@@ -7,21 +7,7 @@ from pathlib import Path
 
 import numpy as np
 
-
-class NotUniqueError(Exception):
-    """A point is non-unique."""
-
-
-class ConstraintNotSupportedError(Exception):
-    """Raised when constrained optimization is not supported."""
-
-
-class NoValidPointRegisteredError(Exception):
-    """Raised when an acquisition function depends on previous points but none are registered."""
-
-
-class TargetSpaceEmptyError(Exception):
-    """Raised when the target space is empty."""
+from bayes_opt.exception import NotUniqueError
 
 
 def load_logs(optimizer, logs):

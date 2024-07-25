@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 
 from bayes_opt.constraint import ConstraintModel
+from bayes_opt.exception import NotUniqueError
 from bayes_opt.target_space import TargetSpace
-from bayes_opt.util import NotUniqueError
 
 
 def target_func(**kwargs):
