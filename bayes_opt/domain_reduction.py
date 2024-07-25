@@ -8,18 +8,26 @@ simple domain reduction scheme for simulation-based optimization"
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Any
 from warnings import warn
 
 import numpy as np
 
 from bayes_opt.target_space import TargetSpace
 
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from numpy.typing import NDArray
+
+    Float = np.floating[Any]
+
 
 class DomainTransformer(ABC):
     """Base class."""
 
     @abstractmethod
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         """To override with specific implementation."""
 
     @abstractmethod
@@ -27,7 +35,7 @@ class DomainTransformer(ABC):
         """To override with specific implementation."""
 
     @abstractmethod
-    def transform(self, target_space: TargetSpace) -> dict:
+    def transform(self, target_space: TargetSpace) -> dict[str, NDArray[Float]]:
         """To override with specific implementation."""
 
 
@@ -58,7 +66,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         gamma_osc: float = 0.7,
         gamma_pan: float = 1.0,
         eta: float = 0.9,
-        minimum_window: np.ndarray | list[float] | float | dict[str, float] | None = 0.0,
+        minimum_window: NDArray[Float] | list[float] | float | dict[str, float] | None = 0.0,
     ) -> None:
         self.gamma_osc = gamma_osc
         self.gamma_pan = gamma_pan
@@ -138,7 +146,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
         self.r = self.contraction_rate * self.r
 
-    def _trim(self, new_bounds: np.ndarray, global_bounds: np.ndarray) -> np.ndarray:
+    def _trim(self, new_bounds: NDArray[Float], global_bounds: NDArray[Float]) -> NDArray[Float]:
         """
         Adjust the new_bounds and verify that they adhere to global_bounds and minimum_window.
 
@@ -158,6 +166,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         # sort bounds
         new_bounds = np.sort(new_bounds)
 
+        pbounds: NDArray[Float]
         # Validate each parameter's bounds against the global_bounds
         for i, pbounds in enumerate(new_bounds):
             # If the one of the bounds is outside the global bounds, reset the bound to the global bound
@@ -222,7 +231,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
         return new_bounds
 
-    def _window_bounds_compatibility(self, global_bounds: np.ndarray):
+    def _window_bounds_compatibility(self, global_bounds: NDArray[Float]) -> None:
         """Check if global bounds are compatible with the minimum window sizes.
 
         Parameters
@@ -235,18 +244,19 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         ValueError
             If global bounds are not compatible with the minimum window size.
         """
+        entry: NDArray[Float]
         for i, entry in enumerate(global_bounds):
             global_window_width = abs(entry[1] - entry[0])
             if global_window_width < self.minimum_window[i]:
                 error_msg = "Global bounds are not compatible with the minimum window size."
                 raise ValueError(error_msg)
 
-    def _create_bounds(self, parameters: dict, bounds: np.ndarray) -> dict:
+    def _create_bounds(self, parameters: Iterable[str], bounds: NDArray[Float]) -> dict[str, NDArray[Float]]:
         """Create a dictionary of bounds for each parameter.
 
         Parameters
         ----------
-        parameters : dict
+        parameters : Iterable[str]
             The parameters for which to create the bounds.
 
         bounds : np.ndarray
@@ -254,7 +264,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         """
         return {param: bounds[i, :] for i, param in enumerate(parameters)}
 
-    def transform(self, target_space: TargetSpace) -> dict:
+    def transform(self, target_space: TargetSpace) -> dict[str, NDArray[Float]]:
         """Transform the bounds of the target space.
 
         Parameters
