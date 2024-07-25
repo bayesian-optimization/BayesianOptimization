@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+from enum import Enum
 
-class Events:
+__all__ = ["Events", "DEFAULT_EVENTS"]
+
+
+class Events(Enum):
     """Define optimization events.
 
     Behaves similar to enums.
@@ -14,4 +18,4 @@ class Events:
     OPTIMIZATION_END = "optimization:end"
 
 
-DEFAULT_EVENTS = [Events.OPTIMIZATION_START, Events.OPTIMIZATION_STEP, Events.OPTIMIZATION_END]
+DEFAULT_EVENTS: tuple[Events, ...] = tuple(Events)
