@@ -20,7 +20,7 @@ from bayes_opt.target_space import TargetSpace
 from bayes_opt.util import ensure_rng
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable, Mapping
+    from collections.abc import Callable, Iterable, Mapping, Sequence
 
     import numpy as np
     from numpy.typing import NDArray
@@ -311,7 +311,7 @@ class BayesianOptimization(Observable):
 
         self.dispatch(Events.OPTIMIZATION_END)
 
-    def set_bounds(self, new_bounds: Mapping[str, NDArray[Float]]) -> None:
+    def set_bounds(self, new_bounds: Mapping[str, NDArray[Float] | Sequence[float]]) -> None:
         """Modify the bounds of the search space.
 
         Parameters
