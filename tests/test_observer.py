@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import sys
 
+import pytest
+
 from bayes_opt.bayesian_optimization import Observable
 from bayes_opt.event import Events
 from bayes_opt.observer import _Tracker
@@ -84,10 +86,8 @@ def test_tracker():
     assert tracker._previous_max_params is None
 
     test_instance = MockInstance()
-    tracker._update_tracker("other_event", test_instance)
-    assert tracker._iterations == 0
-    assert tracker._previous_max is None
-    assert tracker._previous_max_params is None
+    with pytest.raises(ValueError, match="'other_event' is not a valid Events"):
+        tracker._update_tracker("other_event", test_instance)
 
     tracker._update_tracker(Events.OPTIMIZATION_STEP, test_instance)
     assert tracker._iterations == 1
@@ -121,6 +121,4 @@ if __name__ == "__main__":
     CommandLine:
         python tests/test_observer.py
     """
-    import pytest
-
     pytest.main([__file__])
