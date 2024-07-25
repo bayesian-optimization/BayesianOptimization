@@ -9,9 +9,9 @@ import pytest
 from bayes_opt import BayesianOptimization, acquisition
 from bayes_opt.acquisition import AcquisitionFunction
 from bayes_opt.event import DEFAULT_EVENTS, Events
+from bayes_opt.exception import NotUniqueError
 from bayes_opt.logger import ScreenLogger
 from bayes_opt.target_space import TargetSpace
-from bayes_opt.util import NotUniqueError
 
 
 def target_func(**kwargs):
