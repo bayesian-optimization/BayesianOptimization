@@ -23,7 +23,6 @@ from __future__ import annotations
 import abc
 import warnings
 from copy import deepcopy
-from numbers import Number
 from typing import TYPE_CHECKING, Any, Literal, NoReturn, overload
 
 import numpy as np
@@ -60,7 +59,7 @@ class AcquisitionFunction(abc.ABC):
         Set the random state for reproducibility.
     """
 
-    def __init__(self, random_state: int | RandomState | None = None):
+    def __init__(self, random_state: int | RandomState | None = None) -> None:
         if random_state is not None:
             if isinstance(random_state, RandomState):
                 self.random_state = random_state
@@ -90,7 +89,7 @@ class AcquisitionFunction(abc.ABC):
         n_random: int = 10_000,
         n_l_bfgs_b: int = 10,
         fit_gp: bool = True,
-    ):
+    ) -> NDArray[Float]:
         """Suggest a promising point to probe next.
 
         Parameters
@@ -770,10 +769,10 @@ class ConstantLiar(AcquisitionFunction):
         super().__init__(random_state)
         self.base_acquisition = base_acquisition
         self.dummies = []
-        if not isinstance(strategy, Number) and strategy not in ["min", "mean", "max"]:
+        if not isinstance(strategy, float) and strategy not in ["min", "mean", "max"]:
             error_msg = f"Received invalid argument {strategy} for strategy."
             raise ValueError(error_msg)
-        self.strategy = strategy
+        self.strategy: Literal["min", "mean", "max"] | float = strategy
         self.atol = atol
         self.rtol = rtol
 
@@ -888,8 +887,9 @@ class ConstantLiar(AcquisitionFunction):
         # Create a copy of the target space
         dummy_target_space = self._copy_target_space(target_space)
 
+        dummy_target: float
         # Choose the dummy target value
-        if isinstance(self.strategy, Number):
+        if isinstance(self.strategy, float):
             dummy_target = self.strategy
         elif self.strategy == "min":
             dummy_target = target_space.target.min()

@@ -33,7 +33,7 @@ class TargetSpace:
 
     Parameters
     ----------
-    target_func : function
+    target_func : function, optional
         Function to be maximized.
 
     pbounds : dict
@@ -64,7 +64,7 @@ class TargetSpace:
 
     def __init__(
         self,
-        target_func: Callable[..., float],
+        target_func: Callable[..., float] | None,
         pbounds: dict[str, tuple[float, float]],
         constraint: ConstraintModel | None = None,
         random_state: int | np.random.RandomState | None = None,
@@ -288,7 +288,9 @@ class TargetSpace:
             raise ValueError(error_msg)
         return x
 
-    def register(self, params: Any, target: float, constraint_value: float | NDArray[Float] | None = None):
+    def register(
+        self, params: Any, target: float, constraint_value: float | NDArray[Float] | None = None
+    ) -> None:
         """Append a point and its target value to the known data.
 
         Parameters
