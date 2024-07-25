@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 
-from bayes_opt.exceptions import NotUniqueError
+from bayes_opt.exception import NotUniqueError
 
 
 def load_logs(optimizer, logs):

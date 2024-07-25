@@ -7,7 +7,7 @@ from warnings import warn
 import numpy as np
 from colorama import Fore
 
-from bayes_opt.exceptions import NotUniqueError
+from bayes_opt.exception import NotUniqueError
 from bayes_opt.util import ensure_rng
 
 
