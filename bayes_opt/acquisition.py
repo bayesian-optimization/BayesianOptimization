@@ -33,7 +33,7 @@ from scipy.special import softmax
 from scipy.stats import norm
 from sklearn.gaussian_process import GaussianProcessRegressor
 
-from bayes_opt.exceptions import (
+from bayes_opt.exception import (
     ConstraintNotSupportedError,
     NoValidPointRegisteredError,
     TargetSpaceEmptyError,
