@@ -35,11 +35,9 @@ if TYPE_CHECKING:
         see more: scipy.optimize.NonlinearConstraint
         """
 
+        fun: Callable[..., Any]
         lb: Any
         ub: Any
-
-        def fun(self, x: Any) -> Any:  # noqa: D102
-            ...
 
     Float = np.floating[Any]
 
