@@ -288,9 +288,7 @@ class TargetSpace:
             raise ValueError(error_msg)
         return x
 
-    def register(
-        self, params: NDArray[Float], target: float, constraint_value: float | NDArray[Float] | None = None
-    ):
+    def register(self, params: Any, target: float, constraint_value: float | NDArray[Float] | None = None):
         """Append a point and its target value to the known data.
 
         Parameters
@@ -374,7 +372,7 @@ class TargetSpace:
         self._target = target_copy
         self._cache = cache_copy
 
-    def probe(self, params: NDArray[Float]) -> float | tuple[float, float | NDArray[Float]]:
+    def probe(self, params: Any) -> float | tuple[float, float | NDArray[Float]]:
         """Evaluate the target function on a point and register the result.
 
         Notes
@@ -520,7 +518,7 @@ class TargetSpace:
             )
         ]
 
-    def set_bounds(self, new_bounds: dict[str, tuple[float, float]]) -> None:
+    def set_bounds(self, new_bounds: dict[str, NDArray[Float]]) -> None:
         """Change the lower and upper search bounds.
 
         Parameters

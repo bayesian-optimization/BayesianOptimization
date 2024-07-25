@@ -7,6 +7,7 @@ function over a specific target space.
 from __future__ import annotations
 
 from collections import deque
+from typing import TYPE_CHECKING, Any
 
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
@@ -18,30 +19,42 @@ from bayes_opt.logger import _get_default_logger
 from bayes_opt.target_space import TargetSpace
 from bayes_opt.util import ensure_rng
 
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterable
+
+    import numpy as np
+    from numpy.typing import NDArray
+
+    from bayes_opt.acquisition import AcquisitionFunction
+    from bayes_opt.constraint import ConstraintModel
+    from bayes_opt.domain_reduction import DomainTransformer
+
+    Float = np.floating[Any]
+
 
 class Observable:
     """Inspired by https://www.protechtraining.com/blog/post/879#simple-observer."""
 
-    def __init__(self, events):
+    def __init__(self, events: Iterable[Any]) -> None:
         # maps event names to subscribers
         # str -> dict
         self._events = {event: dict() for event in events}
 
-    def get_subscribers(self, event):
+    def get_subscribers(self, event: Any) -> Any:
         """Return the subscribers of an event."""
         return self._events[event]
 
-    def subscribe(self, event, subscriber, callback=None):
+    def subscribe(self, event: Any, subscriber: Any, callback: Callable[..., Any] | None = None) -> None:
         """Add subscriber to an event."""
         if callback is None:
             callback = subscriber.update
         self.get_subscribers(event)[subscriber] = callback
 
-    def unsubscribe(self, event, subscriber):
+    def unsubscribe(self, event: Any, subscriber: Any) -> None:
         """Remove a subscriber for a particular event."""
         del self.get_subscribers(event)[subscriber]
 
-    def dispatch(self, event):
+    def dispatch(self, event: Any) -> None:
         """Trigger callbacks for subscribers of an event."""
         for callback in self.get_subscribers(event).values():
             callback(event, self)
@@ -87,14 +100,14 @@ class BayesianOptimization(Observable):
 
     def __init__(
         self,
-        f,
-        pbounds,
-        acquisition_function=None,
-        constraint=None,
-        random_state=None,
-        verbose=2,
-        bounds_transformer=None,
-        allow_duplicate_points=False,
+        f: Callable[..., float],
+        pbounds: dict[str, tuple[float, float]],
+        acquisition_function: AcquisitionFunction | None = None,
+        constraint: ConstraintModel | None = None,
+        random_state: int | np.random.RandomState | None = None,
+        verbose: int = 2,
+        bounds_transformer: DomainTransformer | None = None,
+        allow_duplicate_points: bool = False,
     ):
         self._random_state = ensure_rng(random_state)
         self._allow_duplicate_points = allow_duplicate_points
@@ -154,24 +167,24 @@ class BayesianOptimization(Observable):
         super().__init__(events=DEFAULT_EVENTS)
 
     @property
-    def space(self):
+    def space(self) -> TargetSpace:
         """Return the target space associated with the optimizer."""
         return self._space
 
     @property
-    def acquisition_function(self):
+    def acquisition_function(self) -> AcquisitionFunction:
         """Return the acquisition function associated with the optimizer."""
         return self._acquisition_function
 
     @property
-    def constraint(self):
+    def constraint(self) -> ConstraintModel | None:
         """Return the constraint associated with the optimizer, if any."""
         if self.is_constrained:
             return self._space.constraint
         return None
 
     @property
-    def max(self):
+    def max(self) -> dict[str, Any] | None:
         """Get maximum target value found and corresponding parameters.
 
         See `TargetSpace.max` for more information.
@@ -179,14 +192,16 @@ class BayesianOptimization(Observable):
         return self._space.max()
 
     @property
-    def res(self):
+    def res(self) -> list[dict[str, Any]]:
         """Get all target values and constraint fulfillment for all parameters.
 
         See `TargetSpace.res` for more information.
         """
         return self._space.res()
 
-    def register(self, params, target, constraint_value=None):
+    def register(
+        self, params: Any, target: float, constraint_value: float | NDArray[Float] | None = None
+    ) -> None:
         """Register an observation with known target.
 
         Parameters
@@ -203,7 +218,7 @@ class BayesianOptimization(Observable):
         self._space.register(params, target, constraint_value)
         self.dispatch(Events.OPTIMIZATION_STEP)
 
-    def probe(self, params, lazy=True):
+    def probe(self, params: Any, lazy: bool = True) -> None:
         """Evaluate the function at the given points.
 
         Useful to guide the optimizer.
@@ -223,7 +238,7 @@ class BayesianOptimization(Observable):
             self._space.probe(params)
             self.dispatch(Events.OPTIMIZATION_STEP)
 
-    def suggest(self):
+    def suggest(self) -> dict[str, NDArray[Float]]:
         """Suggest a promising point to probe next."""
         if len(self._space) == 0:
             return self._space.array_to_params(self._space.random_sample())
@@ -233,7 +248,7 @@ class BayesianOptimization(Observable):
 
         return self._space.array_to_params(suggestion)
 
-    def _prime_queue(self, init_points):
+    def _prime_queue(self, init_points: int) -> None:
         """Ensure the queue is not empty.
 
         Parameters
@@ -247,14 +262,14 @@ class BayesianOptimization(Observable):
         for _ in range(init_points):
             self._queue.append(self._space.random_sample())
 
-    def _prime_subscriptions(self):
+    def _prime_subscriptions(self) -> None:
         if not any([len(subs) for subs in self._events.values()]):
             _logger = _get_default_logger(self._verbose, self.is_constrained)
             self.subscribe(Events.OPTIMIZATION_START, _logger)
             self.subscribe(Events.OPTIMIZATION_STEP, _logger)
             self.subscribe(Events.OPTIMIZATION_END, _logger)
 
-    def maximize(self, init_points=5, n_iter=25):
+    def maximize(self, init_points: int = 5, n_iter: int = 25) -> None:
         r"""
         Maximize the given function over the target space.
 
@@ -296,7 +311,7 @@ class BayesianOptimization(Observable):
 
         self.dispatch(Events.OPTIMIZATION_END)
 
-    def set_bounds(self, new_bounds):
+    def set_bounds(self, new_bounds: dict[str, NDArray[Float]]) -> None:
         """Modify the bounds of the search space.
 
         Parameters
@@ -306,6 +321,6 @@ class BayesianOptimization(Observable):
         """
         self._space.set_bounds(new_bounds)
 
-    def set_gp_params(self, **params):
+    def set_gp_params(self, **params: Any) -> None:
         """Set parameters of the internal Gaussian Process Regressor."""
         self._gp.set_params(**params)
