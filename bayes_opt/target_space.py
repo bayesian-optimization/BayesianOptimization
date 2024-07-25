@@ -12,7 +12,7 @@ from bayes_opt.exception import NotUniqueError
 from bayes_opt.util import ensure_rng
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Mapping
 
     from numpy.typing import NDArray
 
@@ -65,7 +65,7 @@ class TargetSpace:
     def __init__(
         self,
         target_func: Callable[..., float] | None,
-        pbounds: dict[str, tuple[float, float]],
+        pbounds: Mapping[str, tuple[float, float]],
         constraint: ConstraintModel | None = None,
         random_state: int | np.random.RandomState | None = None,
         allow_duplicate_points: bool | None = False,
@@ -520,7 +520,7 @@ class TargetSpace:
             )
         ]
 
-    def set_bounds(self, new_bounds: dict[str, NDArray[Float]]) -> None:
+    def set_bounds(self, new_bounds: Mapping[str, NDArray[Float]]) -> None:
         """Change the lower and upper search bounds.
 
         Parameters

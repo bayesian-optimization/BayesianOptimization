@@ -16,7 +16,7 @@ import numpy as np
 from bayes_opt.target_space import TargetSpace
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Iterable, Mapping, Sequence
 
     from numpy.typing import NDArray
 
@@ -66,7 +66,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         gamma_osc: float = 0.7,
         gamma_pan: float = 1.0,
         eta: float = 0.9,
-        minimum_window: NDArray[Float] | list[float] | float | dict[str, float] | None = 0.0,
+        minimum_window: NDArray[Float] | Sequence[float] | float | Mapping[str, float] | None = 0.0,
     ) -> None:
         self.gamma_osc = gamma_osc
         self.gamma_pan = gamma_pan

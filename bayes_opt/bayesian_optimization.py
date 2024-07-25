@@ -20,7 +20,7 @@ from bayes_opt.target_space import TargetSpace
 from bayes_opt.util import ensure_rng
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable
+    from collections.abc import Callable, Iterable, Mapping
 
     import numpy as np
     from numpy.typing import NDArray
@@ -101,7 +101,7 @@ class BayesianOptimization(Observable):
     def __init__(
         self,
         f: Callable[..., float],
-        pbounds: dict[str, tuple[float, float]],
+        pbounds: Mapping[str, tuple[float, float]],
         acquisition_function: AcquisitionFunction | None = None,
         constraint: ConstraintModel | None = None,
         random_state: int | np.random.RandomState | None = None,
@@ -311,7 +311,7 @@ class BayesianOptimization(Observable):
 
         self.dispatch(Events.OPTIMIZATION_END)
 
-    def set_bounds(self, new_bounds: dict[str, NDArray[Float]]) -> None:
+    def set_bounds(self, new_bounds: Mapping[str, NDArray[Float]]) -> None:
         """Modify the bounds of the search space.
 
         Parameters
