@@ -9,5 +9,6 @@ Examples
    Advanced Tour </advanced-tour>
    Constrained Bayesian Optimization </constraints>
    Sequential Domain Reduction </domain_reduction>
+   Acquisition Functions </acquisition_functions>
    Exploration vs. Exploitation </exploitation_vs_exploration>
    Visualization of a 1D-Optimization </visualization>

@@ -447,6 +447,21 @@
   
   
     <li class="md-nav__item">
+      <a href="acquisition_functions.html" class="md-nav__link">
+        <span title="/acquisition_functions.ipynb (reference label)" class="md-ellipsis">Acquisition Functions</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="exploitation_vs_exploration.html" class="md-nav__link">
         <span title="/exploitation_vs_exploration.ipynb (reference label)" class="md-ellipsis">Exploration vs.<wbr> Exploitation</span>
       </a>
@@ -627,7 +642,7 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-the best solution with no constraints is {&#39;target&#39;: -3.000000124830394, &#39;params&#39;: {&#39;x&#39;: 2.0, &#39;y&#39;: 0.9996466865497726}}
+the best solution with no constraints is {&#39;target&#39;: -3.000000000116973, &#39;params&#39;: {&#39;x&#39;: 2.0, &#39;y&#39;: 0.9999891845990944}}
 </pre></div></div>
 </div>
 <p>Now, let’s rerun this example, except with the constraint that y&gt;x. To do this, we are simply going to return a ‘bad’ value from the objective function whenever this constrain is violated. What constitutes a ‘bad’ value is objective function specific - in general, it’s a good idea for the ‘bad’ value you use to be similar in magnitude to the worst value that the objective function naturally has.</p>
@@ -662,7 +677,7 @@ the best solution with no constraints is {&#39;target&#39;: -3.000000124830394, 
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-the best solution with y&gt;x is {&#39;target&#39;: -4.208073090494202, &#39;params&#39;: {&#39;x&#39;: 2.0, &#39;y&#39;: 2.099123783062764}}
+the best solution with y&gt;x is {&#39;target&#39;: -4.021127762033562, &#39;params&#39;: {&#39;x&#39;: 2.0008684793556073, &#39;y&#39;: 2.0087879313090253}}
 </pre></div></div>
 </div>
 <p>Ok, this seems to have worked pretty well; our constraints have been respected and the target value isn’t even <strong>that</strong> much worse!</p>
@@ -701,11 +716,6 @@ the best solution with y&gt;x is {&#39;target&#39;: -4.208073090494202, &#39;par
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-intense-fg">Data point [2.] is not unique. 1 duplicates registered. Continuing ...</span>
-<span class="ansi-red-intense-fg">Data point [2.] is not unique. 2 duplicates registered. Continuing ...</span>
-<span class="ansi-red-intense-fg">Data point [2.] is not unique. 3 duplicates registered. Continuing ...</span>
-<span class="ansi-red-intense-fg">Data point [2.] is not unique. 4 duplicates registered. Continuing ...</span>
-<span class="ansi-red-intense-fg">Data point [2.] is not unique. 5 duplicates registered. Continuing ...</span>
 the best solution with y=4-x is {&#39;target&#39;: -4.0, &#39;params&#39;: {&#39;x&#39;: 2.0}}
 </pre></div></div>
 </div>
@@ -718,7 +728,7 @@ approach is based on a paper by <a class="reference external" href="http://proce
 <p>Note that if the constrained regions are known/if the constraint function is cheap to evaluate, then other approaches are preferable due to the computational complexity of modelling using Gaussian processes. In this case, at the time of writing the best approach is to return a low number to the optimizer when it tries to evaluate these regions</p>
 <h2 id="2.1-Simple,-single-constraint">2.1 Simple, single constraint<a class="headerlink" href="#2.1-Simple,-single-constraint" title="Link to this heading">¶</a></h2>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[4]:
 </code></pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -736,7 +746,7 @@ approach is based on a paper by <a class="reference external" href="http://proce
 \[\text{subj. to} \: \: c(x, y) \leq c^{\text{lim}}\]</div>
 <p>Note that the constraint function should have the same parameter names as the target function (i.e. in this case <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code>).</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[5]:
 </code></pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">target_function</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
@@ -752,7 +762,7 @@ approach is based on a paper by <a class="reference external" href="http://proce
 </div>
 <p>A <code class="docutils literal notranslate"><span class="pre">scipy.NonlinearConstraint</span></code> object stores the constraint configuration. Since we do not have a lower bound on our problem, provide <code class="docutils literal notranslate"><span class="pre">-np.inf</span></code> as <code class="docutils literal notranslate"><span class="pre">lb</span></code> argument.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[6]:
 </code></pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">constraint</span> <span class="o">=</span> <span class="n">NonlinearConstraint</span><span class="p">(</span><span class="n">constraint_function</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">constraint_limit</span><span class="p">)</span>
@@ -761,7 +771,7 @@ approach is based on a paper by <a class="reference external" href="http://proce
 </div>
 <p>Create a <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code> model as you would usually, providing the <code class="docutils literal notranslate"><span class="pre">ConstraintModel</span></code> instance as additional keyword argument.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[7]:
 </code></pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="c1"># Bounded region of parameter space</span>
@@ -779,11 +789,11 @@ approach is based on a paper by <a class="reference external" href="http://proce
 </div>
 <p>Run the optimization as usual – the optimizer automatically estimates the probability for the constraint to be fulfilled and modifies the acquisition function accordingly. This means, that the optimizer avoids sampling points that are likely unfeasible.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[8]:
 </code></pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span>
-    <span class="n">init_points</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">init_points</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
     <span class="n">n_iter</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
@@ -791,7 +801,7 @@ approach is based on a paper by <a class="reference external" href="http://proce
 </div>
 <p>The best combination of parameters, target value and constraint function value found by the optimizer can be accessed via the property <code class="docutils literal notranslate"><span class="pre">optimizer.max</span></code>.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[9]:
 </code></pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="n">optimizer</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
@@ -803,11 +813,11 @@ approach is based on a paper by <a class="reference external" href="http://proce
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-{&#39;target&#39;: 1.7926580410885493, &#39;params&#39;: {&#39;x&#39;: 1.8544556027555315, &#39;y&#39;: 2.9819440360534406}, &#39;constraint&#39;: 0.12369305012623513}
+{&#39;target&#39;: 1.9734131381980626, &#39;params&#39;: {&#39;x&#39;: 1.64727683929071, &#39;y&#39;: 3.2975037081163068}, &#39;constraint&#39;: 0.230305457787476}
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[10]:
 </code></pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">plot_constrained_opt</span><span class="p">(</span><span class="n">pbounds</span><span class="p">,</span> <span class="n">target_function</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">):</span>
@@ -895,7 +905,7 @@ approach is based on a paper by <a class="reference external" href="http://proce
 <p>In the following figure you will see two rows of plots with 3 quadratic plots each. The top row contains - in order – contour visualizations of the target function, constraint function and the target function (masked such that only areas where the constraint is fulfilled are plotted). Additionally we have visualized the points sampled by the optimizer – the optimal point is plotted in green, allowed (but non-optimal) points in white, and disallowed points in red. The bottom row shows – in
 order – the approximation of the target function using the gaussian regressors, the approximation of the constraint function and a visualization of the acquisition function, i.e. the function that guides the next point to sample.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[11]:
 </code></pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">plot_constrained_opt</span><span class="p">(</span><span class="n">pbounds</span><span class="p">,</span> <span class="n">target_function</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">);</span>
@@ -916,7 +926,7 @@ order – the approximation of the target function using the gaussian regressors
 <div class="math notranslate nohighlight">
 \[\text{subj. to} \: \: c^{\text{low}} \leq c(x, y) \leq c^{\text{up}}\]</div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[15]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[12]:
 </code></pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">target_function</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
@@ -933,7 +943,7 @@ order – the approximation of the target function using the gaussian regressors
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[13]:
 </code></pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">constraint</span> <span class="o">=</span> <span class="n">NonlinearConstraint</span><span class="p">(</span><span class="n">constraint_function</span><span class="p">,</span> <span class="n">constraint_lower</span><span class="p">,</span> <span class="n">constraint_upper</span><span class="p">)</span>
@@ -947,14 +957,14 @@ order – the approximation of the target function using the gaussian regressors
 <span class="p">)</span>
 
 <span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span>
-    <span class="n">init_points</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">init_points</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
     <span class="n">n_iter</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[17]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[14]:
 </code></pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">plot_constrained_opt</span><span class="p">(</span><span class="n">pbounds</span><span class="p">,</span> <span class="n">target_function</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">);</span>
@@ -981,7 +991,7 @@ order – the approximation of the target function using the gaussian regressors
 <div class="math notranslate nohighlight">
 \[\text{subj. to} \: \: c_n^{\text{low}} \leq c_n(x, y) &lt; c_n^{\text{up}}\]</div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[18]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[15]:
 </code></pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">target_function</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
@@ -1000,7 +1010,7 @@ order – the approximation of the target function using the gaussian regressors
 </div>
 <p>Construct the problem is you would in the single-constraint case and run the optimization. Note that internally the optimizer assumes conditional independence between multiple constraints.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[19]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[16]:
 </code></pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">constraint</span> <span class="o">=</span> <span class="n">NonlinearConstraint</span><span class="p">(</span><span class="n">constraint_function_2_dim</span><span class="p">,</span> <span class="n">constraint_lower</span><span class="p">,</span> <span class="n">constraint_upper</span><span class="p">)</span>
@@ -1013,14 +1023,14 @@ order – the approximation of the target function using the gaussian regressors
 <span class="p">)</span>
 
 <span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span>
-    <span class="n">init_points</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">init_points</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
     <span class="n">n_iter</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[20]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[17]:
 </code></pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">plot_constrained_opt</span><span class="p">(</span><span class="n">pbounds</span><span class="p">,</span> <span class="n">target_function</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">);</span>
