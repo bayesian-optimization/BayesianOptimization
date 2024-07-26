@@ -27,7 +27,7 @@ for notebook in notebooks:
 
 # -- Project information -----------------------------------------------------
 
-project = 'Bayesian Optimization'
+project = 'bayesian-optimization'
 author = 'Fernando Nogueira'
 
 
@@ -43,12 +43,11 @@ extensions = [
     'nbsphinx',
     'IPython.sphinxext.ipython_console_highlighting',
     'sphinx.ext.mathjax',
-    'myst_parser'
+    'sphinx_immaterial'
 ]
 
 source_suffix = {
     '.rst': 'restructuredtext',
-    '.md': 'markdown',
 }
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -64,7 +63,84 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+
+html_title = "Bayesian Optimization"
+html_theme = "sphinx_immaterial"
+copyright = 'Fernando Nogueira and the bayesian-optimization developers'
+
+# material theme options (see theme.conf for more information)
+html_theme_options = {
+    "icon": {
+        "repo": "fontawesome/brands/github",
+        "edit": "material/file-edit-outline",
+    },
+    "site_url": "https://bayesian-optimization.github.io/BayesianOptimization/index.html",
+    "repo_url": "https://github.com/bayesian-optimization/BayesianOptimization/",
+    "repo_name": "bayesian-optimization",
+    "edit_uri": "blob/main/docsrc",
+    "globaltoc_collapse": True,
+    "features": [
+        "navigation.expand",
+        # "navigation.tabs",
+        # "toc.integrate",
+        "navigation.sections",
+        # "navigation.instant",
+        # "header.autohide",
+        "navigation.top",
+        # "navigation.tracking",
+        # "search.highlight",
+        "search.share",
+        "toc.follow",
+        "toc.sticky",
+        "content.tabs.link",
+        "announce.dismiss",
+    ],
+    "palette": [
+        {
+            "media": "(prefers-color-scheme: light)",
+            "scheme": "default",
+            "primary": "light-blue",
+            "accent": "light-green",
+            "toggle": {
+                "icon": "material/lightbulb-outline",
+                "name": "Switch to dark mode",
+            },
+        },
+        {
+            "media": "(prefers-color-scheme: dark)",
+            "scheme": "slate",
+            "primary": "deep-orange",
+            "accent": "lime",
+            "toggle": {
+                "icon": "material/lightbulb",
+                "name": "Switch to light mode",
+            },
+        },
+    ],
+    # BEGIN: version_dropdown
+    "version_dropdown": True,
+    "version_json": '../versions.json',
+    # END: version_dropdown
+    "toc_title_is_page_title": True,
+    # BEGIN: social icons
+    "social": [
+        {
+            "icon": "fontawesome/brands/github",
+            "link": "https://github.com/bayesian-optimization/BayesianOptimization",
+            "name": "Source on github.com",
+        },
+        {
+            "icon": "fontawesome/brands/python",
+            "link": "https://pypi.org/project/bayesian-optimization/",
+        },
+        {
+            "icon": "fontawesome/brands/python",
+            "link": "https://anaconda.org/conda-forge/bayesian-optimization",
+        }
+    ],
+    # END: social icons
+}
+
 html_favicon = 'func.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,

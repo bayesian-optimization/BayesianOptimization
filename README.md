@@ -6,29 +6,30 @@
 
 ![tests](https://github.com/bayesian-optimization/BayesianOptimization/actions/workflows/run_tests.yml/badge.svg)
 [![Codecov](https://codecov.io/github/bayesian-optimization/BayesianOptimization/badge.svg?branch=master&service=github)](https://codecov.io/github/bayesian-optimization/BayesianOptimization?branch=master)
-[![Pypi](https://img.shields.io/pypi/v/bayesian-optimization.svg)](https://pypi.python.org/pypi/bayesian-optimization)![PyPI - Python Version](https://img.shields.io/pypi/pyversions/bayesian-optimization)
+[![Pypi](https://img.shields.io/pypi/v/bayesian-optimization.svg)](https://pypi.python.org/pypi/bayesian-optimization)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/bayesian-optimization)
 
 Pure Python implementation of bayesian global optimization with gaussian
 processes.
 
 ## Installation
 
-* PyPI (pip):
+* pip (via PyPI):
 
 ```console
 $ pip install bayesian-optimization
 ```
 
-* Conda from conda-forge channel:
+* Conda (via conda-forge):
 
 ```console
 $ conda install -c conda-forge bayesian-optimization
 ```
 
 This is a constrained global optimization package built upon bayesian inference
-and gaussian process, that attempts to find the maximum value of an unknown
+and gaussian processes, that attempts to find the maximum value of an unknown
 function in as few iterations as possible. This technique is particularly
-suited for optimization of high cost functions, situations where the balance
+suited for optimization of high cost functions and situations where the balance
 between exploration and exploitation is important.
 
 ## Quick Start

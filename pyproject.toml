@@ -33,7 +33,7 @@ jupyter = "^1.0.0"
 matplotlib = "^3.0"
 sphinx = "^7.3.7"
 nbsphinx = "^0.9.4"
-sphinx-rtd-theme = "^2.0.0"
+sphinx-immaterial = "^0.12.0"
 myst-parser = "^3.0.1"
 
 
