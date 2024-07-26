@@ -74,10 +74,10 @@ html_theme_options = {
         "repo": "fontawesome/brands/github",
         "edit": "material/file-edit-outline",
     },
-    "site_url": "https://bayesian-optimization.github.io/BayesianOptimization/index.html",
+    "site_url": "https://bayesian-optimization.github.io/BayesianOptimization/",
     "repo_url": "https://github.com/bayesian-optimization/BayesianOptimization/",
     "repo_name": "bayesian-optimization",
-    "edit_uri": "blob/main/docsrc",
+    "edit_uri": "blob/master/docsrc",
     "globaltoc_collapse": True,
     "features": [
         "navigation.expand",
