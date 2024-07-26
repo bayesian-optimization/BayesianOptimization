@@ -248,7 +248,7 @@ def test_maximize():
     optimizer.subscribe(event=Events.OPTIMIZATION_END, subscriber=tracker, callback=tracker.update_end)
 
     optimizer.maximize(init_points=0, n_iter=0)
-    assert optimizer._queue.empty
+    assert not optimizer._queue
     assert len(optimizer.space) == 1
     assert tracker.start_count == 1
     assert tracker.step_count == 1
@@ -256,7 +256,7 @@ def test_maximize():
 
     optimizer.set_gp_params(alpha=1e-2)
     optimizer.maximize(init_points=2, n_iter=0)
-    assert optimizer._queue.empty
+    assert not optimizer._queue
     assert len(optimizer.space) == 3
     assert optimizer._gp.alpha == 1e-2
     assert tracker.start_count == 2
@@ -264,7 +264,7 @@ def test_maximize():
     assert tracker.end_count == 2
 
     optimizer.maximize(init_points=0, n_iter=2)
-    assert optimizer._queue.empty
+    assert not optimizer._queue
     assert len(optimizer.space) == 5
     assert tracker.start_count == 3
     assert tracker.step_count == 5
