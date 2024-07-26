@@ -6,10 +6,10 @@ on:
   pull_request:
 
 permissions:
-  contents: check
+  contents: read
 
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
