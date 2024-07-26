@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import pytest
+
 from bayes_opt.bayesian_optimization import Queue
 
 
@@ -19,7 +22,6 @@ def test_add():
 
 
 def test_queue():
-
     queue = Queue()
 
     with pytest.raises(StopIteration):
@@ -40,8 +42,7 @@ def test_queue():
     assert len(queue) == 0
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     r"""
     CommandLine:
         python tests/test_observer.py

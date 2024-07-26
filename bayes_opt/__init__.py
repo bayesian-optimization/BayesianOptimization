@@ -1,23 +1,24 @@
 """Pure Python implementation of bayesian global optimization with gaussian processes."""
-from .bayesian_optimization import BayesianOptimization, Events
-from .domain_reduction import SequentialDomainReductionTransformer
-from .util import UtilityFunction
-from .logger import ScreenLogger, JSONLogger
-from .constraint import ConstraintModel
-from .util import UtilityFunction
+
+from __future__ import annotations
 
 import importlib.metadata
-__version__ = importlib.metadata.version('bayesian-optimization')
 
+from bayes_opt import acquisition
+from bayes_opt.bayesian_optimization import BayesianOptimization, Events
+from bayes_opt.constraint import ConstraintModel
+from bayes_opt.domain_reduction import SequentialDomainReductionTransformer
+from bayes_opt.logger import JSONLogger, ScreenLogger
+
+__version__ = importlib.metadata.version("bayesian-optimization")
 
 
 __all__ = [
+    "acquisition",
     "BayesianOptimization",
     "ConstraintModel",
-    "UtilityFunction",
     "Events",
     "ScreenLogger",
     "JSONLogger",
     "SequentialDomainReductionTransformer",
 ]
-

@@ -1,139 +1,22 @@
-import pytest
+from __future__ import annotations
+
+from pathlib import Path
+
 import numpy as np
+import pytest
+from scipy.optimize import NonlinearConstraint
 
 from bayes_opt import BayesianOptimization
-from bayes_opt.util import UtilityFunction
-from bayes_opt.util import acq_max, load_logs, ensure_rng
+from bayes_opt.util import load_logs
 
-from sklearn.gaussian_process.kernels import Matern
-from sklearn.gaussian_process import GaussianProcessRegressor
-
-from scipy.optimize import NonlinearConstraint
-from pathlib import Path
 test_dir = Path(__file__).parent.resolve()
 
 
-def get_globals():
-    X = np.array([
-        [0.00, 0.00],
-        [0.99, 0.99],
-        [0.00, 0.99],
-        [0.99, 0.00],
-        [0.50, 0.50],
-        [0.25, 0.50],
-        [0.50, 0.25],
-        [0.75, 0.50],
-        [0.50, 0.75],
-    ])
-
-    def get_y(X):
-        return -(X[:, 0] - 0.3) ** 2 - 0.5 * (X[:, 1] - 0.6)**2 + 2
-    y = get_y(X)
-
-    mesh = np.dstack(
-        np.meshgrid(np.arange(0, 1, 0.005), np.arange(0, 1, 0.005))
-    ).reshape(-1, 2)
-
-    GP = GaussianProcessRegressor(
-        kernel=Matern(),
-        n_restarts_optimizer=25,
-    )
-    GP.fit(X, y)
-
-    return {'x': X, 'y': y, 'gp': GP, 'mesh': mesh}
-
-
-def brute_force_maximum(MESH, GP, kind='ucb', kappa=1.0, xi=1.0):
-    uf = UtilityFunction(kind=kind, kappa=kappa, xi=xi)
-
-    mesh_vals = uf.utility(MESH, GP, 2)
-    max_val = mesh_vals.max()
-    max_arg_val = MESH[np.argmax(mesh_vals)]
-
-    return max_val, max_arg_val
-
-
-GLOB = get_globals()
-X, Y, GP, MESH = GLOB['x'], GLOB['y'], GLOB['gp'], GLOB['mesh']
-
-
-def test_utility_function():
-    util = UtilityFunction(kind="ucb", kappa=1.0, xi=1.0)
-    assert util.kind == "ucb"
-
-    util = UtilityFunction(kind="ei", kappa=1.0, xi=1.0)
-    assert util.kind == "ei"
-
-    util = UtilityFunction(kind="poi", kappa=1.0, xi=1.0)
-    assert util.kind == "poi"
-
-    with pytest.raises(NotImplementedError):
-        util = UtilityFunction(kind="other", kappa=1.0, xi=1.0)
-
-
-def test_acq_with_ucb():
-    util = UtilityFunction(kind="ucb", kappa=1.0, xi=1.0)
-    epsilon = 1e-2
-    y_max = 2.0
-
-    max_arg = acq_max(
-        util.utility,
-        GP,
-        y_max,
-        bounds=np.array([[0, 1], [0, 1]]),
-        random_state=ensure_rng(0),
-        n_iter=20
-    )
-    _, brute_max_arg = brute_force_maximum(MESH, GP, kind='ucb', kappa=1.0, xi=1.0)
-
-    assert all(abs(brute_max_arg - max_arg) < epsilon)
-
-
-def test_acq_with_ei():
-    util = UtilityFunction(kind="ei", kappa=1.0, xi=1e-6)
-    epsilon = 1e-2
-    y_max = 2.0
-
-    max_arg = acq_max(
-        util.utility,
-        GP,
-        y_max,
-        bounds=np.array([[0, 1], [0, 1]]),
-        random_state=ensure_rng(0),
-        n_iter=200,
-    )
-    _, brute_max_arg = brute_force_maximum(MESH, GP, kind='ei', kappa=1.0, xi=1e-6)
-
-    assert all(abs(brute_max_arg - max_arg) < epsilon)
-
-
-def test_acq_with_poi():
-    util = UtilityFunction(kind="poi", kappa=1.0, xi=1e-4)
-    epsilon = 1e-2
-    y_max = 2.0
-
-    max_arg = acq_max(
-        util.utility,
-        GP,
-        y_max,
-        bounds=np.array([[0, 1], [0, 1]]),
-        random_state=ensure_rng(0),
-        n_iter=200,
-    )
-    _, brute_max_arg = brute_force_maximum(MESH, GP, kind='poi', kappa=1.0, xi=1e-4)
-
-    assert all(abs(brute_max_arg - max_arg) < epsilon)
-
-
 def test_logs():
-    import pytest
     def f(x, y):
-        return -x ** 2 - (y - 1) ** 2 + 1
+        return -(x**2) - (y - 1) ** 2 + 1
 
-    optimizer = BayesianOptimization(
-        f=f,
-        pbounds={"x": (-200, 200), "y": (-200, 200)}
-    )
+    optimizer = BayesianOptimization(f=f, pbounds={"x": (-200, 200), "y": (-200, 200)})
     assert len(optimizer.space) == 0
 
     load_logs(optimizer, [str(test_dir / "test_logs.log")])
@@ -142,78 +25,72 @@ def test_logs():
     load_logs(optimizer, [str(test_dir / "test_logs.log")])
     assert len(optimizer.space) == 5
 
-    other_optimizer = BayesianOptimization(
-        f=lambda x: -x ** 2,
-        pbounds={"x": (-2, 2)}
-    )
+    other_optimizer = BayesianOptimization(f=lambda x: -(x**2), pbounds={"x": (-2, 2)})
     with pytest.raises(ValueError):
         load_logs(other_optimizer, [str(test_dir / "test_logs.log")])
+
+
+def test_logs_str():
+    def f(x, y):
+        return -(x**2) - (y - 1) ** 2 + 1
+
+    optimizer = BayesianOptimization(f=f, pbounds={"x": (-200, 200), "y": (-200, 200)})
+    assert len(optimizer.space) == 0
+
+    load_logs(optimizer, str(test_dir / "test_logs.log"))
+    assert len(optimizer.space) == 5
 
 
 def test_logs_bounds():
     def f(x, y):
         return x + y
 
-    optimizer = BayesianOptimization(
-        f=f,
-        pbounds={"x": (-2, 2), "y": (-2, 2)}
-    )
+    optimizer = BayesianOptimization(f=f, pbounds={"x": (-2, 2), "y": (-2, 2)})
 
     with pytest.warns(UserWarning):
         load_logs(optimizer, [str(test_dir / "test_logs_bounds.log")])
-    
+
     assert len(optimizer.space) == 5
 
 
 def test_logs_constraint():
-
     def f(x, y):
-        return -x ** 2 - (y - 1) ** 2 + 1
+        return -(x**2) - (y - 1) ** 2 + 1
 
     def c(x, y):
-        return x ** 2 + y ** 2
-    
+        return x**2 + y**2
+
     constraint = NonlinearConstraint(c, -np.inf, 3)
 
-    optimizer = BayesianOptimization(
-        f=f,
-        pbounds={"x": (-200, 200), "y": (-200, 200)},
-        constraint=constraint
-    )
+    optimizer = BayesianOptimization(f=f, pbounds={"x": (-200, 200), "y": (-200, 200)}, constraint=constraint)
 
     with pytest.raises(KeyError):
         load_logs(optimizer, [str(test_dir / "test_logs.log")])
-    
+
     load_logs(optimizer, [str(test_dir / "test_logs_constrained.log")])
 
     assert len(optimizer.space) == 7
 
 
-def test_logs_constraint():
-
+def test_logs_constraint_new_array():
     def f(x, y):
-        return -x ** 2 - (y - 1) ** 2 + 1
+        return -(x**2) - (y - 1) ** 2 + 1
 
     def c(x, y):
-        return np.array([
-            - np.cos(x) * np.cos(y) + np.sin(x) * np.sin(y),
-            - np.cos(x) * np.cos(-y) + np.sin(x) * np.sin(-y)
-        ])
+        return np.array(
+            [-np.cos(x) * np.cos(y) + np.sin(x) * np.sin(y), -np.cos(x) * np.cos(-y) + np.sin(x) * np.sin(-y)]
+        )
 
     constraint_lower = np.array([-np.inf, -np.inf])
     constraint_upper = np.array([0.6, 0.6])
 
     constraint = NonlinearConstraint(c, constraint_lower, constraint_upper)
 
-    optimizer = BayesianOptimization(
-        f=f,
-        pbounds={"x": (-200, 200), "y": (-200, 200)},
-        constraint=constraint
-    )
+    optimizer = BayesianOptimization(f=f, pbounds={"x": (-200, 200), "y": (-200, 200)}, constraint=constraint)
 
     with pytest.raises(KeyError):
         load_logs(optimizer, [str(test_dir / "test_logs.log")])
-    
+
     with pytest.raises(ValueError):
         load_logs(optimizer, [str(test_dir / "test_logs_constrained.log")])
 
@@ -223,7 +100,7 @@ def test_logs_constraint():
     assert len(optimizer.space) == 12
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     r"""
     CommandLine:
         python tests/test_target_space.py
