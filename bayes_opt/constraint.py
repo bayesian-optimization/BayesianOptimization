@@ -17,20 +17,20 @@ class ConstraintModel:
 
     Parameters
     ----------
-    fun : None or Callable -> float or np.ndarray
+    fun: None or Callable -> float or np.ndarray
         The constraint function. Should be float-valued or array-valued (if
         multiple constraints are present). Needs to take the same parameters
         as the optimization target with the same argument names.
 
-    lb : float or np.ndarray
+    lb: float or np.ndarray
         The lower bound on the constraints. Should have the same
         dimensionality as the return value of the constraint function.
 
-    ub : float or np.ndarray
+    ub: float or np.ndarray
         The upper bound on the constraints. Should have the same
         dimensionality as the return value of the constraint function.
 
-    random_state : np.random.RandomState or int or None, default=None
+    random_state: np.random.RandomState or int or None, default=None
         Random state to use.
 
     Notes
@@ -82,7 +82,7 @@ class ConstraintModel:
 
         Parameters
         ----------
-        \*\*kwargs : any
+        \*\*kwargs: any
             Function arguments to evaluate the constraint function on.
 
 
@@ -152,7 +152,7 @@ class ConstraintModel:
 
         Parameters
         ----------
-        X : np.ndarray of shape (n_samples, n_features)
+        X: np.ndarray of shape (n_samples, n_features)
             Parameters for which to predict the probability of constraint
             fulfilment.
 
@@ -195,7 +195,7 @@ class ConstraintModel:
 
         Parameters
         ----------
-        X : np.ndarray of shape (n_samples, n_features)
+        X: np.ndarray of shape (n_samples, n_features)
             Parameters for which to estimate the constraint function value.
 
         Returns
@@ -216,7 +216,7 @@ class ConstraintModel:
 
         Parameters
         ----------
-        constraint_values : np.ndarray of shape (n_samples, n_constraints)
+        constraint_values: np.ndarray of shape (n_samples, n_constraints)
             The values of the constraint function.
 
 

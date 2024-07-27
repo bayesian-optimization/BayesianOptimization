@@ -24,11 +24,11 @@ class _Tracker:
 
         Parameters
         ----------
-        event : str
+        event: str
             One of the values associated with `Events.OPTIMIZATION_START`,
             `Events.OPTIMIZATION_STEP` or `Events.OPTIMIZATION_END`.
 
-        instance : bayesian_optimization.BayesianOptimization
+        instance: bayesian_optimization.BayesianOptimization
             The instance associated with the step.
         """
         if event == Events.OPTIMIZATION_STEP:

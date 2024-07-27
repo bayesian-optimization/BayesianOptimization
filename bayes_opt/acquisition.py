@@ -27,7 +27,7 @@ class AcquisitionFunction(abc.ABC):
 
     Parameters
     ----------
-    random_state : int, RandomState, default None
+    random_state: int, RandomState, default None
         Set the random state for reproducibility.
     """
 
@@ -66,19 +66,19 @@ class AcquisitionFunction(abc.ABC):
 
         Parameters
         ----------
-        gp : GaussianProcessRegressor
+        gp: GaussianProcessRegressor
             A fitted Gaussian Process.
 
-        target_space : TargetSpace
+        target_space: TargetSpace
             The target space to probe.
 
-        n_random : int, default 10_000
+        n_random: int, default 10_000
             Number of random samples to use.
 
-        n_l_bfgs_b : int, default 10
+        n_l_bfgs_b: int, default 10
             Number of starting points for the L-BFGS-B optimizer.
 
-        fit_gp : bool, default True
+        fit_gp: bool, default True
             Whether to fit the Gaussian Process to the target space.
             Set to False if the GP is already fitted.
 
@@ -111,10 +111,10 @@ class AcquisitionFunction(abc.ABC):
 
         Parameters
         ----------
-        gp : GaussianProcessRegressor
+        gp: GaussianProcessRegressor
             A fitted Gaussian Process.
 
-        constraint : ConstraintModel, default None
+        constraint: ConstraintModel, default None
             A fitted constraint model, if constraints are present and the
             acquisition function supports them.
 
@@ -153,18 +153,18 @@ class AcquisitionFunction(abc.ABC):
 
         Parameters
         ----------
-        acq : Callable
+        acq: Callable
             Acquisition function to use. Should accept an array of parameters `x`.
 
-        bounds : np.ndarray
+        bounds: np.ndarray
             Bounds of the search space. For `N` parameters this has shape
             `(N, 2)` with `[i, 0]` the lower bound of parameter `i` and
             `[i, 1]` the upper bound.
 
-        n_random : int
+        n_random: int
             Number of random samples to use.
 
-        n_l_bfgs_b : int
+        n_l_bfgs_b: int
             Number of starting points for the L-BFGS-B optimizer.
 
         Returns
@@ -189,23 +189,23 @@ class AcquisitionFunction(abc.ABC):
 
         Parameters
         ----------
-        acq : Callable
+        acq: Callable
             Acquisition function to use. Should accept an array of parameters `x`.
 
-        bounds : np.ndarray
+        bounds: np.ndarray
             Bounds of the search space. For `N` parameters this has shape
             `(N, 2)` with `[i, 0]` the lower bound of parameter `i` and
             `[i, 1]` the upper bound.
 
-        n_random : int
+        n_random: int
             Number of random samples to use.
 
         Returns
         -------
-        x_min : np.ndarray
+        x_min: np.ndarray
             Random sample minimizing the acquisition function.
 
-        min_acq : float
+        min_acq: float
             Acquisition function value at `x_min`
         """
         if n_random == 0:
@@ -223,23 +223,23 @@ class AcquisitionFunction(abc.ABC):
 
         Parameters
         ----------
-        acq : Callable
+        acq: Callable
             Acquisition function to use. Should accept an array of parameters `x`.
 
-        bounds : np.ndarray
+        bounds: np.ndarray
             Bounds of the search space. For `N` parameters this has shape
             `(N, 2)` with `[i, 0]` the lower bound of parameter `i` and
             `[i, 1]` the upper bound.
 
-        n_x_seeds : int
+        n_x_seeds: int
             Number of starting points for the L-BFGS-B optimizer.
 
         Returns
         -------
-        x_min : np.ndarray
+        x_min: np.ndarray
             Minimal result of the L-BFGS-B optimizer.
 
-        min_acq : float
+        min_acq: float
             Acquisition function value at `x_min`
         """
         if n_x_seeds == 0:
@@ -279,17 +279,17 @@ class UpperConfidenceBound(AcquisitionFunction):
 
     Parameters
     ----------
-    kappa : float, default 2.576
+    kappa: float, default 2.576
         Governs the exploration/exploitation tradeoff. Lower prefers
         exploitation, higher prefers exploration.
 
-    exploration_decay : float, default None
+    exploration_decay: float, default None
         Decay rate for kappa. If None, no decay is applied.
 
-    exploration_decay_delay : int, default None
+    exploration_decay_delay: int, default None
         Delay for decay. If None, decay is applied from the start.
 
-    random_state : int, RandomState, default None
+    random_state: int, RandomState, default None
         Set the random state for reproducibility.
 
     """
@@ -311,10 +311,10 @@ class UpperConfidenceBound(AcquisitionFunction):
 
         Parameters
         ----------
-        mean : np.ndarray
+        mean: np.ndarray
             Mean of the predictive distribution.
 
-        std : np.ndarray
+        std: np.ndarray
             Standard deviation of the predictive distribution.
 
         Returns
@@ -336,19 +336,19 @@ class UpperConfidenceBound(AcquisitionFunction):
 
         Parameters
         ----------
-        gp : GaussianProcessRegressor
+        gp: GaussianProcessRegressor
             A fitted Gaussian Process.
 
-        target_space : TargetSpace
+        target_space: TargetSpace
             The target space to probe.
 
-        n_random : int, default 10_000
+        n_random: int, default 10_000
             Number of random samples to use.
 
-        n_l_bfgs_b : int, default 10
+        n_l_bfgs_b: int, default 10
             Number of starting points for the L-BFGS-B optimizer.
 
-        fit_gp : bool, default True
+        fit_gp: bool, default True
             Whether to fit the Gaussian Process to the target space.
             Set to False if the GP is already fitted.
 
@@ -391,17 +391,17 @@ class ProbabilityOfImprovement(AcquisitionFunction):
 
     Parameters
     ----------
-    xi : float, positive
+    xi: float, positive
         Governs the exploration/exploitation tradeoff. Lower prefers
         exploitation, higher prefers exploration.
 
-    exploration_decay : float, default None
+    exploration_decay: float, default None
         Decay rate for xi. If None, no decay is applied.
 
-    exploration_decay_delay : int, default None
+    exploration_decay_delay: int, default None
         Delay for decay. If None, decay is applied from the start.
 
-    random_state : int, RandomState, default None
+    random_state: int, RandomState, default None
         Set the random state for reproducibility.
     """
 
@@ -417,10 +417,10 @@ class ProbabilityOfImprovement(AcquisitionFunction):
 
         Parameters
         ----------
-        mean : np.ndarray
+        mean: np.ndarray
             Mean of the predictive distribution.
 
-        std : np.ndarray
+        std: np.ndarray
             Standard deviation of the predictive distribution.
 
         Returns
@@ -454,19 +454,19 @@ class ProbabilityOfImprovement(AcquisitionFunction):
 
         Parameters
         ----------
-        gp : GaussianProcessRegressor
+        gp: GaussianProcessRegressor
             A fitted Gaussian Process.
 
-        target_space : TargetSpace
+        target_space: TargetSpace
             The target space to probe.
 
-        n_random : int, default 10_000
+        n_random: int, default 10_000
             Number of random samples to use.
 
-        n_l_bfgs_b : int, default 10
+        n_l_bfgs_b: int, default 10
             Number of starting points for the L-BFGS-B optimizer.
 
-        fit_gp : bool, default True
+        fit_gp: bool, default True
             Whether to fit the Gaussian Process to the target space.
             Set to False if the GP is already fitted.
 
@@ -520,16 +520,16 @@ class ExpectedImprovement(AcquisitionFunction):
 
     Parameters
     ----------
-    xi : float, positive
+    xi: float, positive
         Governs the exploration/exploitation tradeoff. Lower prefers
         exploitation, higher prefers exploration.
 
-    exploration_decay : float, default None
+    exploration_decay: float, default None
         Decay rate for xi. If None, no decay is applied.
 
-    exploration_decay_delay : int, default None
+    exploration_decay_delay: int, default None
 
-    random_state : int, RandomState, default None
+    random_state: int, RandomState, default None
         Set the random state for reproducibility.
     """
 
@@ -545,10 +545,10 @@ class ExpectedImprovement(AcquisitionFunction):
 
         Parameters
         ----------
-        mean : np.ndarray
+        mean: np.ndarray
             Mean of the predictive distribution.
 
-        std : np.ndarray
+        std: np.ndarray
             Standard deviation of the predictive distribution.
 
         Returns
@@ -583,19 +583,19 @@ class ExpectedImprovement(AcquisitionFunction):
 
         Parameters
         ----------
-        gp : GaussianProcessRegressor
+        gp: GaussianProcessRegressor
             A fitted Gaussian Process.
 
-        target_space : TargetSpace
+        target_space: TargetSpace
             The target space to probe.
 
-        n_random : int, default 10_000
+        n_random: int, default 10_000
             Number of random samples to use.
 
-        n_l_bfgs_b : int, default 10
+        n_l_bfgs_b: int, default 10
             Number of starting points for the L-BFGS-B optimizer.
 
-        fit_gp : bool, default True
+        fit_gp: bool, default True
             Whether to fit the Gaussian Process to the target space.
             Set to False if the GP is already fitted.
 
@@ -644,22 +644,22 @@ class ConstantLiar(AcquisitionFunction):
 
     Parameters
     ----------
-    base_acquisition : AcquisitionFunction
+    base_acquisition: AcquisitionFunction
         The acquisition function to use.
 
-    strategy : float or str, default 'max'
+    strategy: float or str, default 'max'
         Strategy to use for the constant liar. If a float, the constant liar
         will always register dummies with this value. If 'min'/'mean'/'max',
         the constant liar will register dummies with the minimum/mean/maximum
         target value in the target space.
 
-    random_state : int, RandomState, default None
+    random_state: int, RandomState, default None
         Set the random state for reproducibility.
 
-    atol : float, default 1e-5
+    atol: float, default 1e-5
         Absolute tolerance to eliminate a dummy point.
 
-    rtol : float, default 1e-8
+    rtol: float, default 1e-8
         Relative tolerance to eliminate a dummy point.
     """
 
@@ -693,7 +693,7 @@ class ConstantLiar(AcquisitionFunction):
 
         Parameters
         ----------
-        target_space : TargetSpace
+        target_space: TargetSpace
             The target space to copy.
 
         Returns
@@ -723,7 +723,7 @@ class ConstantLiar(AcquisitionFunction):
 
         Parameters
         ----------
-        target_space : TargetSpace
+        target_space: TargetSpace
             The target space to compare the dummies to.
         """
         dummies = []
@@ -745,19 +745,19 @@ class ConstantLiar(AcquisitionFunction):
 
         Parameters
         ----------
-        gp : GaussianProcessRegressor
+        gp: GaussianProcessRegressor
             A fitted Gaussian Process.
 
-        target_space : TargetSpace
+        target_space: TargetSpace
             The target space to probe.
 
-        n_random : int, default 10_000
+        n_random: int, default 10_000
             Number of random samples to use.
 
-        n_l_bfgs_b : int, default 10
+        n_l_bfgs_b: int, default 10
             Number of starting points for the L-BFGS-B optimizer.
 
-        fit_gp : bool, default True
+        fit_gp: bool, default True
             Whether to fit the Gaussian Process to the target space.
             Set to False if the GP is already fitted.
 
@@ -831,10 +831,10 @@ class GPHedge(AcquisitionFunction):
 
     Parameters
     ----------
-    base_acquisitions : List[AcquisitionFunction]
+    base_acquisitions: List[AcquisitionFunction]
         List of base acquisition functions.
 
-    random_state : int, RandomState, default None
+    random_state: int, RandomState, default None
         Set the random state for reproducibility.
     """
 
@@ -880,19 +880,19 @@ class GPHedge(AcquisitionFunction):
 
         Parameters
         ----------
-        gp : GaussianProcessRegressor
+        gp: GaussianProcessRegressor
             A fitted Gaussian Process.
 
-        target_space : TargetSpace
+        target_space: TargetSpace
             The target space to probe.
 
-        n_random : int, default 10_000
+        n_random: int, default 10_000
             Number of random samples to use.
 
-        n_l_bfgs_b : int, default 10
+        n_l_bfgs_b: int, default 10
             Number of starting points for the L-BFGS-B optimizer.
 
-        fit_gp : bool, default True
+        fit_gp: bool, default True
             Whether to fit the Gaussian Process to the target space.
             Set to False if the GP is already fitted.
 

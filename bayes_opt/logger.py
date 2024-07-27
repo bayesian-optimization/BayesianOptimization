@@ -21,10 +21,10 @@ def _get_default_logger(verbose, is_constrained):
 
     Parameters
     ----------
-    verbose : int
+    verbose: int
         Verbosity level of the logger.
 
-    is_constrained : bool
+    is_constrained: bool
         Whether the underlying optimizer uses constraints (this requires
         an additional column in the output).
 
@@ -42,10 +42,10 @@ class ScreenLogger(_Tracker):
 
     Parameters
     ----------
-    verbose : int
+    verbose: int
         Verbosity level of the logger.
 
-    is_constrained : bool
+    is_constrained: bool
         Whether the logger is associated with a constrained optimization
         instance.
     """
@@ -73,7 +73,7 @@ class ScreenLogger(_Tracker):
 
         Parameters
         ----------
-        v : int
+        v: int
             New verbosity level of the logger.
         """
         self._verbose = v
@@ -88,7 +88,7 @@ class ScreenLogger(_Tracker):
 
         Parameters
         ----------
-        x : number
+        x: number
             Value to format.
 
         Returns
@@ -111,7 +111,7 @@ class ScreenLogger(_Tracker):
 
         Parameters
         ----------
-        x : boolean
+        x: boolean
             Value to format.
 
         Returns
@@ -126,7 +126,7 @@ class ScreenLogger(_Tracker):
 
         Parameters
         ----------
-        key : string
+        key: string
             Value to format.
 
         Returns
@@ -143,7 +143,7 @@ class ScreenLogger(_Tracker):
 
         Parameters
         ----------
-        instance : bayesian_optimization.BayesianOptimization
+        instance: bayesian_optimization.BayesianOptimization
             The instance associated with the event.
 
         colour :
@@ -170,7 +170,7 @@ class ScreenLogger(_Tracker):
 
         Parameters
         ----------
-        instance : bayesian_optimization.BayesianOptimization
+        instance: bayesian_optimization.BayesianOptimization
             The instance associated with the header.
 
         Returns
@@ -195,7 +195,7 @@ class ScreenLogger(_Tracker):
 
         Parameters
         ----------
-        instance : bayesian_optimization.BayesianOptimization
+        instance: bayesian_optimization.BayesianOptimization
             The instance associated with the step.
 
         Returns
@@ -216,11 +216,11 @@ class ScreenLogger(_Tracker):
 
         Parameters
         ----------
-        event : str
+        event: str
             One of the values associated with `Events.OPTIMIZATION_START`,
             `Events.OPTIMIZATION_STEP` or `Events.OPTIMIZATION_END`.
 
-        instance : bayesian_optimization.BayesianOptimization
+        instance: bayesian_optimization.BayesianOptimization
             The instance associated with the step.
         """
         if event == Events.OPTIMIZATION_START:
@@ -248,10 +248,10 @@ class JSONLogger(_Tracker):
 
     Parameters
     ----------
-    path : str or bytes or os.PathLike
+    path: str or bytes or os.PathLike
         Path to the file to write to.
 
-    reset : bool
+    reset: bool
         Whether to overwrite the file if it already exists.
 
     """
@@ -269,11 +269,11 @@ class JSONLogger(_Tracker):
 
         Parameters
         ----------
-        event : str
+        event: str
             One of the values associated with `Events.OPTIMIZATION_START`,
             `Events.OPTIMIZATION_STEP` or `Events.OPTIMIZATION_END`.
 
-        instance : bayesian_optimization.BayesianOptimization
+        instance: bayesian_optimization.BayesianOptimization
             The instance associated with the step.
 
         """

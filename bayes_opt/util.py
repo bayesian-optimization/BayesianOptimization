@@ -29,10 +29,10 @@ def load_logs(optimizer, logs):
 
     Parameters
     ----------
-    optimizer : BayesianOptimizer
+    optimizer: BayesianOptimizer
         Optimizer the register the previous observations with.
 
-    logs : str or bytes or os.PathLike
+    logs: str or bytes or os.PathLike
         File to load the logs from.
 
     Returns
@@ -69,7 +69,7 @@ def ensure_rng(random_state=None):
 
     Parameters
     ----------
-    random_state : np.random.RandomState or int or None, default=None
+    random_state: np.random.RandomState or int or None, default=None
         Random state to use. if `None`, will create an unseeded random state.
         If `int`, creates a state using the argument as seed. If a
         `np.random.RandomState` simply returns the argument.

@@ -39,16 +39,16 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
     Parameters
     ----------
-    gamma_osc : float, default=0.7
+    gamma_osc: float, default=0.7
         Parameter used to scale (typically dampen) oscillations.
 
-    gamma_pan : float, default=1.0
+    gamma_pan: float, default=1.0
         Parameter used to scale (typically unitary) panning.
 
-    eta : float, default=0.9
+    eta: float, default=0.9
         Zooming parameter used to shrink the region of interest.
 
-    minimum_window : float or np.ndarray or dict, default=0.0
+    minimum_window: float or np.ndarray or dict, default=0.0
         Minimum window size for each parameter. If a float is provided,
         the same value is used for all parameters.
     """
@@ -75,7 +75,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
         Parameters
         ----------
-        target_space : TargetSpace
+        target_space: TargetSpace
             TargetSpace this DomainTransformer operates on.
         """
         # Set the original bounds
@@ -117,7 +117,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
         Parameters
         ----------
-        target_space : TargetSpace
+        target_space: TargetSpace
             TargetSpace this DomainTransformer operates on.
         """
         # setting the previous
@@ -144,15 +144,15 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
         Parameters
         ----------
-        new_bounds : np.ndarray
+        new_bounds: np.ndarray
             The proposed new_bounds that (may) need adjustment.
 
-        global_bounds : np.ndarray
+        global_bounds: np.ndarray
             The maximum allowable bounds for each parameter.
 
         Returns
         -------
-        new_bounds : np.ndarray
+        new_bounds: np.ndarray
             The adjusted bounds after enforcing constraints.
         """
         # sort bounds
@@ -227,7 +227,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
         Parameters
         ----------
-        global_bounds : np.ndarray
+        global_bounds: np.ndarray
             The maximum allowable bounds for each parameter.
 
         Raises
@@ -246,10 +246,10 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
         Parameters
         ----------
-        parameters : dict
+        parameters: dict
             The parameters for which to create the bounds.
 
-        bounds : np.ndarray
+        bounds: np.ndarray
             The bounds for each parameter.
         """
         return {param: bounds[i, :] for i, param in enumerate(parameters)}
@@ -259,7 +259,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
         Parameters
         ----------
-        target_space : TargetSpace
+        target_space: TargetSpace
             TargetSpace this DomainTransformer operates on.
 
         Returns

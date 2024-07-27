@@ -22,14 +22,14 @@ class TargetSpace:
 
     Parameters
     ----------
-    target_func : function
+    target_func: function
         Function to be maximized.
 
-    pbounds : dict
+    pbounds: dict
         Dictionary with parameters names as keys and a tuple with minimum
         and maximum values.
 
-    random_state : int, RandomState, or None
+    random_state: int, RandomState, or None
         optionally specify a seed for a random number generator
 
     allow_duplicate_points: bool, optional (default=False)
@@ -219,7 +219,7 @@ class TargetSpace:
 
         Parameters
         ----------
-        params : dict
+        params: dict
             a single point, with len(x) == self.dim.
 
         Returns
@@ -240,7 +240,7 @@ class TargetSpace:
 
         Parameters
         ----------
-        x : np.ndarray
+        x: np.ndarray
             a single point, with len(x) == self.dim.
 
         Returns
@@ -276,13 +276,13 @@ class TargetSpace:
 
         Parameters
         ----------
-        params : np.ndarray
+        params: np.ndarray
             a single point, with len(x) == self.dim.
 
-        target : float
+        target: float
             target function value
 
-        constraint_value : float or None
+        constraint_value: float or None
             Constraint function value
 
         Raises
@@ -363,12 +363,12 @@ class TargetSpace:
 
         Parameters
         ----------
-        params : np.ndarray
+        params: np.ndarray
             a single point, with len(x) == self.dim
 
         Returns
         -------
-        result : float | Tuple(float, float)
+        result: float | Tuple(float, float)
             target function value, or Tuple(target function value, constraint value)
 
         Example
@@ -504,7 +504,7 @@ class TargetSpace:
 
         Parameters
         ----------
-        new_bounds : dict
+        new_bounds: dict
             A dictionary with the parameter name and its new bounds
         """
         for row, key in enumerate(self.keys):

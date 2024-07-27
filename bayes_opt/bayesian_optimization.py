@@ -302,7 +302,7 @@ class BayesianOptimization(Observable):
 
         Parameters
         ----------
-        init_points : int, optional(default=5)
+        init_points: int, optional(default=5)
             Number of iterations before the explorations starts the exploration
             for the maximum.
 
@@ -335,7 +335,7 @@ class BayesianOptimization(Observable):
 
         Parameters
         ----------
-        new_bounds : dict
+        new_bounds: dict
             A dictionary with the parameter name and its new bounds
         """
         self._space.set_bounds(new_bounds)
