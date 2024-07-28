@@ -43,6 +43,7 @@ extensions = [
     'nbsphinx',
     'IPython.sphinxext.ipython_console_highlighting',
     'sphinx.ext.mathjax',
+    "sphinx.ext.napoleon",
     'sphinx_immaterial'
 ]
 
