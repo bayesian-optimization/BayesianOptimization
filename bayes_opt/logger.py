@@ -164,7 +164,7 @@ class ScreenLogger(_Tracker):
         params = res.get("params", {})
         cells.extend(self._format_number(params[key]) for key in instance.space.keys)
 
-        return "| " + " | ".join(colour + x + self._colour_reset for x in cells if x is not None) + " |"
+        return "| " + " | ".join(colour + x + self._colour_reset for x in cells) + " |"
 
     def _header(self, instance):
         """Print the header of the log.
