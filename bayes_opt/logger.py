@@ -162,7 +162,7 @@ class ScreenLogger(_Tracker):
         if self._is_constrained:
             cells.append(self._format_bool(res["allowed"]))
         params = res.get("params", {})
-        cells.extend(self._format_number(params[key]) for key in instance.space.keys)
+        cells.extend(self._format_number(params.get(key, float("nan"))) for key in instance.space.keys)
 
         return "| " + " | ".join(colour + x + self._colour_reset for x in cells) + " |"
 
