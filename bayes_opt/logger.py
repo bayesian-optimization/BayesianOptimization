@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import json
-from collections import deque
 from contextlib import suppress
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 from colorama import Fore, just_fix_windows_console
@@ -154,17 +154,18 @@ class ScreenLogger(_Tracker):
         -------
         A stringified, formatted version of the most recent optimization step.
         """
-        res = instance.res[-1]
-        cells: deque[str] = deque(
-            [self._format_number(self._iterations + 1), self._format_number(res["target"])]
-        )
+        res: dict[str, Any] = instance.res[-1]
+        keys: list[str] = instance.space.keys
+        # iter, target, allowed [, *params]
+        cells: list[str | None] = [None] * (3 + len(keys))
 
+        cells[:2] = self._format_number(self._iterations + 1), self._format_number(res["target"])
         if self._is_constrained:
-            cells.append(self._format_bool(res["allowed"]))
+            cells[2] = self._format_bool(res["allowed"])
         params = res.get("params", {})
-        cells.extend(self._format_number(params.get(key, float("nan"))) for key in instance.space.keys)
+        cells[3:] = [self._format_number(params.get(key, float("nan"))) for key in keys]
 
-        return "| " + " | ".join(colour + x + self._colour_reset for x in cells) + " |"
+        return "| " + " | ".join(colour + x + self._colour_reset for x in cells if x is not None) + " |"
 
     def _header(self, instance):
         """Print the header of the log.
@@ -178,13 +179,16 @@ class ScreenLogger(_Tracker):
         -------
         A stringified, formatted version of the most header.
         """
-        cells: deque[str] = deque([self._format_key("iter"), self._format_key("target")])
+        keys: list[str] = instance.space.keys
+        # iter, target, allowed [, *params]
+        cells: list[str | None] = [None] * (3 + len(keys))
 
+        cells[:2] = self._format_key("iter"), self._format_key("target")
         if self._is_constrained:
-            cells.append(self._format_key("allowed"))
-        cells.extend(self._format_key(key) for key in instance.space.keys)
+            cells[2] = self._format_key("allowed")
+        cells[3:] = [self._format_key(key) for key in keys]
 
-        line = "| " + " | ".join(cells) + " |"
+        line = "| " + " | ".join(x for x in cells if x is not None) + " |"
         self._header_length = len(line)
         return line + "\n" + ("-" * self._header_length)
 
