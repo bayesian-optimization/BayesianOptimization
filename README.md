@@ -49,8 +49,100 @@ As you iterate over and over, the algorithm balances its needs of exploration an
 
 This process is designed to minimize the number of steps required to find a combination of parameters that are close to the optimal combination. To do so, this method uses a proxy optimization problem (finding the maximum of the acquisition function) that, albeit still a hard problem, is cheaper (in the computational sense) and common tools can be employed. Therefore Bayesian Optimization is most adequate for situations where sampling the function to be optimized is a very expensive endeavor. See the references for a proper discussion of this method.
 
-This project is under active development, if you find a bug, or anything that
-needs correction, please let me know.
+This project is under active development. If you run into trouble, find a bug or notice
+anything that needs correction, please let us know by filing an issue.
+
+
+## Basic tour of the Bayesian Optimization package
+
+### 1. Specifying the function to be optimized
+
+This is a function optimization package, therefore the first and most important ingredient is, of course, the function to be optimized.
+
+**DISCLAIMER:** We know exactly how the output of the function below depends on its parameter. Obviously this is just an example, and you shouldn't expect to know it in a real scenario. However, it should be clear that you don't need to. All you need in order to use this package (and more generally, this technique) is a function `f` that takes a known set of parameters and outputs a real number.
+
+
+```python
+def black_box_function(x, y):
+    """Function with unknown internals we wish to maximize.
+
+    This is just serving as an example, for all intents and
+    purposes think of the internals of this function, i.e.: the process
+    which generates its output values, as unknown.
+    """
+    return -x ** 2 - (y - 1) ** 2 + 1
+```
+
+### 2. Getting Started
+
+All we need to get started is to instantiate a `BayesianOptimization` object specifying a function to be optimized `f`, and its parameters with their corresponding bounds, `pbounds`. This is a constrained optimization technique, so you must specify the minimum and maximum values that can be probed for each parameter in order for it to work
+
+
+```python
+from bayes_opt import BayesianOptimization
+
+# Bounded region of parameter space
+pbounds = {'x': (2, 4), 'y': (-3, 3)}
+
+optimizer = BayesianOptimization(
+    f=black_box_function,
+    pbounds=pbounds,
+    random_state=1,
+)
+```
+
+The BayesianOptimization object will work out of the box without much tuning needed. The main method you should be aware of is `maximize`, which does exactly what you think it does.
+
+There are many parameters you can pass to maximize, nonetheless, the most important ones are:
+- `n_iter`: How many steps of bayesian optimization you want to perform. The more steps the more likely to find a good maximum you are.
+- `init_points`: How many steps of **random** exploration you want to perform. Random exploration can help by diversifying the exploration space.
+
+
+```python
+optimizer.maximize(
+    init_points=2,
+    n_iter=3,
+)
+```
+
+    |   iter    |  target   |     x     |     y     |
+    -------------------------------------------------
+    |  1        | -7.135    |  2.834    |  1.322    |
+    |  2        | -7.78     |  2.0      | -1.186    |
+    |  3        | -19.0     |  4.0      |  3.0      |
+    |  4        | -16.3     |  2.378    | -2.413    |
+    |  5        | -4.441    |  2.105    | -0.005822 |
+    =================================================
+
+
+The best combination of parameters and target value found can be accessed via the property `optimizer.max`.
+
+
+```python
+print(optimizer.max)
+>>> {'target': -4.441293113411222, 'params': {'y': -0.005822117636089974, 'x': 2.104665051994087}}
+```
+
+
+While the list of all parameters probed and their corresponding target values is available via the property `optimizer.res`.
+
+
+```python
+for i, res in enumerate(optimizer.res):
+    print("Iteration {}: \n\t{}".format(i, res))
+
+>>> Iteration 0:
+>>>     {'target': -7.135455292718879, 'params': {'y': 1.3219469606529488, 'x': 2.8340440094051482}}
+>>> Iteration 1:
+>>>     {'target': -7.779531005607566, 'params': {'y': -1.1860045642089614, 'x': 2.0002287496346898}}
+>>> Iteration 2:
+>>>     {'target': -19.0, 'params': {'y': 3.0, 'x': 4.0}}
+>>> Iteration 3:
+>>>     {'target': -16.29839645063864, 'params': {'y': -2.412527795983739, 'x': 2.3776144540856503}}
+>>> Iteration 4:
+>>>     {'target': -4.441293113411222, 'params': {'y': -0.005822117636089974, 'x': 2.104665051994087}}
+```
+
 
 ## Minutiae
 
