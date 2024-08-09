@@ -1,4 +1,22 @@
-"""Acquisition functions for Bayesian Optimization."""
+"""Acquisition functions for Bayesian Optimization.
+
+The acquisition functions in this module can be grouped the following way:
+
+- One of the base acquisition functions
+  (:py:class:`UpperConfidenceBound<bayes_opt.acquisition.UpperConfidenceBound>`,
+  :py:class:`ProbabilityOfImprovement<bayes_opt.acquisition.ProbabilityOfImprovement>` and
+  :py:class:`ExpectedImprovement<bayes_opt.acquisition.ExpectedImprovement>`) is always dictating the basic
+  behavior of the suggestion step. They can be used alone or combined with a meta acquisition function.
+- :py:class:`GPHedge<bayes_opt.acquisition.GPHedge>` is a meta acquisition function that combines multiple
+  base acquisition functions and determines the most suitable one for a particular problem.
+- :py:class:`ConstantLiar<bayes_opt.acquisition.ConstantLiar>` is a meta acquisition function that can be
+  used for parallelized optimization and discourages sampling near a previously suggested, but not yet
+  evaluated, point.
+- :py:class:`AcquisitionFunction<bayes_opt.acquisition.AcquisitionFunction>` is the base class for all
+  acquisition functions. You can implement your own acquisition function by subclassing it. See the
+  `Acquisition Functions notebook <../acquisition.html>`__ to understand the many ways this class can be
+  modified.
+"""
 
 from __future__ import annotations
 
@@ -373,6 +391,11 @@ class UpperConfidenceBound(AcquisitionFunction):
         """Decay kappa by a constant rate.
 
         Adjust exploration/exploitation trade-off by reducing kappa.
+
+        Note
+        ----
+
+        This method is called automatically at the end of each ``suggest()`` call.
         """
         if self.exploration_decay is not None and (
             self.exploration_decay_delay is None or self.exploration_decay_delay <= self.i
@@ -495,6 +518,11 @@ class ProbabilityOfImprovement(AcquisitionFunction):
         r"""Decay xi by a constant rate.
 
         Adjust exploration/exploitation trade-off by reducing xi.
+
+        Note
+        ----
+
+        This method is called automatically at the end of each ``suggest()`` call.
         """
         if self.exploration_decay is not None and (
             self.exploration_decay_delay is None or self.exploration_decay_delay <= self.i
@@ -625,6 +653,11 @@ class ExpectedImprovement(AcquisitionFunction):
         r"""Decay xi by a constant rate.
 
         Adjust exploration/exploitation trade-off by reducing xi.
+
+        Note
+        ----
+
+        This method is called automatically at the end of each ``suggest()`` call.
         """
         if self.exploration_decay is not None and (
             self.exploration_decay_delay is None or self.exploration_decay_delay <= self.i

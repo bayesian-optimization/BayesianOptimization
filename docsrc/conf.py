@@ -12,6 +12,7 @@
 #
 import os
 import sys
+import time
 import shutil
 from glob import glob
 from pathlib import Path
@@ -44,7 +45,8 @@ extensions = [
     'IPython.sphinxext.ipython_console_highlighting',
     'sphinx.ext.mathjax',
     "sphinx.ext.napoleon",
-    'sphinx_immaterial'
+    'sphinx.ext.intersphinx',
+    'sphinx_immaterial',
 ]
 
 source_suffix = {
@@ -58,6 +60,16 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
+# Link types to the corresponding documentations
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
+    'sklearn': ('https://scikit-learn.org/stable/', None),
+}
+
+
+napoleon_use_rtype = False
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -67,7 +79,7 @@ exclude_patterns = []
 
 html_title = "Bayesian Optimization"
 html_theme = "sphinx_immaterial"
-copyright = 'Fernando Nogueira and the bayesian-optimization developers'
+copyright = f"{time.strftime('%Y')}, Fernando Nogueira and the bayesian-optimization developers"
 
 # material theme options (see theme.conf for more information)
 html_theme_options = {
@@ -122,6 +134,7 @@ html_theme_options = {
     "version_dropdown": True,
     "version_json": '../versions.json',
     # END: version_dropdown
+    "scope": "/", # share preferences across subsites
     "toc_title_is_page_title": True,
     # BEGIN: social icons
     "social": [
