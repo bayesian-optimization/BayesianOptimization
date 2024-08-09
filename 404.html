@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f8f9fa;
+            color: #343a40;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        a {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 18px;
+            color: #ffffff;
+            background-color: #007bff;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        a:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            searchForVersionsJson(window.location.pathname);
+        });
+
+        function searchForVersionsJson(currentPath) {
+            const pathToJson = currentPath.endsWith('/') ? currentPath + 'versions.json' : currentPath + '/versions.json';
+            fetch(pathToJson)
+                .then(response => {
+                    if (!response.ok) {
+                        console.log('versions.json not found at ' + pathToJson + ', moving up a directory.');
+                        const parentPath = getParentPath(currentPath);
+                        if (parentPath) {
+                            searchForVersionsJson(parentPath);
+                        } else {
+                            console.error('versions.json not found in any parent directory.');
+                        }
+                        return;
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data) {
+                        const stableVersion = getStableVersion(data);
+                        if (stableVersion) {
+                            createRedirectLink(currentPath, stableVersion);
+                        } else {
+                            console.error('Stable version not found. Creating link to master version...');
+                            createRedirectLink(currentPath, 'master');
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('There has been a problem with your fetch operation:', error);
+                });
+        }
+
+        function getParentPath(currentPath) {
+            const parts = currentPath.split('/').filter(part => part);
+            if (parts.length > 0) {
+                parts.pop();
+                return '/' + parts.join('/') + '/';
+            }
+            return null;
+        }
+
+        function getStableVersion(data) {
+            for (const item of data) {
+                if (item.aliases.includes('stable')) {
+                    return item.version;
+                }
+            }
+            return null;
+        }
+
+        function createRedirectLink(foundPath, version) {
+            const file = window.location.pathname.split('/').pop() || 'landing.html';
+            const redirectPath = `${foundPath}${version}/${file}`;
+            fetch(redirectPath)
+                .then(response => {
+                    if (response.ok) {
+                        return response.text();
+                    } else {
+                        throw new Error('Page not found');
+                    }
+                })
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const pageTitle = doc.querySelector('title') ? doc.querySelector('title').textContent : 'Redirect';
+                    
+                    // Create and display the link with the page title and version
+                    const link = document.createElement('a');
+                    link.href = redirectPath;
+                    link.textContent = `${pageTitle} @ ${version}`;
+                    link.title = `Click to go to "${pageTitle}" @ ${version}`;
+                    
+                    // Append the link to the container
+                    const container = document.querySelector('.container');
+                    container.innerHTML += `<p>Maybe you're looking for <span>${link.outerHTML}</span>?.</p>`;
+                })
+                .catch(error => {
+                    console.error('There has been a problem with your fetch operation:', error);
+                });
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>404: Page Not Found</h1>
+        <p>The page you're trying to access does not exist.</p>
+    </div>
+</body>
+</html>

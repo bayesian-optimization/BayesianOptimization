@@ -1,0 +1,3428 @@
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="_static/func.ico">
+    
+    
+      
+        <title>Code Documentation - Bayesian Optimization</title>
+      
+    
+    
+      
+        
+        
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+        <link rel="stylesheet" type="text/css" href="_static/sphinx_immaterial_theme.e0b5691b38cca82da.min.css?v=b1736040" />
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="light-blue" data-md-color-accent="light-green">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#bayesian-optimization" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="index.html" title="Bayesian Optimization" class="md-header__button md-logo" aria-label="Bayesian Optimization" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Bayesian Optimization
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Code Documentation
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="light-blue" data-md-color-accent="light-green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7M9 21v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1m3-17a5 5 0 0 0-5 5c0 2.05 1.23 3.81 3 4.58V16h4v-2.42c1.77-.77 3-2.53 3-4.58a5 5 0 0 0-5-5Z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-orange" data-md-color-accent="lime"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7M9 21a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-1H9v1Z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7 0-.24-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91 1.61 0 2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08Z"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/bayesian-optimization/BayesianOptimization/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    bayesian-optimization
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="index.html" title="Bayesian Optimization" class="md-nav__button md-logo" aria-label="Bayesian Optimization" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+    </a>
+    Bayesian Optimization
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/bayesian-optimization/BayesianOptimization/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    bayesian-optimization
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1">
+          <span class="md-ellipsis">Contents:<wbr></span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Contents:" data-md-level="1">
+        <label class="md-nav__title" for="__nav_1">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">Contents:<wbr></span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
+        <span title="/index.rst (reference label)" class="md-ellipsis">Quickstart</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="examples.html" class="md-nav__link">
+        <span title="/examples.rst (reference label)" class="md-ellipsis">Example Notebooks</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          <span title="/code_docs.rst (reference label)" class="md-ellipsis">Code Documentation</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="#" class="md-nav__link md-nav__link--active">
+        <span title="/code_docs.rst (reference label)" class="md-ellipsis">Code Documentation</span>
+      </a>
+      
+        
+
+  
+
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      <span title="/code_docs.rst (reference label)" class="md-ellipsis">Code Documentation</span>
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#bayesian-optimization" class="md-nav__link">
+    <span title="/code_docs.rst#bayesian-optimization (reference label)" class="md-ellipsis">Bayesian Optimization</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Bayesian Optimization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.BayesianOptimization" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="bayes_opt.BayesianOptimization (Python class) — Handle optimization of a target function over a specific target space." class="md-ellipsis">bayes_<wbr>opt.<wbr>Bayesian<wbr>Optimization</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="bayes_opt.BayesianOptimization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    <span title="/code_docs.rst#parameters (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    <span title="/code_docs.rst#methods (reference label)" class="md-ellipsis">Methods</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.BayesianOptimization.constraint" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.BayesianOptimization.constraint (Python property) — Return the constraint associated with the optimizer, if any." class="md-ellipsis">constraint</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.BayesianOptimization.max" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.BayesianOptimization.max (Python property) — Get maximum target value found and corresponding parameters." class="md-ellipsis">max</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.BayesianOptimization.maximize" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.BayesianOptimization.maximize (Python method) — Maximize the given function over the target space." class="md-ellipsis">maximize</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="maximize">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id1" class="md-nav__link">
+    <span title="/code_docs.rst#id1 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.BayesianOptimization.probe" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.BayesianOptimization.probe (Python method) — Evaluate the function at the given points." class="md-ellipsis">probe</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="probe">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id2" class="md-nav__link">
+    <span title="/code_docs.rst#id2 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.BayesianOptimization.register" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.BayesianOptimization.register (Python method) — Register an observation with known target." class="md-ellipsis">register</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="register">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id3" class="md-nav__link">
+    <span title="/code_docs.rst#id3 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.BayesianOptimization.res" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.BayesianOptimization.res (Python property) — Get all target values and constraint fulfillment for all parameters." class="md-ellipsis">res</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.BayesianOptimization.set_bounds" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.BayesianOptimization.set_bounds (Python method) — Modify the bounds of the search space." class="md-ellipsis">set_<wbr>bounds</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="set_bounds">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id4" class="md-nav__link">
+    <span title="/code_docs.rst#id4 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.BayesianOptimization.set_gp_params" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.BayesianOptimization.set_gp_params (Python method) — Set parameters of the internal Gaussian Process Regressor." class="md-ellipsis">set_<wbr>gp_<wbr>params</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.BayesianOptimization.space" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.BayesianOptimization.space (Python property) — Return the target space associated with the optimizer." class="md-ellipsis">space</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.BayesianOptimization.suggest" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.BayesianOptimization.suggest (Python method) — Suggest a promising point to probe next." class="md-ellipsis">suggest</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="suggest">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id5" class="md-nav__link">
+    <span title="/code_docs.rst#id5 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#acquisition-function" class="md-nav__link">
+    <span title="/code_docs.rst#acquisition-function (reference label)" class="md-ellipsis">Acquisition function</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Acquisition function">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.util.UtilityFunction" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="bayes_opt.util.UtilityFunction (Python class) — An object to compute the acquisition functions." class="md-ellipsis">bayes_<wbr>opt.<wbr>util.<wbr>Utility<wbr>Function</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="bayes_opt.util.UtilityFunction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id6" class="md-nav__link">
+    <span title="/code_docs.rst#id6 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.util.UtilityFunction.ei" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.util.UtilityFunction.ei (Python method) — Calculate Expected Improvement acqusition function." class="md-ellipsis">ei</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ei">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id7" class="md-nav__link">
+    <span title="/code_docs.rst#id7 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns" class="md-nav__link">
+    <span title="/code_docs.rst#returns (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.util.UtilityFunction.poi" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.util.UtilityFunction.poi (Python method) — Calculate Probability of Improvement acqusition function." class="md-ellipsis">poi</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="poi">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id8" class="md-nav__link">
+    <span title="/code_docs.rst#id8 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id9" class="md-nav__link">
+    <span title="/code_docs.rst#id9 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.util.UtilityFunction.ucb" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.util.UtilityFunction.ucb (Python method) — Calculate Upper Confidence Bound acquisition function." class="md-ellipsis">ucb</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ucb">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id10" class="md-nav__link">
+    <span title="/code_docs.rst#id10 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id11" class="md-nav__link">
+    <span title="/code_docs.rst#id11 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.util.UtilityFunction.update_params" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.util.UtilityFunction.update_params (Python method) — Update internal parameters." class="md-ellipsis">update_<wbr>params</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.util.UtilityFunction.utility" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.util.UtilityFunction.utility (Python method) — Calculate acquisition function." class="md-ellipsis">utility</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="utility">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id12" class="md-nav__link">
+    <span title="/code_docs.rst#id12 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id13" class="md-nav__link">
+    <span title="/code_docs.rst#id13 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#target-space" class="md-nav__link">
+    <span title="/code_docs.rst#target-space (reference label)" class="md-ellipsis">Target Space</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Target Space">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="bayes_opt.target_space.TargetSpace (Python class) — Holds the param-space coordinates (X) and target values (Y)." class="md-ellipsis">bayes_<wbr>opt.<wbr>target_<wbr>space.<wbr>Target<wbr>Space</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="bayes_opt.target_space.TargetSpace">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id14" class="md-nav__link">
+    <span title="/code_docs.rst#id14 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span title="/code_docs.rst#examples (reference label)" class="md-ellipsis">Examples</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.array_to_params" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.target_space.TargetSpace.array_to_params (Python method) — Convert an array representation of parameters into a dict version." class="md-ellipsis">array_<wbr>to_<wbr>params</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="array_to_params">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id15" class="md-nav__link">
+    <span title="/code_docs.rst#id15 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id16" class="md-nav__link">
+    <span title="/code_docs.rst#id16 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.bounds" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.target_space.TargetSpace.bounds (Python property) — Get the bounds of this TargetSpace." class="md-ellipsis">bounds</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="bounds">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id17" class="md-nav__link">
+    <span title="/code_docs.rst#id17 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.constraint" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.target_space.TargetSpace.constraint (Python property) — Get the constraint model." class="md-ellipsis">constraint</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="constraint">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id18" class="md-nav__link">
+    <span title="/code_docs.rst#id18 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.constraint_values" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.target_space.TargetSpace.constraint_values (Python property) — Get the constraint values registered to this TargetSpace." class="md-ellipsis">constraint_<wbr>values</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="constraint_values">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id19" class="md-nav__link">
+    <span title="/code_docs.rst#id19 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.dim" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.target_space.TargetSpace.dim (Python property) — Get the number of parameter names." class="md-ellipsis">dim</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="dim">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id20" class="md-nav__link">
+    <span title="/code_docs.rst#id20 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.empty" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.target_space.TargetSpace.empty (Python property) — Check if anything has been registered." class="md-ellipsis">empty</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="empty">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id21" class="md-nav__link">
+    <span title="/code_docs.rst#id21 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.keys" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.target_space.TargetSpace.keys (Python property) — Get the keys (or parameter names)." class="md-ellipsis">keys</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="keys">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id22" class="md-nav__link">
+    <span title="/code_docs.rst#id22 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.mask" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.target_space.TargetSpace.mask (Python property) — Return a boolean array of valid points." class="md-ellipsis">mask</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="mask">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id23" class="md-nav__link">
+    <span title="/code_docs.rst#id23 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.max" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.target_space.TargetSpace.max (Python method) — Get maximum target value found and corresponding parameters." class="md-ellipsis">max</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="max">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id24" class="md-nav__link">
+    <span title="/code_docs.rst#id24 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.params" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.target_space.TargetSpace.params (Python property) — Get the parameter values registered to this TargetSpace." class="md-ellipsis">params</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="params">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id25" class="md-nav__link">
+    <span title="/code_docs.rst#id25 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.params_to_array" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.target_space.TargetSpace.params_to_array (Python method) — Convert a dict representation of parameters into an array version." class="md-ellipsis">params_<wbr>to_<wbr>array</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="params_to_array">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id26" class="md-nav__link">
+    <span title="/code_docs.rst#id26 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id27" class="md-nav__link">
+    <span title="/code_docs.rst#id27 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.probe" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.target_space.TargetSpace.probe (Python method) — Evaluate the target function on a point and register the result." class="md-ellipsis">probe</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="probe">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span title="/code_docs.rst#notes (reference label)" class="md-ellipsis">Notes</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id28" class="md-nav__link">
+    <span title="/code_docs.rst#id28 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id29" class="md-nav__link">
+    <span title="/code_docs.rst#id29 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span title="/code_docs.rst#example (reference label)" class="md-ellipsis">Example</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.random_sample" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.target_space.TargetSpace.random_sample (Python method) — Sample a random point from within the bounds of the space." class="md-ellipsis">random_<wbr>sample</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="random_sample">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id30" class="md-nav__link">
+    <span title="/code_docs.rst#id30 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id31" class="md-nav__link">
+    <span title="/code_docs.rst#id31 (reference label)" class="md-ellipsis">Examples</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.register" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.target_space.TargetSpace.register (Python method) — Append a point and its target value to the known data." class="md-ellipsis">register</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="register">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id32" class="md-nav__link">
+    <span title="/code_docs.rst#id32 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#raises" class="md-nav__link">
+    <span title="/code_docs.rst#raises (reference label)" class="md-ellipsis">Raises</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id33" class="md-nav__link">
+    <span title="/code_docs.rst#id33 (reference label)" class="md-ellipsis">Notes</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id34" class="md-nav__link">
+    <span title="/code_docs.rst#id34 (reference label)" class="md-ellipsis">Examples</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.res" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.target_space.TargetSpace.res (Python method) — Get all target values and constraint fulfillment for all parameters." class="md-ellipsis">res</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="res">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id35" class="md-nav__link">
+    <span title="/code_docs.rst#id35 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id36" class="md-nav__link">
+    <span title="/code_docs.rst#id36 (reference label)" class="md-ellipsis">Notes</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.set_bounds" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.target_space.TargetSpace.set_bounds (Python method) — Change the lower and upper search bounds." class="md-ellipsis">set_<wbr>bounds</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="set_bounds">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id37" class="md-nav__link">
+    <span title="/code_docs.rst#id37 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.target" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.target_space.TargetSpace.target (Python property) — Get the target function values registered to this TargetSpace." class="md-ellipsis">target</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="target">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id38" class="md-nav__link">
+    <span title="/code_docs.rst#id38 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#domain-reduction" class="md-nav__link">
+    <span title="/code_docs.rst#domain-reduction (reference label)" class="md-ellipsis">Domain reduction</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Domain reduction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.domain_reduction.SequentialDomainReductionTransformer" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="bayes_opt.domain_reduction.SequentialDomainReductionTransformer (Python class) — Reduce the searchable space." class="md-ellipsis">bayes_<wbr>opt.<wbr>domain_<wbr>reduction.<wbr>Sequential<wbr>Domain<wbr>Reduction<wbr>Transformer</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="bayes_opt.domain_reduction.SequentialDomainReductionTransformer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id39" class="md-nav__link">
+    <span title="/code_docs.rst#id39 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.domain_reduction.SequentialDomainReductionTransformer.initialize" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.domain_reduction.SequentialDomainReductionTransformer.initialize (Python method) — Initialize all of the parameters." class="md-ellipsis">initialize</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="initialize">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id40" class="md-nav__link">
+    <span title="/code_docs.rst#id40 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.domain_reduction.SequentialDomainReductionTransformer.transform" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.domain_reduction.SequentialDomainReductionTransformer.transform (Python method) — Transform the bounds of the target space." class="md-ellipsis">transform</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="transform">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id41" class="md-nav__link">
+    <span title="/code_docs.rst#id41 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id42" class="md-nav__link">
+    <span title="/code_docs.rst#id42 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#constraints" class="md-nav__link">
+    <span title="/code_docs.rst#constraints (reference label)" class="md-ellipsis">Constraints</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Constraints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.constraint.ConstraintModel" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="bayes_opt.constraint.ConstraintModel (Python class) — Model constraints using GP regressors." class="md-ellipsis">bayes_<wbr>opt.<wbr>constraint.<wbr>Constraint<wbr>Model</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="bayes_opt.constraint.ConstraintModel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id43" class="md-nav__link">
+    <span title="/code_docs.rst#id43 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id44" class="md-nav__link">
+    <span title="/code_docs.rst#id44 (reference label)" class="md-ellipsis">Notes</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Notes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.constraint.ConstraintModel.allowed" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.constraint.ConstraintModel.allowed (Python method) — Check whether constraint_values fulfills the specified limits." class="md-ellipsis">allowed</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="allowed">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id45" class="md-nav__link">
+    <span title="/code_docs.rst#id45 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id46" class="md-nav__link">
+    <span title="/code_docs.rst#id46 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.constraint.ConstraintModel.approx" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.constraint.ConstraintModel.approx (Python method) — Approximate the constraint function using the internal GPR model." class="md-ellipsis">approx</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="approx">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id47" class="md-nav__link">
+    <span title="/code_docs.rst#id47 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id48" class="md-nav__link">
+    <span title="/code_docs.rst#id48 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.constraint.ConstraintModel.eval" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.constraint.ConstraintModel.eval (Python method) — Evaluate the constraint function." class="md-ellipsis">eval</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="eval">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id49" class="md-nav__link">
+    <span title="/code_docs.rst#id49 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id50" class="md-nav__link">
+    <span title="/code_docs.rst#id50 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id51" class="md-nav__link">
+    <span title="/code_docs.rst#id51 (reference label)" class="md-ellipsis">Raises</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.constraint.ConstraintModel.fit" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.constraint.ConstraintModel.fit (Python method) — Fit internal GPRs to the data." class="md-ellipsis">fit</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="fit">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id52" class="md-nav__link">
+    <span title="/code_docs.rst#id52 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id53" class="md-nav__link">
+    <span title="/code_docs.rst#id53 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.constraint.ConstraintModel.lb" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.constraint.ConstraintModel.lb (Python property) — Return lower bounds." class="md-ellipsis">lb</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.constraint.ConstraintModel.model" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.constraint.ConstraintModel.model (Python property) — Return GP regressors of the constraint function." class="md-ellipsis">model</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.constraint.ConstraintModel.predict" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.constraint.ConstraintModel.predict (Python method) — Calculate the probability that the constraint is fulfilled at X." class="md-ellipsis">predict</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="predict">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id54" class="md-nav__link">
+    <span title="/code_docs.rst#id54 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id55" class="md-nav__link">
+    <span title="/code_docs.rst#id55 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.constraint.ConstraintModel.ub" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.constraint.ConstraintModel.ub (Python property) — Return upper bounds." class="md-ellipsis">ub</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+<nav class="md-nav md-nav--secondary">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      <span title="/code_docs.rst (reference label)" class="md-ellipsis">Code Documentation</span>
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#bayesian-optimization" class="md-nav__link">
+    <span title="/code_docs.rst#bayesian-optimization (reference label)" class="md-ellipsis">Bayesian Optimization</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Bayesian Optimization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.BayesianOptimization" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="bayes_opt.BayesianOptimization (Python class) — Handle optimization of a target function over a specific target space." class="md-ellipsis">bayes_<wbr>opt.<wbr>Bayesian<wbr>Optimization</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="bayes_opt.BayesianOptimization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    <span title="/code_docs.rst#parameters (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    <span title="/code_docs.rst#methods (reference label)" class="md-ellipsis">Methods</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.BayesianOptimization.constraint" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.BayesianOptimization.constraint (Python property) — Return the constraint associated with the optimizer, if any." class="md-ellipsis">constraint</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.BayesianOptimization.max" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.BayesianOptimization.max (Python property) — Get maximum target value found and corresponding parameters." class="md-ellipsis">max</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.BayesianOptimization.maximize" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.BayesianOptimization.maximize (Python method) — Maximize the given function over the target space." class="md-ellipsis">maximize</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="maximize">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id1" class="md-nav__link">
+    <span title="/code_docs.rst#id1 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.BayesianOptimization.probe" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.BayesianOptimization.probe (Python method) — Evaluate the function at the given points." class="md-ellipsis">probe</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="probe">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id2" class="md-nav__link">
+    <span title="/code_docs.rst#id2 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.BayesianOptimization.register" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.BayesianOptimization.register (Python method) — Register an observation with known target." class="md-ellipsis">register</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="register">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id3" class="md-nav__link">
+    <span title="/code_docs.rst#id3 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.BayesianOptimization.res" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.BayesianOptimization.res (Python property) — Get all target values and constraint fulfillment for all parameters." class="md-ellipsis">res</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.BayesianOptimization.set_bounds" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.BayesianOptimization.set_bounds (Python method) — Modify the bounds of the search space." class="md-ellipsis">set_<wbr>bounds</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="set_bounds">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id4" class="md-nav__link">
+    <span title="/code_docs.rst#id4 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.BayesianOptimization.set_gp_params" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.BayesianOptimization.set_gp_params (Python method) — Set parameters of the internal Gaussian Process Regressor." class="md-ellipsis">set_<wbr>gp_<wbr>params</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.BayesianOptimization.space" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.BayesianOptimization.space (Python property) — Return the target space associated with the optimizer." class="md-ellipsis">space</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.BayesianOptimization.suggest" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.BayesianOptimization.suggest (Python method) — Suggest a promising point to probe next." class="md-ellipsis">suggest</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="suggest">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id5" class="md-nav__link">
+    <span title="/code_docs.rst#id5 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#acquisition-function" class="md-nav__link">
+    <span title="/code_docs.rst#acquisition-function (reference label)" class="md-ellipsis">Acquisition function</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Acquisition function">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.util.UtilityFunction" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="bayes_opt.util.UtilityFunction (Python class) — An object to compute the acquisition functions." class="md-ellipsis">bayes_<wbr>opt.<wbr>util.<wbr>Utility<wbr>Function</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="bayes_opt.util.UtilityFunction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id6" class="md-nav__link">
+    <span title="/code_docs.rst#id6 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.util.UtilityFunction.ei" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.util.UtilityFunction.ei (Python method) — Calculate Expected Improvement acqusition function." class="md-ellipsis">ei</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ei">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id7" class="md-nav__link">
+    <span title="/code_docs.rst#id7 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns" class="md-nav__link">
+    <span title="/code_docs.rst#returns (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.util.UtilityFunction.poi" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.util.UtilityFunction.poi (Python method) — Calculate Probability of Improvement acqusition function." class="md-ellipsis">poi</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="poi">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id8" class="md-nav__link">
+    <span title="/code_docs.rst#id8 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id9" class="md-nav__link">
+    <span title="/code_docs.rst#id9 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.util.UtilityFunction.ucb" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.util.UtilityFunction.ucb (Python method) — Calculate Upper Confidence Bound acquisition function." class="md-ellipsis">ucb</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ucb">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id10" class="md-nav__link">
+    <span title="/code_docs.rst#id10 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id11" class="md-nav__link">
+    <span title="/code_docs.rst#id11 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.util.UtilityFunction.update_params" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.util.UtilityFunction.update_params (Python method) — Update internal parameters." class="md-ellipsis">update_<wbr>params</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.util.UtilityFunction.utility" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.util.UtilityFunction.utility (Python method) — Calculate acquisition function." class="md-ellipsis">utility</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="utility">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id12" class="md-nav__link">
+    <span title="/code_docs.rst#id12 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id13" class="md-nav__link">
+    <span title="/code_docs.rst#id13 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#target-space" class="md-nav__link">
+    <span title="/code_docs.rst#target-space (reference label)" class="md-ellipsis">Target Space</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Target Space">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="bayes_opt.target_space.TargetSpace (Python class) — Holds the param-space coordinates (X) and target values (Y)." class="md-ellipsis">bayes_<wbr>opt.<wbr>target_<wbr>space.<wbr>Target<wbr>Space</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="bayes_opt.target_space.TargetSpace">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id14" class="md-nav__link">
+    <span title="/code_docs.rst#id14 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span title="/code_docs.rst#examples (reference label)" class="md-ellipsis">Examples</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.array_to_params" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.target_space.TargetSpace.array_to_params (Python method) — Convert an array representation of parameters into a dict version." class="md-ellipsis">array_<wbr>to_<wbr>params</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="array_to_params">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id15" class="md-nav__link">
+    <span title="/code_docs.rst#id15 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id16" class="md-nav__link">
+    <span title="/code_docs.rst#id16 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.bounds" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.target_space.TargetSpace.bounds (Python property) — Get the bounds of this TargetSpace." class="md-ellipsis">bounds</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="bounds">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id17" class="md-nav__link">
+    <span title="/code_docs.rst#id17 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.constraint" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.target_space.TargetSpace.constraint (Python property) — Get the constraint model." class="md-ellipsis">constraint</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="constraint">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id18" class="md-nav__link">
+    <span title="/code_docs.rst#id18 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.constraint_values" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.target_space.TargetSpace.constraint_values (Python property) — Get the constraint values registered to this TargetSpace." class="md-ellipsis">constraint_<wbr>values</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="constraint_values">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id19" class="md-nav__link">
+    <span title="/code_docs.rst#id19 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.dim" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.target_space.TargetSpace.dim (Python property) — Get the number of parameter names." class="md-ellipsis">dim</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="dim">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id20" class="md-nav__link">
+    <span title="/code_docs.rst#id20 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.empty" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.target_space.TargetSpace.empty (Python property) — Check if anything has been registered." class="md-ellipsis">empty</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="empty">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id21" class="md-nav__link">
+    <span title="/code_docs.rst#id21 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.keys" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.target_space.TargetSpace.keys (Python property) — Get the keys (or parameter names)." class="md-ellipsis">keys</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="keys">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id22" class="md-nav__link">
+    <span title="/code_docs.rst#id22 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.mask" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.target_space.TargetSpace.mask (Python property) — Return a boolean array of valid points." class="md-ellipsis">mask</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="mask">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id23" class="md-nav__link">
+    <span title="/code_docs.rst#id23 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.max" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.target_space.TargetSpace.max (Python method) — Get maximum target value found and corresponding parameters." class="md-ellipsis">max</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="max">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id24" class="md-nav__link">
+    <span title="/code_docs.rst#id24 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.params" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.target_space.TargetSpace.params (Python property) — Get the parameter values registered to this TargetSpace." class="md-ellipsis">params</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="params">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id25" class="md-nav__link">
+    <span title="/code_docs.rst#id25 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.params_to_array" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.target_space.TargetSpace.params_to_array (Python method) — Convert a dict representation of parameters into an array version." class="md-ellipsis">params_<wbr>to_<wbr>array</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="params_to_array">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id26" class="md-nav__link">
+    <span title="/code_docs.rst#id26 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id27" class="md-nav__link">
+    <span title="/code_docs.rst#id27 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.probe" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.target_space.TargetSpace.probe (Python method) — Evaluate the target function on a point and register the result." class="md-ellipsis">probe</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="probe">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span title="/code_docs.rst#notes (reference label)" class="md-ellipsis">Notes</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id28" class="md-nav__link">
+    <span title="/code_docs.rst#id28 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id29" class="md-nav__link">
+    <span title="/code_docs.rst#id29 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span title="/code_docs.rst#example (reference label)" class="md-ellipsis">Example</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.random_sample" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.target_space.TargetSpace.random_sample (Python method) — Sample a random point from within the bounds of the space." class="md-ellipsis">random_<wbr>sample</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="random_sample">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id30" class="md-nav__link">
+    <span title="/code_docs.rst#id30 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id31" class="md-nav__link">
+    <span title="/code_docs.rst#id31 (reference label)" class="md-ellipsis">Examples</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.register" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.target_space.TargetSpace.register (Python method) — Append a point and its target value to the known data." class="md-ellipsis">register</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="register">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id32" class="md-nav__link">
+    <span title="/code_docs.rst#id32 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#raises" class="md-nav__link">
+    <span title="/code_docs.rst#raises (reference label)" class="md-ellipsis">Raises</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id33" class="md-nav__link">
+    <span title="/code_docs.rst#id33 (reference label)" class="md-ellipsis">Notes</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id34" class="md-nav__link">
+    <span title="/code_docs.rst#id34 (reference label)" class="md-ellipsis">Examples</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.res" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.target_space.TargetSpace.res (Python method) — Get all target values and constraint fulfillment for all parameters." class="md-ellipsis">res</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="res">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id35" class="md-nav__link">
+    <span title="/code_docs.rst#id35 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id36" class="md-nav__link">
+    <span title="/code_docs.rst#id36 (reference label)" class="md-ellipsis">Notes</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.set_bounds" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.target_space.TargetSpace.set_bounds (Python method) — Change the lower and upper search bounds." class="md-ellipsis">set_<wbr>bounds</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="set_bounds">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id37" class="md-nav__link">
+    <span title="/code_docs.rst#id37 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.target_space.TargetSpace.target" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.target_space.TargetSpace.target (Python property) — Get the target function values registered to this TargetSpace." class="md-ellipsis">target</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="target">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id38" class="md-nav__link">
+    <span title="/code_docs.rst#id38 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#domain-reduction" class="md-nav__link">
+    <span title="/code_docs.rst#domain-reduction (reference label)" class="md-ellipsis">Domain reduction</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Domain reduction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.domain_reduction.SequentialDomainReductionTransformer" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="bayes_opt.domain_reduction.SequentialDomainReductionTransformer (Python class) — Reduce the searchable space." class="md-ellipsis">bayes_<wbr>opt.<wbr>domain_<wbr>reduction.<wbr>Sequential<wbr>Domain<wbr>Reduction<wbr>Transformer</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="bayes_opt.domain_reduction.SequentialDomainReductionTransformer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id39" class="md-nav__link">
+    <span title="/code_docs.rst#id39 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.domain_reduction.SequentialDomainReductionTransformer.initialize" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.domain_reduction.SequentialDomainReductionTransformer.initialize (Python method) — Initialize all of the parameters." class="md-ellipsis">initialize</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="initialize">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id40" class="md-nav__link">
+    <span title="/code_docs.rst#id40 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.domain_reduction.SequentialDomainReductionTransformer.transform" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.domain_reduction.SequentialDomainReductionTransformer.transform (Python method) — Transform the bounds of the target space." class="md-ellipsis">transform</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="transform">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id41" class="md-nav__link">
+    <span title="/code_docs.rst#id41 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id42" class="md-nav__link">
+    <span title="/code_docs.rst#id42 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#constraints" class="md-nav__link">
+    <span title="/code_docs.rst#constraints (reference label)" class="md-ellipsis">Constraints</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Constraints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.constraint.ConstraintModel" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="bayes_opt.constraint.ConstraintModel (Python class) — Model constraints using GP regressors." class="md-ellipsis">bayes_<wbr>opt.<wbr>constraint.<wbr>Constraint<wbr>Model</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="bayes_opt.constraint.ConstraintModel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id43" class="md-nav__link">
+    <span title="/code_docs.rst#id43 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id44" class="md-nav__link">
+    <span title="/code_docs.rst#id44 (reference label)" class="md-ellipsis">Notes</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Notes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.constraint.ConstraintModel.allowed" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.constraint.ConstraintModel.allowed (Python method) — Check whether constraint_values fulfills the specified limits." class="md-ellipsis">allowed</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="allowed">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id45" class="md-nav__link">
+    <span title="/code_docs.rst#id45 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id46" class="md-nav__link">
+    <span title="/code_docs.rst#id46 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.constraint.ConstraintModel.approx" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.constraint.ConstraintModel.approx (Python method) — Approximate the constraint function using the internal GPR model." class="md-ellipsis">approx</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="approx">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id47" class="md-nav__link">
+    <span title="/code_docs.rst#id47 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id48" class="md-nav__link">
+    <span title="/code_docs.rst#id48 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.constraint.ConstraintModel.eval" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.constraint.ConstraintModel.eval (Python method) — Evaluate the constraint function." class="md-ellipsis">eval</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="eval">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id49" class="md-nav__link">
+    <span title="/code_docs.rst#id49 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id50" class="md-nav__link">
+    <span title="/code_docs.rst#id50 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id51" class="md-nav__link">
+    <span title="/code_docs.rst#id51 (reference label)" class="md-ellipsis">Raises</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.constraint.ConstraintModel.fit" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.constraint.ConstraintModel.fit (Python method) — Fit internal GPRs to the data." class="md-ellipsis">fit</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="fit">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id52" class="md-nav__link">
+    <span title="/code_docs.rst#id52 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id53" class="md-nav__link">
+    <span title="/code_docs.rst#id53 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.constraint.ConstraintModel.lb" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.constraint.ConstraintModel.lb (Python property) — Return lower bounds." class="md-ellipsis">lb</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.constraint.ConstraintModel.model" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.constraint.ConstraintModel.model (Python property) — Return GP regressors of the constraint function." class="md-ellipsis">model</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.constraint.ConstraintModel.predict" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="bayes_opt.constraint.ConstraintModel.predict (Python method) — Calculate the probability that the constraint is fulfilled at X." class="md-ellipsis">predict</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="predict">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id54" class="md-nav__link">
+    <span title="/code_docs.rst#id54 (reference label)" class="md-ellipsis">Parameters</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id55" class="md-nav__link">
+    <span title="/code_docs.rst#id55 (reference label)" class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.constraint.ConstraintModel.ub" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="bayes_opt.constraint.ConstraintModel.ub (Python property) — Return upper bounds." class="md-ellipsis">ub</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset" role="main">
+                  
+
+
+  <a href="https://github.com/bayesian-optimization/BayesianOptimization/blob/main/docsrc/code_docs.rst" title="Edit this page" class="md-content__button md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
+  </a>
+
+<h1 id="code-documentation">Code Documentation<a class="headerlink" href="#code-documentation" title="Link to this heading">¶</a></h1>
+<p>This page shows the documentation generated by sphinx automatically scanning the source code.</p>
+<h2 id="bayesian-optimization">Bayesian Optimization<a class="headerlink" href="#bayesian-optimization" title="Link to this heading">¶</a></h2>
+<dl class="py class objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="bayes_opt.BayesianOptimization">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bayes_opt.</span></span><span class="sig-name descname"><span class="pre">BayesianOptimization</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.BayesianOptimization" title="bayes_opt.BayesianOptimization.__init__.f (Python parameter)"><span class="n"><span class="pre">f</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.BayesianOptimization" title="bayes_opt.BayesianOptimization.__init__.pbounds (Python parameter)"><span class="n"><span class="pre">pbounds</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.BayesianOptimization" title="bayes_opt.BayesianOptimization.__init__.constraint (Python parameter)"><span class="n"><span class="pre">constraint</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="kc">None</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.BayesianOptimization" title="bayes_opt.BayesianOptimization.__init__.random_state (Python parameter)"><span class="n"><span class="pre">random_state</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="kc">None</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.BayesianOptimization" title="bayes_opt.BayesianOptimization.__init__.verbose (Python parameter)"><span class="n"><span class="pre">verbose</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="mi">2</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.BayesianOptimization" title="bayes_opt.BayesianOptimization.__init__.bounds_transformer (Python parameter)"><span class="n"><span class="pre">bounds_transformer</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="kc">None</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.BayesianOptimization" title="bayes_opt.BayesianOptimization.__init__.allow_duplicate_points (Python parameter)"><span class="n"><span class="pre">allow_duplicate_points</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="kc">False</span></code></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.BayesianOptimization" title="Link to this definition">¶</a></dt>
+<dd><p>Handle optimization of a target function over a specific target space.</p>
+<p>This class takes the function to optimize as well as the parameters bounds
+in order to find which values for the parameters yield the maximum value
+using bayesian optimization.</p>
+<h3 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt>f: function</dt><dd><p>Function to be maximized.</p>
+</dd>
+<dt>pbounds: dict</dt><dd><p>Dictionary with parameters names as keys and a tuple with minimum
+and maximum values.</p>
+</dd>
+<dt>constraint: A ConstraintModel. Note that the names of arguments of the</dt><dd><p>constraint function and of f need to be the same.</p>
+</dd>
+<dt>random_state: int or numpy.random.RandomState, optional(default=None)</dt><dd><p>If the value is an integer, it is used as the seed for creating a
+numpy.random.RandomState. Otherwise the random state provided is used.
+When set to None, an unseeded random state is generated.</p>
+</dd>
+<dt>verbose: int, optional(default=2)</dt><dd><p>The level of verbosity.</p>
+</dd>
+<dt>bounds_transformer: DomainTransformer, optional(default=None)</dt><dd><p>If provided, the transformation is applied to the bounds.</p>
+</dd>
+<dt>allow_duplicate_points: bool, optional (default=False)</dt><dd><p>If True, the optimizer will allow duplicate points to be registered.
+This behavior may be desired in high noise situations where repeatedly probing
+the same point will give different answers. In other situations, the acquisition
+may occasionally generate a duplicate point.</p>
+</dd>
+</dl>
+<h3 id="methods">Methods<a class="headerlink" href="#methods" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt>probe()</dt><dd><p>Evaluates the function on the given points.
+Can be used to guide the optimizer.</p>
+</dd>
+<dt>maximize()</dt><dd><p>Tries to find the parameters that yield the maximum value for the
+given function.</p>
+</dd>
+<dt>set_bounds()</dt><dd><p>Allows changing the lower and upper searching bounds</p>
+</dd>
+</dl>
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.BayesianOptimization.constraint">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">constraint</span></span><a class="headerlink" href="#bayes_opt.BayesianOptimization.constraint" title="Link to this definition">¶</a></dt>
+<dd><p>Return the constraint associated with the optimizer, if any.</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.BayesianOptimization.max">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max</span></span><a class="headerlink" href="#bayes_opt.BayesianOptimization.max" title="Link to this definition">¶</a></dt>
+<dd><p>Get maximum target value found and corresponding parameters.</p>
+<p>See <cite>TargetSpace.max</cite> for more information.</p>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="bayes_opt.BayesianOptimization.maximize">
+<span class="sig-name descname"><span class="pre">maximize</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.BayesianOptimization.maximize" title="bayes_opt.BayesianOptimization.maximize.init_points (Python parameter)"><span class="n"><span class="pre">init_points</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="mi">5</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.BayesianOptimization.maximize" title="bayes_opt.BayesianOptimization.maximize.n_iter (Python parameter)"><span class="n"><span class="pre">n_iter</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="mi">25</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.BayesianOptimization.maximize" title="bayes_opt.BayesianOptimization.maximize.acquisition_function (Python parameter)"><span class="n"><span class="pre">acquisition_function</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="kc">None</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.BayesianOptimization.maximize" title="bayes_opt.BayesianOptimization.maximize.acq (Python parameter)"><span class="n"><span class="pre">acq</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="kc">None</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.BayesianOptimization.maximize" title="bayes_opt.BayesianOptimization.maximize.kappa (Python parameter)"><span class="n"><span class="pre">kappa</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="kc">None</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.BayesianOptimization.maximize" title="bayes_opt.BayesianOptimization.maximize.kappa_decay (Python parameter)"><span class="n"><span class="pre">kappa_decay</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="kc">None</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.BayesianOptimization.maximize" title="bayes_opt.BayesianOptimization.maximize.kappa_decay_delay (Python parameter)"><span class="n"><span class="pre">kappa_decay_delay</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="kc">None</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.BayesianOptimization.maximize" title="bayes_opt.BayesianOptimization.maximize.xi (Python parameter)"><span class="n"><span class="pre">xi</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="kc">None</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><a class="n reference internal" href="#bayes_opt.BayesianOptimization.maximize" title="bayes_opt.BayesianOptimization.maximize.gp_params (Python parameter)"><span class="n"><span class="pre">gp_params</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.BayesianOptimization.maximize" title="Link to this definition">¶</a></dt>
+<dd><p>Maximize the given function over the target space.</p>
+<h4 id="id1">Parameters<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>init_points<span class="classifier">int, optional(default=5)</span></dt><dd><p>Number of iterations before the explorations starts the exploration
+for the maximum.</p>
+</dd>
+<dt>n_iter: int, optional(default=25)</dt><dd><p>Number of iterations where the method attempts to find the maximum
+value.</p>
+</dd>
+<dt>acquisition_function: object, optional</dt><dd><p>An instance of bayes_opt.util.UtilityFunction.
+If nothing is passed, a default using ucb is used</p>
+</dd>
+<dt>acq:</dt><dd><p>Deprecated, unused and slated for deletion.</p>
+</dd>
+<dt>kappa:</dt><dd><p>Deprecated, unused and slated for deletion.</p>
+</dd>
+<dt>kappa_decay:</dt><dd><p>Deprecated, unused and slated for deletion.</p>
+</dd>
+<dt>kappa_decay_delay:</dt><dd><p>Deprecated, unused and slated for deletion.</p>
+</dd>
+<dt>xi:</dt><dd><p>Deprecated, unused and slated for deletion.</p>
+</dd>
+<dt>**gp_params:</dt><dd><p>Deprecated, unused and slated for deletion.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.BayesianOptimization.probe">
+<span class="sig-name descname"><span class="pre">probe</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.BayesianOptimization.probe" title="bayes_opt.BayesianOptimization.probe.params (Python parameter)"><span class="n"><span class="pre">params</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.BayesianOptimization.probe" title="bayes_opt.BayesianOptimization.probe.lazy (Python parameter)"><span class="n"><span class="pre">lazy</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="kc">True</span></code></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.BayesianOptimization.probe" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluate the function at the given points.</p>
+<p>Useful to guide the optimizer.</p>
+<h4 id="id2">Parameters<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>params: dict or list</dt><dd><p>The parameters where the optimizer will evaluate the function.</p>
+</dd>
+<dt>lazy: bool, optional(default=True)</dt><dd><p>If True, the optimizer will evaluate the points when calling
+maximize(). Otherwise it will evaluate it at the moment.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.BayesianOptimization.register">
+<span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.BayesianOptimization.register" title="bayes_opt.BayesianOptimization.register.params (Python parameter)"><span class="n"><span class="pre">params</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.BayesianOptimization.register" title="bayes_opt.BayesianOptimization.register.target (Python parameter)"><span class="n"><span class="pre">target</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.BayesianOptimization.register" title="bayes_opt.BayesianOptimization.register.constraint_value (Python parameter)"><span class="n"><span class="pre">constraint_value</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="kc">None</span></code></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.BayesianOptimization.register" title="Link to this definition">¶</a></dt>
+<dd><p>Register an observation with known target.</p>
+<h4 id="id3">Parameters<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>params: dict or list</dt><dd><p>The parameters associated with the observation.</p>
+</dd>
+<dt>target: float</dt><dd><p>Value of the target function at the observation.</p>
+</dd>
+<dt>constraint_value: float or None</dt><dd><p>Value of the constraint function at the observation, if any.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.BayesianOptimization.res">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">res</span></span><a class="headerlink" href="#bayes_opt.BayesianOptimization.res" title="Link to this definition">¶</a></dt>
+<dd><p>Get all target values and constraint fulfillment for all parameters.</p>
+<p>See <cite>TargetSpace.res</cite> for more information.</p>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.BayesianOptimization.set_bounds">
+<span class="sig-name descname"><span class="pre">set_bounds</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.BayesianOptimization.set_bounds" title="bayes_opt.BayesianOptimization.set_bounds.new_bounds (Python parameter)"><span class="n"><span class="pre">new_bounds</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.BayesianOptimization.set_bounds" title="Link to this definition">¶</a></dt>
+<dd><p>Modify the bounds of the search space.</p>
+<h4 id="id4">Parameters<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>new_bounds<span class="classifier">dict</span></dt><dd><p>A dictionary with the parameter name and its new bounds</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.BayesianOptimization.set_gp_params">
+<span class="sig-name descname"><span class="pre">set_gp_params</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><a class="n reference internal" href="#bayes_opt.BayesianOptimization.set_gp_params" title="bayes_opt.BayesianOptimization.set_gp_params.params (Python parameter)"><span class="n"><span class="pre">params</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.BayesianOptimization.set_gp_params" title="Link to this definition">¶</a></dt>
+<dd><p>Set parameters of the internal Gaussian Process Regressor.</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.BayesianOptimization.space">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">space</span></span><a class="headerlink" href="#bayes_opt.BayesianOptimization.space" title="Link to this definition">¶</a></dt>
+<dd><p>Return the target space associated with the optimizer.</p>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.BayesianOptimization.suggest">
+<span class="sig-name descname"><span class="pre">suggest</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.BayesianOptimization.suggest" title="bayes_opt.BayesianOptimization.suggest.utility_function (Python parameter)"><span class="n"><span class="pre">utility_function</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.BayesianOptimization.suggest" title="Link to this definition">¶</a></dt>
+<dd><p>Suggest a promising point to probe next.</p>
+<h4 id="id5">Parameters<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>utility_function:</dt><dd><p>Surrogate function which suggests parameters to probe the target
+function at.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<h2 id="acquisition-function">Acquisition function<a class="headerlink" href="#acquisition-function" title="Link to this heading">¶</a></h2>
+<dl class="py class objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="bayes_opt.util.UtilityFunction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bayes_opt.util.</span></span><span class="sig-name descname"><span class="pre">UtilityFunction</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.util.UtilityFunction" title="bayes_opt.util.UtilityFunction.__init__.kind (Python parameter)"><span class="n"><span class="pre">kind</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="s1">&#39;ucb&#39;</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.util.UtilityFunction" title="bayes_opt.util.UtilityFunction.__init__.kappa (Python parameter)"><span class="n"><span class="pre">kappa</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">2.576</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.util.UtilityFunction" title="bayes_opt.util.UtilityFunction.__init__.xi (Python parameter)"><span class="n"><span class="pre">xi</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="mi">0</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.util.UtilityFunction" title="bayes_opt.util.UtilityFunction.__init__.kappa_decay (Python parameter)"><span class="n"><span class="pre">kappa_decay</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="mi">1</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.util.UtilityFunction" title="bayes_opt.util.UtilityFunction.__init__.kappa_decay_delay (Python parameter)"><span class="n"><span class="pre">kappa_decay_delay</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="mi">0</span></code></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.util.UtilityFunction" title="Link to this definition">¶</a></dt>
+<dd><p>An object to compute the acquisition functions.</p>
+<h3 id="id6">Parameters<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt>kind: {‘ucb’, ‘ei’, ‘poi’}</dt><dd><ul class="simple">
+<li><p>‘ucb’ stands for the Upper Confidence Bounds method</p></li>
+<li><p>‘ei’ is the Expected Improvement method</p></li>
+<li><p>‘poi’ is the Probability Of Improvement criterion.</p></li>
+</ul>
+</dd>
+<dt>kappa: float, optional(default=2.576)</dt><dd><p>Parameter to indicate how closed are the next parameters sampled.
+Higher value = favors spaces that are least explored.
+Lower value = favors spaces where the regression function is
+the highest.</p>
+</dd>
+<dt>kappa_decay: float, optional(default=1)</dt><dd><p><cite>kappa</cite> is multiplied by this factor every iteration.</p>
+</dd>
+<dt>kappa_decay_delay: int, optional(default=0)</dt><dd><p>Number of iterations that must have passed before applying the
+decay to <cite>kappa</cite>.</p>
+</dd>
+</dl>
+<p>xi: float, optional(default=0.0)</p>
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.util.UtilityFunction.ei">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ei</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.util.UtilityFunction.ei" title="bayes_opt.util.UtilityFunction.ei.x (Python parameter)"><span class="n"><span class="pre">x</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.util.UtilityFunction.ei" title="bayes_opt.util.UtilityFunction.ei.gp (Python parameter)"><span class="n"><span class="pre">gp</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.util.UtilityFunction.ei" title="bayes_opt.util.UtilityFunction.ei.y_max (Python parameter)"><span class="n"><span class="pre">y_max</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.util.UtilityFunction.ei" title="bayes_opt.util.UtilityFunction.ei.xi (Python parameter)"><span class="n"><span class="pre">xi</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.util.UtilityFunction.ei" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate Expected Improvement acqusition function.</p>
+<p>Similar to Probability of Improvement (<cite>UtilityFunction.poi</cite>), but also considers the
+magnitude of improvement.
+Calculated as</p>
+<div class="math notranslate nohighlight">
+\[\text{EI}(x) = (\mu(x)-y_{\text{max}} - \xi) \Phi\left(
+    \frac{\mu(x)-y_{\text{max}} -  \xi }{\sigma(x)} \right)
+      + \sigma(x) \phi\left(
+        \frac{\mu(x)-y_{\text{max}} -  \xi }{\sigma(x)} \right)\]</div>
+<p>where <span class="math notranslate nohighlight">\(\Phi\)</span> is the CDF and <span class="math notranslate nohighlight">\(\phi\)</span> the PDF of the normal
+distribution.</p>
+<h4 id="id7">Parameters<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>x<span class="classifier">np.ndarray</span></dt><dd><p>Parameters to evaluate the function at.</p>
+</dd>
+<dt>gp<span class="classifier">sklearn.gaussian_process.GaussianProcessRegressor</span></dt><dd><p>A gaussian process regressor modelling the target function based on
+previous observations.</p>
+</dd>
+<dt>y_max<span class="classifier">number</span></dt><dd><p>Highest found value of the target function.</p>
+</dd>
+<dt>xi<span class="classifier">float, positive</span></dt><dd><p>Governs the exploration/exploitation tradeoff. Lower prefers
+exploitation, higher prefers exploration.</p>
+</dd>
+</dl>
+<h4 id="returns">Returns<a class="headerlink" href="#returns" title="Link to this heading">¶</a></h4>
+<p>Values of the acquisition function</p>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.util.UtilityFunction.poi">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">poi</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.util.UtilityFunction.poi" title="bayes_opt.util.UtilityFunction.poi.x (Python parameter)"><span class="n"><span class="pre">x</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.util.UtilityFunction.poi" title="bayes_opt.util.UtilityFunction.poi.gp (Python parameter)"><span class="n"><span class="pre">gp</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.util.UtilityFunction.poi" title="bayes_opt.util.UtilityFunction.poi.y_max (Python parameter)"><span class="n"><span class="pre">y_max</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.util.UtilityFunction.poi" title="bayes_opt.util.UtilityFunction.poi.xi (Python parameter)"><span class="n"><span class="pre">xi</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.util.UtilityFunction.poi" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate Probability of Improvement acqusition function.</p>
+<p>Calculated as</p>
+<div class="math notranslate nohighlight">
+\[\text{POI}(x) = \Phi\left( \frac{\mu(x)-y_{\text{max}} -  \xi }{\sigma(x)} \right)\]</div>
+<p>where <span class="math notranslate nohighlight">\(\Phi\)</span> is the CDF of the normal distribution.</p>
+<h4 id="id8">Parameters<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>x<span class="classifier">np.ndarray</span></dt><dd><p>Parameters to evaluate the function at.</p>
+</dd>
+<dt>gp<span class="classifier">sklearn.gaussian_process.GaussianProcessRegressor</span></dt><dd><p>A gaussian process regressor modelling the target function based on
+previous observations.</p>
+</dd>
+<dt>y_max<span class="classifier">number</span></dt><dd><p>Highest found value of the target function.</p>
+</dd>
+<dt>xi<span class="classifier">float, positive</span></dt><dd><p>Governs the exploration/exploitation tradeoff. Lower prefers
+exploitation, higher prefers exploration.</p>
+</dd>
+</dl>
+<h4 id="id9">Returns<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h4>
+<p>Values of the acquisition function</p>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.util.UtilityFunction.ucb">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ucb</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.util.UtilityFunction.ucb" title="bayes_opt.util.UtilityFunction.ucb.x (Python parameter)"><span class="n"><span class="pre">x</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.util.UtilityFunction.ucb" title="bayes_opt.util.UtilityFunction.ucb.gp (Python parameter)"><span class="n"><span class="pre">gp</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.util.UtilityFunction.ucb" title="bayes_opt.util.UtilityFunction.ucb.kappa (Python parameter)"><span class="n"><span class="pre">kappa</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.util.UtilityFunction.ucb" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate Upper Confidence Bound acquisition function.</p>
+<p>Similar to Probability of Improvement (<cite>UtilityFunction.poi</cite>), but also considers the
+magnitude of improvement.
+Calculated as</p>
+<div class="math notranslate nohighlight">
+\[\text{UCB}(x) = \mu(x) + \kappa \sigma(x)\]</div>
+<p>where <span class="math notranslate nohighlight">\(\Phi\)</span> is the CDF and <span class="math notranslate nohighlight">\(\phi\)</span> the PDF of the normal
+distribution.</p>
+<h4 id="id10">Parameters<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>x<span class="classifier">np.ndarray</span></dt><dd><p>Parameters to evaluate the function at.</p>
+</dd>
+<dt>gp<span class="classifier">sklearn.gaussian_process.GaussianProcessRegressor</span></dt><dd><p>A gaussian process regressor modelling the target function based on
+previous observations.</p>
+</dd>
+<dt>y_max<span class="classifier">number</span></dt><dd><p>Highest found value of the target function.</p>
+</dd>
+<dt>kappa<span class="classifier">float, positive</span></dt><dd><p>Governs the exploration/exploitation tradeoff. Lower prefers
+exploitation, higher prefers exploration.</p>
+</dd>
+</dl>
+<h4 id="id11">Returns<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h4>
+<p>Values of the acquisition function</p>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.util.UtilityFunction.update_params">
+<span class="sig-name descname"><span class="pre">update_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.util.UtilityFunction.update_params" title="Link to this definition">¶</a></dt>
+<dd><p>Update internal parameters.</p>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.util.UtilityFunction.utility">
+<span class="sig-name descname"><span class="pre">utility</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.util.UtilityFunction.utility" title="bayes_opt.util.UtilityFunction.utility.x (Python parameter)"><span class="n"><span class="pre">x</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.util.UtilityFunction.utility" title="bayes_opt.util.UtilityFunction.utility.gp (Python parameter)"><span class="n"><span class="pre">gp</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.util.UtilityFunction.utility" title="bayes_opt.util.UtilityFunction.utility.y_max (Python parameter)"><span class="n"><span class="pre">y_max</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.util.UtilityFunction.utility" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate acquisition function.</p>
+<h4 id="id12">Parameters<a class="headerlink" href="#id12" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>x<span class="classifier">np.ndarray</span></dt><dd><p>Parameters to evaluate the function at.</p>
+</dd>
+<dt>gp<span class="classifier">sklearn.gaussian_process.GaussianProcessRegressor</span></dt><dd><p>A gaussian process regressor modelling the target function based on
+previous observations.</p>
+</dd>
+<dt>y_max<span class="classifier">number</span></dt><dd><p>Highest found value of the target function.</p>
+</dd>
+</dl>
+<h4 id="id13">Returns<a class="headerlink" href="#id13" title="Link to this heading">¶</a></h4>
+<p>Values of the acquisition function</p>
+</dd></dl>
+
+</dd></dl>
+
+<h2 id="target-space">Target Space<a class="headerlink" href="#target-space" title="Link to this heading">¶</a></h2>
+<dl class="py class objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="bayes_opt.target_space.TargetSpace">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bayes_opt.target_space.</span></span><span class="sig-name descname"><span class="pre">TargetSpace</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.target_space.TargetSpace" title="bayes_opt.target_space.TargetSpace.__init__.target_func (Python parameter)"><span class="n"><span class="pre">target_func</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.target_space.TargetSpace" title="bayes_opt.target_space.TargetSpace.__init__.pbounds (Python parameter)"><span class="n"><span class="pre">pbounds</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.target_space.TargetSpace" title="bayes_opt.target_space.TargetSpace.__init__.constraint (Python parameter)"><span class="n"><span class="pre">constraint</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="kc">None</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.target_space.TargetSpace" title="bayes_opt.target_space.TargetSpace.__init__.random_state (Python parameter)"><span class="n"><span class="pre">random_state</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="kc">None</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.target_space.TargetSpace" title="bayes_opt.target_space.TargetSpace.__init__.allow_duplicate_points (Python parameter)"><span class="n"><span class="pre">allow_duplicate_points</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="kc">False</span></code></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace" title="Link to this definition">¶</a></dt>
+<dd><p>Holds the param-space coordinates (X) and target values (Y).</p>
+<p>Allows for constant-time appends.</p>
+<h3 id="id14">Parameters<a class="headerlink" href="#id14" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt>target_func<span class="classifier">function</span></dt><dd><p>Function to be maximized.</p>
+</dd>
+<dt>pbounds<span class="classifier">dict</span></dt><dd><p>Dictionary with parameters names as keys and a tuple with minimum
+and maximum values.</p>
+</dd>
+<dt>random_state<span class="classifier">int, RandomState, or None</span></dt><dd><p>optionally specify a seed for a random number generator</p>
+</dd>
+<dt>allow_duplicate_points: bool, optional (default=False)</dt><dd><p>If True, the optimizer will allow duplicate points to be registered.
+This behavior may be desired in high noise situations where repeatedly probing
+the same point will give different answers. In other situations, the acquisition
+may occasionally generate a duplicate point.</p>
+</dd>
+</dl>
+<h3 id="examples">Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h3>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">target_func</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">return</span> <span class="n">p1</span> <span class="o">+</span> <span class="n">p2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pbounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;p1&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;p2&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">space</span> <span class="o">=</span> <span class="n">TargetSpace</span><span class="p">(</span><span class="n">target_func</span><span class="p">,</span> <span class="n">pbounds</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">4</span> <span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">target_func</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">space</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span><span class="p">()[</span><span class="s1">&#39;target&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">9</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span><span class="p">()[</span><span class="s1">&#39;params&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;p1&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s1">&#39;p2&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">}</span>
+</code></pre></div>
+</div>
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.target_space.TargetSpace.array_to_params">
+<span class="sig-name descname"><span class="pre">array_to_params</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.target_space.TargetSpace.array_to_params" title="bayes_opt.target_space.TargetSpace.array_to_params.x (Python parameter)"><span class="n"><span class="pre">x</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.array_to_params" title="Link to this definition">¶</a></dt>
+<dd><p>Convert an array representation of parameters into a dict version.</p>
+<h4 id="id15">Parameters<a class="headerlink" href="#id15" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>x<span class="classifier">np.ndarray</span></dt><dd><p>a single point, with len(x) == self.dim.</p>
+</dd>
+</dl>
+<h4 id="id16">Returns<a class="headerlink" href="#id16" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>dict</dt><dd><p>Representation of the parameters as dictionary.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.target_space.TargetSpace.bounds">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bounds</span></span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.bounds" title="Link to this definition">¶</a></dt>
+<dd><p>Get the bounds of this TargetSpace.</p>
+<h4 id="id17">Returns<a class="headerlink" href="#id17" title="Link to this heading">¶</a></h4>
+<p>np.ndarray</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.target_space.TargetSpace.constraint">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">constraint</span></span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.constraint" title="Link to this definition">¶</a></dt>
+<dd><p>Get the constraint model.</p>
+<h4 id="id18">Returns<a class="headerlink" href="#id18" title="Link to this heading">¶</a></h4>
+<p>ConstraintModel</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.target_space.TargetSpace.constraint_values">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">constraint_values</span></span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.constraint_values" title="Link to this definition">¶</a></dt>
+<dd><p>Get the constraint values registered to this TargetSpace.</p>
+<h4 id="id19">Returns<a class="headerlink" href="#id19" title="Link to this heading">¶</a></h4>
+<p>np.ndarray</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.target_space.TargetSpace.dim">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dim</span></span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.dim" title="Link to this definition">¶</a></dt>
+<dd><p>Get the number of parameter names.</p>
+<h4 id="id20">Returns<a class="headerlink" href="#id20" title="Link to this heading">¶</a></h4>
+<p>int</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.target_space.TargetSpace.empty">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">empty</span></span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.empty" title="Link to this definition">¶</a></dt>
+<dd><p>Check if anything has been registered.</p>
+<h4 id="id21">Returns<a class="headerlink" href="#id21" title="Link to this heading">¶</a></h4>
+<p>bool</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.target_space.TargetSpace.keys">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">keys</span></span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.keys" title="Link to this definition">¶</a></dt>
+<dd><p>Get the keys (or parameter names).</p>
+<h4 id="id22">Returns<a class="headerlink" href="#id22" title="Link to this heading">¶</a></h4>
+<p>list of str</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.target_space.TargetSpace.mask">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mask</span></span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.mask" title="Link to this definition">¶</a></dt>
+<dd><p>Return a boolean array of valid points.</p>
+<p>Points are valid if they satisfy both the constraint and boundary conditions.</p>
+<h4 id="id23">Returns<a class="headerlink" href="#id23" title="Link to this heading">¶</a></h4>
+<p>np.ndarray</p>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.target_space.TargetSpace.max">
+<span class="sig-name descname"><span class="pre">max</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.max" title="Link to this definition">¶</a></dt>
+<dd><p>Get maximum target value found and corresponding parameters.</p>
+<p>If there is a constraint present, the maximum value that fulfills the
+constraint within the parameter bounds is returned.</p>
+<h4 id="id24">Returns<a class="headerlink" href="#id24" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>res: dict</dt><dd><p>A dictionary with the keys ‘target’ and ‘params’. The value of
+‘target’ is the maximum target value, and the value of ‘params’ is
+a dictionary with the parameter names as keys and the parameter
+values as values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.target_space.TargetSpace.params">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">params</span></span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.params" title="Link to this definition">¶</a></dt>
+<dd><p>Get the parameter values registered to this TargetSpace.</p>
+<h4 id="id25">Returns<a class="headerlink" href="#id25" title="Link to this heading">¶</a></h4>
+<p>np.ndarray</p>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.target_space.TargetSpace.params_to_array">
+<span class="sig-name descname"><span class="pre">params_to_array</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.target_space.TargetSpace.params_to_array" title="bayes_opt.target_space.TargetSpace.params_to_array.params (Python parameter)"><span class="n"><span class="pre">params</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.params_to_array" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a dict representation of parameters into an array version.</p>
+<h4 id="id26">Parameters<a class="headerlink" href="#id26" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>params<span class="classifier">dict</span></dt><dd><p>a single point, with len(x) == self.dim.</p>
+</dd>
+</dl>
+<h4 id="id27">Returns<a class="headerlink" href="#id27" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>np.ndarray</dt><dd><p>Representation of the parameters as an array.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.target_space.TargetSpace.probe">
+<span class="sig-name descname"><span class="pre">probe</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.target_space.TargetSpace.probe" title="bayes_opt.target_space.TargetSpace.probe.params (Python parameter)"><span class="n"><span class="pre">params</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.probe" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluate the target function on a point and register the result.</p>
+<h4 id="notes">Notes<a class="headerlink" href="#notes" title="Link to this heading">¶</a></h4>
+<p>If <cite>params</cite> has been previously seen and duplicate points are not allowed,
+returns a cached value of <cite>result</cite>.</p>
+<h4 id="id28">Parameters<a class="headerlink" href="#id28" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>params<span class="classifier">np.ndarray</span></dt><dd><p>a single point, with len(x) == self.dim</p>
+</dd>
+</dl>
+<h4 id="id29">Returns<a class="headerlink" href="#id29" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>result<span class="classifier">float | Tuple(float, float)</span></dt><dd><p>target function value, or Tuple(target function value, constraint value)</p>
+</dd>
+</dl>
+<h4 id="example">Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h4>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">target_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">:</span> <span class="n">p1</span> <span class="o">+</span> <span class="n">p2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pbounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;p1&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;p2&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">space</span> <span class="o">=</span> <span class="n">TargetSpace</span><span class="p">(</span><span class="n">target_func</span><span class="p">,</span> <span class="n">pbounds</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">space</span><span class="o">.</span><span class="n">probe</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span><span class="p">()[</span><span class="s1">&#39;target&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">6</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span><span class="p">()[</span><span class="s1">&#39;params&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;p1&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s1">&#39;p2&#39;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">}</span>
+</code></pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.target_space.TargetSpace.random_sample">
+<span class="sig-name descname"><span class="pre">random_sample</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.random_sample" title="Link to this definition">¶</a></dt>
+<dd><p>Sample a random point from within the bounds of the space.</p>
+<h4 id="id30">Returns<a class="headerlink" href="#id30" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>data: ndarray</dt><dd><p>[1 x dim] array with dimensions corresponding to <cite>self._keys</cite></p>
+</dd>
+</dl>
+<h4 id="id31">Examples<a class="headerlink" href="#id31" title="Link to this heading">¶</a></h4>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">target_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">:</span> <span class="n">p1</span> <span class="o">+</span> <span class="n">p2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pbounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;p1&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;p2&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">space</span> <span class="o">=</span> <span class="n">TargetSpace</span><span class="p">(</span><span class="n">target_func</span><span class="p">,</span> <span class="n">pbounds</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">space</span><span class="o">.</span><span class="n">random_sample</span><span class="p">()</span>
+<span class="go">array([[ 55.33253689,   0.54488318]])</span>
+</code></pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.target_space.TargetSpace.register">
+<span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.target_space.TargetSpace.register" title="bayes_opt.target_space.TargetSpace.register.params (Python parameter)"><span class="n"><span class="pre">params</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.target_space.TargetSpace.register" title="bayes_opt.target_space.TargetSpace.register.target (Python parameter)"><span class="n"><span class="pre">target</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.target_space.TargetSpace.register" title="bayes_opt.target_space.TargetSpace.register.constraint_value (Python parameter)"><span class="n"><span class="pre">constraint_value</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="kc">None</span></code></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.register" title="Link to this definition">¶</a></dt>
+<dd><p>Append a point and its target value to the known data.</p>
+<h4 id="id32">Parameters<a class="headerlink" href="#id32" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>params<span class="classifier">np.ndarray</span></dt><dd><p>a single point, with len(x) == self.dim.</p>
+</dd>
+<dt>target<span class="classifier">float</span></dt><dd><p>target function value</p>
+</dd>
+<dt>constraint_value<span class="classifier">float or None</span></dt><dd><p>Constraint function value</p>
+</dd>
+</dl>
+<h4 id="raises">Raises<a class="headerlink" href="#raises" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>NotUniqueError:</dt><dd><p>if the point is not unique</p>
+</dd>
+</dl>
+<h4 id="id33">Notes<a class="headerlink" href="#id33" title="Link to this heading">¶</a></h4>
+<p>runs in amortized constant time</p>
+<h4 id="id34">Examples<a class="headerlink" href="#id34" title="Link to this heading">¶</a></h4>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">target_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">:</span> <span class="n">p1</span> <span class="o">+</span> <span class="n">p2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pbounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;p1&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;p2&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">space</span> <span class="o">=</span> <span class="n">TargetSpace</span><span class="p">(</span><span class="n">target_func</span><span class="p">,</span> <span class="n">pbounds</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">)</span>
+<span class="go">0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">space</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">)</span>
+<span class="go">1</span>
+</code></pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.target_space.TargetSpace.res">
+<span class="sig-name descname"><span class="pre">res</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.res" title="Link to this definition">¶</a></dt>
+<dd><p>Get all target values and constraint fulfillment for all parameters.</p>
+<h4 id="id35">Returns<a class="headerlink" href="#id35" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>res: list</dt><dd><p>A list of dictionaries with the keys ‘target’, ‘params’, and
+‘constraint’. The value of ‘target’ is the target value, the value
+of ‘params’ is a dictionary with the parameter names as keys and the
+parameter values as values, and the value of ‘constraint’ is the
+constraint fulfillment.</p>
+</dd>
+</dl>
+<h4 id="id36">Notes<a class="headerlink" href="#id36" title="Link to this heading">¶</a></h4>
+<p>Does not report if points are within the bounds of the parameter space.</p>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.target_space.TargetSpace.set_bounds">
+<span class="sig-name descname"><span class="pre">set_bounds</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.target_space.TargetSpace.set_bounds" title="bayes_opt.target_space.TargetSpace.set_bounds.new_bounds (Python parameter)"><span class="n"><span class="pre">new_bounds</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.set_bounds" title="Link to this definition">¶</a></dt>
+<dd><p>Change the lower and upper search bounds.</p>
+<h4 id="id37">Parameters<a class="headerlink" href="#id37" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>new_bounds<span class="classifier">dict</span></dt><dd><p>A dictionary with the parameter name and its new bounds</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.target_space.TargetSpace.target">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">target</span></span><a class="headerlink" href="#bayes_opt.target_space.TargetSpace.target" title="Link to this definition">¶</a></dt>
+<dd><p>Get the target function values registered to this TargetSpace.</p>
+<h4 id="id38">Returns<a class="headerlink" href="#id38" title="Link to this heading">¶</a></h4>
+<p>np.ndarray</p>
+</dd></dl>
+
+</dd></dl>
+
+<h2 id="domain-reduction">Domain reduction<a class="headerlink" href="#domain-reduction" title="Link to this heading">¶</a></h2>
+<dl class="py class objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="bayes_opt.domain_reduction.SequentialDomainReductionTransformer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bayes_opt.domain_reduction.</span></span><span class="sig-name descname"><span class="pre">SequentialDomainReductionTransformer</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.domain_reduction.SequentialDomainReductionTransformer" title="bayes_opt.domain_reduction.SequentialDomainReductionTransformer.__init__.gamma_osc (Python parameter)"><span class="n"><span class="pre">gamma_osc</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">0.7</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.domain_reduction.SequentialDomainReductionTransformer" title="bayes_opt.domain_reduction.SequentialDomainReductionTransformer.__init__.gamma_pan (Python parameter)"><span class="n"><span class="pre">gamma_pan</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">1.0</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.domain_reduction.SequentialDomainReductionTransformer" title="bayes_opt.domain_reduction.SequentialDomainReductionTransformer.__init__.eta (Python parameter)"><span class="n"><span class="pre">eta</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">0.9</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.domain_reduction.SequentialDomainReductionTransformer" title="bayes_opt.domain_reduction.SequentialDomainReductionTransformer.__init__.minimum_window (Python parameter)"><span class="n"><span class="pre">minimum_window</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">0.0</span></code></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.domain_reduction.SequentialDomainReductionTransformer" title="Link to this definition">¶</a></dt>
+<dd><p>Reduce the searchable space.</p>
+<p>A sequential domain reduction transformer based on the work by Stander, N. and Craig, K:
+“On the robustness of a simple domain reduction scheme for simulation-based optimization”</p>
+<h3 id="id39">Parameters<a class="headerlink" href="#id39" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt>gamma_osc<span class="classifier">float, default=0.7</span></dt><dd><p>Parameter used to scale (typically dampen) oscillations.</p>
+</dd>
+<dt>gamma_pan<span class="classifier">float, default=1.0</span></dt><dd><p>Parameter used to scale (typically unitary) panning.</p>
+</dd>
+<dt>eta<span class="classifier">float, default=0.9</span></dt><dd><p>Zooming parameter used to shrink the region of interest.</p>
+</dd>
+<dt>minimum_window<span class="classifier">float or np.ndarray or dict, default=0.0</span></dt><dd><p>Minimum window size for each parameter. If a float is provided, the same value is used for all parameters.</p>
+</dd>
+</dl>
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.domain_reduction.SequentialDomainReductionTransformer.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.domain_reduction.SequentialDomainReductionTransformer.initialize" title="bayes_opt.domain_reduction.SequentialDomainReductionTransformer.initialize.target_space (Python parameter)"><span class="n"><span class="pre">target_space</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><a class="reference internal" href="#bayes_opt.target_space.TargetSpace" title="bayes_opt.target_space.TargetSpace (Python class) — Holds the param-space coordinates (X) and target values (Y)."><span class="pre">TargetSpace</span></a></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">None</span></span></span></span><a class="headerlink" href="#bayes_opt.domain_reduction.SequentialDomainReductionTransformer.initialize" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize all of the parameters.</p>
+<h4 id="id40">Parameters<a class="headerlink" href="#id40" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>target_space<span class="classifier">TargetSpace</span></dt><dd><p>TargetSpace this DomainTransformer operates on.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.domain_reduction.SequentialDomainReductionTransformer.transform">
+<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.domain_reduction.SequentialDomainReductionTransformer.transform" title="bayes_opt.domain_reduction.SequentialDomainReductionTransformer.transform.target_space (Python parameter)"><span class="n"><span class="pre">target_space</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><a class="reference internal" href="#bayes_opt.target_space.TargetSpace" title="bayes_opt.target_space.TargetSpace (Python class) — Holds the param-space coordinates (X) and target values (Y)."><span class="pre">TargetSpace</span></a></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">dict</span></span></span></span><a class="headerlink" href="#bayes_opt.domain_reduction.SequentialDomainReductionTransformer.transform" title="Link to this definition">¶</a></dt>
+<dd><p>Transform the bounds of the target space.</p>
+<h4 id="id41">Parameters<a class="headerlink" href="#id41" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>target_space<span class="classifier">TargetSpace</span></dt><dd><p>TargetSpace this DomainTransformer operates on.</p>
+</dd>
+</dl>
+<h4 id="id42">Returns<a class="headerlink" href="#id42" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>dict</dt><dd><p>The new bounds of each parameter.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<h2 id="constraints">Constraints<a class="headerlink" href="#constraints" title="Link to this heading">¶</a></h2>
+<dl class="py class objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="bayes_opt.constraint.ConstraintModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bayes_opt.constraint.</span></span><span class="sig-name descname"><span class="pre">ConstraintModel</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.constraint.ConstraintModel" title="bayes_opt.constraint.ConstraintModel.__init__.fun (Python parameter)"><span class="n"><span class="pre">fun</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.constraint.ConstraintModel" title="bayes_opt.constraint.ConstraintModel.__init__.lb (Python parameter)"><span class="n"><span class="pre">lb</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.constraint.ConstraintModel" title="bayes_opt.constraint.ConstraintModel.__init__.ub (Python parameter)"><span class="n"><span class="pre">ub</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.constraint.ConstraintModel" title="bayes_opt.constraint.ConstraintModel.__init__.random_state (Python parameter)"><span class="n"><span class="pre">random_state</span></span></a><span class="o"><span class="pre">=</span></span><code class="code python default_value docutils literal highlight highlight-python"><span class="kc">None</span></code></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.constraint.ConstraintModel" title="Link to this definition">¶</a></dt>
+<dd><p>Model constraints using GP regressors.</p>
+<p>This class takes the function to optimize as well as the parameters bounds
+in order to find which values for the parameters yield the maximum value
+using bayesian optimization.</p>
+<h3 id="id43">Parameters<a class="headerlink" href="#id43" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt>fun<span class="classifier">None or Callable -&gt; float or np.ndarray</span></dt><dd><p>The constraint function. Should be float-valued or array-valued (if
+multiple constraints are present). Needs to take the same parameters
+as the optimization target with the same argument names.</p>
+</dd>
+<dt>lb<span class="classifier">float or np.ndarray</span></dt><dd><p>The lower bound on the constraints. Should have the same
+dimensionality as the return value of the constraint function.</p>
+</dd>
+<dt>ub<span class="classifier">float or np.ndarray</span></dt><dd><p>The upper bound on the constraints. Should have the same
+dimensionality as the return value of the constraint function.</p>
+</dd>
+<dt>random_state<span class="classifier">np.random.RandomState or int or None, default=None</span></dt><dd><p>Random state to use.</p>
+</dd>
+</dl>
+<h3 id="id44">Notes<a class="headerlink" href="#id44" title="Link to this heading">¶</a></h3>
+<p>In case of multiple constraints, this model assumes conditional
+independence. This means that for each constraint, the probability of
+fulfillment is the cdf of a univariate Gaussian. The overall probability
+is a simply the product of the individual probabilities.</p>
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.constraint.ConstraintModel.allowed">
+<span class="sig-name descname"><span class="pre">allowed</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.constraint.ConstraintModel.allowed" title="bayes_opt.constraint.ConstraintModel.allowed.constraint_values (Python parameter)"><span class="n"><span class="pre">constraint_values</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.constraint.ConstraintModel.allowed" title="Link to this definition">¶</a></dt>
+<dd><p>Check whether <cite>constraint_values</cite> fulfills the specified limits.</p>
+<h4 id="id45">Parameters<a class="headerlink" href="#id45" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>constraint_values<span class="classifier">np.ndarray of shape (n_samples, n_constraints)</span></dt><dd><p>The values of the constraint function.</p>
+</dd>
+</dl>
+<h4 id="id46">Returns<a class="headerlink" href="#id46" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>np.ndarrray of shape (n_samples,)</dt><dd><p>Specifying wheter the constraints are fulfilled.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.constraint.ConstraintModel.approx">
+<span class="sig-name descname"><span class="pre">approx</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.constraint.ConstraintModel.approx" title="bayes_opt.constraint.ConstraintModel.approx.X (Python parameter)"><span class="n"><span class="pre">X</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.constraint.ConstraintModel.approx" title="Link to this definition">¶</a></dt>
+<dd><p>Approximate the constraint function using the internal GPR model.</p>
+<h4 id="id47">Parameters<a class="headerlink" href="#id47" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>X<span class="classifier">np.ndarray of shape (n_samples, n_features)</span></dt><dd><p>Parameters for which to estimate the constraint function value.</p>
+</dd>
+</dl>
+<h4 id="id48">Returns<a class="headerlink" href="#id48" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>np.ndarray of shape (n_samples, n_constraints)</dt><dd><p>Constraint function value estimates.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.constraint.ConstraintModel.eval">
+<span class="sig-name descname"><span class="pre">eval</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><a class="n reference internal" href="#bayes_opt.constraint.ConstraintModel.eval" title="bayes_opt.constraint.ConstraintModel.eval.kwargs (Python parameter)"><span class="n"><span class="pre">kwargs</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">dict</span></span></span></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.constraint.ConstraintModel.eval" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluate the constraint function.</p>
+<h4 id="id49">Parameters<a class="headerlink" href="#id49" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>**kwargs :</dt><dd><p>Function arguments to evaluate the constraint function on.</p>
+</dd>
+</dl>
+<h4 id="id50">Returns<a class="headerlink" href="#id50" title="Link to this heading">¶</a></h4>
+<p>Value of the constraint function.</p>
+<h4 id="id51">Raises<a class="headerlink" href="#id51" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>TypeError</dt><dd><p>If the kwargs’ keys don’t match the function argument names.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.constraint.ConstraintModel.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.constraint.ConstraintModel.fit" title="bayes_opt.constraint.ConstraintModel.fit.X (Python parameter)"><span class="n"><span class="pre">X</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.constraint.ConstraintModel.fit" title="bayes_opt.constraint.ConstraintModel.fit.Y (Python parameter)"><span class="n"><span class="pre">Y</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.constraint.ConstraintModel.fit" title="Link to this definition">¶</a></dt>
+<dd><p>Fit internal GPRs to the data.</p>
+<h4 id="id52">Parameters<a class="headerlink" href="#id52" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>X :</dt><dd><p>Parameters of the constraint function.</p>
+</dd>
+<dt>Y :</dt><dd><p>Values of the constraint function.</p>
+</dd>
+</dl>
+<h4 id="id53">Returns<a class="headerlink" href="#id53" title="Link to this heading">¶</a></h4>
+<p>None</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.constraint.ConstraintModel.lb">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lb</span></span><a class="headerlink" href="#bayes_opt.constraint.ConstraintModel.lb" title="Link to this definition">¶</a></dt>
+<dd><p>Return lower bounds.</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.constraint.ConstraintModel.model">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model</span></span><a class="headerlink" href="#bayes_opt.constraint.ConstraintModel.model" title="Link to this definition">¶</a></dt>
+<dd><p>Return GP regressors of the constraint function.</p>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.constraint.ConstraintModel.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.constraint.ConstraintModel.predict" title="bayes_opt.constraint.ConstraintModel.predict.X (Python parameter)"><span class="n"><span class="pre">X</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#bayes_opt.constraint.ConstraintModel.predict" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the probability that the constraint is fulfilled at <cite>X</cite>.</p>
+<p>Note that this does not try to approximate the values of the
+constraint function (for this, see <cite>ConstraintModel.approx()</cite>.), but
+probability that the constraint function is fulfilled. That is, this
+function calculates</p>
+<div class="math notranslate nohighlight">
+\[p = \text{Pr}\left\{c^{\text{low}} \leq \tilde{c}(x) \leq
+    c^{\text{up}} \right\} = \int_{c^{\text{low}}}^{c^{\text{up}}}
+    \mathcal{N}(c, \mu(x), \sigma^2(x)) \, dc.\]</div>
+<p>with <span class="math notranslate nohighlight">\(\mu(x)\)</span>, <span class="math notranslate nohighlight">\(\sigma^2(x)\)</span> the mean and variance at
+<span class="math notranslate nohighlight">\(x\)</span> as given by the GP and <span class="math notranslate nohighlight">\(c^{\text{low}}\)</span>,
+<span class="math notranslate nohighlight">\(c^{\text{up}}\)</span> the lower and upper bounds of the constraint
+respectively.</p>
+<p>In case of multiple constraints, we assume conditional independence.
+This means we calculate the probability of constraint fulfilment
+individually, with the joint probability given as their product.</p>
+<h4 id="id54">Parameters<a class="headerlink" href="#id54" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>X<span class="classifier">np.ndarray of shape (n_samples, n_features)</span></dt><dd><p>Parameters for which to predict the probability of constraint
+fulfilment.</p>
+</dd>
+</dl>
+<h4 id="id55">Returns<a class="headerlink" href="#id55" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>np.ndarray of shape (n_samples,)</dt><dd><p>Probability of constraint fulfilment.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.constraint.ConstraintModel.ub">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ub</span></span><a class="headerlink" href="#bayes_opt.constraint.ConstraintModel.ub" title="Link to this definition">¶</a></dt>
+<dd><p>Return upper bounds.</p>
+</dd></dl>
+
+</dd></dl>
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var tab,labels=set.querySelector(".tabbed-labels");for(tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+        </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+            Back to top
+          </a>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="visualization.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Visualization" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Visualization
+            </div>
+          </div>
+        </a>
+      
+      
+    </nav>
+  
+  
+  
+  <div class="md-footer-meta md-typeset">
+    
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-footer-copyright__highlight">
+        &#169; Copyright Fernando Nogueira and the bayesian-optimization developers.
+        
+    </div>
+  
+    Created using
+    <a href="https://www.sphinx-doc.org/" target="_blank" rel="noopener">Sphinx</a>
+    7.4.7.
+     and
+    <a href="https://github.com/jbms/sphinx-immaterial/" target="_blank" rel="noopener">Sphinx-Immaterial</a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    <a href="https://github.com/bayesian-optimization/BayesianOptimization" target="_blank" rel="noopener" title="Source on github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+    
+    
+      
+      
+    
+    <a href="https://pypi.org/project/bayesian-optimization/" target="_blank" rel="noopener" title="pypi.org" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.8c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-13.6h160.2c31.1 0 42.6-21.7 53.4-54.2 11.2-33.5 10.7-65.7 0-108.6zM286.2 404c11.1 0 20.1 9.1 20.1 20.3 0 11.3-9 20.4-20.1 20.4-11 0-20.1-9.2-20.1-20.4.1-11.3 9.1-20.3 20.1-20.3zM167.8 248.1h106.8c29.7 0 53.4-24.5 53.4-54.3V91.9c0-29-24.4-50.7-53.4-55.6-35.8-5.9-74.7-5.6-106.8.1-45.2 8-53.4 24.7-53.4 55.6v40.7h106.9v13.6h-147c-31.1 0-58.3 18.7-66.8 54.2-9.8 40.7-10.2 66.1 0 108.6 7.6 31.6 25.7 54.2 56.8 54.2H101v-48.8c0-35.3 30.5-66.4 66.8-66.4zm-6.7-142.6c-11.1 0-20.1-9.1-20.1-20.3.1-11.3 9-20.4 20.1-20.4 11 0 20.1 9.2 20.1 20.4s-9 20.3-20.1 20.3z"/></svg>
+    </a>
+  
+    
+    
+      
+      
+    
+    <a href="https://anaconda.org/conda-forge/bayesian-optimization" target="_blank" rel="noopener" title="anaconda.org" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.8c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-13.6h160.2c31.1 0 42.6-21.7 53.4-54.2 11.2-33.5 10.7-65.7 0-108.6zM286.2 404c11.1 0 20.1 9.1 20.1 20.3 0 11.3-9 20.4-20.1 20.4-11 0-20.1-9.2-20.1-20.4.1-11.3 9.1-20.3 20.1-20.3zM167.8 248.1h106.8c29.7 0 53.4-24.5 53.4-54.3V91.9c0-29-24.4-50.7-53.4-55.6-35.8-5.9-74.7-5.6-106.8.1-45.2 8-53.4 24.7-53.4 55.6v40.7h106.9v13.6h-147c-31.1 0-58.3 18.7-66.8 54.2-9.8 40.7-10.2 66.1 0 108.6 7.6 31.6 25.7 54.2 56.8 54.2H101v-48.8c0-35.3 30.5-66.4 66.8-66.4zm-6.7-142.6c-11.1 0-20.1-9.1-20.1-20.3.1-11.3 9-20.4 20.1-20.4 11 0 20.1 9.2 20.1 20.4s-9 20.3-20.1 20.3z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+    
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.expand", "navigation.sections", "navigation.top", "search.share", "toc.follow", "toc.sticky", "content.tabs.link", "announce.dismiss"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike", "staticVersions": null, "versionPath": "../versions.json"}}</script>
+    
+      
+        <script src="_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js?v=8ec58cb5"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script id="MathJax-script" src="_static/mathjax/tex-mml-chtml.js?v=cadf963e"></script>
+    
+  </body>
+</html>
