@@ -33,12 +33,11 @@ class ConstraintModel:
     random_state : np.random.RandomState or int or None, default=None
         Random state to use.
 
-    Notes
-    -----
+    Note
+    ----
     In case of multiple constraints, this model assumes conditional
-    independence. This means that for each constraint, the probability of
-    fulfillment is the cdf of a univariate Gaussian. The overall probability
-    is a simply the product of the individual probabilities.
+    independence. This means that the overall probability of fulfillment is a
+    simply the product of the individual probabilities.
     """
 
     def __init__(self, fun, lb, ub, random_state=None):
@@ -112,9 +111,9 @@ class ConstraintModel:
 
         Parameters
         ----------
-        X :
+        X : np.ndarray of shape (n_samples, n_features)
             Parameters of the constraint function.
-        Y :
+        Y : np.ndarray of shape (n_samples, n_constraints)
             Values of the constraint function.
 
 
@@ -145,6 +144,9 @@ class ConstraintModel:
         :math:`x` as given by the GP and :math:`c^{\text{low}}`,
         :math:`c^{\text{up}}` the lower and upper bounds of the constraint
         respectively.
+
+        Note
+        ----
 
         In case of multiple constraints, we assume conditional independence.
         This means we calculate the probability of constraint fulfilment

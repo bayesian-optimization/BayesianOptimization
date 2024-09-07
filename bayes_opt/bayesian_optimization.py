@@ -93,8 +93,9 @@ class BayesianOptimization(Observable):
         Dictionary with parameters names as keys and a tuple with minimum
         and maximum values.
 
-    constraint: A ConstraintModel. Note that the names of arguments of the
-        constraint function and of f need to be the same.
+    constraint: ConstraintModel.
+        Note that the names of arguments of the constraint function and of
+        f need to be the same.
 
     random_state: int or numpy.random.RandomState, optional(default=None)
         If the value is an integer, it is used as the seed for creating a
@@ -112,19 +113,6 @@ class BayesianOptimization(Observable):
         This behavior may be desired in high noise situations where repeatedly probing
         the same point will give different answers. In other situations, the acquisition
         may occasionally generate a duplicate point.
-
-    Methods
-    -------
-    probe()
-        Evaluates the function on the given points.
-        Can be used to guide the optimizer.
-
-    maximize()
-        Tries to find the parameters that yield the maximum value for the
-        given function.
-
-    set_bounds()
-        Allows changing the lower and upper searching bounds
     """
 
     def __init__(
@@ -303,12 +291,20 @@ class BayesianOptimization(Observable):
         Parameters
         ----------
         init_points : int, optional(default=5)
-            Number of iterations before the explorations starts the exploration
-            for the maximum.
+            Number of random points to probe before starting the optimization.
 
         n_iter: int, optional(default=25)
             Number of iterations where the method attempts to find the maximum
             value.
+
+        Warning
+        -------
+            The maximize loop only fits the GP when suggesting a new point to
+            probe based on the acquisition function. This means that the GP may
+            not be fitted on all points registered to the target space when the
+            method completes. If you intend to use the GP model after the
+            optimization routine, make sure to fit it manually, e.g. by calling
+            ``optimizer._gp.fit(optimizer.space.params, optimizer.space.target)``.
         """
         self._prime_subscriptions()
         self.dispatch(Events.OPTIMIZATION_START)

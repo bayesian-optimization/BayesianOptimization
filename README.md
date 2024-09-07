@@ -5,49 +5,39 @@
 # Bayesian Optimization
 
 ![tests](https://github.com/bayesian-optimization/BayesianOptimization/actions/workflows/run_tests.yml/badge.svg)
+[![docs - stable](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fbayesian-optimization%2FBayesianOptimization%2Fgh-pages%2Fversions.json&query=%24%5B%3F(%40.aliases%20%26%26%20%40.aliases.indexOf('stable')%20%3E%20-1)%5D.version&prefix=stable%20(v&suffix=)&label=docs)](https://bayesian-optimization.github.io/BayesianOptimization/)
 [![Codecov](https://codecov.io/github/bayesian-optimization/BayesianOptimization/badge.svg?branch=master&service=github)](https://codecov.io/github/bayesian-optimization/BayesianOptimization?branch=master)
-[![Pypi](https://img.shields.io/pypi/v/bayesian-optimization.svg)](https://pypi.python.org/pypi/bayesian-optimization)![PyPI - Python Version](https://img.shields.io/pypi/pyversions/bayesian-optimization)
+[![Pypi](https://img.shields.io/pypi/v/bayesian-optimization.svg)](https://pypi.python.org/pypi/bayesian-optimization)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/bayesian-optimization)
+
 
 Pure Python implementation of bayesian global optimization with gaussian
 processes.
 
+
+This is a constrained global optimization package built upon bayesian inference
+and gaussian processes, that attempts to find the maximum value of an unknown
+function in as few iterations as possible. This technique is particularly
+suited for optimization of high cost functions and situations where the balance
+between exploration and exploitation is important.
+
 ## Installation
 
-* PyPI (pip):
+* pip (via PyPI):
 
 ```console
 $ pip install bayesian-optimization
 ```
 
-* Conda from conda-forge channel:
+* Conda (via conda-forge):
 
 ```console
 $ conda install -c conda-forge bayesian-optimization
 ```
 
-This is a constrained global optimization package built upon bayesian inference
-and gaussian process, that attempts to find the maximum value of an unknown
-function in as few iterations as possible. This technique is particularly
-suited for optimization of high cost functions, situations where the balance
-between exploration and exploitation is important.
-
-## Quick Start
-See below for a quick tour over the basics of the Bayesian Optimization package. More detailed information, other advanced features, and tips on usage/implementation can be found in the [examples](http://bayesian-optimization.github.io/BayesianOptimization/examples.html) folder. I suggest that you:
-- Follow the [basic tour notebook](http://bayesian-optimization.github.io/BayesianOptimization/basic-tour.html) to learn how to use the package's most important features.
-- Take a look at the [advanced tour notebook](http://bayesian-optimization.github.io/BayesianOptimization/advanced-tour.html) to learn how to make the package more flexible, how to deal with categorical parameters, how to use observers, and more.
-- Check out this [notebook](http://bayesian-optimization.github.io/BayesianOptimization/visualization.html) with a step by step visualization of how this method works.
-- To understand how to use bayesian optimization when additional constraints are present, see the [constrained optimization notebook](http://bayesian-optimization.github.io/BayesianOptimization/constraints.html).
-- Explore this [notebook](http://bayesian-optimization.github.io/BayesianOptimization/exploitation_vs_exploration.html)
-exemplifying the balance between exploration and exploitation and how to
-control it.
-- Go over this [script](https://github.com/bayesian-optimization/BayesianOptimization/blob/master/examples/sklearn_example.py)
-for examples of how to tune parameters of Machine Learning models using cross validation and bayesian optimization.
-- Explore the [domain reduction notebook](http://bayesian-optimization.github.io/BayesianOptimization/domain_reduction.html) to learn more about how search can be sped up by dynamically changing parameters' bounds.
-- Finally, take a look at this [script](https://github.com/bayesian-optimization/BayesianOptimization/blob/master/examples/async_optimization.py)
-for ideas on how to implement bayesian optimization in a distributed fashion using this package.
-
-
 ## How does it work?
+
+See the [documentation](https://bayesian-optimization.github.io/BayesianOptimization/) for how to use this package.
 
 Bayesian optimization works by constructing a posterior distribution of functions (gaussian process) that best describes the function you want to optimize. As the number of observations grows, the posterior distribution improves, and the algorithm becomes more certain of which regions in parameter space are worth exploring and which are not, as seen in the picture below.
 
@@ -59,8 +49,8 @@ As you iterate over and over, the algorithm balances its needs of exploration an
 
 This process is designed to minimize the number of steps required to find a combination of parameters that are close to the optimal combination. To do so, this method uses a proxy optimization problem (finding the maximum of the acquisition function) that, albeit still a hard problem, is cheaper (in the computational sense) and common tools can be employed. Therefore Bayesian Optimization is most adequate for situations where sampling the function to be optimized is a very expensive endeavor. See the references for a proper discussion of this method.
 
-This project is under active development, if you find a bug, or anything that
-needs correction, please let me know.
+This project is under active development. If you run into trouble, find a bug or notice
+anything that needs correction, please let us know by filing an issue.
 
 
 ## Basic tour of the Bayesian Optimization package
@@ -154,125 +144,6 @@ for i, res in enumerate(optimizer.res):
 ```
 
 
-#### 2.1 Changing bounds
-
-During the optimization process you may realize the bounds chosen for some parameters are not adequate. For these situations you can invoke the method `set_bounds` to alter them. You can pass any combination of **existing** parameters and their associated new bounds.
-
-
-```python
-optimizer.set_bounds(new_bounds={"x": (-2, 3)})
-
-optimizer.maximize(
-    init_points=0,
-    n_iter=5,
-)
-```
-
-    |   iter    |  target   |     x     |     y     |
-    -------------------------------------------------
-    |  6        | -5.145    |  2.115    | -0.2924   |
-    |  7        | -5.379    |  2.337    |  0.04124  |
-    |  8        | -3.581    |  1.874    | -0.03428  |
-    |  9        | -2.624    |  1.702    |  0.1472   |
-    |  10       | -1.762    |  1.442    |  0.1735   |
-    =================================================
-
-#### 2.2 Sequential Domain Reduction
-
-Sometimes the initial boundaries specified for a problem are too wide, and adding points to improve the response surface in regions of the solution domain is extraneous. Other times the cost function is very expensive to compute, and minimizing the number of calls is extremely beneficial.
-
-When it's worthwhile to converge on an optimal point quickly rather than try to find the optimal point, contracting the domain around the current optimal value as the search progresses can speed up the search progress considerably. Using the `SequentialDomainReductionTransformer` the bounds of the problem can be panned and zoomed dynamically in an attempt to improve convergence.
-
-![sequential domain reduction](docsrc/static/sdr.png)
-
-An example of using the `SequentialDomainReductionTransformer` is shown in the [domain reduction notebook](http://bayesian-optimization.github.io/BayesianOptimization/domain_reduction.html). More information about this method can be found in the paper ["On the robustness of a simple domain reduction scheme for simulation‐based optimization"](http://www.truegrid.com/srsm_revised.pdf).
-
-### 3. Guiding the optimization
-
-It is often the case that we have an idea of regions of the parameter space where the maximum of our function might lie. For these situations the `BayesianOptimization` object allows the user to specify points to be probed. By default these will be explored lazily (`lazy=True`), meaning these points will be evaluated only the next time you call `maximize`. This probing process happens before the gaussian process takes over.
-
-Parameters can be passed as dictionaries or as an iterable.
-
-```python
-optimizer.probe(
-    params={"x": 0.5, "y": 0.7},
-    lazy=True,
-)
-
-optimizer.probe(
-    params=[-0.3, 0.1],
-    lazy=True,
-)
-
-# Will probe only the two points specified above
-optimizer.maximize(init_points=0, n_iter=0)
-```
-
-    |   iter    |  target   |     x     |     y     |
-    -------------------------------------------------
-    |  11       |  0.66     |  0.5      |  0.7      |
-    |  12       |  0.1      | -0.3      |  0.1      |
-    =================================================
-
-
-### 4. Saving, loading and restarting
-
-By default you can follow the progress of your optimization by setting `verbose>0` when instantiating the `BayesianOptimization` object. If you need more control over logging/alerting you will need to use an observer. For more information about observers checkout the advanced tour notebook. Here we will only see how to use the native `JSONLogger` object to save to and load progress from files.
-
-#### 4.1 Saving progress
-
-
-```python
-from bayes_opt.logger import JSONLogger
-from bayes_opt.event import Events
-```
-
-The observer paradigm works by:
-1. Instantiating an observer object.
-2. Tying the observer object to a particular event fired by an optimizer.
-
-The `BayesianOptimization` object fires a number of internal events during optimization, in particular, everytime it probes the function and obtains a new parameter-target combination it will fire an `Events.OPTIMIZATION_STEP` event, which our logger will listen to.
-
-**Caveat:** The logger will not look back at previously probed points.
-
-
-```python
-logger = JSONLogger(path="./logs.log")
-optimizer.subscribe(Events.OPTIMIZATION_STEP, logger)
-
-# Results will be saved in ./logs.log
-optimizer.maximize(
-    init_points=2,
-    n_iter=3,
-)
-```
-
-By default the previous data in the json file is removed. If you want to keep working with the same logger, the `reset` parameter in `JSONLogger` should be set to False.
-
-#### 4.2 Loading progress
-
-Naturally, if you stored progress you will be able to load that onto a new instance of `BayesianOptimization`. The easiest way to do it is by invoking the `load_logs` function, from the `util` submodule.
-
-
-```python
-from bayes_opt.util import load_logs
-
-
-new_optimizer = BayesianOptimization(
-    f=black_box_function,
-    pbounds={"x": (-2, 2), "y": (-2, 2)},
-    verbose=2,
-    random_state=7,
-)
-
-# New optimizer is loaded with previously seen points
-load_logs(new_optimizer, logs=["./logs.log"]);
-```
-
-## Next Steps
-
-This introduction covered the most basic functionality of the package. Checkout the [basic-tour](http://bayesian-optimization.github.io/BayesianOptimization/basic-tour.html) and [advanced-tour](http://bayesian-optimization.github.io/BayesianOptimization/advanced-tour.html), where you will find detailed explanations and other more advanced functionality. Also, browse the [examples](http://bayesian-optimization.github.io/BayesianOptimization/examples.html) for implementation tips and ideas.
-
 ## Minutiae
 
 ### Citation
@@ -314,10 +185,3 @@ For constrained optimization:
     year={2014}
 }
 ```
-
-### References:
-* http://papers.nips.cc/paper/4522-practical-bayesian-optimization-of-machine-learning-algorithms.pdf
-* http://arxiv.org/pdf/1012.2599v1.pdf
-* http://www.gaussianprocess.org/gpml/
-* https://www.youtube.com/watch?v=vz3D36VXefI&index=10&list=PLE6Wd9FR--EdyJ5lbFl8UuGjecvVw66F6
-
