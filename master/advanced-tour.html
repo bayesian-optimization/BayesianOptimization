@@ -1,0 +1,1213 @@
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="_static/func.ico">
+    
+    
+      
+        <title>Advanced tour of the Bayesian Optimization package - Bayesian Optimization</title>
+      
+    
+    
+      
+        
+        
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+        <link rel="stylesheet" type="text/css" href="_static/sphinx_immaterial_theme.3625f807144f53acf.min.css?v=fbfc4466" />
+        <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <script>__md_scope=new URL("/",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="light-blue" data-md-color-accent="light-green">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#1.-Suggest-Evaluate-Register-Paradigm" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="index.html" title="Bayesian Optimization" class="md-header__button md-logo" aria-label="Bayesian Optimization" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Bayesian Optimization
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Advanced tour of the Bayesian Optimization package
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="light-blue" data-md-color-accent="light-green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7M9 21v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1m3-17a5 5 0 0 0-5 5c0 2.05 1.23 3.81 3 4.58V16h4v-2.42c1.77-.77 3-2.53 3-4.58a5 5 0 0 0-5-5Z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-orange" data-md-color-accent="lime"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7M9 21a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-1H9v1Z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7 0-.24-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91 1.61 0 2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08Z"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/bayesian-optimization/BayesianOptimization/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    bayesian-optimization
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="index.html" title="Bayesian Optimization" class="md-nav__button md-logo" aria-label="Bayesian Optimization" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+    </a>
+    Bayesian Optimization
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/bayesian-optimization/BayesianOptimization/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    bayesian-optimization
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
+        <span title="/index.rst (reference label)" class="md-ellipsis">Quickstart</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          <span class="md-ellipsis">Example Notebooks:<wbr></span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Example Notebooks:" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">Example Notebooks:<wbr></span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="basic-tour.html" class="md-nav__link">
+        <span title="/basic-tour.ipynb (reference label)" class="md-ellipsis">Basic Tour</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          <span title="/advanced-tour.ipynb (reference label)" class="md-ellipsis">Advanced Tour</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="#" class="md-nav__link md-nav__link--active">
+        <span title="/advanced-tour.ipynb (reference label)" class="md-ellipsis">Advanced Tour</span>
+      </a>
+      
+        
+
+  
+
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      <span title="/advanced-tour.ipynb (reference label)" class="md-ellipsis">Advanced Tour</span>
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1.-Suggest-Evaluate-Register-Paradigm" class="md-nav__link">
+    <span title="/advanced-tour.ipynb#1.-suggest-evaluate-register-paradigm (reference label)" class="md-ellipsis">1.<wbr> Suggest-<wbr>Evaluate-<wbr>Register Paradigm</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Suggest-Evaluate-Register Paradigm">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1.1-The-maximize-loop" class="md-nav__link">
+    <span title="/advanced-tour.ipynb#1.1-the-maximize-loop (reference label)" class="md-ellipsis">1.<wbr>1 The maximize loop</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2.-Dealing-with-discrete-parameters" class="md-nav__link">
+    <span title="/advanced-tour.ipynb#2.-dealing-with-discrete-parameters (reference label)" class="md-ellipsis">2.<wbr> Dealing with discrete parameters</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3.-Tuning-the-underlying-Gaussian-Process" class="md-nav__link">
+    <span title="/advanced-tour.ipynb#3.-tuning-the-underlying-gaussian-process (reference label)" class="md-ellipsis">3.<wbr> Tuning the underlying Gaussian Process</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Tuning the underlying Gaussian Process">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3.1-Passing-parameter-to-the-GP" class="md-nav__link">
+    <span title="/advanced-tour.ipynb#3.1-passing-parameter-to-the-gp (reference label)" class="md-ellipsis">3.<wbr>1 Passing parameter to the GP</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3.2-Tuning-the-alpha-parameter" class="md-nav__link">
+    <span title="/advanced-tour.ipynb#3.2-tuning-the-alpha-parameter (reference label)" class="md-ellipsis">3.<wbr>2 Tuning the alpha parameter</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3.3-Changing-kernels" class="md-nav__link">
+    <span title="/advanced-tour.ipynb#3.3-changing-kernels (reference label)" class="md-ellipsis">3.<wbr>3 Changing kernels</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#Observers-Continued" class="md-nav__link">
+    <span title="/advanced-tour.ipynb#observers-continued (reference label)" class="md-ellipsis">Observers Continued</span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="constraints.html" class="md-nav__link">
+        <span title="/constraints.ipynb (reference label)" class="md-ellipsis">Constrained Bayesian Optimization</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="domain_reduction.html" class="md-nav__link">
+        <span title="/domain_reduction.ipynb (reference label)" class="md-ellipsis">Sequential Domain Reduction</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="acquisition_functions.html" class="md-nav__link">
+        <span title="/acquisition_functions.ipynb (reference label)" class="md-ellipsis">Acquisition Functions</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="exploitation_vs_exploration.html" class="md-nav__link">
+        <span title="/exploitation_vs_exploration.ipynb (reference label)" class="md-ellipsis">Exploration vs.<wbr> Exploitation</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="visualization.html" class="md-nav__link">
+        <span title="/visualization.ipynb (reference label)" class="md-ellipsis">Visualization of a 1D-<wbr>Optimization</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          <span class="md-ellipsis">API reference:<wbr></span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="API reference:" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">API reference:<wbr></span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/bayes_opt.html" class="md-nav__link">
+        <span title="/reference/bayes_opt.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>Bayesian<wbr>Optimization</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/acquisition.html" class="md-nav__link">
+        <span title="/reference/acquisition.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>acquisition</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/constraint.html" class="md-nav__link">
+        <span title="/reference/constraint.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>Constraint<wbr>Model</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/domain_reduction.html" class="md-nav__link">
+        <span title="/reference/domain_reduction.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>Sequential<wbr>Domain<wbr>Reduction<wbr>Transformer</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/target_space.html" class="md-nav__link">
+        <span title="/reference/target_space.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>Target<wbr>Space</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/other.html" class="md-nav__link">
+        <span title="/reference/other.rst (reference label)" class="md-ellipsis">Other</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+<nav class="md-nav md-nav--secondary">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      <span title="/advanced-tour.ipynb (reference label)" class="md-ellipsis">Advanced Tour</span>
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1.-Suggest-Evaluate-Register-Paradigm" class="md-nav__link">
+    <span title="/advanced-tour.ipynb#1.-suggest-evaluate-register-paradigm (reference label)" class="md-ellipsis">1.<wbr> Suggest-<wbr>Evaluate-<wbr>Register Paradigm</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Suggest-Evaluate-Register Paradigm">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1.1-The-maximize-loop" class="md-nav__link">
+    <span title="/advanced-tour.ipynb#1.1-the-maximize-loop (reference label)" class="md-ellipsis">1.<wbr>1 The maximize loop</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2.-Dealing-with-discrete-parameters" class="md-nav__link">
+    <span title="/advanced-tour.ipynb#2.-dealing-with-discrete-parameters (reference label)" class="md-ellipsis">2.<wbr> Dealing with discrete parameters</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3.-Tuning-the-underlying-Gaussian-Process" class="md-nav__link">
+    <span title="/advanced-tour.ipynb#3.-tuning-the-underlying-gaussian-process (reference label)" class="md-ellipsis">3.<wbr> Tuning the underlying Gaussian Process</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Tuning the underlying Gaussian Process">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3.1-Passing-parameter-to-the-GP" class="md-nav__link">
+    <span title="/advanced-tour.ipynb#3.1-passing-parameter-to-the-gp (reference label)" class="md-ellipsis">3.<wbr>1 Passing parameter to the GP</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3.2-Tuning-the-alpha-parameter" class="md-nav__link">
+    <span title="/advanced-tour.ipynb#3.2-tuning-the-alpha-parameter (reference label)" class="md-ellipsis">3.<wbr>2 Tuning the alpha parameter</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3.3-Changing-kernels" class="md-nav__link">
+    <span title="/advanced-tour.ipynb#3.3-changing-kernels (reference label)" class="md-ellipsis">3.<wbr>3 Changing kernels</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#Observers-Continued" class="md-nav__link">
+    <span title="/advanced-tour.ipynb#observers-continued (reference label)" class="md-ellipsis">Observers Continued</span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset" role="main">
+                  
+
+
+  <a href="https://github.com/bayesian-optimization/BayesianOptimization/blob/master/docsrc/advanced-tour.ipynb" title="Edit this page" class="md-content__button md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
+  </a>
+
+<h1 id="Advanced-tour-of-the-Bayesian-Optimization-package">Advanced tour of the Bayesian Optimization package<a class="headerlink" href="#Advanced-tour-of-the-Bayesian-Optimization-package" title="Link to this heading">¶</a></h1>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[1]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">bayes_opt</span> <span class="kn">import</span> <span class="n">BayesianOptimization</span>
+</code></pre></div>
+</div>
+</div>
+<h2 id="1.-Suggest-Evaluate-Register-Paradigm">1. Suggest-Evaluate-Register Paradigm<a class="headerlink" href="#1.-Suggest-Evaluate-Register-Paradigm" title="Link to this heading">¶</a></h2>
+<p>Internally the <code class="docutils literal notranslate"><span class="pre">maximize</span></code> method is simply a wrapper around the methods <code class="docutils literal notranslate"><span class="pre">suggest</span></code>, <code class="docutils literal notranslate"><span class="pre">probe</span></code>, and <code class="docutils literal notranslate"><span class="pre">register</span></code>. If you need more control over your optimization loops the Suggest-Evaluate-Register paradigm should give you that extra flexibility.</p>
+<p>For an example of running the <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code> in a distributed fashion (where the function being optimized is evaluated concurrently in different cores/machines/servers), checkout the <code class="docutils literal notranslate"><span class="pre">async_optimization.py</span></code> script in the examples folder.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[2]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="c1"># Let&#39;s start by defining our function, bounds, and instantiating an optimization object.</span>
+<span class="k">def</span> <span class="nf">black_box_function</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="o">-</span><span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+</code></pre></div>
+</div>
+</div>
+<p>One extra ingredient we will need is an <code class="docutils literal notranslate"><span class="pre">AcquisitionFunction</span></code>, such as <code class="docutils literal notranslate"><span class="pre">acquisition.UpperConfidenceBound</span></code>. In case it is not clear why, take a look at the literature to understand better how this method works.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[3]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">bayes_opt</span> <span class="kn">import</span> <span class="n">acquisition</span>
+
+<span class="n">acq</span> <span class="o">=</span> <span class="n">acquisition</span><span class="o">.</span><span class="n">UpperConfidenceBound</span><span class="p">(</span><span class="n">kappa</span><span class="o">=</span><span class="mf">2.5</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+<p>Notice that the evaluation of the blackbox function will NOT be carried out by the optimizer object. We are simulating a situation where this function could be being executed in a different machine, maybe it is written in another language, or it could even be the result of a chemistry experiment. Whatever the case may be, you can take charge of it and as long as you don’t invoke the <code class="docutils literal notranslate"><span class="pre">probe</span></code> or <code class="docutils literal notranslate"><span class="pre">maximize</span></code> methods directly, the optimizer object will ignore the blackbox function.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[4]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span>
+    <span class="n">f</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">acquisition_function</span><span class="o">=</span><span class="n">acq</span><span class="p">,</span>
+    <span class="n">pbounds</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)},</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">suggest</span></code> method of our optimizer can be called at any time. What you get back is a suggestion for the next parameter combination the optimizer wants to probe.</p>
+<p>Notice that while the optimizer hasn’t observed any points, the suggestions will be random. However, they will stop being random and improve in quality the more points are observed.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[5]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">next_point_to_probe</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">suggest</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Next point to probe is:&quot;</span><span class="p">,</span> <span class="n">next_point_to_probe</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Next point to probe is: {&#39;x&#39;: -0.331911981189704, &#39;y&#39;: 1.3219469606529486}
+</pre></div></div>
+</div>
+<p>You are now free to evaluate your function at the suggested point however/whenever you like.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[6]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">target</span> <span class="o">=</span> <span class="n">black_box_function</span><span class="p">(</span><span class="o">**</span><span class="n">next_point_to_probe</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found the target value to be:&quot;</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Found the target value to be: 0.7861845912690544
+</pre></div></div>
+</div>
+<p>Last thing left to do is to tell the optimizer what target value was observed.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[7]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">optimizer</span><span class="o">.</span><span class="n">register</span><span class="p">(</span>
+    <span class="n">params</span><span class="o">=</span><span class="n">next_point_to_probe</span><span class="p">,</span>
+    <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+<h3 id="1.1-The-maximize-loop">1.1 The maximize loop<a class="headerlink" href="#1.1-The-maximize-loop" title="Link to this heading">¶</a></h3>
+<p>And that’s it. By repeating the steps above you recreate the internals of the <code class="docutils literal notranslate"><span class="pre">maximize</span></code> method. This should give you all the flexibility you need to log progress, hault execution, perform concurrent evaluations, etc.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[8]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="n">next_point</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">suggest</span><span class="p">()</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">black_box_function</span><span class="p">(</span><span class="o">**</span><span class="n">next_point</span><span class="p">)</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="n">next_point</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">next_point</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">optimizer</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+-18.503835804889988 {&#39;x&#39;: 1.953072105336, &#39;y&#39;: -2.9609778030491904}
+-1.0819533157901717 {&#39;x&#39;: 0.22703572807626315, &#39;y&#39;: 2.4249238905875123}
+-6.50219704520679 {&#39;x&#39;: -1.9991881984624875, &#39;y&#39;: 2.872282989383577}
+-5.747604713731052 {&#39;x&#39;: -1.994467585936897, &#39;y&#39;: -0.664242699361514}
+-2.9682431497650823 {&#39;x&#39;: 1.9737252084307952, &#39;y&#39;: 1.269540259274744}
+{&#39;target&#39;: 0.7861845912690544, &#39;params&#39;: {&#39;x&#39;: -0.331911981189704, &#39;y&#39;: 1.3219469606529486}}
+</pre></div></div>
+</div>
+<h2 id="2.-Dealing-with-discrete-parameters">2. Dealing with discrete parameters<a class="headerlink" href="#2.-Dealing-with-discrete-parameters" title="Link to this heading">¶</a></h2>
+<p><strong>There is no principled way of dealing with discrete parameters using this package.</strong></p>
+<p>Ok, now that we got that out of the way, how do you do it? You’re bound to be in a situation where some of your function’s parameters may only take on discrete values. Unfortunately, the nature of bayesian optimization with gaussian processes doesn’t allow for an easy/intuitive way of dealing with discrete parameters - but that doesn’t mean it is impossible. The example below showcases a simple, yet reasonably adequate, way to dealing with discrete parameters.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[9]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">func_with_discrete_params</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+    <span class="c1"># Simulate necessity of having d being discrete.</span>
+    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span>
+
+    <span class="k">return</span> <span class="p">((</span><span class="n">x</span> <span class="o">+</span> <span class="n">y</span> <span class="o">+</span> <span class="n">d</span><span class="p">)</span> <span class="o">//</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">d</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[10]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">function_to_be_optimized</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">w</span><span class="p">):</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">func_with_discrete_params</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[11]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span>
+    <span class="n">f</span><span class="o">=</span><span class="n">function_to_be_optimized</span><span class="p">,</span>
+    <span class="n">pbounds</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">)},</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[12]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">optimizer</span><span class="o">.</span><span class="n">set_gp_params</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">()</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+|   iter    |  target   |     w     |     x     |     y     |
+-------------------------------------------------------------
+| <span class="ansi-black-fg">1         | </span><span class="ansi-black-fg">-0.06199  | </span><span class="ansi-black-fg">2.085     | </span><span class="ansi-black-fg">4.406     | </span><span class="ansi-black-fg">-9.998    |
+| </span><span class="ansi-magenta-fg">2         | </span><span class="ansi-magenta-fg">-0.0344   | </span><span class="ansi-magenta-fg">1.512     | </span><span class="ansi-magenta-fg">-7.065    | </span><span class="ansi-magenta-fg">-8.153    |
+| </span><span class="ansi-black-fg">3         | </span><span class="ansi-black-fg">-0.2177   | </span><span class="ansi-black-fg">0.9313    | </span><span class="ansi-black-fg">-3.089    | </span><span class="ansi-black-fg">-2.065    |
+| </span><span class="ansi-magenta-fg">4         | </span><span class="ansi-magenta-fg">0.1865    | </span><span class="ansi-magenta-fg">2.694     | </span><span class="ansi-magenta-fg">-1.616    | </span><span class="ansi-magenta-fg">3.704     |
+| </span><span class="ansi-black-fg">5         | </span><span class="ansi-black-fg">-0.2187   | </span><span class="ansi-black-fg">1.022     | </span><span class="ansi-black-fg">7.562     | </span><span class="ansi-black-fg">-9.452    |
+| </span><span class="ansi-magenta-fg">6         | </span><span class="ansi-magenta-fg">0.2488    | </span><span class="ansi-magenta-fg">2.684     | </span><span class="ansi-magenta-fg">-2.188    | </span><span class="ansi-magenta-fg">3.925     |
+| </span><span class="ansi-magenta-fg">7         | </span><span class="ansi-magenta-fg">0.2948    | </span><span class="ansi-magenta-fg">2.683     | </span><span class="ansi-magenta-fg">-2.534    | </span><span class="ansi-magenta-fg">4.08      |
+| </span><span class="ansi-magenta-fg">8         | </span><span class="ansi-magenta-fg">0.3202    | </span><span class="ansi-magenta-fg">2.514     | </span><span class="ansi-magenta-fg">-3.83     | </span><span class="ansi-magenta-fg">5.287     |
+| </span><span class="ansi-black-fg">9         | </span><span class="ansi-black-fg">0.0       | </span><span class="ansi-black-fg">4.057     | </span><span class="ansi-black-fg">-4.458    | </span><span class="ansi-black-fg">3.928     |
+| </span><span class="ansi-magenta-fg">10        | </span><span class="ansi-magenta-fg">0.4802    | </span><span class="ansi-magenta-fg">2.296     | </span><span class="ansi-magenta-fg">-3.518    | </span><span class="ansi-magenta-fg">4.558     |
+| </span><span class="ansi-black-fg">11        | </span><span class="ansi-black-fg">0.0       | </span><span class="ansi-black-fg">1.084     | </span><span class="ansi-black-fg">-3.737    | </span><span class="ansi-black-fg">4.472     |
+| </span><span class="ansi-black-fg">12        | </span><span class="ansi-black-fg">0.0       | </span><span class="ansi-black-fg">2.649     | </span><span class="ansi-black-fg">-3.861    | </span><span class="ansi-black-fg">4.353     |
+| </span><span class="ansi-black-fg">13        | </span><span class="ansi-black-fg">0.0       | </span><span class="ansi-black-fg">2.442     | </span><span class="ansi-black-fg">-3.658    | </span><span class="ansi-black-fg">4.599     |
+| </span><span class="ansi-black-fg">14        | </span><span class="ansi-black-fg">-0.05801  | </span><span class="ansi-black-fg">1.935     | </span><span class="ansi-black-fg">-0.4758   | </span><span class="ansi-black-fg">-8.755    |
+| </span><span class="ansi-black-fg">15        | </span><span class="ansi-black-fg">0.0       | </span><span class="ansi-black-fg">2.337     | </span><span class="ansi-black-fg">7.973     | </span><span class="ansi-black-fg">-8.96     |
+| </span><span class="ansi-black-fg">16        | </span><span class="ansi-black-fg">0.07699   | </span><span class="ansi-black-fg">0.6926    | </span><span class="ansi-black-fg">5.59      | </span><span class="ansi-black-fg">6.854     |
+| </span><span class="ansi-black-fg">17        | </span><span class="ansi-black-fg">-0.02025  | </span><span class="ansi-black-fg">3.534     | </span><span class="ansi-black-fg">-8.943    | </span><span class="ansi-black-fg">1.987     |
+| </span><span class="ansi-black-fg">18        | </span><span class="ansi-black-fg">0.0       | </span><span class="ansi-black-fg">2.59      | </span><span class="ansi-black-fg">-7.339    | </span><span class="ansi-black-fg">5.941     |
+| </span><span class="ansi-black-fg">19        | </span><span class="ansi-black-fg">0.0929    | </span><span class="ansi-black-fg">2.237     | </span><span class="ansi-black-fg">-4.535    | </span><span class="ansi-black-fg">9.065     |
+| </span><span class="ansi-black-fg">20        | </span><span class="ansi-black-fg">0.1538    | </span><span class="ansi-black-fg">0.477     | </span><span class="ansi-black-fg">2.931     | </span><span class="ansi-black-fg">2.683     |
+| </span><span class="ansi-black-fg">21        | </span><span class="ansi-black-fg">0.0       | </span><span class="ansi-black-fg">0.9999    | </span><span class="ansi-black-fg">4.397     | </span><span class="ansi-black-fg">-3.971    |
+| </span><span class="ansi-black-fg">22        | </span><span class="ansi-black-fg">-0.01894  | </span><span class="ansi-black-fg">3.764     | </span><span class="ansi-black-fg">-7.043    | </span><span class="ansi-black-fg">-3.184    |
+| </span><span class="ansi-black-fg">23        | </span><span class="ansi-black-fg">0.03683   | </span><span class="ansi-black-fg">1.851     | </span><span class="ansi-black-fg">5.783     | </span><span class="ansi-black-fg">7.966     |
+| </span><span class="ansi-black-fg">24        | </span><span class="ansi-black-fg">-0.04359  | </span><span class="ansi-black-fg">1.615     | </span><span class="ansi-black-fg">-5.133    | </span><span class="ansi-black-fg">-6.556    |
+| </span><span class="ansi-black-fg">25        | </span><span class="ansi-black-fg">0.02617   | </span><span class="ansi-black-fg">3.863     | </span><span class="ansi-black-fg">0.1052    | </span><span class="ansi-black-fg">8.579     |
+| </span><span class="ansi-black-fg">26        | </span><span class="ansi-black-fg">-0.1071   | </span><span class="ansi-black-fg">0.8131    | </span><span class="ansi-black-fg">-0.7949   | </span><span class="ansi-black-fg">-9.292    |
+| </span><span class="ansi-black-fg">27        | </span><span class="ansi-black-fg">0.0       | </span><span class="ansi-black-fg">4.969     | </span><span class="ansi-black-fg">8.778     | </span><span class="ansi-black-fg">-8.467    |
+| </span><span class="ansi-black-fg">28        | </span><span class="ansi-black-fg">-0.1372   | </span><span class="ansi-black-fg">0.9475    | </span><span class="ansi-black-fg">-1.019    | </span><span class="ansi-black-fg">-7.018    |
+| </span><span class="ansi-black-fg">29        | </span><span class="ansi-black-fg">0.08078   | </span><span class="ansi-black-fg">1.917     | </span><span class="ansi-black-fg">-0.2606   | </span><span class="ansi-black-fg">6.272     |
+| </span><span class="ansi-black-fg">30        | </span><span class="ansi-black-fg">0.02003   | </span><span class="ansi-black-fg">4.278     | </span><span class="ansi-black-fg">3.8       | </span><span class="ansi-black-fg">8.398     |
+=============================================================</span>
+</pre></div></div>
+</div>
+<h2 id="3.-Tuning-the-underlying-Gaussian-Process">3. Tuning the underlying Gaussian Process<a class="headerlink" href="#3.-Tuning-the-underlying-Gaussian-Process" title="Link to this heading">¶</a></h2>
+<p>The bayesian optimization algorithm works by performing a gaussian process regression of the observed combination of parameters and their associated target values. The predicted parameter <span class="math notranslate nohighlight">\(\rightarrow\)</span> target hyper-surface (and its uncertainty) is then used to guide the next best point to probe.</p>
+<h3 id="3.1-Passing-parameter-to-the-GP">3.1 Passing parameter to the GP<a class="headerlink" href="#3.1-Passing-parameter-to-the-GP" title="Link to this heading">¶</a></h3>
+<p>Depending on the problem it could be beneficial to change the default parameters of the underlying GP. You can use the <code class="docutils literal notranslate"><span class="pre">optimizer.set_gp_params</span></code> method to do this:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[13]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span>
+    <span class="n">f</span><span class="o">=</span><span class="n">black_box_function</span><span class="p">,</span>
+    <span class="n">pbounds</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)},</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">set_gp_params</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">n_restarts_optimizer</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span>
+    <span class="n">init_points</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">n_iter</span><span class="o">=</span><span class="mi">5</span>
+<span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+|   iter    |  target   |     x     |     y     |
+-------------------------------------------------
+| <span class="ansi-black-fg">1         | </span><span class="ansi-black-fg">0.7862    | </span><span class="ansi-black-fg">-0.3319   | </span><span class="ansi-black-fg">1.322     |
+| </span><span class="ansi-black-fg">2         | </span><span class="ansi-black-fg">-18.19    | </span><span class="ansi-black-fg">1.957     | </span><span class="ansi-black-fg">-2.919    |
+| </span><span class="ansi-black-fg">3         | </span><span class="ansi-black-fg">-12.05    | </span><span class="ansi-black-fg">-1.969    | </span><span class="ansi-black-fg">-2.029    |
+| </span><span class="ansi-black-fg">4         | </span><span class="ansi-black-fg">-7.463    | </span><span class="ansi-black-fg">0.6032    | </span><span class="ansi-black-fg">-1.846    |
+| </span><span class="ansi-black-fg">5         | </span><span class="ansi-black-fg">-1.093    | </span><span class="ansi-black-fg">1.444     | </span><span class="ansi-black-fg">1.096     |
+| </span><span class="ansi-magenta-fg">6         | </span><span class="ansi-magenta-fg">0.8586    | </span><span class="ansi-magenta-fg">-0.2165   | </span><span class="ansi-magenta-fg">1.307     |
+=================================================</span>
+</pre></div></div>
+</div>
+<h3 id="3.2-Tuning-the-alpha-parameter">3.2 Tuning the <code class="docutils literal notranslate"><span class="pre">alpha</span></code> parameter<a class="headerlink" href="#3.2-Tuning-the-alpha-parameter" title="Link to this heading">¶</a></h3>
+<p>When dealing with functions with discrete parameters,or particularly erratic target space it might be beneficial to increase the value of the <code class="docutils literal notranslate"><span class="pre">alpha</span></code> parameter. This parameters controls how much noise the GP can handle, so increase it whenever you think that extra flexibility is needed.</p>
+<h3 id="3.3-Changing-kernels">3.3 Changing kernels<a class="headerlink" href="#3.3-Changing-kernels" title="Link to this heading">¶</a></h3>
+<p>By default this package uses the Matern 2.5 kernel. Depending on your use case you may find that tuning the GP kernel could be beneficial. You’re on your own here since these are very specific solutions to very specific problems. You should start with the <a class="reference external" href="https://scikit-learn.org/stable/modules/gaussian_process.html#kernels-for-gaussian-processes">scikit learn docs</a>.</p>
+<h2 id="Observers-Continued">Observers Continued<a class="headerlink" href="#Observers-Continued" title="Link to this heading">¶</a></h2>
+<p>Observers are objects that subscribe and listen to particular events fired by the <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code> object.</p>
+<p>When an event gets fired a callback function is called with the event and the <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code> instance passed as parameters. The callback can be specified at the time of subscription. If none is given it will look for an <code class="docutils literal notranslate"><span class="pre">update</span></code> method from the observer.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[14]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">bayes_opt.event</span> <span class="kn">import</span> <span class="n">DEFAULT_EVENTS</span><span class="p">,</span> <span class="n">Events</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[15]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span>
+    <span class="n">f</span><span class="o">=</span><span class="n">black_box_function</span><span class="p">,</span>
+    <span class="n">pbounds</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)},</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[16]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">BasicObserver</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Does whatever you want with the event and `BayesianOptimization` instance.&quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Event `</span><span class="si">{}</span><span class="s2">` was observed&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">event</span><span class="p">))</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[17]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">my_observer</span> <span class="o">=</span> <span class="n">BasicObserver</span><span class="p">()</span>
+
+<span class="n">optimizer</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span>
+    <span class="n">event</span><span class="o">=</span><span class="n">Events</span><span class="o">.</span><span class="n">OPTIMIZATION_STEP</span><span class="p">,</span>
+    <span class="n">subscriber</span><span class="o">=</span><span class="n">my_observer</span><span class="p">,</span>
+    <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="c1"># Will use the `update` method as callback</span>
+<span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+<p>Alternatively you have the option to pass a completely different callback.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[18]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">my_callback</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Go nuts here!&quot;</span><span class="p">)</span>
+
+<span class="n">optimizer</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span>
+    <span class="n">event</span><span class="o">=</span><span class="n">Events</span><span class="o">.</span><span class="n">OPTIMIZATION_START</span><span class="p">,</span>
+    <span class="n">subscriber</span><span class="o">=</span><span class="s2">&quot;Any hashable object&quot;</span><span class="p">,</span>
+    <span class="n">callback</span><span class="o">=</span><span class="n">my_callback</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[19]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Go nuts here!
+Event `optimization:step` was observed
+Event `optimization:step` was observed
+Event `optimization:step` was observed
+</pre></div></div>
+</div>
+<p>For a list of all default events you can checkout <code class="docutils literal notranslate"><span class="pre">DEFAULT_EVENTS</span></code></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[20]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">DEFAULT_EVENTS</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[20]:
+</code></pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[&#39;optimization:start&#39;, &#39;optimization:step&#39;, &#39;optimization:end&#39;]
+</pre></div></div>
+</div>
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var tab,labels=set.querySelector(".tabbed-labels");for(tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+        </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+            Back to top
+          </a>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="basic-tour.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Basic tour of the Bayesian Optimization package" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Basic tour of the Bayesian Optimization package
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="constraints.html" class="md-footer__link md-footer__link--next" aria-label="Next: Constrained Optimization" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Constrained Optimization
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  
+  
+  <div class="md-footer-meta md-typeset">
+    
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-footer-copyright__highlight">
+        &#169; Copyright 2024, Fernando Nogueira and the bayesian-optimization developers.
+        
+    </div>
+  
+    Created using
+    <a href="https://www.sphinx-doc.org/" target="_blank" rel="noopener">Sphinx</a>
+    7.4.7.
+     and
+    <a href="https://github.com/jbms/sphinx-immaterial/" target="_blank" rel="noopener">Sphinx-Immaterial</a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    <a href="https://github.com/bayesian-optimization/BayesianOptimization" target="_blank" rel="noopener" title="Source on github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+    
+    
+      
+      
+    
+    <a href="https://pypi.org/project/bayesian-optimization/" target="_blank" rel="noopener" title="pypi.org" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.8c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-13.6h160.2c31.1 0 42.6-21.7 53.4-54.2 11.2-33.5 10.7-65.7 0-108.6zM286.2 404c11.1 0 20.1 9.1 20.1 20.3 0 11.3-9 20.4-20.1 20.4-11 0-20.1-9.2-20.1-20.4.1-11.3 9.1-20.3 20.1-20.3zM167.8 248.1h106.8c29.7 0 53.4-24.5 53.4-54.3V91.9c0-29-24.4-50.7-53.4-55.6-35.8-5.9-74.7-5.6-106.8.1-45.2 8-53.4 24.7-53.4 55.6v40.7h106.9v13.6h-147c-31.1 0-58.3 18.7-66.8 54.2-9.8 40.7-10.2 66.1 0 108.6 7.6 31.6 25.7 54.2 56.8 54.2H101v-48.8c0-35.3 30.5-66.4 66.8-66.4zm-6.7-142.6c-11.1 0-20.1-9.1-20.1-20.3.1-11.3 9-20.4 20.1-20.4 11 0 20.1 9.2 20.1 20.4s-9 20.3-20.1 20.3z"/></svg>
+    </a>
+  
+    
+    
+      
+      
+    
+    <a href="https://anaconda.org/conda-forge/bayesian-optimization" target="_blank" rel="noopener" title="anaconda.org" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.8c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-13.6h160.2c31.1 0 42.6-21.7 53.4-54.2 11.2-33.5 10.7-65.7 0-108.6zM286.2 404c11.1 0 20.1 9.1 20.1 20.3 0 11.3-9 20.4-20.1 20.4-11 0-20.1-9.2-20.1-20.4.1-11.3 9.1-20.3 20.1-20.3zM167.8 248.1h106.8c29.7 0 53.4-24.5 53.4-54.3V91.9c0-29-24.4-50.7-53.4-55.6-35.8-5.9-74.7-5.6-106.8.1-45.2 8-53.4 24.7-53.4 55.6v40.7h106.9v13.6h-147c-31.1 0-58.3 18.7-66.8 54.2-9.8 40.7-10.2 66.1 0 108.6 7.6 31.6 25.7 54.2 56.8 54.2H101v-48.8c0-35.3 30.5-66.4 66.8-66.4zm-6.7-142.6c-11.1 0-20.1-9.1-20.1-20.3.1-11.3 9-20.4 20.1-20.4 11 0 20.1 9.2 20.1 20.4s-9 20.3-20.1 20.3z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+    
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.expand", "navigation.sections", "navigation.top", "search.share", "toc.follow", "toc.sticky", "content.tabs.link", "announce.dismiss"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike", "staticVersions": null, "versionPath": "../versions.json"}}</script>
+    
+      
+        <script src="_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js?v=8ec58cb5"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script id="MathJax-script" src="_static/mathjax/tex-mml-chtml.js?v=cadf963e"></script>
+    
+  </body>
+</html>
