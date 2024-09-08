@@ -230,20 +230,16 @@ class ScreenLogger(_Tracker):
         instance : bayesian_optimization.BayesianOptimization
             The instance associated with the step.
         """
+        line = ""
         if event == Events.OPTIMIZATION_START:
             line = self._header(instance) + "\n"
         elif event == Events.OPTIMIZATION_STEP:
             is_new_max = self._is_new_max(instance)
-            if self._verbose == 1 and not is_new_max:
-                line = ""
-            else:
+            if self._verbose != 1 or is_new_max:
                 colour = self._colour_new_max if is_new_max else self._colour_regular_message
                 line = self._step(instance, colour=colour) + "\n"
         elif event == Events.OPTIMIZATION_END:
             line = "=" * self._header_length + "\n"
-        else:
-            self._update_tracker(event, instance)
-            return
 
         if self._verbose:
             print(line, end="")
