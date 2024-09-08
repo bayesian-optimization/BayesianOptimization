@@ -12,6 +12,7 @@ from sklearn.gaussian_process.kernels import Matern
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from numpy.random import RandomState
     from numpy.typing import NDArray
 
     Float = np.floating[Any]
@@ -54,7 +55,7 @@ class ConstraintModel:
         fun: Callable[..., float] | Callable[..., NDArray[Float]] | None,
         lb: float | NDArray[Float],
         ub: float | NDArray[Float],
-        random_state: int | np.random.RandomState | None = None,
+        random_state: int | RandomState | None = None,
     ) -> None:
         self.fun = fun
 

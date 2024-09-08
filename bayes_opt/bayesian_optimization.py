@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Mapping, Sequence
 
     import numpy as np
+    from numpy.random import RandomState
     from numpy.typing import NDArray
     from scipy.optimize import NonlinearConstraint
 
@@ -105,7 +106,7 @@ class BayesianOptimization(Observable):
         pbounds: Mapping[str, tuple[float, float]],
         acquisition_function: AcquisitionFunction | None = None,
         constraint: NonlinearConstraint | None = None,
-        random_state: int | np.random.RandomState | None = None,
+        random_state: int | RandomState | None = None,
         verbose: int = 2,
         bounds_transformer: DomainTransformer | None = None,
         allow_duplicate_points: bool = False,

@@ -45,6 +45,7 @@ extensions = [
     'IPython.sphinxext.ipython_console_highlighting',
     'sphinx.ext.mathjax',
     "sphinx.ext.napoleon",
+    'sphinx_autodoc_typehints',
     'sphinx.ext.intersphinx',
     'sphinx_immaterial',
 ]
@@ -63,9 +64,9 @@ exclude_patterns = []
 # Link types to the corresponding documentations
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
-    'numpy': ('https://numpy.org/doc/stable/', None),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
-    'sklearn': ('https://scikit-learn.org/stable/', None),
+    'numpy': ('https://numpy.org/doc/stable', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+    'sklearn': ('https://scikit-learn.org/stable', None),
 }
 
 
@@ -161,3 +162,16 @@ html_favicon = 'func.ico'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 # html_static_path = ['_static']
+
+typehints_use_signature = True
+typehints_use_signature_return = True
+autodoc_typehints = "both"
+autodoc_typehints_format = "short"
+
+#conf.py
+def autodoc_process_docstring(app, what, name, obj, options, lines):
+    for i in range(len(lines)):
+        lines[i] = lines[i].replace("np.", "numpy.")
+
+def setup(app):
+    app.connect("autodoc-process-docstring", autodoc_process_docstring)

@@ -14,6 +14,7 @@ from bayes_opt.util import ensure_rng
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping, Sequence
 
+    from numpy.random import RandomState
     from numpy.typing import NDArray
 
     from bayes_opt.constraint import ConstraintModel
@@ -67,7 +68,7 @@ class TargetSpace:
         target_func: Callable[..., float] | None,
         pbounds: Mapping[str, tuple[float, float]],
         constraint: ConstraintModel | None = None,
-        random_state: int | np.random.RandomState | None = None,
+        random_state: int | RandomState | None = None,
         allow_duplicate_points: bool | None = False,
     ) -> None:
         self.random_state = ensure_rng(random_state)
