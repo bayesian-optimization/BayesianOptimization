@@ -51,7 +51,7 @@ class ConstraintModel:
 
     def __init__(
         self,
-        fun: Callable[..., float] | Callable[..., NDArray[Float]],
+        fun: Callable[..., float] | Callable[..., NDArray[Float]] | None,
         lb: float | NDArray[Float],
         ub: float | NDArray[Float],
         random_state: int | np.random.RandomState | None = None,
@@ -109,6 +109,10 @@ class ConstraintModel:
         TypeError
             If the kwargs' keys don't match the function argument names.
         """
+        if self.fun is None:
+            error_msg = "No constraint function was provided."
+            raise ValueError(error_msg)
+
         try:
             return self.fun(**kwargs)
         except TypeError as e:
