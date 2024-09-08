@@ -6,6 +6,8 @@ function over a specific target space.
 
 from __future__ import annotations
 
+from collections import deque
+
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
 
@@ -15,38 +17,6 @@ from bayes_opt.event import DEFAULT_EVENTS, Events
 from bayes_opt.logger import _get_default_logger
 from bayes_opt.target_space import TargetSpace
 from bayes_opt.util import ensure_rng
-
-
-class Queue:
-    """Queue datastructure.
-
-    Append items in the end, remove items from the front.
-    """
-
-    def __init__(self):
-        self._queue = []
-
-    @property
-    def empty(self):
-        """Check whether the queue holds any items."""
-        return len(self) == 0
-
-    def __len__(self):
-        """Return number of items in the Queue."""
-        return len(self._queue)
-
-    def __next__(self):
-        """Remove and return first item in the Queue."""
-        if self.empty:
-            error_msg = "Queue is empty, no more objects to retrieve."
-            raise StopIteration(error_msg)
-        obj = self._queue[0]
-        self._queue = self._queue[1:]
-        return obj
-
-    def add(self, obj):
-        """Add object to end of queue."""
-        self._queue.append(obj)
 
 
 class Observable:
@@ -128,7 +98,7 @@ class BayesianOptimization(Observable):
     ):
         self._random_state = ensure_rng(random_state)
         self._allow_duplicate_points = allow_duplicate_points
-        self._queue = Queue()
+        self._queue = deque()
 
         if acquisition_function is None:
             if constraint is None:
@@ -248,7 +218,7 @@ class BayesianOptimization(Observable):
             maximize(). Otherwise it will evaluate it at the moment.
         """
         if lazy:
-            self._queue.add(params)
+            self._queue.append(params)
         else:
             self._space.probe(params)
             self.dispatch(Events.OPTIMIZATION_STEP)
@@ -271,11 +241,11 @@ class BayesianOptimization(Observable):
         init_points: int
             Number of parameters to prime the queue with.
         """
-        if self._queue.empty and self._space.empty:
+        if not self._queue and self._space.empty:
             init_points = max(init_points, 1)
 
         for _ in range(init_points):
-            self._queue.add(self._space.random_sample())
+            self._queue.append(self._space.random_sample())
 
     def _prime_subscriptions(self):
         if not any([len(subs) for subs in self._events.values()]):
@@ -311,10 +281,10 @@ class BayesianOptimization(Observable):
         self._prime_queue(init_points)
 
         iteration = 0
-        while not self._queue.empty or iteration < n_iter:
+        while self._queue or iteration < n_iter:
             try:
-                x_probe = next(self._queue)
-            except StopIteration:
+                x_probe = self._queue.popleft()
+            except IndexError:
                 x_probe = self.suggest()
                 iteration += 1
             self.probe(x_probe, lazy=False)
