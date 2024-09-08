@@ -7,7 +7,7 @@ function over a specific target space.
 from __future__ import annotations
 
 from collections import deque
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Any
 
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
@@ -24,20 +24,11 @@ if TYPE_CHECKING:
 
     import numpy as np
     from numpy.typing import NDArray
+    from scipy.optimize import NonlinearConstraint
 
     from bayes_opt.acquisition import AcquisitionFunction
     from bayes_opt.constraint import ConstraintModel
     from bayes_opt.domain_reduction import DomainTransformer
-
-    class Constraint(Protocol):
-        """Compatibility for scipy constraints.
-
-        see more: scipy.optimize.NonlinearConstraint
-        """
-
-        fun: Callable[..., Any]
-        lb: Any
-        ub: Any
 
     Float = np.floating[Any]
 
@@ -86,7 +77,7 @@ class BayesianOptimization(Observable):
         Dictionary with parameters names as keys and a tuple with minimum
         and maximum values.
 
-    constraint: ConstraintModel.
+    constraint: NonlinearConstraint.
         Note that the names of arguments of the constraint function and of
         f need to be the same.
 
@@ -113,7 +104,7 @@ class BayesianOptimization(Observable):
         f: Callable[..., float] | None,
         pbounds: Mapping[str, tuple[float, float]],
         acquisition_function: AcquisitionFunction | None = None,
-        constraint: Constraint | None = None,
+        constraint: NonlinearConstraint | None = None,
         random_state: int | np.random.RandomState | None = None,
         verbose: int = 2,
         bounds_transformer: DomainTransformer | None = None,
