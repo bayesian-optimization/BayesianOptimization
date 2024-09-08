@@ -10,7 +10,7 @@ packages = [{include = "bayes_opt"}]
 [tool.poetry.dependencies]
 python = "^3.9"
 scikit-learn = "^1.0.0"
-numpy = ">=1.25,<2"
+numpy = ">=1.25"
 scipy = "^1.0.0"
 colorama = "^0.4.6"
 
