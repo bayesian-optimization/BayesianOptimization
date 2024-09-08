@@ -9,11 +9,11 @@
       
       
       
-      <link rel="icon" href="_static/func.ico">
+      <link rel="icon" href="../_static/func.ico">
     
     
       
-        <title>Sequential Domain Reduction - Bayesian Optimization</title>
+        <title>bayes_opt.exception - Bayesian Optimization</title>
       
     
     
@@ -32,8 +32,7 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
-        <link rel="stylesheet" type="text/css" href="_static/sphinx_immaterial_theme.3625f807144f53acf.min.css?v=fbfc4466" />
-        <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=2aa19091" />
+        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.3625f807144f53acf.min.css?v=fbfc4466" />
     <script>__md_scope=new URL("/",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -63,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#Background" class="md-skip">
+        <a href="#bayes_opt.exception.BayesianOptimizationError" class="md-skip">
           Skip to content
         </a>
       
@@ -81,7 +80,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="index.html" title="Bayesian Optimization" class="md-header__button md-logo" aria-label="Bayesian Optimization" data-md-component="logo">
+    <a href="../index.html" title="Bayesian Optimization" class="md-header__button md-logo" aria-label="Bayesian Optimization" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
@@ -99,7 +98,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Sequential Domain Reduction
+              bayes_opt.exception
             
           </span>
         </div>
@@ -206,7 +205,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="index.html" title="Bayesian Optimization" class="md-nav__button md-logo" aria-label="Bayesian Optimization" data-md-component="logo">
+    <a href="../index.html" title="Bayesian Optimization" class="md-nav__button md-logo" aria-label="Bayesian Optimization" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
@@ -237,7 +236,7 @@
   
   
     <li class="md-nav__item">
-      <a href="index.html" class="md-nav__link">
+      <a href="../index.html" class="md-nav__link">
         <span title="/index.rst (reference label)" class="md-ellipsis">Quickstart</span>
       </a>
     </li>
@@ -250,16 +249,14 @@
 
   
   
-    
-  
   
     
       
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
       
       
       
@@ -282,7 +279,7 @@
   
   
     <li class="md-nav__item">
-      <a href="basic-tour.html" class="md-nav__link">
+      <a href="../basic-tour.html" class="md-nav__link">
         <span title="/basic-tour.ipynb (reference label)" class="md-ellipsis">Basic Tour</span>
       </a>
     </li>
@@ -297,7 +294,7 @@
   
   
     <li class="md-nav__item">
-      <a href="advanced-tour.html" class="md-nav__link">
+      <a href="../advanced-tour.html" class="md-nav__link">
         <span title="/advanced-tour.ipynb (reference label)" class="md-ellipsis">Advanced Tour</span>
       </a>
     </li>
@@ -312,78 +309,9 @@
   
   
     <li class="md-nav__item">
-      <a href="constraints.html" class="md-nav__link">
+      <a href="../constraints.html" class="md-nav__link">
         <span title="/constraints.ipynb (reference label)" class="md-ellipsis">Constrained Bayesian Optimization</span>
       </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-    
-  
-    
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          <span title="/domain_reduction.ipynb (reference label)" class="md-ellipsis">Sequential Domain Reduction</span>
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="#" class="md-nav__link md-nav__link--active">
-        <span title="/domain_reduction.ipynb (reference label)" class="md-ellipsis">Sequential Domain Reduction</span>
-      </a>
-      
-        
-
-  
-
-<nav class="md-nav md-nav--secondary">
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      <span title="/domain_reduction.ipynb (reference label)" class="md-ellipsis">Sequential Domain Reduction</span>
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#Background" class="md-nav__link">
-    <span title="/domain_reduction.ipynb#background (reference label)" class="md-ellipsis">Background</span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#Basics" class="md-nav__link">
-    <span title="/domain_reduction.ipynb#basics (reference label)" class="md-ellipsis">Basics</span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#Parameters" class="md-nav__link">
-    <span title="/domain_reduction.ipynb#parameters (reference label)" class="md-ellipsis">Parameters</span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -396,7 +324,22 @@
   
   
     <li class="md-nav__item">
-      <a href="acquisition_functions.html" class="md-nav__link">
+      <a href="../domain_reduction.html" class="md-nav__link">
+        <span title="/domain_reduction.ipynb (reference label)" class="md-ellipsis">Sequential Domain Reduction</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../acquisition_functions.html" class="md-nav__link">
         <span title="/acquisition_functions.ipynb (reference label)" class="md-ellipsis">Acquisition Functions</span>
       </a>
     </li>
@@ -411,7 +354,7 @@
   
   
     <li class="md-nav__item">
-      <a href="exploitation_vs_exploration.html" class="md-nav__link">
+      <a href="../exploitation_vs_exploration.html" class="md-nav__link">
         <span title="/exploitation_vs_exploration.ipynb (reference label)" class="md-ellipsis">Exploration vs.<wbr> Exploitation</span>
       </a>
     </li>
@@ -426,7 +369,7 @@
   
   
     <li class="md-nav__item">
-      <a href="visualization.html" class="md-nav__link">
+      <a href="../visualization.html" class="md-nav__link">
         <span title="/visualization.ipynb (reference label)" class="md-ellipsis">Visualization of a 1D-<wbr>Optimization</span>
       </a>
     </li>
@@ -447,14 +390,16 @@
 
   
   
+    
+  
   
     
       
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
       
       
       
@@ -477,7 +422,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/bayes_opt.html" class="md-nav__link">
+      <a href="bayes_opt.html" class="md-nav__link">
         <span title="/reference/bayes_opt.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>Bayesian<wbr>Optimization</span>
       </a>
     </li>
@@ -492,7 +437,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/acquisition.html" class="md-nav__link">
+      <a href="acquisition.html" class="md-nav__link">
         <span title="/reference/acquisition.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>acquisition</span>
       </a>
     </li>
@@ -507,7 +452,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/constraint.html" class="md-nav__link">
+      <a href="constraint.html" class="md-nav__link">
         <span title="/reference/constraint.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>Constraint<wbr>Model</span>
       </a>
     </li>
@@ -522,7 +467,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/domain_reduction.html" class="md-nav__link">
+      <a href="domain_reduction.html" class="md-nav__link">
         <span title="/reference/domain_reduction.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>Sequential<wbr>Domain<wbr>Reduction<wbr>Transformer</span>
       </a>
     </li>
@@ -537,7 +482,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/target_space.html" class="md-nav__link">
+      <a href="target_space.html" class="md-nav__link">
         <span title="/reference/target_space.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>Target<wbr>Space</span>
       </a>
     </li>
@@ -549,12 +494,80 @@
               
   
   
+    
+  
+    
   
   
-    <li class="md-nav__item">
-      <a href="reference/exception.html" class="md-nav__link">
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          <span title="/reference/exception.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>exception</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="#" class="md-nav__link md-nav__link--active">
         <span title="/reference/exception.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>exception</span>
       </a>
+      
+        
+
+  
+
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      <span title="/reference/exception.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>exception</span>
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#bayes_opt.exception.BayesianOptimizationError" class="md-nav__link">
+    <span title="bayes_opt.exception.BayesianOptimizationError (Python exception) — Base class for exceptions in the Bayesian Optimization." class="md-ellipsis">bayes_<wbr>opt.<wbr>exception.<wbr>Bayesian<wbr>Optimization<wbr>Error</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bayes_opt.exception.ConstraintNotSupportedError" class="md-nav__link">
+    <span title="bayes_opt.exception.ConstraintNotSupportedError (Python exception) — Raised when constrained optimization is not supported." class="md-ellipsis">bayes_<wbr>opt.<wbr>exception.<wbr>Constraint<wbr>Not<wbr>Supported<wbr>Error</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bayes_opt.exception.NoValidPointRegisteredError" class="md-nav__link">
+    <span title="bayes_opt.exception.NoValidPointRegisteredError (Python exception) — Raised when an acquisition function depends on previous points but none are registered." class="md-ellipsis">bayes_<wbr>opt.<wbr>exception.<wbr>No<wbr>Valid<wbr>Point<wbr>Registered<wbr>Error</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bayes_opt.exception.NotUniqueError" class="md-nav__link">
+    <span title="bayes_opt.exception.NotUniqueError (Python exception) — A point is non-unique." class="md-ellipsis">bayes_<wbr>opt.<wbr>exception.<wbr>Not<wbr>Unique<wbr>Error</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bayes_opt.exception.TargetSpaceEmptyError" class="md-nav__link">
+    <span title="bayes_opt.exception.TargetSpaceEmptyError (Python exception) — Raised when the target space is empty." class="md-ellipsis">bayes_<wbr>opt.<wbr>exception.<wbr>Target<wbr>Space<wbr>Empty<wbr>Error</span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -567,7 +580,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/other.html" class="md-nav__link">
+      <a href="other.html" class="md-nav__link">
         <span title="/reference/other.rst (reference label)" class="md-ellipsis">Other</span>
       </a>
     </li>
@@ -603,27 +616,41 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      <span title="/domain_reduction.ipynb (reference label)" class="md-ellipsis">Sequential Domain Reduction</span>
+      <span title="/reference/exception.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>exception</span>
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#Background" class="md-nav__link">
-    <span title="/domain_reduction.ipynb#background (reference label)" class="md-ellipsis">Background</span>
+  <a href="#bayes_opt.exception.BayesianOptimizationError" class="md-nav__link">
+    <span title="bayes_opt.exception.BayesianOptimizationError (Python exception) — Base class for exceptions in the Bayesian Optimization." class="md-ellipsis">bayes_<wbr>opt.<wbr>exception.<wbr>Bayesian<wbr>Optimization<wbr>Error</span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#Basics" class="md-nav__link">
-    <span title="/domain_reduction.ipynb#basics (reference label)" class="md-ellipsis">Basics</span>
+  <a href="#bayes_opt.exception.ConstraintNotSupportedError" class="md-nav__link">
+    <span title="bayes_opt.exception.ConstraintNotSupportedError (Python exception) — Raised when constrained optimization is not supported." class="md-ellipsis">bayes_<wbr>opt.<wbr>exception.<wbr>Constraint<wbr>Not<wbr>Supported<wbr>Error</span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#Parameters" class="md-nav__link">
-    <span title="/domain_reduction.ipynb#parameters (reference label)" class="md-ellipsis">Parameters</span>
+  <a href="#bayes_opt.exception.NoValidPointRegisteredError" class="md-nav__link">
+    <span title="bayes_opt.exception.NoValidPointRegisteredError (Python exception) — Raised when an acquisition function depends on previous points but none are registered." class="md-ellipsis">bayes_<wbr>opt.<wbr>exception.<wbr>No<wbr>Valid<wbr>Point<wbr>Registered<wbr>Error</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bayes_opt.exception.NotUniqueError" class="md-nav__link">
+    <span title="bayes_opt.exception.NotUniqueError (Python exception) — A point is non-unique." class="md-ellipsis">bayes_<wbr>opt.<wbr>exception.<wbr>Not<wbr>Unique<wbr>Error</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bayes_opt.exception.TargetSpaceEmptyError" class="md-nav__link">
+    <span title="bayes_opt.exception.TargetSpaceEmptyError (Python exception) — Raised when the target space is empty." class="md-ellipsis">bayes_<wbr>opt.<wbr>exception.<wbr>Target<wbr>Space<wbr>Empty<wbr>Error</span>
   </a>
   
 </li>
@@ -642,190 +669,43 @@
                   
 
 
-  <a href="https://github.com/bayesian-optimization/BayesianOptimization/blob/master/docsrc/domain_reduction.ipynb" title="Edit this page" class="md-content__button md-icon">
+  <a href="https://github.com/bayesian-optimization/BayesianOptimization/blob/master/docsrc/reference/exception.rst" title="Edit this page" class="md-content__button md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
   </a>
 
-<h1 id="Sequential-Domain-Reduction">Sequential Domain Reduction<a class="headerlink" href="#Sequential-Domain-Reduction" title="Link to this heading">¶</a></h1>
-<h2 id="Background">Background<a class="headerlink" href="#Background" title="Link to this heading">¶</a></h2>
-<p>Sequential domain reduction is a process where the bounds of the optimization problem are mutated (typically contracted) to reduce the time required to converge to an optimal value. The advantage of this method is typically seen when a cost function is particularly expensive to calculate, or if the optimization routine oscillates heavily.</p>
-<h2 id="Basics">Basics<a class="headerlink" href="#Basics" title="Link to this heading">¶</a></h2>
-<p>The basic steps are a <em>pan</em> and a <em>zoom</em>. These two steps are applied at one time, therefore updating the problem search space every iteration.</p>
-<p><strong>Pan</strong>: recentering the region of interest around the most optimal point found.</p>
-<p><strong>Zoom</strong>: contract the region of interest.</p>
-<p><img alt="image0" src="_images/sdr.png" /></p>
-<h2 id="Parameters">Parameters<a class="headerlink" href="#Parameters" title="Link to this heading">¶</a></h2>
-<p>There are three parameters for the built-in <code class="docutils literal notranslate"><span class="pre">SequentialDomainReductionTransformer</span></code> object:</p>
-<p><span class="math notranslate nohighlight">\(\gamma_{osc}:\)</span> shrinkage parameter for oscillation. Typically [0.5-0.7]. Default = 0.7</p>
-<p><span class="math notranslate nohighlight">\(\gamma_{pan}:\)</span> panning parameter. Typically 1.0. Default = 1.0</p>
-<p><span class="math notranslate nohighlight">\(\eta:\)</span> zoom parameter. Default = 0.9</p>
-<p>More information can be found in this reference document:</p>
-<hr class="docutils" />
-<p>Title: “On the robustness of a simple domain reduction scheme for simulation‐based optimization”</p>
-<p>Date: 2002</p>
-<p>Author: Stander, N. and Craig, K.</p>
-<p>Let’s start by importing the packages we’ll be needing</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[1]:
-</code></pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">bayes_opt</span> <span class="kn">import</span> <span class="n">BayesianOptimization</span>
-<span class="kn">from</span> <span class="nn">bayes_opt</span> <span class="kn">import</span> <span class="n">SequentialDomainReductionTransformer</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-</code></pre></div>
-</div>
-</div>
-<p>Now let’s create an example cost function. This is the <a class="reference external" href="https://en.wikipedia.org/wiki/Ackley_function">Ackley function</a>, which is quite non-linear.</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[2]:
-</code></pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">ackley</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromiter</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-    <span class="n">arg1</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
-    <span class="n">arg2</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-    <span class="k">return</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mf">20.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">arg1</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">arg2</span><span class="p">)</span> <span class="o">+</span> <span class="mf">20.</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">e</span><span class="p">)</span>
-</code></pre></div>
-</div>
-</div>
-<p>We will use the standard bounds for this problem.</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[3]:
-</code></pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br/><span></span><code><span class="n">pbounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)}</span>
-</code></pre></div>
-</div>
-</div>
-<p>This is where we define our <code class="docutils literal notranslate"><span class="pre">bound_transformer</span></code> , the Sequential Domain Reduction Transformer</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[4]:
-</code></pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">bounds_transformer</span> <span class="o">=</span> <span class="n">SequentialDomainReductionTransformer</span><span class="p">(</span><span class="n">minimum_window</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
-</code></pre></div>
-</div>
-</div>
-<p>Now we can set up two identical optimization problems, except one has the <code class="docutils literal notranslate"><span class="pre">bound_transformer</span></code> variable set.</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[5]:
-</code></pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">mutating_optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span>
-    <span class="n">f</span><span class="o">=</span><span class="n">ackley</span><span class="p">,</span>
-    <span class="n">pbounds</span><span class="o">=</span><span class="n">pbounds</span><span class="p">,</span>
-    <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">bounds_transformer</span><span class="o">=</span><span class="n">bounds_transformer</span>
-<span class="p">)</span>
-</code></pre></div>
-</div>
-</div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[6]:
-</code></pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">mutating_optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span>
-    <span class="n">init_points</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-    <span class="n">n_iter</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
-<span class="p">)</span>
-</code></pre></div>
-</div>
-</div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[7]:
-</code></pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">standard_optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span>
-    <span class="n">f</span><span class="o">=</span><span class="n">ackley</span><span class="p">,</span>
-    <span class="n">pbounds</span><span class="o">=</span><span class="n">pbounds</span><span class="p">,</span>
-    <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-<span class="p">)</span>
-</code></pre></div>
-</div>
-</div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[8]:
-</code></pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">standard_optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span>
-    <span class="n">init_points</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-    <span class="n">n_iter</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
-<span class="p">)</span>
-</code></pre></div>
-</div>
-</div>
-<p>After both have completed we can plot to see how the objectives performed. It’s quite obvious to see that the Sequential Domain Reduction technique contracted onto the optimal point relatively quick.</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[9]:
-</code></pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">mutating_optimizer</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Mutated Optimizer&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">standard_optimizer</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Standard Optimizer&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-</code></pre></div>
-</div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[9]:
-</code></pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-&lt;matplotlib.legend.Legend at 0x23439267280&gt;
-</pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="_images/domain_reduction_15_1.png" src="_images/domain_reduction_15_1.png" />
-</div>
-</div>
-<p>Now let’s plot the actual contraction of one of the variables (<code class="docutils literal notranslate"><span class="pre">x</span></code>)</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[10]:
-</code></pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="c1"># example x-bound shrinking - we need to shift the x-axis by the init_points as the bounds</span>
-<span class="c1"># transformer only mutates when searching - not in the initial phase.</span>
-<span class="n">x_min_bound</span> <span class="o">=</span> <span class="p">[</span><span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bounds_transformer</span><span class="o">.</span><span class="n">bounds</span><span class="p">]</span>
-<span class="n">x_max_bound</span> <span class="o">=</span> <span class="p">[</span><span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bounds_transformer</span><span class="o">.</span><span class="n">bounds</span><span class="p">]</span>
-<span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">mutating_optimizer</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">params</span><span class="p">]</span>
-<span class="n">bounds_transformers_iteration</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
-</code></pre></div>
-</div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[11]:
-</code></pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">bounds_transformers_iteration</span><span class="p">,</span> <span class="n">x_min_bound</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;x lower bound&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">bounds_transformers_iteration</span><span class="p">,</span> <span class="n">x_max_bound</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;x upper bound&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-</code><br/></pre></div>
-</div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[11]:
-</code></pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-&lt;matplotlib.legend.Legend at 0x23439267fd0&gt;
-</pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="_images/domain_reduction_18_1.png" src="_images/domain_reduction_18_1.png" />
-</div>
-</div>
+<h1 id="module-bayes_opt.exception"><span id="bayes-opt-exception"></span><a class="reference internal" href="#module-bayes_opt.exception" title="bayes_opt.exception (Python module)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">bayes_opt.exception</span></code></a><a class="headerlink" href="#module-bayes_opt.exception" title="Link to this heading">¶</a></h1>
+<p>This module contains custom exceptions for Bayesian Optimization.</p>
+<dl class="py exception objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.exception.BayesianOptimizationError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bayes_opt.exception.</span></span><span class="sig-name descname"><span class="pre">BayesianOptimizationError</span></span><a class="headerlink" href="#bayes_opt.exception.BayesianOptimizationError" title="Link to this definition">¶</a></dt>
+<dd><p>Base class for exceptions in the Bayesian Optimization.</p>
+</dd></dl>
+
+<dl class="py exception objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.exception.ConstraintNotSupportedError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bayes_opt.exception.</span></span><span class="sig-name descname"><span class="pre">ConstraintNotSupportedError</span></span><a class="headerlink" href="#bayes_opt.exception.ConstraintNotSupportedError" title="Link to this definition">¶</a></dt>
+<dd><p>Raised when constrained optimization is not supported.</p>
+</dd></dl>
+
+<dl class="py exception objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.exception.NoValidPointRegisteredError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bayes_opt.exception.</span></span><span class="sig-name descname"><span class="pre">NoValidPointRegisteredError</span></span><a class="headerlink" href="#bayes_opt.exception.NoValidPointRegisteredError" title="Link to this definition">¶</a></dt>
+<dd><p>Raised when an acquisition function depends on previous points but none are registered.</p>
+</dd></dl>
+
+<dl class="py exception objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.exception.NotUniqueError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bayes_opt.exception.</span></span><span class="sig-name descname"><span class="pre">NotUniqueError</span></span><a class="headerlink" href="#bayes_opt.exception.NotUniqueError" title="Link to this definition">¶</a></dt>
+<dd><p>A point is non-unique.</p>
+</dd></dl>
+
+<dl class="py exception objdesc">
+<dt class="sig sig-object highlight py" id="bayes_opt.exception.TargetSpaceEmptyError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bayes_opt.exception.</span></span><span class="sig-name descname"><span class="pre">TargetSpaceEmptyError</span></span><a class="headerlink" href="#bayes_opt.exception.TargetSpaceEmptyError" title="Link to this definition">¶</a></dt>
+<dd><p>Raised when the target space is empty.</p>
+</dd></dl>
+
 
 
 
@@ -854,7 +734,7 @@
     <nav class="md-footer__inner md-grid" aria-label="Footer" >
       
         
-        <a href="constraints.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Constrained Optimization" rel="prev">
+        <a href="target_space.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: bayes_opt.TargetSpace" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
           </div>
@@ -863,20 +743,20 @@
               <span class="md-footer__direction">
                 Previous
               </span>
-              Constrained Optimization
+              bayes_opt.TargetSpace
             </div>
           </div>
         </a>
       
       
         
-        <a href="acquisition_functions.html" class="md-footer__link md-footer__link--next" aria-label="Next: Acquisition functions" rel="next">
+        <a href="other.html" class="md-footer__link md-footer__link--next" aria-label="Next: Other" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Acquisition functions
+              Other
             </div>
           </div>
           <div class="md-footer__button md-icon">
@@ -944,13 +824,11 @@
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.expand", "navigation.sections", "navigation.top", "search.share", "toc.follow", "toc.sticky", "content.tabs.link", "announce.dismiss"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike", "staticVersions": null, "versionPath": "../versions.json"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.sections", "navigation.top", "search.share", "toc.follow", "toc.sticky", "content.tabs.link", "announce.dismiss"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike", "staticVersions": null, "versionPath": "../versions.json"}}</script>
     
       
-        <script src="_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js?v=8ec58cb5"></script>
+        <script src="../_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js?v=8ec58cb5"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-        <script id="MathJax-script" src="_static/mathjax/tex-mml-chtml.js?v=cadf963e"></script>
     
   </body>
 </html>
