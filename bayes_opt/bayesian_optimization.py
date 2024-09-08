@@ -79,7 +79,7 @@ class BayesianOptimization(Observable):
 
     Parameters
     ----------
-    f: function
+    f: function or None.
         Function to be maximized.
 
     pbounds: dict
@@ -110,7 +110,7 @@ class BayesianOptimization(Observable):
 
     def __init__(
         self,
-        f: Callable[..., float],
+        f: Callable[..., float] | None,
         pbounds: Mapping[str, tuple[float, float]],
         acquisition_function: AcquisitionFunction | None = None,
         constraint: Constraint | None = None,

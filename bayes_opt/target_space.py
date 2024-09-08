@@ -33,7 +33,7 @@ class TargetSpace:
 
     Parameters
     ----------
-    target_func : function
+    target_func : function or None.
         Function to be maximized.
 
     pbounds : dict
@@ -64,7 +64,7 @@ class TargetSpace:
 
     def __init__(
         self,
-        target_func: Callable[..., float],
+        target_func: Callable[..., float] | None,
         pbounds: Mapping[str, tuple[float, float]],
         constraint: ConstraintModel | None = None,
         random_state: int | np.random.RandomState | None = None,
@@ -406,6 +406,9 @@ class TargetSpace:
             return self._cache[_hashable(x.ravel())]
 
         dict_params = self.array_to_params(x)
+        if self.target_func is None:
+            error_msg = "No target function has been provided."
+            raise ValueError(error_msg)
         target = self.target_func(**dict_params)
 
         if self._constraint is None:
