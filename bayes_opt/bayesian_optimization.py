@@ -121,7 +121,7 @@ class BayesianOptimization(Observable):
     ):
         self._random_state = ensure_rng(random_state)
         self._allow_duplicate_points = allow_duplicate_points
-        self._queue = deque()
+        self._queue: deque[Any] = deque()
 
         if acquisition_function is None:
             if constraint is None:
@@ -248,7 +248,7 @@ class BayesianOptimization(Observable):
             self._space.probe(params)
             self.dispatch(Events.OPTIMIZATION_STEP)
 
-    def suggest(self) -> dict[str, NDArray[Float]]:
+    def suggest(self) -> dict[str, float | NDArray[Float]]:
         """Suggest a promising point to probe next."""
         if len(self._space) == 0:
             return self._space.array_to_params(self._space.random_sample())
