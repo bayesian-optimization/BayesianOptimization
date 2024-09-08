@@ -26,6 +26,7 @@
    reference/constraint
    reference/domain_reduction
    reference/target_space
+   reference/exception
    reference/other
 
 .. raw:: html
