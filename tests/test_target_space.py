@@ -285,6 +285,12 @@ def test_set_bounds():
     assert all(space.bounds[:, 1] == np.array([1, 8, 3, 4]))
 
 
+def test_no_target_func():
+    target_space = TargetSpace(None, PBOUNDS)
+    with pytest.raises(ValueError, match="No target function has been provided."):
+        target_space.probe({"p1": 1, "p2": 2})
+
+
 if __name__ == "__main__":
     r"""
     CommandLine:

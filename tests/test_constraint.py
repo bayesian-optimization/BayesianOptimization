@@ -162,3 +162,9 @@ def test_lower_less_than_upper(target_function):
 
     with pytest.raises(ValueError):
         BayesianOptimization(f=target_function, constraint=conmod, pbounds=pbounds, verbose=0, random_state=1)
+
+
+def test_null_constraint_function():
+    constraint = ConstraintModel(None, np.array([0, 0]), np.array([1, 1]))
+    with pytest.raises(ValueError, match="No constraint function was provided."):
+        constraint.eval()
