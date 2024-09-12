@@ -182,7 +182,7 @@ autodoc_typehints = "both"
 """
 This value controls how to represent typehints. The setting takes the following values:
     - `signature`: Show typehints in the signature
-    - `description`: Show typehints as content of the function or method 
+    - `description`: Show typehints as content of the function or method
         The typehints of overloaded functions or methods will still be represented in the signature.
     - `none`: Do not show typehints
     - `both`: Show typehints in the signature and as content of the function or method
