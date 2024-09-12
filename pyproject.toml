@@ -38,10 +38,6 @@ sphinx = [
     {version = "^7.0.0", python = "<3.10"},
     {version = "^8.0.0", python = ">=3.10"}
 ]
-myst-parser = [
-    {version = "^3.0.0", python = "<3.10"},
-    {version = "^4.0.0", python = ">=3.10"}
-]
 sphinx-autodoc-typehints = [
     {version = "^2.3.0", python = "<3.10"},
     {version = "^2.4.0", python = ">=3.10"}
