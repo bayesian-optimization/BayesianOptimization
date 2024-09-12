@@ -201,10 +201,3 @@ This value controls the format of typehints. The setting takes the following val
 
 see more: https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_typehints_format
 """
-
-def autodoc_process_docstring(app, what, name, obj, options, lines):
-    for i in range(len(lines)):
-        lines[i] = lines[i].replace("np.", "numpy.")
-
-def setup(app):
-    app.connect("autodoc-process-docstring", autodoc_process_docstring)
