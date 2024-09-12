@@ -113,7 +113,7 @@ class BayesianOptimization(Observable):
     ):
         self._random_state = ensure_rng(random_state)
         self._allow_duplicate_points = allow_duplicate_points
-        self._queue: deque[Any] = deque()
+        self._queue: deque[Mapping[str, float] | Sequence[float] | NDArray[Float]] = deque()
 
         if acquisition_function is None:
             if constraint is None:
@@ -202,7 +202,10 @@ class BayesianOptimization(Observable):
         return self._space.res()
 
     def register(
-        self, params: Any, target: float, constraint_value: float | NDArray[Float] | None = None
+        self,
+        params: Mapping[str, float] | Sequence[float] | NDArray[Float],
+        target: float,
+        constraint_value: float | NDArray[Float] | None = None,
     ) -> None:
         """Register an observation with known target.
 
@@ -220,7 +223,9 @@ class BayesianOptimization(Observable):
         self._space.register(params, target, constraint_value)
         self.dispatch(Events.OPTIMIZATION_STEP)
 
-    def probe(self, params: Any, lazy: bool = True) -> None:
+    def probe(
+        self, params: Mapping[str, float] | Sequence[float] | NDArray[Float], lazy: bool = True
+    ) -> None:
         """Evaluate the function at the given points.
 
         Useful to guide the optimizer.

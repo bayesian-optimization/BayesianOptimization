@@ -232,7 +232,7 @@ class TargetSpace:
 
         return mask
 
-    def params_to_array(self, params: dict[str, float]) -> NDArray[Float]:
+    def params_to_array(self, params: Mapping[str, float]) -> NDArray[Float]:
         """Convert a dict representation of parameters into an array version.
 
         Parameters
@@ -290,7 +290,10 @@ class TargetSpace:
         return x
 
     def register(
-        self, params: Any, target: float, constraint_value: float | NDArray[Float] | None = None
+        self,
+        params: Mapping[str, float] | Sequence[float] | NDArray[Float],
+        target: float,
+        constraint_value: float | NDArray[Float] | None = None,
     ) -> None:
         """Append a point and its target value to the known data.
 
@@ -375,7 +378,9 @@ class TargetSpace:
         self._target = target_copy
         self._cache = cache_copy
 
-    def probe(self, params: Any) -> float | tuple[float, float | NDArray[Float]]:
+    def probe(
+        self, params: Mapping[str, float] | Sequence[float] | NDArray[Float]
+    ) -> float | tuple[float, float | NDArray[Float]]:
         """Evaluate the target function on a point and register the result.
 
         Notes
