@@ -232,7 +232,7 @@ class TargetSpace:
 
         return mask
 
-    def params_to_array(self, params: dict[str, float | NDArray[Float]]) -> NDArray[Float]:
+    def params_to_array(self, params: dict[str, float]) -> NDArray[Float]:
         """Convert a dict representation of parameters into an array version.
 
         Parameters
@@ -253,7 +253,7 @@ class TargetSpace:
             raise ValueError(error_msg)
         return np.asarray([params[key] for key in self.keys])
 
-    def array_to_params(self, x: NDArray[Float]) -> dict[str, float | NDArray[Float]]:
+    def array_to_params(self, x: NDArray[Float]) -> dict[str, float]:
         """Convert an array representation of parameters into a dict version.
 
         Parameters
