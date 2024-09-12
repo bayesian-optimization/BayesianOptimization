@@ -163,12 +163,45 @@ html_favicon = 'func.ico'
 # so a file named "default.css" will overwrite the builtin "default.css".
 # html_static_path = ['_static']
 
+## extensions configuration
+### sphinx-autodoc-typehints
 typehints_use_signature = True
-typehints_use_signature_return = True
-autodoc_typehints = "both"
-autodoc_typehints_format = "short"
+"""
+If True, typehints for parameters in the signature are shown.
 
-#conf.py
+see more: https://github.com/tox-dev/sphinx-autodoc-typehints/blob/main/README.md#options
+"""
+typehints_use_signature_return = True
+"""
+If True, return annotations in the signature are shown.
+
+see more: https://github.com/tox-dev/sphinx-autodoc-typehints/blob/main/README.md#options
+"""
+### autodoc
+autodoc_typehints = "both"
+"""
+This value controls how to represent typehints. The setting takes the following values:
+    - `signature`: Show typehints in the signature
+    - `description`: Show typehints as content of the function or method 
+        The typehints of overloaded functions or methods will still be represented in the signature.
+    - `none`: Do not show typehints
+    - `both`: Show typehints in the signature and as content of the function or method
+
+Overloaded functions or methods will not have typehints included in the description
+because it is impossible to accurately represent all possible overloads as a list of parameters.
+
+see more: https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_typehints
+"""
+autodoc_typehints_format = "short"
+"""
+This value controls the format of typehints. The setting takes the following values:
+    - `fully-qualified`: Show the module name and its name of typehints
+    - `short`: Suppress the leading module names of the typehints
+        (e.g. io.StringIO -> StringIO)
+
+see more: https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_typehints_format
+"""
+
 def autodoc_process_docstring(app, what, name, obj, options, lines):
     for i in range(len(lines)):
         lines[i] = lines[i].replace("np.", "numpy.")
