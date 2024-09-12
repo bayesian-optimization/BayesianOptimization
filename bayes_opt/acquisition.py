@@ -23,7 +23,7 @@ from __future__ import annotations
 import abc
 import warnings
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Literal, NoReturn, overload
+from typing import TYPE_CHECKING, Any, Literal, NoReturn
 
 import numpy as np
 from numpy.random import RandomState
@@ -217,10 +217,6 @@ class AcquisitionFunction(abc.ABC):
         if n_random == 0 and n_l_bfgs_b == 0:
             error_msg = "Either n_random or n_l_bfgs_b needs to be greater than 0."
             raise ValueError(error_msg)
-        x_min_r: NDArray[Float] | None
-        x_min_l: NDArray[Float] | None
-        min_acq_r: float
-        min_acq_l: float
         x_min_r, min_acq_r = self._random_sample_minimize(acq, bounds, n_random=n_random)
         x_min_l, min_acq_l = self._l_bfgs_b_minimize(acq, bounds, n_x_seeds=n_l_bfgs_b)
         # Either n_random or n_l_bfgs_b is not 0 => at least one of x_min_r and x_min_l is not None
@@ -228,14 +224,6 @@ class AcquisitionFunction(abc.ABC):
             return x_min_r
         return x_min_l
 
-    @overload
-    def _random_sample_minimize(
-        self, acq: Callable[[NDArray[Float]], NDArray[Float]], bounds: NDArray[Float], n_random: Literal[0]
-    ) -> tuple[None, float]: ...
-    @overload
-    def _random_sample_minimize(
-        self, acq: Callable[[NDArray[Float]], NDArray[Float]], bounds: NDArray[Float], n_random: int
-    ) -> tuple[NDArray[Float] | None, float]: ...
     def _random_sample_minimize(
         self, acq: Callable[[NDArray[Float]], NDArray[Float]], bounds: NDArray[Float], n_random: int
     ) -> tuple[NDArray[Float] | None, float]:
@@ -270,14 +258,6 @@ class AcquisitionFunction(abc.ABC):
         min_acq = ys.min()
         return x_min, min_acq
 
-    @overload
-    def _l_bfgs_b_minimize(
-        self, acq: Callable[[NDArray[Float]], NDArray[Float]], bounds: NDArray[Float], n_x_seeds: Literal[0]
-    ) -> tuple[None, float]: ...
-    @overload
-    def _l_bfgs_b_minimize(
-        self, acq: Callable[[NDArray[Float]], NDArray[Float]], bounds: NDArray[Float], n_x_seeds: int = ...
-    ) -> tuple[NDArray[Float] | None, float]: ...
     def _l_bfgs_b_minimize(
         self, acq: Callable[[NDArray[Float]], NDArray[Float]], bounds: NDArray[Float], n_x_seeds: int = 10
     ) -> tuple[NDArray[Float] | None, float]:
