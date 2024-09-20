@@ -8,6 +8,7 @@ simple domain reduction scheme for simulation-based optimization"
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Mapping, Sequence
 from typing import TYPE_CHECKING, Any
 from warnings import warn
 
@@ -16,8 +17,6 @@ import numpy as np
 from bayes_opt.target_space import TargetSpace
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Mapping, Sequence
-
     from numpy.typing import NDArray
 
     Float = np.floating[Any]
@@ -71,7 +70,8 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         self.gamma_osc = gamma_osc
         self.gamma_pan = gamma_pan
         self.eta = eta
-        if isinstance(minimum_window, dict):
+
+        if isinstance(minimum_window, Mapping):
             self.minimum_window_value = [
                 item[1] for item in sorted(minimum_window.items(), key=lambda x: x[0])
             ]
