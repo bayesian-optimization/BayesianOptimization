@@ -5,7 +5,10 @@ description = "Bayesian Optimization package"
 authors = ["Fernando Nogueira"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "bayes_opt"}]
+packages = [
+    {include = "bayes_opt"},
+    {include = "bayes_opt/py.typed"},
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"
