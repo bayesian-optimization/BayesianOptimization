@@ -7,12 +7,12 @@ from scipy.optimize import NonlinearConstraint
 from bayes_opt import BayesianOptimization, ConstraintModel
 
 
-@pytest.fixture()
+@pytest.fixture
 def target_function():
     return lambda x, y: np.cos(2 * x) * np.cos(y) + np.sin(x)
 
 
-@pytest.fixture()
+@pytest.fixture
 def constraint_function():
     return lambda x, y: np.cos(x) * np.cos(y) - np.sin(x) * np.sin(y)
 
