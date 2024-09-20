@@ -71,6 +71,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         self.gamma_pan = gamma_pan
         self.eta = eta
 
+        self.minimum_window_value: NDArray[Float] | Sequence[float] | float | None
         if isinstance(minimum_window, Mapping):
             self.minimum_window_value = [
                 item[1] for item in sorted(minimum_window.items(), key=lambda x: x[0])
@@ -90,6 +91,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         self.original_bounds = np.copy(target_space.bounds)
         self.bounds = [self.original_bounds]
 
+        self.minimum_window: NDArray[Float] | Sequence[float] | Sequence[None]  # not Sequence[float | None]
         # Set the minimum window to an array of length bounds
         if isinstance(self.minimum_window_value, (Sequence, np.ndarray)):
             if len(self.minimum_window_value) != len(target_space.bounds):
