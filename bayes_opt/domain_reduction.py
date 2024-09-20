@@ -91,7 +91,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         self.bounds = [self.original_bounds]
 
         # Set the minimum window to an array of length bounds
-        if isinstance(self.minimum_window_value, (list, np.ndarray)):
+        if isinstance(self.minimum_window_value, (Sequence, np.ndarray)):
             if len(self.minimum_window_value) != len(target_space.bounds):
                 error_msg = "Length of minimum_window must be the same as the number of parameters"
                 raise ValueError(error_msg)
