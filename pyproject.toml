@@ -21,7 +21,7 @@ optional = true
 pytest = "^8.0.0"
 pytest-cov = "^4.1.0"
 coverage = "^7.4.1"
-ruff = "0.5.2"
+ruff = "0.6.6"
 pre-commit = "^3.7.1"
 
 
