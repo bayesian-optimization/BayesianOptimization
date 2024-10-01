@@ -5,7 +5,7 @@
 # Bayesian Optimization
 
 ![tests](https://github.com/bayesian-optimization/BayesianOptimization/actions/workflows/run_tests.yml/badge.svg)
-[![docs - stable](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fbayesian-optimization%2FBayesianOptimization%2Fgh-pages%2Fversions.json&query=%24%5B%3F(%40.aliases%20%26%26%20%40.aliases.indexOf('stable')%20%3E%20-1)%5D.version&prefix=stable%20(v&suffix=)&label=docs)](https://bayesian-optimization.github.io/BayesianOptimization/)
+[![docs - stable](https://img.shields.io/badge/docs-stable-blue)](https://bayesian-optimization.github.io/BayesianOptimization/index.html)
 [![Codecov](https://codecov.io/github/bayesian-optimization/BayesianOptimization/badge.svg?branch=master&service=github)](https://codecov.io/github/bayesian-optimization/BayesianOptimization?branch=master)
 [![Pypi](https://img.shields.io/pypi/v/bayesian-optimization.svg)](https://pypi.python.org/pypi/bayesian-optimization)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/bayesian-optimization)
