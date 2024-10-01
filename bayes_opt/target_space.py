@@ -1,59 +1,87 @@
-import numpy as np
-from .util import ensure_rng, NotUniqueError
-from .parameter import FloatParameter, IntParameter, is_numeric, CategoricalParameter
-from .constraint import ConstraintModel
-from .util import Colours
+"""Manages the optimization domain and holds points."""
 
-def _hashable(x):
-    """ ensure that an point is hashable by a python dict """
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+from warnings import warn
+
+import numpy as np
+from colorama import Fore
+
+from bayes_opt.exception import NotUniqueError
+from bayes_opt.parameter import BayesParameter, CategoricalParameter, FloatParameter, IntParameter, is_numeric
+from bayes_opt.util import ensure_rng
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Mapping, Sequence
+
+    from numpy.random import RandomState
+    from numpy.typing import NDArray
+
+    from bayes_opt.constraint import ConstraintModel
+
+    Float = np.floating[Any]
+
+
+def _hashable(x: NDArray[Float]) -> tuple[float, ...]:
+    """Ensure that a point is hashable by a python dict."""
     return tuple(map(float, x))
 
 
-class TargetSpace(object):
-    """
-    Holds the param-space coordinates (X) and target values (Y)
-    Allows for constant-time appends while ensuring no duplicates are added
+class TargetSpace:
+    """Holds the param-space coordinates (X) and target values (Y).
 
-    Example
-    -------
+    Allows for constant-time appends.
+
+    Parameters
+    ----------
+    target_func : function or None.
+        Function to be maximized.
+
+    pbounds : dict
+        Dictionary with parameters names as keys and a tuple with minimum
+        and maximum values.
+
+    random_state : int, RandomState, or None
+        optionally specify a seed for a random number generator
+
+    allow_duplicate_points: bool, optional (default=False)
+        If True, the optimizer will allow duplicate points to be registered.
+        This behavior may be desired in high noise situations where repeatedly probing
+        the same point will give different answers. In other situations, the acquisition
+        may occasionally generate a duplicate point.
+
+    Examples
+    --------
     >>> def target_func(p1, p2):
     >>>     return p1 + p2
-    >>> pbounds = {'p1': (0, 1), 'p2': (1, 100)}
+    >>> pbounds = {"p1": (0, 1), "p2": (1, 100)}
     >>> space = TargetSpace(target_func, pbounds, random_state=0)
-    >>> x = space.random_points(1)[0]
-    >>> y = space.register_point(x)
-    >>> assert self.max_point()['max_val'] == y
+    >>> x = np.array([4, 5])
+    >>> y = target_func(x)
+    >>> space.register(x, y)
+    >>> assert self.max()["target"] == 9
+    >>> assert self.max()["params"] == {"p1": 1.0, "p2": 2.0}
     """
 
-    def __init__(self, target_func, pbounds, constraint=None, random_state=None,
-                 allow_duplicate_points=False):
-        """
-        Parameters
-        ----------
-        target_func : function
-            Function to be maximized.
-
-        pbounds : dict
-            Dictionary with parameters names as keys and a tuple with minimum
-            and maximum values.
-
-        random_state : int, RandomState, or None
-            optionally specify a seed for a random number generator
-
-        allow_duplicate_points: bool, optional (default=False)
-            If True, the optimizer will allow duplicate points to be registered.
-            This behavior may be desired in high noise situations where repeatedly probing
-            the same point will give different answers. In other situations, the acquisition
-            may occasionally generate a duplicate point.
-        """
+    def __init__(
+        self,
+        target_func: Callable[..., float] | None,
+        pbounds: Mapping[str, tuple[float, float]],
+        constraint: ConstraintModel | None = None,
+        random_state: int | RandomState | None = None,
+        allow_duplicate_points: bool | None = False,
+    ) -> None:
         self.random_state = ensure_rng(random_state)
-        self._allow_duplicate_points = allow_duplicate_points
+        self._allow_duplicate_points = allow_duplicate_points or False
         self.n_duplicate_points = 0
 
         # The function to be optimized
         self.target_func = target_func
 
-        self._keys = sorted(pbounds)
+        # Get the name of the parameters
+        self._keys: list[str] = sorted(pbounds)
+
         self._params_config = self.make_params(pbounds)
         self._dim = sum([self._params_config[key].dim for key in self._keys])
 
@@ -61,68 +89,114 @@ class TargetSpace(object):
         self._float_bounds = self.calculate_float_bounds()
 
         # preallocated memory for X and Y points
-        self._params = np.empty(shape=(0, self.dim))
-        self._target = np.empty(shape=(0))
+        self._params: NDArray[Float] = np.empty(shape=(0, self.dim))
+        self._target: NDArray[Float] = np.empty(shape=(0,))
 
         # keep track of unique points we have seen so far
-        self._cache = {}
+        self._cache: dict[tuple[float, ...], float | tuple[float, float | NDArray[Float]]] = {}
 
-        self._constraint = constraint
+        self._constraint: ConstraintModel | None = constraint
 
         if constraint is not None:
-            self._constraint = ConstraintModel(constraint.fun,
-                                               constraint.lb,
-                                               constraint.ub,
-                                               transform=self.kernel_transform,
-                                               random_state=random_state)
-            # preallocated memory for constraint fulfillement
-            if self._constraint.lb.size == 1:
+            # preallocated memory for constraint fulfillment
+            self._constraint_values: NDArray[Float]
+            if constraint.lb.size == 1:
                 self._constraint_values = np.empty(shape=(0), dtype=float)
             else:
-                self._constraint_values = np.empty(
-                    shape=(0, self._constraint.lb.size), dtype=float)
+                self._constraint_values = np.empty(shape=(0, self._constraint.lb.size), dtype=float)
         else:
             self._constraint = None
 
-    def __contains__(self, x):
+    def __contains__(self, x: NDArray[Float]) -> bool:
+        """Check if this parameter has already been registered.
+
+        Returns
+        -------
+        bool
+        """
         return _hashable(x) in self._cache
 
-    def __len__(self):
-        assert len(self._params) == len(self._target)
+    def __len__(self) -> int:
+        """Return number of observations registered.
+
+        Returns
+        -------
+        int
+        """
+        if len(self._params) != len(self._target):
+            error_msg = "The number of parameters and targets do not match."
+            raise ValueError(error_msg)
         return len(self._target)
 
     @property
-    def empty(self):
+    def empty(self) -> bool:
+        """Check if anything has been registered.
+
+        Returns
+        -------
+        bool
+        """
         return len(self) == 0
 
     @property
-    def params(self):
+    def params(self) -> NDArray[Float]:
+        """Get the parameter values registered to this TargetSpace.
+
+        Returns
+        -------
+        np.ndarray
+        """
         return self._params
 
     @property
-    def target(self):
+    def target(self) -> NDArray[Float]:
+        """Get the target function values registered to this TargetSpace.
+
+        Returns
+        -------
+        np.ndarray
+        """
         return self._target
 
     @property
-    def dim(self):
+    def dim(self) -> int:
+        """Get the number of parameter names.
+
+        Returns
+        -------
+        int
+        """
         return self._dim
 
     @property
-    def bounds(self):
+    def keys(self) -> list[str]:
+        """Get the keys (or parameter names).
+
+        Returns
+        -------
+        list of str
+        """
+        return self._keys
+
+    @property
+    def bounds(self) -> NDArray[Float]:
+        """Get the bounds of this TargetSpace.
+
+        Returns
+        -------
+        np.ndarray
+        """
         return [self._params_config[key].domain for key in self.keys]
 
     @property
-    def constraint(self):
+    def constraint(self) -> ConstraintModel | None:
+        """Get the constraint model.
+
+        Returns
+        -------
+        ConstraintModel
+        """
         return self._constraint
-
-    @property
-    def constraint_values(self):
-        if self._constraint is not None:
-            return self._constraint_values
-
-    @property
-    def keys(self):
-        return self._keys
 
     @property
     def float_bounds(self):
@@ -136,12 +210,14 @@ class TargetSpace(object):
         params = {}
         for key in sorted(pbounds):
             pbound = pbounds[key]
-            if len(pbound) == 2 and is_numeric(pbound[0]) and is_numeric(
-                    pbound[1]):
+
+            if isinstance(pbound, BayesParameter):
+                res = pbound
+            elif len(pbound) == 2 and is_numeric(pbound[0]) and is_numeric(pbound[1]):
                 res = FloatParameter(name=key, domain=pbound)
-            elif len(pbound) == 3 and pbound[-1] == float:
+            elif len(pbound) == 3 and pbound[-1] is float:
                 res = FloatParameter(name=key, domain=(pbound[0], pbound[1]))
-            elif len(pbound) == 3 and pbound[-1] == int:
+            elif len(pbound) == 3 and pbound[-1] is int:
                 res = IntParameter(name=key, domain=(int(pbound[0]), int(pbound[1])))
             else:
                 # assume categorical variable with pbound as list of possible values
@@ -154,7 +230,7 @@ class TargetSpace(object):
         pos = 0
         for key in self._keys:
             mask = np.zeros(self._dim)
-            mask[pos:pos + self._params_config[key].dim] = 1
+            mask[pos : pos + self._params_config[key].dim] = 1
             masks[key] = mask.astype(bool)
             pos = pos + self._params_config[key].dim
         return masks
@@ -165,38 +241,85 @@ class TargetSpace(object):
             bounds[self.masks[key]] = self._params_config[key].float_bounds
         return bounds
 
-    def params_to_array(self, value) -> np.ndarray:
-        if type(value) == dict:
-            # assume the input is one single set of parameters
-            return self._to_float(value)
-        else:
-            return np.vstack([self._to_float(x) for x in value])
+    def params_to_array(self, params: Mapping[str, float]) -> NDArray[Float]:
+        """Convert a dict representation of parameters into an array version.
+
+        Parameters
+        ----------
+        params : dict
+            a single point, with len(x) == self.dim.
+
+        Returns
+        -------
+        np.ndarray
+            Representation of the parameters as an array.
+        """
+        if set(params) != set(self.keys):
+            error_msg = (
+                f"Parameters' keys ({sorted(params)}) do "
+                f"not match the expected set of keys ({self.keys})."
+            )
+            raise ValueError(error_msg)
+        return self._to_float(params)
+
+    @property
+    def constraint_values(self) -> NDArray[Float]:
+        """Get the constraint values registered to this TargetSpace.
+
+        Returns
+        -------
+        np.ndarray
+        """
+        if self._constraint is None:
+            error_msg = "TargetSpace belongs to an unconstrained optimization"
+            raise AttributeError(error_msg)
+
+        return self._constraint_values
+
+    def kernel_transform(self, value: np.ndarray) -> np.ndarray:
+        """Transform floating-point suggestions to values used in the kernel.
+
+        Vectorized.
+        """
+        value = np.atleast_2d(value)
+        res = []
+        for p in self._keys:
+            par = self._params_config[p].kernel_transform(value[:, self.masks[p]])
+            res.append(par)
+        return np.hstack(res)
+
+    def array_to_params(self, x: NDArray[Float]) -> dict[str, float]:
+        """Convert an array representation of parameters into a dict version.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            a single point, with len(x) == self.dim.
+
+        Returns
+        -------
+        dict
+            Representation of the parameters as dictionary.
+        """
+        if len(x) != self._dim:
+            error_msg = (
+                f"Size of array ({len(x)}) is different than the "
+                f"expected number of parameters ({self._dim})."
+            )
+            raise ValueError(error_msg)
+        return self._to_params(x)
 
     def _to_float(self, value) -> np.ndarray:
-        try:
-            assert set(value) == set(self.keys)
-        except AssertionError:
-            raise ValueError(
-                f"Parameters' keys ({sorted(value)}) do " +
-                f"not match the expected set of keys ({self.keys}).")
+        if set(value) != set(self.keys):
+            msg = (
+                f"Parameters' keys ({sorted(value)}) do " f"not match the expected set of keys ({self.keys})."
+            )
+            raise ValueError(msg)
         res = np.zeros(self._dim)
         for key in self._keys:
             p = self._params_config[key]
             res[self._masks[key]] = p.to_float(value[key])
         return res
-
-    def array_to_params(self, value: np.ndarray):
-        try:
-            assert value.shape[-1] == self._dim
-        except AssertionError:
-            raise ValueError(
-                "Size of array ({}) is different than the ".format(
-                    value.shape[-1]) +
-                "expected number of parameters ({}).".format(self._dim))
-        if len(value.shape) == 1:
-            return self._to_params(value)
-        else:
-            return [self._to_params(v) for v in value]
 
     def _to_params(self, value: np.ndarray) -> dict:
         res = {}
@@ -206,237 +329,292 @@ class TargetSpace(object):
             res[key] = p.to_param(value[mask])
         return res
 
-    def kernel_transform(self, value: np.ndarray) -> np.ndarray:
-        """Transform floating-point suggestions to values used in the kernel.
-        
-        Vectorized."""
-        value = np.atleast_2d(value)
-        res = []
-        for p in self._keys:
-            par = self._params_config[p].kernel_transform(value[:,
-                                                                self.masks[p]])
-            res.append(par)
-        return np.hstack(res)
+    @property
+    def mask(self) -> NDArray[np.bool_]:
+        """Return a boolean array of valid points.
 
-    def register(self, params, target, constraint_value=None):
+        Points are valid if they satisfy both the constraint and boundary conditions.
+
+        Returns
+        -------
+        np.ndarray
         """
-        Append a point and its target value to the known data.
+        mask = np.ones_like(self.target, dtype=bool)
+
+        # mask points that don't satisfy the constraint
+        if self._constraint is not None:
+            mask &= self._constraint.allowed(self._constraint_values)
+
+        # mask points that are outside the bounds
+        if self._float_bounds is not None:
+            within_bounds = np.all(
+                (self._float_bounds[:, 0] <= self._params) & (self._params <= self._float_bounds[:, 1]),
+                axis=1,
+            )
+            mask &= within_bounds
+
+        return mask
+
+    def _as_array(self, x: Any) -> NDArray[Float]:
+        try:
+            x = np.asarray(x, dtype=float)
+        except TypeError:
+            x = self.params_to_array(x)
+
+        x = x.ravel()
+        if x.size != self.dim:
+            error_msg = (
+                f"Size of array ({len(x)}) is different than the "
+                f"expected number of parameters ({len(self.keys)})."
+            )
+            raise ValueError(error_msg)
+        return x
+
+    def register(
+        self,
+        params: Mapping[str, float] | Sequence[float] | NDArray[Float],
+        target: float,
+        constraint_value: float | NDArray[Float] | None = None,
+    ) -> None:
+        """Append a point and its target value to the known data.
 
         Parameters
         ----------
-        x : ndarray
-            a single point, with len(x) == self.dim
+        params : np.ndarray
+            a single point, with len(x) == self.dim.
 
-        y : float
+        target : float
             target function value
+
+        constraint_value : float or np.ndarray or None
+            Constraint function value
 
         Raises
         ------
-        KeyError:
+        NotUniqueError:
             if the point is not unique
 
         Notes
         -----
         runs in amortized constant time
 
-        Example
-        -------
-        >>> pbounds = {'p1': (0, 1), 'p2': (1, 100)}
-        >>> space = TargetSpace(lambda p1, p2: p1 + p2, pbounds)
+        Examples
+        --------
+        >>> target_func = lambda p1, p2: p1 + p2
+        >>> pbounds = {"p1": (0, 1), "p2": (1, 100)}
+        >>> space = TargetSpace(target_func, pbounds)
         >>> len(space)
         0
         >>> x = np.array([0, 0])
         >>> y = 1
-        >>> space.add_observation(x, y)
+        >>> space.register(x, y)
         >>> len(space)
         1
         """
-
-        if type(params) == np.ndarray:
-            x = params
-        else:
-            assert type(params) == dict
-            x = self.params_to_array(params)
+        x = self._as_array(params)
 
         if x in self:
             if self._allow_duplicate_points:
                 self.n_duplicate_points = self.n_duplicate_points + 1
-                print(f'{Colours.RED}Data point {x} is not unique. {self.n_duplicate_points} duplicates registered.'
-                              f' Continuing ...{Colours.END}')
-            else:
-                raise NotUniqueError(f'Data point {x} is not unique. You can set "allow_duplicate_points=True" to '
-                                     f'avoid this error')
 
-        self._params = np.concatenate([self._params, x.reshape(1, -1)])
-        self._target = np.concatenate([self._target, [target]])
+                print(
+                    Fore.RED + f"Data point {x} is not unique. {self.n_duplicate_points}"
+                    " duplicates registered. Continuing ..." + Fore.RESET
+                )
+            else:
+                error_msg = (
+                    f"Data point {x} is not unique. You can set"
+                    ' "allow_duplicate_points=True" to avoid this error'
+                )
+                raise NotUniqueError(error_msg)
+
+        # if x is not within the bounds of the parameter space, warn the user
+        if self._float_bounds is not None and not np.all(
+            (self._float_bounds[:, 0] <= x) & (x <= self._float_bounds[:, 1])
+        ):
+            warn(f"\nData point {x} is outside the bounds of the parameter space. ", stacklevel=2)
+
+        # Make copies of the data, so as not to modify the originals incase something fails
+        # during the registration process. This prevents out-of-sync data.
+        params_copy: NDArray[Float] = np.concatenate([self._params, x.reshape(1, -1)])
+        target_copy: NDArray[Float] = np.concatenate([self._target, [target]])
+        cache_copy = self._cache.copy()  # shallow copy suffices
 
         if self._constraint is None:
             # Insert data into unique dictionary
-            self._cache[_hashable(x.ravel())] = target
+            cache_copy[_hashable(x.ravel())] = target
         else:
             if constraint_value is None:
-                msg = ("When registering a point to a constrained TargetSpace" +
-                       " a constraint value needs to be present.")
+                msg = (
+                    "When registering a point to a constrained TargetSpace"
+                    " a constraint value needs to be present."
+                )
                 raise ValueError(msg)
             # Insert data into unique dictionary
-            self._cache[_hashable(x.ravel())] = (target, constraint_value)
-            self._constraint_values = np.concatenate([self._constraint_values, [constraint_value]])
+            cache_copy[_hashable(x.ravel())] = (target, constraint_value)
+            constraint_values_copy: NDArray[Float] = np.concatenate(
+                [self._constraint_values, [constraint_value]]
+            )
+            self._constraint_values = constraint_values_copy
 
-    def probe(self, params):
-        """
-        Evaluates a single point x, to obtain the value y and then records them
-        as observations.
+        # Operations passed, update the variables
+        self._params = params_copy
+        self._target = target_copy
+        self._cache = cache_copy
+
+    def probe(
+        self, params: Mapping[str, float] | Sequence[float] | NDArray[Float]
+    ) -> float | tuple[float, float | NDArray[Float]]:
+        """Evaluate the target function on a point and register the result.
 
         Notes
         -----
-        If x has been previously seen returns a cached value of y.
+        If `params` has been previously seen and duplicate points are not allowed,
+        returns a cached value of `result`.
 
         Parameters
         ----------
-        x : ndarray
+        params : np.ndarray
             a single point, with len(x) == self.dim
 
         Returns
         -------
-        y : float
-            target function value.
-        """
-        if type(params) == np.ndarray:
-            x = params
-            params = self.array_to_params(params)
-        elif type(params) == dict:
-            x = self.params_to_array(params)
-        else:
-            x = np.array(params)
-            params = self.array_to_params(x)
-
-        try:
-            # Check if in cache
-            if self._constraint is None:
-                target =  self._cache[_hashable(x)]
-                self.register(x, target)
-                return target
-            else:
-                target, constraint_value =  self._cache[_hashable(x)]
-                self.register(x, target, constraint_value)
-                return target, constraint_value
-
-        except KeyError:
-            # Not cached
-            target = self.target_func(**params)
-
-            if self._constraint is None:
-                self.register(x, target)
-                return target
-            else:
-                constraint_value = self._constraint.eval(**params)
-                self.register(x, target, constraint_value)
-                return target, constraint_value
-
-    def random_sample(self):
-        """
-        Creates random points within the bounds of the space.
-
-        Returns
-        ----------
-        data: ndarray
-            [num x dim] array points with dimensions corresponding to `self.keys`
+        result : float | Tuple(float, float)
+            target function value, or Tuple(target function value, constraint value)
 
         Example
         -------
         >>> target_func = lambda p1, p2: p1 + p2
-        >>> pbounds = {'p1': (0, 1), 'p2': (1, 100)}
+        >>> pbounds = {"p1": (0, 1), "p2": (1, 100)}
+        >>> space = TargetSpace(target_func, pbounds)
+        >>> space.probe([1, 5])
+        >>> assert self.max()["target"] == 6
+        >>> assert self.max()["params"] == {"p1": 1.0, "p2": 5.0}
+        """
+        x = self._as_array(params)
+        if x in self and not self._allow_duplicate_points:
+            return self._cache[_hashable(x.ravel())]
+
+        dict_params = self.array_to_params(x)
+        if self.target_func is None:
+            error_msg = "No target function has been provided."
+            raise ValueError(error_msg)
+        target = self.target_func(**dict_params)
+
+        if self._constraint is None:
+            self.register(x, target)
+            return target
+
+        constraint_value = self._constraint.eval(**dict_params)
+        self.register(x, target, constraint_value)
+        return target, constraint_value
+
+    def random_sample(self) -> NDArray[Float]:
+        """
+        Sample a random point from within the bounds of the space.
+
+        Returns
+        -------
+        data: ndarray
+            [1 x dim] array with dimensions corresponding to `self._keys`
+
+        Examples
+        --------
+        >>> target_func = lambda p1, p2: p1 + p2
+        >>> pbounds = {"p1": (0, 1), "p2": (1, 100)}
         >>> space = TargetSpace(target_func, pbounds, random_state=0)
-        >>> space.random_points(1)
-        array([[ 55.33253689,   0.54488318]])
+        >>> space.random_sample()
+        array([[ 0.54488318,   55.33253689]])
         """
         data = np.empty((1, self._dim))
         for col, (lower, upper) in enumerate(self._float_bounds):
             data.T[col] = self.random_state.uniform(lower, upper, size=1)
         return data.ravel()
 
-    def _target_max(self):
-        """Get maximum target value found.
-        
+    def _target_max(self) -> float | None:
+        """Get the maximum target value within the current parameter bounds.
+
         If there is a constraint present, the maximum value that fulfills the
-        constraint is returned."""
+        constraint within the parameter bounds is returned.
+
+        Returns
+        -------
+        max: float
+            The maximum target value.
+        """
         if len(self.target) == 0:
             return None
 
-        if self._constraint is None:
-            return self.target.max()
+        if len(self.target[self.mask]) == 0:
+            return None
 
-        allowed = self._constraint.allowed(self._constraint_values)
-        if allowed.any():
-            return self.target[allowed].max()
+        return self.target[self.mask].max()
 
-        return None
-
-    def max(self):
+    def max(self) -> dict[str, Any] | None:
         """Get maximum target value found and corresponding parameters.
-        
-        If there is a constraint present, the maximum value that fulfills the
-        constraint is returned."""
-        target_max = self._target_max()
 
+        If there is a constraint present, the maximum value that fulfills the
+        constraint within the parameter bounds is returned.
+
+        Returns
+        -------
+        res: dict
+            A dictionary with the keys 'target' and 'params'. The value of
+            'target' is the maximum target value, and the value of 'params' is
+            a dictionary with the parameter names as keys and the parameter
+            values as values.
+        """
+        target_max = self._target_max()
         if target_max is None:
             return None
 
-        if self._constraint is not None:
-            allowed = self._constraint.allowed(self._constraint_values)
+        target = self.target[self.mask]
+        params = self.params[self.mask]
+        target_max_idx = np.argmax(target)
 
-            target = self.target[allowed]
-            params = self.params[allowed]
-            constraint_values = self.constraint_values[allowed]
-        else:
-            target = self.target
-            params = self.params
-            constraint_values = self.constraint_values
-        
-        target_max_idx = np.where(target == target_max)[0][0]
-        
-
-        res = {
-                'target': target_max,
-                'params':self.array_to_params(params[target_max_idx])
-        }
+        res = {"target": target_max, "params": dict(zip(self.keys, params[target_max_idx]))}
 
         if self._constraint is not None:
-            res['constraint'] = constraint_values[target_max_idx]
+            constraint_values = self.constraint_values[self.mask]
+            res["constraint"] = constraint_values[target_max_idx]
 
         return res
 
-    def res(self):
+    def res(self) -> list[dict[str, Any]]:
         """Get all target values and constraint fulfillment for all parameters.
+
+        Returns
+        -------
+        res: list
+            A list of dictionaries with the keys 'target', 'params', and
+            'constraint'. The value of 'target' is the target value, the value
+            of 'params' is a dictionary with the parameter names as keys and the
+            parameter values as values, and the value of 'constraint' is the
+            constraint fulfillment.
+
+        Notes
+        -----
+        Does not report if points are within the bounds of the parameter space.
         """
         if self._constraint is None:
             params = [self.array_to_params(p) for p in self.params]
 
-            return [{
-                "target": target,
-                "params": param
-            } for target, param in zip(self.target, params)]
-        else:
-            params = [self.array_to_params(p) for p in self.params]
+            return [{"target": target, "params": param} for target, param in zip(self.target, params)]
 
-            return [
-                {
-                    "target": target,
-                    "constraint": constraint_value,
-                    "params": param,
-                    "allowed": allowed
-                }
-                for target, constraint_value, param, allowed in zip(
-                    self.target,
-                    self._constraint_values,
-                    params,
-                    self._constraint.allowed(self._constraint_values)
-                )
-            ]
+        params = [dict(zip(self.keys, p)) for p in self.params]
 
-    def set_bounds(self, new_bounds):
-        """
-        A method that allows changing the lower and upper searching bounds
+        return [
+            {"target": target, "constraint": constraint_value, "params": param, "allowed": allowed}
+            for target, constraint_value, param, allowed in zip(
+                self.target,
+                self._constraint_values,
+                params,
+                self._constraint.allowed(self._constraint_values),
+            )
+        ]
+
+    def set_bounds(self, new_bounds: Mapping[str, NDArray[Float] | Sequence[float]]) -> None:
+        """Change the lower and upper search bounds.
 
         Parameters
         ----------
@@ -446,17 +624,19 @@ class TargetSpace(object):
         print(new_bounds)
         new__params_config = self.make_params(new_bounds)
 
-
-        for row, key in enumerate(self.keys):
+        for key in self.keys:
             if key in new_bounds:
-                if isinstance(self._params_config[key], CategoricalParameter):
-                    if set(self._params_config[key].domain) == set(new_bounds[key]):
-                        msg = "Changing bounds of categorical parameters is not supported"
-                        raise NotImplementedError(msg)
-                if type(self._params_config[key]) != type(new__params_config[key]):
-                    msg = (f'Parameter type {type(new__params_config[key])} of'
-                        + ' new bounds does not match parameter type'
-                        + f' {type(self._params_config[key])} of old bounds')
+                if isinstance(self._params_config[key], CategoricalParameter) and set(
+                    self._params_config[key].domain
+                ) == set(new_bounds[key]):
+                    msg = "Changing bounds of categorical parameters is not supported"
+                    raise NotImplementedError(msg)
+                if not isinstance(new__params_config[key], type(self._params_config[key])):
+                    msg = (
+                        f"Parameter type {type(new__params_config[key])} of"
+                        " new bounds does not match parameter type"
+                        f" {type(self._params_config[key])} of old bounds"
+                    )
                     raise ValueError(msg)
                 self._params_config[key] = new__params_config[key]
         self._float_bounds = self.calculate_float_bounds()

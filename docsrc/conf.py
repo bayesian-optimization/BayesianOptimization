@@ -12,6 +12,7 @@
 #
 import os
 import sys
+import time
 import shutil
 from glob import glob
 from pathlib import Path
@@ -27,7 +28,7 @@ for notebook in notebooks:
 
 # -- Project information -----------------------------------------------------
 
-project = 'Bayesian Optimization'
+project = 'bayesian-optimization'
 author = 'Fernando Nogueira'
 
 
@@ -42,11 +43,15 @@ extensions = [
     'sphinx.ext.githubpages',
     'nbsphinx',
     'IPython.sphinxext.ipython_console_highlighting',
-    'sphinx.ext.mathjax']
+    'sphinx.ext.mathjax',
+    "sphinx.ext.napoleon",
+    'sphinx_autodoc_typehints',
+    'sphinx.ext.intersphinx',
+    'sphinx_immaterial',
+]
 
 source_suffix = {
     '.rst': 'restructuredtext',
-    '.md': 'markdown',
 }
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -56,15 +61,143 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
+# Link types to the corresponding documentations
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'numpy': ('https://numpy.org/doc/stable', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+    'sklearn': ('https://scikit-learn.org/stable', None),
+}
+
+
+napoleon_use_rtype = False
 
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+
+html_title = "Bayesian Optimization"
+html_theme = "sphinx_immaterial"
+copyright = f"{time.strftime('%Y')}, Fernando Nogueira and the bayesian-optimization developers"
+
+# material theme options (see theme.conf for more information)
+html_theme_options = {
+    "icon": {
+        "repo": "fontawesome/brands/github",
+        "edit": "material/file-edit-outline",
+    },
+    "site_url": "https://bayesian-optimization.github.io/BayesianOptimization/",
+    "repo_url": "https://github.com/bayesian-optimization/BayesianOptimization/",
+    "repo_name": "bayesian-optimization",
+    "edit_uri": "blob/master/docsrc",
+    "globaltoc_collapse": True,
+    "features": [
+        "navigation.expand",
+        # "navigation.tabs",
+        # "toc.integrate",
+        "navigation.sections",
+        # "navigation.instant",
+        # "header.autohide",
+        "navigation.top",
+        # "navigation.tracking",
+        # "search.highlight",
+        "search.share",
+        "toc.follow",
+        "toc.sticky",
+        "content.tabs.link",
+        "announce.dismiss",
+    ],
+    "palette": [
+        {
+            "media": "(prefers-color-scheme: light)",
+            "scheme": "default",
+            "primary": "light-blue",
+            "accent": "light-green",
+            "toggle": {
+                "icon": "material/lightbulb-outline",
+                "name": "Switch to dark mode",
+            },
+        },
+        {
+            "media": "(prefers-color-scheme: dark)",
+            "scheme": "slate",
+            "primary": "deep-orange",
+            "accent": "lime",
+            "toggle": {
+                "icon": "material/lightbulb",
+                "name": "Switch to light mode",
+            },
+        },
+    ],
+    # BEGIN: version_dropdown
+    "version_dropdown": True,
+    "version_json": '../versions.json',
+    # END: version_dropdown
+    "scope": "/", # share preferences across subsites
+    "toc_title_is_page_title": True,
+    # BEGIN: social icons
+    "social": [
+        {
+            "icon": "fontawesome/brands/github",
+            "link": "https://github.com/bayesian-optimization/BayesianOptimization",
+            "name": "Source on github.com",
+        },
+        {
+            "icon": "fontawesome/brands/python",
+            "link": "https://pypi.org/project/bayesian-optimization/",
+        },
+        {
+            "icon": "fontawesome/brands/python",
+            "link": "https://anaconda.org/conda-forge/bayesian-optimization",
+        }
+    ],
+    # END: social icons
+}
+
+html_favicon = 'func.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 # html_static_path = ['_static']
+
+## extensions configuration
+### sphinx-autodoc-typehints
+typehints_use_signature = True
+"""
+If True, typehints for parameters in the signature are shown.
+
+see more: https://github.com/tox-dev/sphinx-autodoc-typehints/blob/main/README.md#options
+"""
+typehints_use_signature_return = True
+"""
+If True, return annotations in the signature are shown.
+
+see more: https://github.com/tox-dev/sphinx-autodoc-typehints/blob/main/README.md#options
+"""
+### autodoc
+autodoc_typehints = "both"
+"""
+This value controls how to represent typehints. The setting takes the following values:
+    - `signature`: Show typehints in the signature
+    - `description`: Show typehints as content of the function or method
+        The typehints of overloaded functions or methods will still be represented in the signature.
+    - `none`: Do not show typehints
+    - `both`: Show typehints in the signature and as content of the function or method
+
+Overloaded functions or methods will not have typehints included in the description
+because it is impossible to accurately represent all possible overloads as a list of parameters.
+
+see more: https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_typehints
+"""
+autodoc_typehints_format = "short"
+"""
+This value controls the format of typehints. The setting takes the following values:
+    - `fully-qualified`: Show the module name and its name of typehints
+    - `short`: Suppress the leading module names of the typehints
+        (e.g. io.StringIO -> StringIO)
+
+see more: https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_typehints_format
+"""

@@ -1,39 +1,55 @@
+from __future__ import annotations
+
+import abc
+from inspect import signature
 from typing import Callable
+
 import numpy as np
 from sklearn.gaussian_process import kernels
-from inspect import signature
 
 
 def is_numeric(value):
     return np.issubdtype(type(value), np.number)
 
 
-class BayesParameter():
-
+class BayesParameter(abc.ABC):
     def __init__(self, name: str, domain) -> None:
         self.name = name
         self.domain = domain
 
     @property
+    @abc.abstractmethod
     def float_bounds(self):
         pass
 
+    @abc.abstractmethod
     def to_float(self, value) -> np.ndarray:
         pass
 
+    @abc.abstractmethod
     def to_param(self, value):
         pass
 
+    @abc.abstractmethod
     def kernel_transform(self, value):
         pass
 
+    def repr(self, value, str_len) -> str:
+        s = value.__repr__()
+
+        if len(s) > str_len:
+            if "." in s:
+                return s[:str_len]
+            return s[: str_len - 3] + "..."
+        return s
+
     @property
+    @abc.abstractmethod
     def dim(self) -> int:
         pass
 
 
 class FloatParameter(BayesParameter):
-
     def __init__(self, name: str, domain) -> None:
         super().__init__(name, domain)
 
@@ -45,7 +61,17 @@ class FloatParameter(BayesParameter):
         return value
 
     def to_param(self, value):
-        return float(value)
+        if isinstance(value, np.ndarray) and value.size != 1:
+            raise ValueError("FloatParameter scalars")
+        return value.flatten()[0]
+
+    def repr(self, value, str_len) -> str:
+        s = f"{value:<{str_len}.{str_len}}"
+        if len(s) > str_len:
+            if "." in s:
+                return s[:str_len]
+            return s[: str_len - 3] + "..."
+        return s
 
     def kernel_transform(self, value):
         return value
@@ -56,21 +82,27 @@ class FloatParameter(BayesParameter):
 
 
 class IntParameter(BayesParameter):
-
     def __init__(self, name: str, domain) -> None:
         super().__init__(name, domain)
 
     @property
     def float_bounds(self):
         # adding/subtracting ~0.5 to achieve uniform probability of integers
-        return np.array(
-            [self.domain[0] - 0.4999999, self.domain[1] + 0.4999999])
+        return np.array([self.domain[0] - 0.4999999, self.domain[1] + 0.4999999])
 
     def to_float(self, value) -> np.ndarray:
         return float(value)
 
     def to_param(self, value):
         return int(np.round(np.squeeze(value)))
+
+    def repr(self, value, str_len) -> str:
+        s = f"{value:<{str_len}}"
+        if len(s) > str_len:
+            if "." in s:
+                return s[:str_len]
+            return s[: str_len - 3] + "..."
+        return s
 
     def kernel_transform(self, value):
         return np.round(value)
@@ -81,7 +113,6 @@ class IntParameter(BayesParameter):
 
 
 class CategoricalParameter(BayesParameter):
-
     def __init__(self, name: str, domain) -> None:
         super().__init__(name, domain)
 
@@ -94,7 +125,7 @@ class CategoricalParameter(BayesParameter):
 
     def to_float(self, value) -> np.ndarray:
         res = np.zeros(len(self.domain))
-        one_hot_index = [i for i, val in enumerate(self.domain) if val==value]
+        one_hot_index = [i for i, val in enumerate(self.domain) if val == value]
         if len(one_hot_index) != 1:
             raise ValueError
         res[one_hot_index] = 1
@@ -102,6 +133,12 @@ class CategoricalParameter(BayesParameter):
 
     def to_param(self, value):
         return self.domain[np.argmax(value)]
+
+    def repr(self, value, str_len) -> str:
+        s = f"{value:^{str_len}}"
+        if len(s) > str_len:
+            return s[: str_len - 3] + "..."
+        return s
 
     def kernel_transform(self, value):
         value = np.atleast_2d(value)
@@ -112,6 +149,7 @@ class CategoricalParameter(BayesParameter):
     @property
     def dim(self) -> int:
         return len(self.domain)
+
 
 def wrap_kernel(kernel: kernels.Kernel, transform: Callable) -> kernels.Kernel:
     class WrappedKernel(type(kernel)):
@@ -125,9 +163,16 @@ def wrap_kernel(kernel: kernels.Kernel, transform: Callable) -> kernels.Kernel:
 
     return WrappedKernel(**kernel.get_params())
 
+
 def copy_signature(source_fct):
-    """https://stackoverflow.com/a/58989918/"""
-    def copy(target_fct): 
+    """Clones a signature from a source function to a target function.
+
+    via
+    https://stackoverflow.com/a/58989918/
+    """
+
+    def copy(target_fct):
         target_fct.__signature__ = signature(source_fct)
-        return target_fct 
-    return copy 
+        return target_fct
+
+    return copy

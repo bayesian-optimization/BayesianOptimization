@@ -1,0 +1,128 @@
+line-length = 110
+unsafe-fixes = false
+target-version = "py39"
+extend = "./pyproject.toml"
+exclude = [
+    # docs
+    "docsrc/**/*",
+    # examples
+    "examples/**/*",
+]
+
+[lint]
+extend-select = [
+    "D",      # pydocstyle
+    "D417",   # undocumented-param
+    "I",      # isort
+    "UP",     # pyupgrade
+    "G",      # flake8-logging-format
+    "LOG",    # flake8-logging
+    "PT",     # flake8-pytest-style
+    "E",      # pycodestyle
+    "W",      # pycodestyle
+    "PGH",    # pygrep-hooks
+    "B",      # flake8-bugbear
+    "SIM",    # flake8-simplify
+    "S",      # flake8-bandit
+    "DTZ",    # flake8-datetimez
+    "EM",     # flake8-errmsg 
+    "LOG",    # flake8-logging 
+    "G",      # flake8-logging-format
+    "PIE",    # flake8-pie
+    "Q",      # flake8-quotes
+    "RET",    # flake8-return
+    "TID",    # flake8-tidy-imports 
+    "PTH",    # flake8-use-pathlib
+    "F",      # Pyflakes
+    "NPY",    # NumPy-specific rules
+    "PERF",   # Perflint
+    "FURB",   # refurb
+    "RUF",    # Ruff-specific rules
+    "ISC",    # flake8-implicit-str-concat
+    "TRY002", # raise-vanilla-class
+]
+ignore = [
+    "PT011", # TODO
+    # pydocstyle numpy default
+    "D203",
+    "D212",
+    "D213",
+    "D214",
+    "D215",
+    "D404",
+    "D405",
+    "D406",
+    "D407",
+    "D408",
+    "D409",
+    "D410",
+    "D411",
+    "D413",
+    "D415",
+    "D416",
+    # ruff format
+    "W191",   # tab-indentation
+    "E111",   # indentation-with-invalid-multiple
+    "E114",   # indentation-with-invalid-multiple-comment
+    "E117",   # over-indented
+    "D206",   # indent-with-spaces
+    "D300",   # triple-single-quotes
+    "Q000",   # bad-quotes-inline-string
+    "Q001",   # bad-quotes-multiline-string
+    "Q002",   # bad-quotes-docstring
+    "Q003",   # avoidable-escaped-quote
+    "COM812", # missing-trailing-comma
+    "COM819", # prohibited-trailing-comma
+    "ISC001", # single-line-implicit-string-concatenation
+    "ISC002", # multi-line-implicit-string-concatenation
+]
+fixable = [
+    "I",
+    "UP",
+    "ISC",
+    "G",
+    "LOG",
+    "PT",
+    "E",
+    "W",
+    "PGH",
+    "B",
+    "SIM",
+    "S",
+    "LOG",
+    "G",
+    "PIE",
+    "Q",
+    "RET",
+    "TID",
+    "PTH",
+    "F",
+    "NPY",
+    "PERF",
+    "FURB",
+    "RUF",
+]
+
+[lint.per-file-ignores]
+"tests/test_*.py" = ["S101", "D"]
+
+[format]
+indent-style = "space"
+quote-style = "double"
+skip-magic-trailing-comma = true
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
+
+[lint.pylint]
+max-args = 10
+
+[lint.isort]
+known-local-folder = ["bayes_opt"]
+required-imports = ["from __future__ import annotations"]
+# ruff format
+force-single-line = false
+force-wrap-aliases = false
+split-on-trailing-comma = false
+
+[lint.pydocstyle]
+convention = "numpy"
