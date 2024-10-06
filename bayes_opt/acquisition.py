@@ -127,7 +127,7 @@ class AcquisitionFunction(abc.ABC):
             self._fit_gp(gp=gp, target_space=target_space)
 
         acq = self._get_acq(gp=gp, constraint=target_space.constraint)
-        return self._acq_min(acq, target_space._float_bounds, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b)
+        return self._acq_min(acq, target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b)
 
     def _get_acq(
         self, gp: GaussianProcessRegressor, constraint: ConstraintModel | None = None
@@ -182,7 +182,7 @@ class AcquisitionFunction(abc.ABC):
     def _acq_min(
         self,
         acq: Callable[[NDArray[Float]], NDArray[Float]],
-        bounds: NDArray[Float],
+        space: TargetSpace,
         n_random: int = 10_000,
         n_l_bfgs_b: int = 10,
     ) -> NDArray[Float]:
@@ -197,10 +197,8 @@ class AcquisitionFunction(abc.ABC):
         acq : Callable
             Acquisition function to use. Should accept an array of parameters `x`.
 
-        bounds : np.ndarray
-            Bounds of the search space. For `N` parameters this has shape
-            `(N, 2)` with `[i, 0]` the lower bound of parameter `i` and
-            `[i, 1]` the upper bound.
+        space : TargetSpace
+            The target space over which to optimize.
 
         n_random : int
             Number of random samples to use.
@@ -217,15 +215,15 @@ class AcquisitionFunction(abc.ABC):
         if n_random == 0 and n_l_bfgs_b == 0:
             error_msg = "Either n_random or n_l_bfgs_b needs to be greater than 0."
             raise ValueError(error_msg)
-        x_min_r, min_acq_r = self._random_sample_minimize(acq, bounds, n_random=n_random)
-        x_min_l, min_acq_l = self._l_bfgs_b_minimize(acq, bounds, n_x_seeds=n_l_bfgs_b)
+        x_min_r, min_acq_r = self._random_sample_minimize(acq, space, n_random=n_random)
+        x_min_l, min_acq_l = self._l_bfgs_b_minimize(acq, space, n_x_seeds=n_l_bfgs_b)
         # Either n_random or n_l_bfgs_b is not 0 => at least one of x_min_r and x_min_l is not None
         if min_acq_r < min_acq_l:
             return x_min_r
         return x_min_l
 
     def _random_sample_minimize(
-        self, acq: Callable[[NDArray[Float]], NDArray[Float]], bounds: NDArray[Float], n_random: int
+        self, acq: Callable[[NDArray[Float]], NDArray[Float]], space: TargetSpace, n_random: int
     ) -> tuple[NDArray[Float] | None, float]:
         """Random search to find the minimum of `acq` function.
 
@@ -234,10 +232,8 @@ class AcquisitionFunction(abc.ABC):
         acq : Callable
             Acquisition function to use. Should accept an array of parameters `x`.
 
-        bounds : np.ndarray
-            Bounds of the search space. For `N` parameters this has shape
-            `(N, 2)` with `[i, 0]` the lower bound of parameter `i` and
-            `[i, 1]` the upper bound.
+        space : TargetSpace
+            The target space over which to optimize.
 
         n_random : int
             Number of random samples to use.
@@ -252,14 +248,14 @@ class AcquisitionFunction(abc.ABC):
         """
         if n_random == 0:
             return None, np.inf
-        x_tries = self.random_state.uniform(bounds[:, 0], bounds[:, 1], size=(n_random, bounds.shape[0]))
+        x_tries = space.random_sample(n_random, random_state=self.random_state)
         ys = acq(x_tries)
         x_min = x_tries[ys.argmin()]
         min_acq = ys.min()
         return x_min, min_acq
 
     def _l_bfgs_b_minimize(
-        self, acq: Callable[[NDArray[Float]], NDArray[Float]], bounds: NDArray[Float], n_x_seeds: int = 10
+        self, acq: Callable[[NDArray[Float]], NDArray[Float]], space: TargetSpace, n_x_seeds: int = 10
     ) -> tuple[NDArray[Float] | None, float]:
         """Random search to find the minimum of `acq` function.
 
@@ -268,10 +264,8 @@ class AcquisitionFunction(abc.ABC):
         acq : Callable
             Acquisition function to use. Should accept an array of parameters `x`.
 
-        bounds : np.ndarray
-            Bounds of the search space. For `N` parameters this has shape
-            `(N, 2)` with `[i, 0]` the lower bound of parameter `i` and
-            `[i, 1]` the upper bound.
+        space : TargetSpace
+            The target space over which to optimize.
 
         n_x_seeds : int
             Number of starting points for the L-BFGS-B optimizer.
@@ -286,14 +280,14 @@ class AcquisitionFunction(abc.ABC):
         """
         if n_x_seeds == 0:
             return None, np.inf
-        x_seeds = self.random_state.uniform(bounds[:, 0], bounds[:, 1], size=(n_x_seeds, bounds.shape[0]))
+        x_seeds = space.random_sample(n_x_seeds, random_state=self.random_state)
 
         min_acq: float | None = None
         x_try: NDArray[Float]
         x_min: NDArray[Float]
         for x_try in x_seeds:
             # Find the minimum of minus the acquisition function
-            res: OptimizeResult = minimize(acq, x_try, bounds=bounds, method="L-BFGS-B")
+            res: OptimizeResult = minimize(acq, x_try, bounds=space.bounds, method="L-BFGS-B")
 
             # See if success
             if not res.success:
@@ -306,11 +300,11 @@ class AcquisitionFunction(abc.ABC):
 
         if min_acq is None:
             min_acq = np.inf
-            x_min = np.array([np.nan] * bounds.shape[0])
+            x_min = np.array([np.nan] * space.bounds.shape[0])
 
         # Clip output to make sure it lies within the bounds. Due to floating
         # point technicalities this is not always the case.
-        return np.clip(x_min, bounds[:, 0], bounds[:, 1]), min_acq
+        return np.clip(x_min, space.bounds[:, 0], space.bounds[:, 1]), min_acq
 
 
 class UpperConfidenceBound(AcquisitionFunction):

@@ -63,11 +63,14 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
     def __init__(
         self,
+        parameters: Iterable[str] | None = None,
         gamma_osc: float = 0.7,
         gamma_pan: float = 1.0,
         eta: float = 0.9,
         minimum_window: NDArray[Float] | Sequence[float] | float | Mapping[str, float] | None = 0.0,
     ) -> None:
+        # TODO: Ensure that this is only applied to continuous parameters
+        self.parameters = parameters
         self.gamma_osc = gamma_osc
         self.gamma_pan = gamma_pan
         self.eta = eta
@@ -87,7 +90,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
             TargetSpace this DomainTransformer operates on.
         """
         # Set the original bounds
-        self.original_bounds = np.copy(target_space.float_bounds)
+        self.original_bounds = np.copy(target_space.bounds)
         self.bounds = [self.original_bounds]
 
         # Set the minimum window to an array of length bounds
@@ -97,12 +100,12 @@ class SequentialDomainReductionTransformer(DomainTransformer):
                 raise ValueError(error_msg)
             self.minimum_window = self.minimum_window_value
         else:
-            self.minimum_window = [self.minimum_window_value] * len(target_space.float_bounds)
+            self.minimum_window = [self.minimum_window_value] * len(target_space.bounds)
 
         # Set initial values
-        self.previous_optimal = np.mean(target_space.float_bounds, axis=1)
-        self.current_optimal = np.mean(target_space.float_bounds, axis=1)
-        self.r = target_space.float_bounds[:, 1] - target_space.float_bounds[:, 0]
+        self.previous_optimal = np.mean(target_space.bounds, axis=1)
+        self.current_optimal = np.mean(target_space.bounds, axis=1)
+        self.r = target_space.bounds[:, 1] - target_space.bounds[:, 0]
 
         self.previous_d = 2.0 * (self.current_optimal - self.previous_optimal) / self.r
 

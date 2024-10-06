@@ -57,7 +57,7 @@ def test_bound_x_maximize():
     mutated_optimizer.maximize(init_points=2, n_iter=n_iter)
 
     assert len(standard_optimizer.space) == len(mutated_optimizer.space)
-    assert not (standard_optimizer._space.float_bounds == mutated_optimizer._space.float_bounds).any()
+    assert not (standard_optimizer._space.bounds == mutated_optimizer._space.bounds).any()
 
 
 def test_minimum_window_is_kept():

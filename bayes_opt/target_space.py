@@ -86,7 +86,7 @@ class TargetSpace:
         self._dim = sum([self._params_config[key].dim for key in self._keys])
 
         self._masks = self.make_masks()
-        self._float_bounds = self.calculate_float_bounds()
+        self._bounds = self.calculate_bounds()
 
         # preallocated memory for X and Y points
         self._params: NDArray[Float] = np.empty(shape=(0, self.dim))
@@ -186,7 +186,7 @@ class TargetSpace:
         -------
         np.ndarray
         """
-        return [self._params_config[key].domain for key in self.keys]
+        return self._bounds
 
     @property
     def constraint(self) -> ConstraintModel | None:
@@ -199,14 +199,30 @@ class TargetSpace:
         return self._constraint
 
     @property
-    def float_bounds(self):
-        return self._float_bounds
+    def masks(self) -> dict:
+        """Get the masks for the parameters.
 
-    @property
-    def masks(self):
+        Returns
+        -------
+        dict
+        """
         return self._masks
 
     def make_params(self, pbounds) -> dict:
+        """Create a dictionary of parameters from a dictionary of bounds.
+
+        Parameters
+        ----------
+        pbounds : dict
+            A dictionary with the parameter names as keys and a tuple with minimum
+            and maximum values.
+
+        Returns
+        -------
+        dict
+            A dictionary with the parameter names as keys and the corresponding
+            parameter objects as values.
+        """
         params = {}
         for key in sorted(pbounds):
             pbound = pbounds[key]
@@ -214,18 +230,28 @@ class TargetSpace:
             if isinstance(pbound, BayesParameter):
                 res = pbound
             elif len(pbound) == 2 and is_numeric(pbound[0]) and is_numeric(pbound[1]):
-                res = FloatParameter(name=key, domain=pbound)
+                res = FloatParameter(name=key, bounds=pbound)
             elif len(pbound) == 3 and pbound[-1] is float:
-                res = FloatParameter(name=key, domain=(pbound[0], pbound[1]))
+                res = FloatParameter(name=key, bounds=(pbound[0], pbound[1]))
             elif len(pbound) == 3 and pbound[-1] is int:
-                res = IntParameter(name=key, domain=(int(pbound[0]), int(pbound[1])))
+                res = IntParameter(name=key, bounds=(int(pbound[0]), int(pbound[1])))
             else:
                 # assume categorical variable with pbound as list of possible values
-                res = CategoricalParameter(name=key, domain=pbound)
+                res = CategoricalParameter(name=key, categories=pbound)
             params[key] = res
         return params
 
-    def make_masks(self):
+    def make_masks(self) -> dict:
+        """Create a dictionary of masks for the parameters.
+
+        The mask can be used to select the corresponding parameters from an array.
+
+        Returns
+        -------
+        dict
+            A dictionary with the parameter names as keys and the corresponding
+            mask as values.
+        """
         masks = {}
         pos = 0
         for key in self._keys:
@@ -235,10 +261,11 @@ class TargetSpace:
             pos = pos + self._params_config[key].dim
         return masks
 
-    def calculate_float_bounds(self):
+    def calculate_bounds(self) -> NDArray[Float]:
+        """Calculate the float bounds of the parameter space."""
         bounds = np.empty((self._dim, 2))
         for key in self._keys:
-            bounds[self.masks[key]] = self._params_config[key].float_bounds
+            bounds[self.masks[key]] = self._params_config[key].bounds
         return bounds
 
     def params_to_array(self, params: Mapping[str, float]) -> NDArray[Float]:
@@ -346,10 +373,9 @@ class TargetSpace:
             mask &= self._constraint.allowed(self._constraint_values)
 
         # mask points that are outside the bounds
-        if self._float_bounds is not None:
+        if self._bounds is not None:
             within_bounds = np.all(
-                (self._float_bounds[:, 0] <= self._params) & (self._params <= self._float_bounds[:, 1]),
-                axis=1,
+                (self._bounds[:, 0] <= self._params) & (self._params <= self._bounds[:, 1]), axis=1
             )
             mask &= within_bounds
 
@@ -429,10 +455,17 @@ class TargetSpace:
                 raise NotUniqueError(error_msg)
 
         # if x is not within the bounds of the parameter space, warn the user
-        if self._float_bounds is not None and not np.all(
-            (self._float_bounds[:, 0] <= x) & (x <= self._float_bounds[:, 1])
-        ):
-            warn(f"\nData point {x} is outside the bounds of the parameter space. ", stacklevel=2)
+        if self._bounds is not None and not np.all((self._bounds[:, 0] <= x) & (x <= self._bounds[:, 1])):
+            for key in self.keys:
+                if not np.all(
+                    (self._params_config[key].bounds[..., 0] <= x[self.masks[key]])
+                    & (x[self.masks[key]] <= self._params_config[key].bounds[..., 1])
+                ):
+                    msg = (
+                        f"\nData point {x} is outside the bounds of the parameter {key}."
+                        f"\n\tBounds:\n{self._params_config[key].bounds}"
+                    )
+                    warn(msg, stacklevel=2)
 
         # Make copies of the data, so as not to modify the originals incase something fails
         # during the registration process. This prevents out-of-sync data.
@@ -509,9 +542,21 @@ class TargetSpace:
         self.register(x, target, constraint_value)
         return target, constraint_value
 
-    def random_sample(self) -> NDArray[Float]:
+    def random_sample(
+        self, n_samples: int = 0, random_state: np.random.RandomState | int | None = None
+    ) -> NDArray[Float]:
         """
         Sample a random point from within the bounds of the space.
+
+        Parameters
+        ----------
+        n_samples : int, optional
+            Number of samples to draw. If 0, a single sample is drawn,
+            and a 1D array is returned. If n_samples > 0, an array of
+            shape (n_samples, dim) is returned.
+
+        random_state : np.random.RandomState | int | None
+            The random state to use for sampling.
 
         Returns
         -------
@@ -526,10 +571,16 @@ class TargetSpace:
         >>> space.random_sample()
         array([[ 0.54488318,   55.33253689]])
         """
-        data = np.empty((1, self._dim))
-        for col, (lower, upper) in enumerate(self._float_bounds):
-            data.T[col] = self.random_state.uniform(lower, upper, size=1)
-        return data.ravel()
+        random_state = ensure_rng(random_state)
+        flatten = n_samples == 0
+        n_samples = max(1, n_samples)
+        data = np.empty((n_samples, self._dim))
+        for key, mask in self._masks.items():
+            smpl = self._params_config[key].random_sample(n_samples, random_state)
+            data[:, mask] = smpl.reshape(n_samples, self._params_config[key].dim)
+        if flatten:
+            return data.ravel()
+        return data
 
     def _target_max(self) -> float | None:
         """Get the maximum target value within the current parameter bounds.
@@ -639,4 +690,4 @@ class TargetSpace:
                     )
                     raise ValueError(msg)
                 self._params_config[key] = new__params_config[key]
-        self._float_bounds = self.calculate_float_bounds()
+        self._bounds = self.calculate_bounds()

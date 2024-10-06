@@ -93,8 +93,8 @@ def test_suggest_at_random():
     for _ in range(50):
         sample = optimizer.space.params_to_array(optimizer.suggest())
         assert len(sample) == optimizer.space.dim
-        assert all(sample >= optimizer.space.float_bounds[:, 0])
-        assert all(sample <= optimizer.space.float_bounds[:, 1])
+        assert all(sample >= optimizer.space.bounds[:, 0])
+        assert all(sample <= optimizer.space.bounds[:, 1])
 
 
 def test_suggest_with_one_observation():
@@ -106,8 +106,8 @@ def test_suggest_with_one_observation():
     for _ in range(5):
         sample = optimizer.space.params_to_array(optimizer.suggest())
         assert len(sample) == optimizer.space.dim
-        assert all(sample >= optimizer.space.float_bounds[:, 0])
-        assert all(sample <= optimizer.space.float_bounds[:, 1])
+        assert all(sample >= optimizer.space.bounds[:, 0])
+        assert all(sample <= optimizer.space.bounds[:, 1])
 
     # suggestion = optimizer.suggest(util)
     # for _ in range(5):
@@ -195,13 +195,13 @@ def test_set_bounds():
 
     # Ignore unknown keys
     optimizer.set_bounds({"other": (7, 8)})
-    assert all(optimizer.space.float_bounds[:, 0] == np.array([0, 0, 0, 0]))
-    assert all(optimizer.space.float_bounds[:, 1] == np.array([1, 2, 3, 4]))
+    assert all(optimizer.space.bounds[:, 0] == np.array([0, 0, 0, 0]))
+    assert all(optimizer.space.bounds[:, 1] == np.array([1, 2, 3, 4]))
 
     # Update bounds accordingly
     optimizer.set_bounds({"p2": (1, 8)})
-    assert all(optimizer.space.float_bounds[:, 0] == np.array([0, 1, 0, 0]))
-    assert all(optimizer.space.float_bounds[:, 1] == np.array([1, 8, 3, 4]))
+    assert all(optimizer.space.bounds[:, 0] == np.array([0, 1, 0, 0]))
+    assert all(optimizer.space.bounds[:, 1] == np.array([1, 8, 3, 4]))
 
 
 def test_set_gp_params():

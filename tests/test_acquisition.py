@@ -12,27 +12,27 @@ from bayes_opt.constraint import ConstraintModel
 from bayes_opt.target_space import TargetSpace
 
 
-@pytest.fixture()
+@pytest.fixture
 def target_func():
     return lambda x: sum(x)
 
 
-@pytest.fixture()
+@pytest.fixture
 def random_state():
     return np.random.RandomState()
 
 
-@pytest.fixture()
+@pytest.fixture
 def gp(random_state):
     return GaussianProcessRegressor(random_state=random_state)
 
 
-@pytest.fixture()
+@pytest.fixture
 def target_space(target_func):
     return TargetSpace(target_func=target_func, pbounds={"x": (1, 4), "y": (0, 3.0)})
 
 
-@pytest.fixture()
+@pytest.fixture
 def constrained_target_space(target_func):
     constraint_model = ConstraintModel(fun=lambda params: params["x"] + params["y"], lb=0.0, ub=1.0)
     return TargetSpace(
@@ -114,7 +114,7 @@ def test_l_bfgs_fails(target_space, random_state):
         except IndexError:
             return np.nan
 
-    _, min_acq_l = acq._l_bfgs_b_minimize(fun, bounds=target_space._float_bounds, n_x_seeds=1)
+    _, min_acq_l = acq._l_bfgs_b_minimize(fun, space=target_space, n_x_seeds=1)
     assert min_acq_l == np.inf
 
 

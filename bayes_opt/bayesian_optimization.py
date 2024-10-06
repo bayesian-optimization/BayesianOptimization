@@ -249,7 +249,7 @@ class BayesianOptimization(Observable):
     def suggest(self) -> dict[str, float]:
         """Suggest a promising point to probe next."""
         if len(self._space) == 0:
-            return self._space.array_to_params(self._space.random_sample())
+            return self._space.array_to_params(self._space.random_sample(random_state=self._random_state))
 
         # Finding argmax of the acquisition function.
         suggestion = self._acquisition_function.suggest(gp=self._gp, target_space=self._space, fit_gp=True)
@@ -268,7 +268,9 @@ class BayesianOptimization(Observable):
             init_points = max(init_points, 1)
 
         for _ in range(init_points):
-            self._queue.append(self._space.array_to_params(self._space.random_sample()))
+            self._queue.append(
+                self._space.array_to_params(self._space.random_sample(random_state=self._random_state))
+            )
 
     def _prime_subscriptions(self) -> None:
         if not any([len(subs) for subs in self._events.values()]):

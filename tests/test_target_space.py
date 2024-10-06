@@ -23,8 +23,8 @@ def test_keys_and_bounds_in_same_order():
     assert space.dim == len(pbounds)
     assert space.empty
     assert space.keys == ["p1", "p2", "p3", "p4"]
-    assert all(space.float_bounds[:, 0] == np.array([0, 0, 0, 0]))
-    assert all(space.float_bounds[:, 1] == np.array([1, 2, 3, 4]))
+    assert all(space.bounds[:, 0] == np.array([0, 0, 0, 0]))
+    assert all(space.bounds[:, 1] == np.array([1, 2, 3, 4]))
 
 
 def test_params_to_array():
@@ -173,8 +173,8 @@ def test_random_sample():
     for _ in range(50):
         random_sample = space.random_sample()
         assert len(random_sample) == space.dim
-        assert all(random_sample >= space.float_bounds[:, 0])
-        assert all(random_sample <= space.float_bounds[:, 1])
+        assert all(random_sample >= space.bounds[:, 0])
+        assert all(random_sample <= space.bounds[:, 1])
 
 
 def test_y_max():
@@ -273,13 +273,13 @@ def test_set_bounds():
 
     # Ignore unknown keys
     space.set_bounds({"other": (7, 8)})
-    assert all(space.float_bounds[:, 0] == np.array([0, 0, 0, 0]))
-    assert all(space.float_bounds[:, 1] == np.array([1, 2, 3, 4]))
+    assert all(space.bounds[:, 0] == np.array([0, 0, 0, 0]))
+    assert all(space.bounds[:, 1] == np.array([1, 2, 3, 4]))
 
     # Update bounds accordingly
     space.set_bounds({"p2": (1, 8)})
-    assert all(space.float_bounds[:, 0] == np.array([0, 1, 0, 0]))
-    assert all(space.float_bounds[:, 1] == np.array([1, 8, 3, 4]))
+    assert all(space.bounds[:, 0] == np.array([0, 1, 0, 0]))
+    assert all(space.bounds[:, 1] == np.array([1, 8, 3, 4]))
 
 
 def test_no_target_func():
