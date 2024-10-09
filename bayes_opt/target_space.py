@@ -344,14 +344,14 @@ class TargetSpace:
         res = np.zeros(self._dim)
         for key in self._keys:
             p = self._params_config[key]
-            res[self._masks[key]] = p.to_float(value[key])
+            res[self.masks[key]] = p.to_float(value[key])
         return res
 
     def _to_params(self, value: NDArray[Float]) -> dict[str, float | NDArray[Float]]:
         res: dict[str, float | NDArray[Float]] = {}
         for key in self._keys:
             p = self._params_config[key]
-            mask = self._masks[key]
+            mask = self.masks[key]
             res[key] = p.to_param(value[mask])
         return res
 
@@ -569,7 +569,7 @@ class TargetSpace:
         flatten = n_samples == 0
         n_samples = max(1, n_samples)
         data = np.empty((n_samples, self._dim))
-        for key, mask in self._masks.items():
+        for key, mask in self.masks.items():
             smpl = self._params_config[key].random_sample(n_samples, random_state)
             data[:, mask] = smpl.reshape(n_samples, self._params_config[key].dim)
         if flatten:
