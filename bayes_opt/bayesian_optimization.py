@@ -21,7 +21,7 @@ from bayes_opt.target_space import TargetSpace
 from bayes_opt.util import ensure_rng
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable, Mapping, Sequence
+    from collections.abc import Callable, Iterable, Mapping
 
     import numpy as np
     from numpy.random import RandomState
@@ -31,6 +31,7 @@ if TYPE_CHECKING:
     from bayes_opt.acquisition import AcquisitionFunction
     from bayes_opt.constraint import ConstraintModel
     from bayes_opt.domain_reduction import DomainTransformer
+    from bayes_opt.parameter import BoundsMapping, ParamsType
 
     Float = np.floating[Any]
 
@@ -114,7 +115,7 @@ class BayesianOptimization(Observable):
     ):
         self._random_state = ensure_rng(random_state)
         self._allow_duplicate_points = allow_duplicate_points
-        self._queue: deque[Mapping[str, float] | Sequence[float] | NDArray[Float]] = deque()
+        self._queue: deque[ParamsType] = deque()
 
         if acquisition_function is None:
             if constraint is None:
@@ -203,10 +204,7 @@ class BayesianOptimization(Observable):
         return self._space.res()
 
     def register(
-        self,
-        params: Mapping[str, float] | Sequence[float] | NDArray[Float],
-        target: float,
-        constraint_value: float | NDArray[Float] | None = None,
+        self, params: ParamsType, target: float, constraint_value: float | NDArray[Float] | None = None
     ) -> None:
         """Register an observation with known target.
 
@@ -224,9 +222,7 @@ class BayesianOptimization(Observable):
         self._space.register(params, target, constraint_value)
         self.dispatch(Events.OPTIMIZATION_STEP)
 
-    def probe(
-        self, params: Mapping[str, float] | Sequence[float] | NDArray[Float], lazy: bool = True
-    ) -> None:
+    def probe(self, params: ParamsType, lazy: bool = True) -> None:
         """Evaluate the function at the given points.
 
         Useful to guide the optimizer.
@@ -246,7 +242,7 @@ class BayesianOptimization(Observable):
             self._space.probe(params)
             self.dispatch(Events.OPTIMIZATION_STEP)
 
-    def suggest(self) -> dict[str, float]:
+    def suggest(self) -> dict[str, float | NDArray[Float]]:
         """Suggest a promising point to probe next."""
         if len(self._space) == 0:
             return self._space.array_to_params(self._space.random_sample(random_state=self._random_state))
@@ -321,7 +317,7 @@ class BayesianOptimization(Observable):
 
         self.dispatch(Events.OPTIMIZATION_END)
 
-    def set_bounds(self, new_bounds: Mapping[str, NDArray[Float] | Sequence[float]]) -> None:
+    def set_bounds(self, new_bounds: BoundsMapping) -> None:
         """Modify the bounds of the search space.
 
         Parameters

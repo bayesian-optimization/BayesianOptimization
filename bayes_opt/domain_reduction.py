@@ -8,6 +8,7 @@ simple domain reduction scheme for simulation-based optimization"
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Mapping, Sequence
 from typing import TYPE_CHECKING, Any
 from warnings import warn
 
@@ -16,8 +17,6 @@ import numpy as np
 from bayes_opt.target_space import TargetSpace
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Mapping, Sequence
-
     from numpy.typing import NDArray
 
     Float = np.floating[Any]
@@ -67,14 +66,16 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         gamma_osc: float = 0.7,
         gamma_pan: float = 1.0,
         eta: float = 0.9,
-        minimum_window: NDArray[Float] | Sequence[float] | float | Mapping[str, float] | None = 0.0,
+        minimum_window: NDArray[Float] | Sequence[float] | Mapping[str, float] | float = 0.0,
     ) -> None:
         # TODO: Ensure that this is only applied to continuous parameters
         self.parameters = parameters
         self.gamma_osc = gamma_osc
         self.gamma_pan = gamma_pan
         self.eta = eta
-        if isinstance(minimum_window, dict):
+
+        self.minimum_window_value: NDArray[Float] | Sequence[float] | float
+        if isinstance(minimum_window, Mapping):
             self.minimum_window_value = [
                 item[1] for item in sorted(minimum_window.items(), key=lambda x: x[0])
             ]
@@ -93,8 +94,9 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         self.original_bounds = np.copy(target_space.bounds)
         self.bounds = [self.original_bounds]
 
+        self.minimum_window: NDArray[Float] | Sequence[float]
         # Set the minimum window to an array of length bounds
-        if isinstance(self.minimum_window_value, (list, np.ndarray)):
+        if isinstance(self.minimum_window_value, (Sequence, np.ndarray)):
             if len(self.minimum_window_value) != len(target_space.bounds):
                 error_msg = "Length of minimum_window must be the same as the number of parameters"
                 raise ValueError(error_msg)

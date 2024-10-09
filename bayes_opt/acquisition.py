@@ -40,7 +40,7 @@ from bayes_opt.exception import (
 from bayes_opt.target_space import TargetSpace
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Sequence
 
     from numpy.typing import NDArray
     from scipy.optimize import OptimizeResult
@@ -906,18 +906,18 @@ class GPHedge(AcquisitionFunction):
 
     Parameters
     ----------
-    base_acquisitions : List[AcquisitionFunction]
-        List of base acquisition functions.
+    base_acquisitions : Sequence[AcquisitionFunction]
+        Sequence of base acquisition functions.
 
     random_state : int, RandomState, default None
         Set the random state for reproducibility.
     """
 
     def __init__(
-        self, base_acquisitions: list[AcquisitionFunction], random_state: int | RandomState | None = None
+        self, base_acquisitions: Sequence[AcquisitionFunction], random_state: int | RandomState | None = None
     ) -> None:
         super().__init__(random_state)
-        self.base_acquisitions = base_acquisitions
+        self.base_acquisitions = list(base_acquisitions)
         self.n_acq = len(self.base_acquisitions)
         self.gains = np.zeros(self.n_acq)
         self.previous_candidates = None

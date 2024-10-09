@@ -5,17 +5,41 @@ from __future__ import annotations
 import abc
 from collections.abc import Sequence
 from inspect import signature
-from typing import Any, Callable
+from numbers import Number
+from typing import TYPE_CHECKING, Any, Callable, Union
 
 import numpy as np
 from sklearn.gaussian_process import kernels
 
 from bayes_opt.util import ensure_rng
 
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
-def is_numeric(value):
+    from numpy.typing import NDArray
+
+    Float = np.floating[Any]
+    Int = np.integer[Any]
+
+    FloatBoundsWithoutType = tuple[float, float]
+    FloatBoundsWithType = tuple[float, float, type[float]]
+    FloatBounds = Union[FloatBoundsWithoutType, FloatBoundsWithType]
+    IntBounds = tuple[Union[int, float], Union[int, float], type[int]]
+    CategoricalBounds = Sequence[Any]
+    Bounds = Union[FloatBounds, IntBounds, CategoricalBounds]
+    BoundsMapping = Mapping[str, Bounds]
+
+    # FIXME: categorical parameters can be of any type.
+    # This will make static type checking for parameters difficult.
+    ParamsType = Union[Mapping[str, Any], Sequence[Any], NDArray[Float]]
+
+
+def is_numeric(value: Any) -> bool:
     """Check if a value is numeric."""
-    return np.issubdtype(type(value), np.number)
+    return isinstance(value, Number) or (
+        isinstance(value, np.generic)
+        and (np.isdtype(value.dtype, np.number) or np.issubdtype(value.dtype, np.number))
+    )
 
 
 class BayesParameter(abc.ABC):
@@ -27,16 +51,18 @@ class BayesParameter(abc.ABC):
         The name of the parameter.
     """
 
-    def __init__(self, name: str, bounds) -> None:
+    def __init__(self, name: str, bounds: NDArray[Any]) -> None:
         self.name = name
         self._bounds = bounds
 
     @property
-    def bounds(self):
+    def bounds(self) -> NDArray[Any]:
         """The bounds of the parameter in float space."""
         return self._bounds
 
-    def random_sample(self, n_samples: int, random_state: np.random.RandomState | int | None) -> np.ndarray:
+    def random_sample(
+        self, n_samples: int, random_state: np.random.RandomState | int | None
+    ) -> NDArray[Float]:
         """Generate random samples from the parameter.
 
         Parameters
@@ -56,7 +82,7 @@ class BayesParameter(abc.ABC):
         return random_state.uniform(self.bounds[0], self.bounds[1], n_samples)
 
     @abc.abstractmethod
-    def to_float(self, value) -> np.ndarray:
+    def to_float(self, value: Any) -> float | NDArray[Float]:
         """Convert a parameter value to a float.
 
         Parameters
@@ -66,7 +92,7 @@ class BayesParameter(abc.ABC):
         """
 
     @abc.abstractmethod
-    def to_param(self, value):
+    def to_param(self, value: float | NDArray[Float]) -> Any:
         """Convert a float value to a parameter.
 
         Parameters
@@ -81,7 +107,7 @@ class BayesParameter(abc.ABC):
         """
 
     @abc.abstractmethod
-    def kernel_transform(self, value):
+    def kernel_transform(self, value: NDArray[Float]) -> NDArray[Float]:
         """Transform a parameter value for use in a kernel.
 
         Parameters
@@ -94,7 +120,7 @@ class BayesParameter(abc.ABC):
         np.ndarray
         """
 
-    def repr(self, value, str_len) -> str:
+    def repr(self, value: Any, str_len: int) -> str:
         """Represent a parameter value as a string.
 
         Parameters
@@ -109,7 +135,7 @@ class BayesParameter(abc.ABC):
         -------
         str
         """
-        s = value.__repr__()
+        s = repr(value)
 
         if len(s) > str_len:
             if "." in s:
@@ -138,7 +164,7 @@ class FloatParameter(BayesParameter):
     def __init__(self, name: str, bounds: tuple[float, float]) -> None:
         super().__init__(name, np.array(bounds))
 
-    def to_float(self, value) -> np.ndarray:
+    def to_float(self, value: float) -> float:
         """Convert a parameter value to a float.
 
         Parameters
@@ -148,7 +174,7 @@ class FloatParameter(BayesParameter):
         """
         return value
 
-    def to_param(self, value):
+    def to_param(self, value: float | NDArray[Float]) -> float:
         """Convert a float value to a parameter.
 
         Parameters
@@ -164,9 +190,11 @@ class FloatParameter(BayesParameter):
         if isinstance(value, np.ndarray) and value.size != 1:
             msg = "FloatParameter value should be scalar"
             raise ValueError(msg)
+        if isinstance(value, (int, float)):
+            return value
         return value.flatten()[0]
 
-    def repr(self, value, str_len) -> str:
+    def repr(self, value: float, str_len: int) -> str:
         """Represent a parameter value as a string.
 
         Parameters
@@ -188,7 +216,7 @@ class FloatParameter(BayesParameter):
             return s[: str_len - 3] + "..."
         return s
 
-    def kernel_transform(self, value):
+    def kernel_transform(self, value: NDArray[Float]) -> NDArray[Float]:
         """Transform a parameter value for use in a kernel.
 
         Parameters
@@ -220,10 +248,12 @@ class IntParameter(BayesParameter):
         The bounds of the parameter.
     """
 
-    def __init__(self, name: str, bounds: tuple[int | float, int | float]) -> None:
+    def __init__(self, name: str, bounds: tuple[int, int]) -> None:
         super().__init__(name, np.array(bounds))
 
-    def random_sample(self, n_samples: int, random_state: np.random.RandomState | int | None) -> np.ndarray:
+    def random_sample(
+        self, n_samples: int, random_state: np.random.RandomState | int | None
+    ) -> NDArray[Float]:
         """Generate random samples from the parameter.
 
         Parameters
@@ -242,7 +272,7 @@ class IntParameter(BayesParameter):
         random_state = ensure_rng(random_state)
         return random_state.randint(self.bounds[0], self.bounds[1] + 1, n_samples).astype(float)
 
-    def to_float(self, value) -> np.ndarray:
+    def to_float(self, value: int | float) -> float:
         """Convert a parameter value to a float.
 
         Parameters
@@ -252,7 +282,7 @@ class IntParameter(BayesParameter):
         """
         return float(value)
 
-    def to_param(self, value):
+    def to_param(self, value: int | float | NDArray[Int] | NDArray[Float]) -> int:
         """Convert a float value to a parameter.
 
         Parameters
@@ -267,7 +297,7 @@ class IntParameter(BayesParameter):
         """
         return int(np.round(np.squeeze(value)))
 
-    def repr(self, value, str_len) -> str:
+    def repr(self, value: int, str_len: int) -> str:
         """Represent a parameter value as a string.
 
         Parameters
@@ -289,7 +319,7 @@ class IntParameter(BayesParameter):
             return s[: str_len - 3] + "..."
         return s
 
-    def kernel_transform(self, value):
+    def kernel_transform(self, value: NDArray[Float]) -> NDArray[Float]:
         """Transform a parameter value for use in a kernel.
 
         Parameters
@@ -328,7 +358,9 @@ class CategoricalParameter(BayesParameter):
         bounds = np.vstack((lower, upper)).T
         super().__init__(name, bounds)
 
-    def random_sample(self, n_samples: int, random_state: np.random.RandomState | int | None) -> np.ndarray:
+    def random_sample(
+        self, n_samples: int, random_state: np.random.RandomState | int | None
+    ) -> NDArray[Float]:
         """Generate random float-format samples from the parameter.
 
         Parameters
@@ -344,12 +376,13 @@ class CategoricalParameter(BayesParameter):
         np.ndarray
             The samples.
         """
+        random_state = ensure_rng(random_state)
         res = random_state.randint(0, len(self.categories), n_samples)
         one_hot = np.zeros((n_samples, len(self.categories)))
         one_hot[np.arange(n_samples), res] = 1
         return one_hot.astype(float)
 
-    def to_float(self, value) -> np.ndarray:
+    def to_float(self, value: Any) -> NDArray[Float]:
         """Convert a parameter value to a float.
 
         Parameters
@@ -364,7 +397,7 @@ class CategoricalParameter(BayesParameter):
         res[one_hot_index] = 1
         return res.astype(float)
 
-    def to_param(self, value):
+    def to_param(self, value: float | NDArray[Float]) -> Any:
         """Convert a float value to a parameter.
 
         Parameters
@@ -377,9 +410,9 @@ class CategoricalParameter(BayesParameter):
         Any
             The canonical representation of the parameter.
         """
-        return self.categories[np.argmax(value)]
+        return self.categories[int(np.argmax(value))]
 
-    def repr(self, value, str_len) -> str:
+    def repr(self, value: Any, str_len: int) -> str:
         """Represent a parameter value as a string.
 
         Parameters
@@ -399,7 +432,7 @@ class CategoricalParameter(BayesParameter):
             return s[: str_len - 3] + "..."
         return s
 
-    def kernel_transform(self, value):
+    def kernel_transform(self, value: NDArray[Float]) -> NDArray[Float]:
         """Transform a parameter value for use in a kernel.
 
         Parameters
@@ -422,7 +455,7 @@ class CategoricalParameter(BayesParameter):
         return len(self.categories)
 
 
-def wrap_kernel(kernel: kernels.Kernel, transform: Callable) -> kernels.Kernel:
+def wrap_kernel(kernel: kernels.Kernel, transform: Callable[[Any], Any]) -> kernels.Kernel:
     """Wrap a kernel to transform input data before passing it to the kernel.
 
     Parameters
@@ -442,27 +475,31 @@ def wrap_kernel(kernel: kernels.Kernel, transform: Callable) -> kernels.Kernel:
     -----
     See https://arxiv.org/abs/1805.03463 for more information.
     """
+    kernel_type = type(kernel)
 
-    class WrappedKernel(type(kernel)):
-        @copy_signature(getattr(kernel.__class__.__init__, "deprecated_original", kernel.__class__.__init__))
-        def __init__(self, **kwargs) -> None:
+    class WrappedKernel(kernel_type):
+        @copy_signature(getattr(kernel_type.__init__, "deprecated_original", kernel_type.__init__))
+        def __init__(self, **kwargs: Any) -> None:
             super().__init__(**kwargs)
 
-        def __call__(self, X, Y=None, eval_gradient=False):
+        def __call__(self, X: Any, Y: Any = None, eval_gradient: bool = False) -> Any:
             X = transform(X)
-            return super().__call__(X, Y, eval_gradient)
+            return kernel(X, Y, eval_gradient)
+
+        def __reduce__(self) -> str | tuple[Any, ...]:
+            return (wrap_kernel, (kernel, transform))
 
     return WrappedKernel(**kernel.get_params())
 
 
-def copy_signature(source_fct):
+def copy_signature(source_fct: Callable[..., Any]) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Clones a signature from a source function to a target function.
 
     via
     https://stackoverflow.com/a/58989918/
     """
 
-    def copy(target_fct):
+    def copy(target_fct: Callable[..., Any]) -> Callable[..., Any]:
         target_fct.__signature__ = signature(source_fct)
         return target_fct
 

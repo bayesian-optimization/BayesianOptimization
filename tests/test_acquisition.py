@@ -7,7 +7,7 @@ import pytest
 from scipy.spatial.distance import pdist
 from sklearn.gaussian_process import GaussianProcessRegressor
 
-from bayes_opt import acquisition
+from bayes_opt import acquisition, exception
 from bayes_opt.constraint import ConstraintModel
 from bayes_opt.target_space import TargetSpace
 
@@ -94,7 +94,7 @@ def test_upper_confidence_bound(gp, target_space, random_state):
 
     # Test that the suggest method raises an error if the GP is unfitted
     with pytest.raises(
-        acquisition.TargetSpaceEmptyError, match="Cannot suggest a point without previous samples"
+        exception.TargetSpaceEmptyError, match="Cannot suggest a point without previous samples"
     ):
         acq.suggest(gp=gp, target_space=target_space)
 
@@ -122,7 +122,7 @@ def test_upper_confidence_bound_with_constraints(gp, constrained_target_space, r
     acq = acquisition.UpperConfidenceBound(random_state=random_state)
 
     constrained_target_space.register(params={"x": 2.5, "y": 0.5}, target=3.0, constraint_value=0.5)
-    with pytest.raises(acquisition.ConstraintNotSupportedError):
+    with pytest.raises(exception.ConstraintNotSupportedError):
         acq.suggest(gp=gp, target_space=constrained_target_space)
 
 
@@ -157,11 +157,11 @@ def test_probability_of_improvement_with_constraints(gp, constrained_target_spac
     with pytest.raises(ValueError, match="y_max is not set"):
         acq.base_acq(0.0, 0.0)
 
-    with pytest.raises(acquisition.TargetSpaceEmptyError):
+    with pytest.raises(exception.TargetSpaceEmptyError):
         acq.suggest(gp=gp, target_space=constrained_target_space)
 
     constrained_target_space.register(params={"x": 2.5, "y": 0.5}, target=3.0, constraint_value=3.0)
-    with pytest.raises(acquisition.NoValidPointRegisteredError):
+    with pytest.raises(exception.NoValidPointRegisteredError):
         acq.suggest(gp=gp, target_space=constrained_target_space)
 
     constrained_target_space.register(params={"x": 1.0, "y": 0.0}, target=1.0, constraint_value=1.0)
@@ -199,11 +199,11 @@ def test_expected_improvement_with_constraints(gp, constrained_target_space, ran
     with pytest.raises(ValueError, match="y_max is not set"):
         acq.base_acq(0.0, 0.0)
 
-    with pytest.raises(acquisition.TargetSpaceEmptyError):
+    with pytest.raises(exception.TargetSpaceEmptyError):
         acq.suggest(gp=gp, target_space=constrained_target_space)
 
     constrained_target_space.register(params={"x": 2.5, "y": 0.5}, target=3.0, constraint_value=3.0)
-    with pytest.raises(acquisition.NoValidPointRegisteredError):
+    with pytest.raises(exception.NoValidPointRegisteredError):
         acq.suggest(gp=gp, target_space=constrained_target_space)
 
     constrained_target_space.register(params={"x": 1.0, "y": 0.0}, target=1.0, constraint_value=1.0)
@@ -250,11 +250,11 @@ def test_constant_liar_with_constraints(gp, constrained_target_space, random_sta
     base_acq = acquisition.UpperConfidenceBound(random_state=random_state)
     acq = acquisition.ConstantLiar(base_acquisition=base_acq, random_state=random_state)
 
-    with pytest.raises(acquisition.TargetSpaceEmptyError):
+    with pytest.raises(exception.TargetSpaceEmptyError):
         acq.suggest(gp=gp, target_space=constrained_target_space)
 
     constrained_target_space.register(params={"x": 2.5, "y": 0.5}, target=3.0, constraint_value=0.5)
-    with pytest.raises(acquisition.ConstraintNotSupportedError):
+    with pytest.raises(exception.ConstraintNotSupportedError):
         acq.suggest(gp=gp, target_space=constrained_target_space)
 
     mean = random_state.rand(10)
@@ -338,7 +338,7 @@ def test_gphedge_integration(gp, target_space, random_state):
 
     acq = acquisition.GPHedge(base_acquisitions=base_acquisitions, random_state=random_state)
     assert acq.base_acquisitions == base_acquisitions
-    with pytest.raises(acquisition.TargetSpaceEmptyError):
+    with pytest.raises(exception.TargetSpaceEmptyError):
         acq.suggest(gp=gp, target_space=target_space)
     target_space.register(params={"x": 2.5, "y": 0.5}, target=3.0)
 

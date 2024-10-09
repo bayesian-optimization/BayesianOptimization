@@ -57,7 +57,7 @@ class ConstraintModel:
         fun: Callable[..., float] | Callable[..., NDArray[Float]] | None,
         lb: float | NDArray[Float],
         ub: float | NDArray[Float],
-        transform=None,
+        transform: Callable[[Any], Any] | None = None,
         random_state: int | RandomState | None = None,
     ) -> None:
         self.fun = fun
