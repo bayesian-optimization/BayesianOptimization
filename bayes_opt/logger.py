@@ -169,7 +169,7 @@ class ScreenLogger(_Tracker):
             cells[2] = self._format_bool(res["allowed"])
         params = res.get("params", {})
         cells[3:] = [
-            instance.space._params_config[key].repr(val, self._default_cell_size)
+            instance.space._params_config[key].to_string(val, self._default_cell_size)
             for key, val in params.items()
         ]
 

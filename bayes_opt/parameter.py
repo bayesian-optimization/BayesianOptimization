@@ -120,7 +120,7 @@ class BayesParameter(abc.ABC):
         np.ndarray
         """
 
-    def repr(self, value: Any, str_len: int) -> str:
+    def to_string(self, value: Any, str_len: int) -> str:
         """Represent a parameter value as a string.
 
         Parameters
@@ -135,11 +135,9 @@ class BayesParameter(abc.ABC):
         -------
         str
         """
-        s = repr(value)
+        s = f"{value!r:<{str_len}}"
 
         if len(s) > str_len:
-            if "." in s:
-                return s[:str_len]
             return s[: str_len - 3] + "..."
         return s
 
@@ -194,7 +192,7 @@ class FloatParameter(BayesParameter):
             return value
         return value.flatten()[0]
 
-    def repr(self, value: float, str_len: int) -> str:
+    def to_string(self, value: float, str_len: int) -> str:
         """Represent a parameter value as a string.
 
         Parameters
@@ -211,7 +209,7 @@ class FloatParameter(BayesParameter):
         """
         s = f"{value:<{str_len}.{str_len}}"
         if len(s) > str_len:
-            if "." in s:
+            if "." in s and "e" not in s:
                 return s[:str_len]
             return s[: str_len - 3] + "..."
         return s
@@ -297,28 +295,6 @@ class IntParameter(BayesParameter):
         """
         return int(np.round(np.squeeze(value)))
 
-    def repr(self, value: int, str_len: int) -> str:
-        """Represent a parameter value as a string.
-
-        Parameters
-        ----------
-        value : Any
-            The value to represent.
-
-        str_len : int
-            The maximum length of the string representation.
-
-        Returns
-        -------
-        str
-        """
-        s = f"{value:<{str_len}}"
-        if len(s) > str_len:
-            if "." in s:
-                return s[:str_len]
-            return s[: str_len - 3] + "..."
-        return s
-
     def kernel_transform(self, value: NDArray[Float]) -> NDArray[Float]:
         """Transform a parameter value for use in a kernel.
 
@@ -352,6 +328,13 @@ class CategoricalParameter(BayesParameter):
     """
 
     def __init__(self, name: str, categories: Sequence[Any]) -> None:
+        if len(categories) != len(set(categories)):
+            msg = "Categories must be unique."
+            raise ValueError(msg)
+        if len(categories) < 2:
+            msg = "At least two categories are required."
+            raise ValueError(msg)
+
         self.categories = categories
         lower = np.zeros(self.dim)
         upper = np.ones(self.dim)
@@ -412,7 +395,7 @@ class CategoricalParameter(BayesParameter):
         """
         return self.categories[int(np.argmax(value))]
 
-    def repr(self, value: Any, str_len: int) -> str:
+    def to_string(self, value: Any, str_len: int) -> str:
         """Represent a parameter value as a string.
 
         Parameters
@@ -427,7 +410,10 @@ class CategoricalParameter(BayesParameter):
         -------
         str
         """
-        s = f"{value:^{str_len}}"
+        if not isinstance(value, str):
+            value = repr(value)
+        s = f"{value:<{str_len}}"
+
         if len(s) > str_len:
             return s[: str_len - 3] + "..."
         return s

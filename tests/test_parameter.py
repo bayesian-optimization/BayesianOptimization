@@ -70,13 +70,13 @@ def test_int_parameters():
 
 
 def test_cat_parameters():
-    fruit_ratings = {"apple": 1.0, "banana": 2.0, "mango": 5.0, "honeydew melon": -10.0, "straberry": np.pi}
+    fruit_ratings = {"apple": 1.0, "banana": 2.0, "mango": 5.0, "honeydew melon": -10.0, "strawberry": np.pi}
 
     def target_func(fruit: str):
         return fruit_ratings[fruit]
 
-    fruits = ("apple", "banana", "mango", "honeydew melon", "straberry")
-    pbounds = {"fruit": ("apple", "banana", "mango", "honeydew melon", "straberry")}
+    fruits = ("apple", "banana", "mango", "honeydew melon", "strawberry")
+    pbounds = {"fruit": ("apple", "banana", "mango", "honeydew melon", "strawberry")}
     space = TargetSpace(target_func, pbounds)
 
     assert space.dim == len(fruits)
@@ -101,3 +101,35 @@ def test_cat_parameters():
     assert (space.params[1] == np.array([0, 0, 0, 1, 0])).all()
 
     assert (space.target == np.array([target1, target2])).all()
+
+
+def test_to_string():
+    pbounds = {"p1": (0, 1), "p2": (1, 2)}
+    space = TargetSpace(None, pbounds)
+
+    assert space._params_config["p1"].to_string(0.2, 5) == "0.2  "
+    assert space._params_config["p2"].to_string(1.5, 5) == "1.5  "
+    assert space._params_config["p1"].to_string(0.2, 3) == "0.2"
+    assert space._params_config["p2"].to_string(np.pi, 5) == "3.141"
+    assert space._params_config["p1"].to_string(1e-5, 6) == "1e-05 "
+    assert space._params_config["p2"].to_string(-1e-5, 6) == "-1e-05"
+    assert space._params_config["p1"].to_string(1e-15, 5) == "1e-15"
+    assert space._params_config["p1"].to_string(-1.2e-15, 7) == "-1.2..."
+
+    pbounds = {"p1": (0, 5, int), "p3": (-1, 3, int)}
+    space = TargetSpace(None, pbounds)
+
+    assert space._params_config["p1"].to_string(2, 5) == "2    "
+    assert space._params_config["p3"].to_string(0, 5) == "0    "
+    assert space._params_config["p1"].to_string(2, 3) == "2  "
+    assert space._params_config["p3"].to_string(-1, 5) == "-1   "
+    assert space._params_config["p1"].to_string(123456789, 6) == "123..."
+
+    pbounds = {"fruit": ("apple", "banana", "mango", "honeydew melon", "strawberry")}
+    space = TargetSpace(None, pbounds)
+
+    assert space._params_config["fruit"].to_string("apple", 5) == "apple"
+    assert space._params_config["fruit"].to_string("banana", 5) == "ba..."
+    assert space._params_config["fruit"].to_string("mango", 5) == "mango"
+    assert space._params_config["fruit"].to_string("honeydew melon", 10) == "honeyde..."
+    assert space._params_config["fruit"].to_string("strawberry", 10) == "strawberry"
