@@ -179,6 +179,14 @@ def test_minimum_window_dict_ordering():
     )
 
 
+def test_mixed_parameters():
+    """Ensure that the transformer errors when providing non-float parameters"""
+    pbounds = {"x": (-10, 10), "y": (-10, 10), "z": (1, 10, int)}
+    target_space = TargetSpace(target_func=black_box_function, pbounds=pbounds)
+    with pytest.raises(ValueError):
+        _ = SequentialDomainReductionTransformer().initialize(target_space)
+
+
 if __name__ == "__main__":
     r"""
     CommandLine:

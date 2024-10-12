@@ -14,6 +14,7 @@ from warnings import warn
 
 import numpy as np
 
+from bayes_opt.parameter import FloatParameter
 from bayes_opt.target_space import TargetSpace
 
 if TYPE_CHECKING:
@@ -90,6 +91,10 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         target_space : TargetSpace
             TargetSpace this DomainTransformer operates on.
         """
+        any_not_float = any([not isinstance(p, FloatParameter) for p in target_space._params_config.values()])
+        if any_not_float:
+            msg = "Domain reduction is only supported for all-FloatParameter optimization."
+            raise ValueError(msg)
         # Set the original bounds
         self.original_bounds = np.copy(target_space.bounds)
         self.bounds = [self.original_bounds]
