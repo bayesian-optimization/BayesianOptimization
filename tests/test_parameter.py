@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
+from bayes_opt import BayesianOptimization
 from bayes_opt.parameter import CategoricalParameter, FloatParameter, IntParameter
 from bayes_opt.target_space import TargetSpace
 
@@ -38,6 +40,11 @@ def test_float_parameters():
 
     assert (space.target == np.array([target1, target2])).all()
 
+    p1 = space._params_config["p1"]
+    assert p1.to_float(0.2) == 0.2
+    assert p1.to_float(np.array(2.3)) == 2.3
+    assert p1.to_float(3) == 3.0
+
 
 def test_int_parameters():
     def target_func(**kwargs):
@@ -67,6 +74,15 @@ def test_int_parameters():
     assert (space.params[1] == np.fromiter(point2.values(), dtype=float)).all()
 
     assert (space.target == np.array([target1, target2])).all()
+
+    p1 = space._params_config["p1"]
+    assert p1.to_float(0) == 0.0
+    assert p1.to_float(np.array(2)) == 2.0
+    assert p1.to_float(3) == 3.0
+
+    assert p1.kernel_transform(0) == 0.0
+    assert p1.kernel_transform(2.3) == 2.0
+    assert p1.kernel_transform(np.array([1.3, 3.6, 7.2])) == pytest.approx(np.array([1, 4, 7]))
 
 
 def test_cat_parameters():
@@ -102,6 +118,23 @@ def test_cat_parameters():
 
     assert (space.target == np.array([target1, target2])).all()
 
+    p1 = space._params_config["fruit"]
+    for i, fruit in enumerate(fruits):
+        assert (p1.to_float(fruit) == np.eye(5)[i]).all()
+
+    assert (p1.kernel_transform(np.array([0.8, 0.2, 0.3, 0.5, 0.78])) == np.array([1, 0, 0, 0, 0])).all()
+    assert (p1.kernel_transform(np.array([0.78, 0.2, 0.3, 0.5, 0.8])) == np.array([0, 0, 0, 0, 1.0])).all()
+
+
+def test_cateogrical_valid_bounds():
+    pbounds = {"fruit": ("apple", "banana", "mango", "honeydew melon", "banana", "strawberry")}
+    with pytest.raises(ValueError):
+        TargetSpace(None, pbounds)
+
+    pbounds = {"fruit": ("apple",)}
+    with pytest.raises(ValueError):
+        TargetSpace(None, pbounds)
+
 
 def test_to_string():
     pbounds = {"p1": (0, 1), "p2": (1, 2)}
@@ -133,3 +166,20 @@ def test_to_string():
     assert space._params_config["fruit"].to_string("mango", 5) == "mango"
     assert space._params_config["fruit"].to_string("honeydew melon", 10) == "honeyde..."
     assert space._params_config["fruit"].to_string("strawberry", 10) == "strawberry"
+
+
+def test_integration_mixed_optimization():
+    fruit_ratings = {"apple": 1.0, "banana": 2.0, "mango": 5.0, "honeydew melon": -10.0, "strawberry": np.pi}
+
+    pbounds = {
+        "p1": (0, 1),
+        "p2": (1, 2),
+        "p3": (-1, 3, int),
+        "fruit": ("apple", "banana", "mango", "honeydew melon", "strawberry"),
+    }
+
+    def target_func(p1, p2, p3, fruit):
+        return p1 + p2 + p3 + fruit_ratings[fruit]
+
+    optimizer = BayesianOptimization(target_func, pbounds)
+    optimizer.maximize(init_points=2, n_iter=10)

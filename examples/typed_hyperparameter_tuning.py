@@ -49,7 +49,6 @@ for i, (train_idx, test_idx) in enumerate(tqdm(kfold.split(data.data), total=N_F
     
     continuous_optimizer = BayesianOptimization(
         f=gboost,
-        acquisition_function=acquisition.ExpectedImprovement(1e-1),
         pbounds=continuous_pbounds,
         verbose=0,
         random_state=42,
@@ -57,7 +56,6 @@ for i, (train_idx, test_idx) in enumerate(tqdm(kfold.split(data.data), total=N_F
 
     discrete_optimizer = BayesianOptimization(
         f=gboost,
-        acquisition_function=acquisition.ExpectedImprovement(1e-1),
         pbounds=discrete_pbounds,
         verbose=0,
         random_state=42,

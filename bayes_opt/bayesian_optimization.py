@@ -16,7 +16,7 @@ from bayes_opt import acquisition
 from bayes_opt.constraint import ConstraintModel
 from bayes_opt.event import DEFAULT_EVENTS, Events
 from bayes_opt.logger import _get_default_logger
-from bayes_opt.parameter import wrap_kernel
+from bayes_opt.parameter import WrappedKernel
 from bayes_opt.target_space import TargetSpace
 from bayes_opt.util import ensure_rng
 
@@ -152,7 +152,7 @@ class BayesianOptimization(Observable):
 
         # Internal GP regressor
         self._gp = GaussianProcessRegressor(
-            kernel=wrap_kernel(Matern(nu=2.5), transform=self._space.kernel_transform),
+            kernel=WrappedKernel(Matern(nu=2.5), transform=self._space.kernel_transform),
             alpha=1e-6,
             normalize_y=True,
             n_restarts_optimizer=5,
@@ -329,4 +329,6 @@ class BayesianOptimization(Observable):
 
     def set_gp_params(self, **params: Any) -> None:
         """Set parameters of the internal Gaussian Process Regressor."""
+        if "kernel" in params:
+            params["kernel"] = WrappedKernel(params["kernel"], self._space.kernel_transform)
         self._gp.set_params(**params)
