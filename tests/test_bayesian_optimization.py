@@ -38,7 +38,7 @@ def test_register():
     assert len(optimizer.res) == 1
     assert len(optimizer.space) == 1
 
-    optimizer.space.register(params={"p1": 5, "p2": 4}, target=9)
+    optimizer.space.register(params=np.array([5, 4]), target=9)
     assert len(optimizer.res) == 2
     assert len(optimizer.space) == 2
 
@@ -196,12 +196,12 @@ def test_set_bounds():
     # Ignore unknown keys
     optimizer.set_bounds({"other": (7, 8)})
     assert all(optimizer.space.bounds[:, 0] == np.array([0, 0, 0, 0]))
-    assert all(optimizer.space.bounds[:, 1] == np.array([1, 2, 3, 4]))
+    assert all(optimizer.space.bounds[:, 1] == np.array([1, 3, 2, 4]))
 
     # Update bounds accordingly
     optimizer.set_bounds({"p2": (1, 8)})
-    assert all(optimizer.space.bounds[:, 0] == np.array([0, 1, 0, 0]))
-    assert all(optimizer.space.bounds[:, 1] == np.array([1, 8, 3, 4]))
+    assert all(optimizer.space.bounds[:, 0] == np.array([0, 0, 1, 0]))
+    assert all(optimizer.space.bounds[:, 1] == np.array([1, 3, 8, 4]))
 
 
 def test_set_gp_params():

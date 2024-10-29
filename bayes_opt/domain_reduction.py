@@ -75,13 +75,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         self.gamma_pan = gamma_pan
         self.eta = eta
 
-        self.minimum_window_value: NDArray[Float] | Sequence[float] | float
-        if isinstance(minimum_window, Mapping):
-            self.minimum_window_value = [
-                item[1] for item in sorted(minimum_window.items(), key=lambda x: x[0])
-            ]
-        else:
-            self.minimum_window_value = minimum_window
+        self.minimum_window_value = minimum_window
 
     def initialize(self, target_space: TargetSpace) -> None:
         """Initialize all of the parameters.
@@ -91,6 +85,11 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         target_space : TargetSpace
             TargetSpace this DomainTransformer operates on.
         """
+        if isinstance(self.minimum_window_value, Mapping):
+            self.minimum_window_value = [self.minimum_window_value[key] for key in target_space.keys]
+        else:
+            self.minimum_window_value = self.minimum_window_value
+
         any_not_float = any([not isinstance(p, FloatParameter) for p in target_space._params_config.values()])
         if any_not_float:
             msg = "Domain reduction is only supported for all-FloatParameter optimization."

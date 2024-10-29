@@ -82,7 +82,7 @@ class TargetSpace:
         self.target_func = target_func
 
         # Get the name of the parameters
-        self._keys: list[str] = sorted(pbounds)
+        self._keys: list[str] = list(pbounds.keys())
 
         self._params_config = self.make_params(pbounds)
         self._dim = sum([self._params_config[key].dim for key in self._keys])
@@ -181,6 +181,11 @@ class TargetSpace:
         return self._keys
 
     @property
+    def params_config(self) -> dict[str, BayesParameter]:
+        """Get the parameters configuration."""
+        return self._params_config
+
+    @property
     def bounds(self) -> NDArray[Float]:
         """Get the bounds of this TargetSpace.
 
@@ -210,6 +215,20 @@ class TargetSpace:
         """
         return self._masks
 
+    @property
+    def continuous_dimensions(self) -> NDArray[np.bool_]:
+        """Get the continuous parameters.
+
+        Returns
+        -------
+        dict
+        """
+        result = np.zeros(self.dim, dtype=bool)
+        masks = self.masks
+        for key in self.keys:
+            result[masks[key]] = self._params_config[key].is_continuous
+        return result
+
     def make_params(self, pbounds: BoundsMapping) -> dict[str, BayesParameter]:
         """Create a dictionary of parameters from a dictionary of bounds.
 
@@ -226,7 +245,7 @@ class TargetSpace:
             parameter objects as values.
         """
         params: dict[str, BayesParameter] = {}
-        for key in sorted(pbounds):
+        for key in pbounds:
             pbound = pbounds[key]
 
             if isinstance(pbound, BayesParameter):
@@ -285,8 +304,7 @@ class TargetSpace:
         """
         if set(params) != set(self.keys):
             error_msg = (
-                f"Parameters' keys ({sorted(params)}) do "
-                f"not match the expected set of keys ({self.keys})."
+                f"Parameters' keys ({params}) do " f"not match the expected set of keys ({self.keys})."
             )
             raise ValueError(error_msg)
         return self._to_float(params)
@@ -337,9 +355,7 @@ class TargetSpace:
 
     def _to_float(self, value: Mapping[str, float | NDArray[Float]]) -> NDArray[Float]:
         if set(value) != set(self.keys):
-            msg = (
-                f"Parameters' keys ({sorted(value)}) do " f"not match the expected set of keys ({self.keys})."
-            )
+            msg = f"Parameters' keys ({value}) do " f"not match the expected set of keys ({self.keys})."
             raise ValueError(msg)
         res = np.zeros(self._dim)
         for key in self._keys:
@@ -389,8 +405,7 @@ class TargetSpace:
         x = x.ravel()
         if x.size != self.dim:
             error_msg = (
-                f"Size of array ({len(x)}) is different than the "
-                f"expected number of parameters ({len(self.keys)})."
+                f"Size of array ({len(x)}) is different than the " f"expected number of ({len(self.dim)})."
             )
             raise ValueError(error_msg)
         return x
@@ -666,8 +681,7 @@ class TargetSpace:
         new_bounds : dict
             A dictionary with the parameter name and its new bounds
         """
-        print(new_bounds)
-        new__params_config = self.make_params(new_bounds)
+        new_params_config = self.make_params(new_bounds)
 
         for key in self.keys:
             if key in new_bounds:
@@ -676,12 +690,12 @@ class TargetSpace:
                 ) == set(new_bounds[key]):
                     msg = "Changing bounds of categorical parameters is not supported"
                     raise NotImplementedError(msg)
-                if not isinstance(new__params_config[key], type(self._params_config[key])):
+                if not isinstance(new_params_config[key], type(self._params_config[key])):
                     msg = (
-                        f"Parameter type {type(new__params_config[key])} of"
+                        f"Parameter type {type(new_params_config[key])} of"
                         " new bounds does not match parameter type"
                         f" {type(self._params_config[key])} of old bounds"
                     )
                     raise ValueError(msg)
-                self._params_config[key] = new__params_config[key]
+                self._params_config[key] = new_params_config[key]
         self._bounds = self.calculate_bounds()

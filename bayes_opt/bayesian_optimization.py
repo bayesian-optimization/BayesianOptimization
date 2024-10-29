@@ -14,6 +14,7 @@ from sklearn.gaussian_process.kernels import Matern
 
 from bayes_opt import acquisition
 from bayes_opt.constraint import ConstraintModel
+from bayes_opt.domain_reduction import DomainTransformer
 from bayes_opt.event import DEFAULT_EVENTS, Events
 from bayes_opt.logger import _get_default_logger
 from bayes_opt.parameter import WrappedKernel
@@ -162,11 +163,10 @@ class BayesianOptimization(Observable):
         self._verbose = verbose
         self._bounds_transformer = bounds_transformer
         if self._bounds_transformer:
-            try:
-                self._bounds_transformer.initialize(self._space)
-            except (AttributeError, TypeError) as exc:
-                error_msg = "The transformer must be an instance of DomainTransformer"
-                raise TypeError(error_msg) from exc
+            if not isinstance(self._bounds_transformer, DomainTransformer):
+                msg = "The transformer must be an instance of DomainTransformer"
+                raise TypeError(msg)
+            self._bounds_transformer.initialize(self._space)
 
         super().__init__(events=DEFAULT_EVENTS)
 
@@ -330,5 +330,7 @@ class BayesianOptimization(Observable):
     def set_gp_params(self, **params: Any) -> None:
         """Set parameters of the internal Gaussian Process Regressor."""
         if "kernel" in params:
-            params["kernel"] = WrappedKernel(params["kernel"], self._space.kernel_transform)
+            params["kernel"] = WrappedKernel(
+                base_kernel=params["kernel"], transform=self._space.kernel_transform
+            )
         self._gp.set_params(**params)

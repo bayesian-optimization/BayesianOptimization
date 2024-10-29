@@ -22,9 +22,9 @@ def test_keys_and_bounds_in_same_order():
 
     assert space.dim == len(pbounds)
     assert space.empty
-    assert space.keys == ["p1", "p2", "p3", "p4"]
+    assert space.keys == ["p1", "p3", "p2", "p4"]
     assert all(space.bounds[:, 0] == np.array([0, 0, 0, 0]))
-    assert all(space.bounds[:, 1] == np.array([1, 2, 3, 4]))
+    assert all(space.bounds[:, 1] == np.array([1, 3, 2, 4]))
 
 
 def test_params_to_array():
@@ -80,11 +80,17 @@ def test_register():
     assert all(space.params[0] == np.array([1, 2]))
     assert all(space.target == np.array([3]))
 
-    # registering with array
-    space.register(params={"p1": 5, "p2": 4}, target=9)
+    # registering with dict out of order
+    space.register(params={"p2": 4, "p1": 5}, target=9)
     assert len(space) == 2
     assert all(space.params[1] == np.array([5, 4]))
     assert all(space.target == np.array([3, 9]))
+
+    # registering with array
+    space.register(params=np.array([0, 1]), target=1)
+    assert len(space) == 3
+    assert all(space.params[2] == np.array([0, 1]))
+    assert all(space.target == np.array([3, 9, 1]))
 
     with pytest.raises(NotUniqueError):
         space.register(params={"p1": 1, "p2": 2}, target=3)
@@ -274,12 +280,12 @@ def test_set_bounds():
     # Ignore unknown keys
     space.set_bounds({"other": (7, 8)})
     assert all(space.bounds[:, 0] == np.array([0, 0, 0, 0]))
-    assert all(space.bounds[:, 1] == np.array([1, 2, 3, 4]))
+    assert all(space.bounds[:, 1] == np.array([1, 3, 2, 4]))
 
     # Update bounds accordingly
     space.set_bounds({"p2": (1, 8)})
-    assert all(space.bounds[:, 0] == np.array([0, 1, 0, 0]))
-    assert all(space.bounds[:, 1] == np.array([1, 8, 3, 4]))
+    assert all(space.bounds[:, 0] == np.array([0, 0, 1, 0]))
+    assert all(space.bounds[:, 1] == np.array([1, 3, 8, 4]))
 
 
 def test_no_target_func():

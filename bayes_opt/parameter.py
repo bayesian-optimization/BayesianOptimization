@@ -59,6 +59,11 @@ class BayesParameter(abc.ABC):
         """The bounds of the parameter in float space."""
         return self._bounds
 
+    @property
+    @abc.abstractmethod
+    def is_continuous(self) -> bool:
+        """Whether the parameter is continuous."""
+
     def random_sample(
         self, n_samples: int, random_state: np.random.RandomState | int | None
     ) -> NDArray[Float]:
@@ -161,6 +166,11 @@ class FloatParameter(BayesParameter):
     def __init__(self, name: str, bounds: tuple[float, float]) -> None:
         super().__init__(name, np.array(bounds))
 
+    @property
+    def is_continuous(self) -> bool:
+        """Whether the parameter is continuous."""
+        return True
+
     def to_float(self, value: float) -> float:
         """Convert a parameter value to a float.
 
@@ -247,6 +257,11 @@ class IntParameter(BayesParameter):
 
     def __init__(self, name: str, bounds: tuple[int, int]) -> None:
         super().__init__(name, np.array(bounds))
+
+    @property
+    def is_continuous(self) -> bool:
+        """Whether the parameter is continuous."""
+        return False
 
     def random_sample(
         self, n_samples: int, random_state: np.random.RandomState | int | None
@@ -339,6 +354,11 @@ class CategoricalParameter(BayesParameter):
         upper = np.ones(self.dim)
         bounds = np.vstack((lower, upper)).T
         super().__init__(name, bounds)
+
+    @property
+    def is_continuous(self) -> bool:
+        """Whether the parameter is continuous."""
+        return False
 
     def random_sample(
         self, n_samples: int, random_state: np.random.RandomState | int | None
@@ -478,6 +498,7 @@ class WrappedKernel(kernels.Kernel):
         K_gradient : ndarray of shape (n_samples_X, n_samples_X, n_dims)
         """
         X = self.transform(X)
+        Y = self.transform(Y) if Y is not None else None
         return self.base_kernel(X, Y, eval_gradient)
 
     def is_stationary(self):
