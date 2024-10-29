@@ -9,7 +9,7 @@ from scipy.stats import norm
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
 
-from bayes_opt.parameter import WrappedKernel
+from bayes_opt.parameter import wrap_kernel
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -71,7 +71,7 @@ class ConstraintModel:
 
         self._model = [
             GaussianProcessRegressor(
-                kernel=WrappedKernel(Matern(nu=2.5), transform) if transform is not None else Matern(nu=2.5),
+                kernel=wrap_kernel(Matern(nu=2.5), transform) if transform is not None else Matern(nu=2.5),
                 alpha=1e-6,
                 normalize_y=True,
                 n_restarts_optimizer=5,

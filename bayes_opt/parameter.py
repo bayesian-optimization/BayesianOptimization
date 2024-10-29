@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import abc
 from collections.abc import Sequence
+from inspect import signature
 from numbers import Number
 from typing import TYPE_CHECKING, Any, Callable, Union
 
@@ -458,69 +459,53 @@ class CategoricalParameter(BayesParameter):
         return len(self.categories)
 
 
-class WrappedKernel(kernels.Kernel):
-    """Wrap a kernel with a parameter transformation.
-
-    The transform function is applied to the input before passing it to the base kernel.
+def wrap_kernel(kernel: kernels.Kernel, transform: Callable[[Any], Any]) -> kernels.Kernel:
+    """Wrap a kernel to transform input data before passing it to the kernel.
 
     Parameters
     ----------
-    base_kernel : kernels.Kernel
+    kernel : kernels.Kernel
+        The kernel to wrap.
 
-    transform : Callable[[Any], Any]
+    transform : Callable
+        The transformation function to apply to the input data.
+
+    Returns
+    -------
+    kernels.Kernel
+        The wrapped kernel.
+
+    Notes
+    -----
+    See https://arxiv.org/abs/1805.03463 for more information.
+    """
+    kernel_type = type(kernel)
+
+    class WrappedKernel(kernel_type):
+        @copy_signature(getattr(kernel_type.__init__, "deprecated_original", kernel_type.__init__))
+        def __init__(self, **kwargs: Any) -> None:
+            super().__init__(**kwargs)
+
+        def __call__(self, X: Any, Y: Any = None, eval_gradient: bool = False) -> Any:
+            X = transform(X)
+            Y = transform(Y) if Y is not None else None
+            return super().__call__(X, Y, eval_gradient)
+
+        def __reduce__(self) -> str | tuple[Any, ...]:
+            return (wrap_kernel, (kernel, transform))
+
+    return WrappedKernel(**kernel.get_params())
+
+
+def copy_signature(source_fct: Callable[..., Any]) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    """Clones a signature from a source function to a target function.
+
+    via
+    https://stackoverflow.com/a/58989918/
     """
 
-    def __init__(self, base_kernel: kernels.Kernel, transform: Callable[[Any], Any]) -> None:
-        super().__init__()
-        self.base_kernel = base_kernel
-        self.transform = transform
+    def copy(target_fct: Callable[..., Any]) -> Callable[..., Any]:
+        target_fct.__signature__ = signature(source_fct)
+        return target_fct
 
-    def __call__(self, X: NDArray[Float], Y: NDArray[Float] = None, eval_gradient: bool = False) -> Any:
-        """Return the kernel k(X, Y) and optionally its gradient after applying the transform.
-
-        For details, see the documentation of the base kernel.
-
-        Parameters
-        ----------
-        X :  ndarray of shape (n_samples_X, n_features)
-            Left argument of the returned kernel k(X, Y).
-
-        Y : ndarray of shape (n_samples_Y, n_features), default=None
-            Right argument of the returned kernel k(X, Y). If None, k(X, X) is evaluated.
-
-        eval_gradient : bool, default=False
-            Determines whether the gradient with respect to the kernel hyperparameter is calculated.
-
-        Returns
-        -------
-        K : ndarray of shape (n_samples_X, n_samples_Y)
-
-        K_gradient : ndarray of shape (n_samples_X, n_samples_X, n_dims)
-        """
-        X = self.transform(X)
-        Y = self.transform(Y) if Y is not None else None
-        return self.base_kernel(X, Y, eval_gradient)
-
-    def is_stationary(self):
-        """Return whether the kernel is stationary."""
-        return self.base_kernel.is_stationary()
-
-    def diag(self, X: NDArray[Float]) -> NDArray[Float]:
-        """Return the diagonal of k(X, X).
-
-        This method allows for more efficient calculations than calling
-        np.diag(self(X)).
-
-
-        Parameters
-        ----------
-        X : array-like of shape (n_samples,)
-            Left argument of the returned kernel k(X, Y)
-
-        Returns
-        -------
-        K_diag : ndarray of shape (n_samples_X,)
-            Diagonal of kernel k(X, X)
-        """
-        X = self.transform(X)
-        return self.base_kernel.diag(X)
+    return copy
