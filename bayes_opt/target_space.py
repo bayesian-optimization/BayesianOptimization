@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import TYPE_CHECKING, Any
 from warnings import warn
 
@@ -125,9 +126,6 @@ class TargetSpace:
         -------
         int
         """
-        if len(self._params) != len(self._target):
-            error_msg = "The number of parameters and targets do not match."
-            raise ValueError(error_msg)
         return len(self._target)
 
     @property
@@ -404,10 +402,8 @@ class TargetSpace:
 
         x = x.ravel()
         if x.size != self.dim:
-            error_msg = (
-                f"Size of array ({len(x)}) is different than the " f"expected number of ({len(self.dim)})."
-            )
-            raise ValueError(error_msg)
+            msg = f"Size of array ({len(x)}) is different than the expected number of ({self.dim})."
+            raise ValueError(msg)
         return x
 
     def register(
@@ -683,13 +679,10 @@ class TargetSpace:
         """
         new_params_config = self.make_params(new_bounds)
 
+        dims = 0
+        params_config = deepcopy(self._params_config)
         for key in self.keys:
             if key in new_bounds:
-                if isinstance(self._params_config[key], CategoricalParameter) and set(
-                    self._params_config[key].domain
-                ) == set(new_bounds[key]):
-                    msg = "Changing bounds of categorical parameters is not supported"
-                    raise NotImplementedError(msg)
                 if not isinstance(new_params_config[key], type(self._params_config[key])):
                     msg = (
                         f"Parameter type {type(new_params_config[key])} of"
@@ -697,5 +690,12 @@ class TargetSpace:
                         f" {type(self._params_config[key])} of old bounds"
                     )
                     raise ValueError(msg)
-                self._params_config[key] = new_params_config[key]
+                params_config[key] = new_params_config[key]
+            dims = dims + params_config[key].dim
+        if dims != self.dim:
+            msg = (
+                f"Dimensions of new bounds ({dims}) does not match" f" dimensions of old bounds ({self.dim})."
+            )
+            raise ValueError(msg)
+        self._params_config = params_config
         self._bounds = self.calculate_bounds()

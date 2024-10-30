@@ -98,11 +98,3 @@ def test_logs_constraint_new_array():
 
     print(optimizer.space)
     assert len(optimizer.space) == 12
-
-
-if __name__ == "__main__":
-    r"""
-    CommandLine:
-        python tests/test_target_space.py
-    """
-    pytest.main([__file__])

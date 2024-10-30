@@ -195,11 +195,6 @@ class FloatParameter(BayesParameter):
         Any
             The canonical representation of the parameter.
         """
-        if isinstance(value, np.ndarray) and value.size != 1:
-            msg = "FloatParameter value should be scalar"
-            raise ValueError(msg)
-        if isinstance(value, (int, float)):
-            return value
         return value.flatten()[0]
 
     def to_string(self, value: float, str_len: int) -> str:

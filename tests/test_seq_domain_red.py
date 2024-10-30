@@ -185,11 +185,3 @@ def test_mixed_parameters():
     target_space = TargetSpace(target_func=black_box_function, pbounds=pbounds)
     with pytest.raises(ValueError):
         _ = SequentialDomainReductionTransformer().initialize(target_space)
-
-
-if __name__ == "__main__":
-    r"""
-    CommandLine:
-        python tests/test_seq_domain_red.py
-    """
-    pytest.main([__file__])

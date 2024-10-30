@@ -333,11 +333,3 @@ def test_duplicate_points():
     optimizer.register(params=next_point_to_probe, target=target)
     # and again (should throw warning)
     optimizer.register(params=next_point_to_probe, target=target)
-
-
-if __name__ == "__main__":
-    r"""
-    CommandLine:
-        python tests/test_bayesian_optimization.py
-    """
-    pytest.main([__file__])

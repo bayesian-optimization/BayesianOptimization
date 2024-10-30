@@ -294,9 +294,18 @@ def test_no_target_func():
         target_space.probe({"p1": 1, "p2": 2})
 
 
-if __name__ == "__main__":
-    r"""
-    CommandLine:
-        python tests/test_target_space.py
-    """
-    pytest.main([__file__])
+def test_change_typed_bounds():
+    pbounds = {
+        "p1": (0, 1),
+        "p2": (1, 2),
+        "p3": (-1, 3, int),
+        "fruit": ("apple", "banana", "mango", "honeydew melon", "strawberry"),
+    }
+
+    space = TargetSpace(None, pbounds)
+
+    with pytest.raises(ValueError):
+        space.set_bounds({"fruit": ("apple", "banana", "mango", "honeydew melon")})
+
+    with pytest.raises(ValueError):
+        space.set_bounds({"p3": (-1, 2, float)})

@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from scipy.optimize import NonlinearConstraint
+from sklearn.gaussian_process import GaussianProcessRegressor, kernels
 
 from bayes_opt import BayesianOptimization
-from bayes_opt.parameter import CategoricalParameter, FloatParameter, IntParameter
+from bayes_opt.parameter import CategoricalParameter, FloatParameter, IntParameter, wrap_kernel
 from bayes_opt.target_space import TargetSpace
 
 
@@ -168,6 +170,22 @@ def test_to_string():
     assert space._params_config["fruit"].to_string("strawberry", 10) == "strawberry"
 
 
+def test_preconstructed_parameter():
+    pbounds = {"p1": (0, 1), "p2": (1, 2), "p3": IntParameter("p3", (-1, 3))}
+
+    def target_func(p1, p2, p3):
+        return p1 + p2 + p3
+
+    optimizer1 = BayesianOptimization(target_func, pbounds)
+
+    pbounds = {"p1": (0, 1), "p2": (1, 2), "p3": (-1, 3, int)}
+    optimizer2 = BayesianOptimization(target_func, pbounds)
+
+    assert optimizer1.space.keys == optimizer2.space.keys
+    assert (optimizer1.space.bounds == optimizer2.space.bounds).all()
+    assert optimizer1.space._params_config["p3"].to_float(2) == 2.0
+
+
 def test_integration_mixed_optimization():
     fruit_ratings = {"apple": 1.0, "banana": 2.0, "mango": 5.0, "honeydew melon": -10.0, "strawberry": np.pi}
 
@@ -183,3 +201,46 @@ def test_integration_mixed_optimization():
 
     optimizer = BayesianOptimization(target_func, pbounds)
     optimizer.maximize(init_points=2, n_iter=10)
+
+
+def test_integration_mixed_optimization_with_constraints():
+    fruit_ratings = {"apple": 1.0, "banana": 2.0, "mango": 5.0, "honeydew melon": -10.0, "strawberry": np.pi}
+
+    pbounds = {
+        "p1": (0, 1),
+        "p2": (1, 2),
+        "p3": (-1, 3, int),
+        "fruit": ("apple", "banana", "mango", "honeydew melon", "strawberry"),
+    }
+
+    def target_func(p1, p2, p3, fruit):
+        return p1 + p2 + p3 + fruit_ratings[fruit]
+
+    def constraint_func(p1, p2, p3, fruit):
+        return (p1 + p2 + p3 - fruit_ratings[fruit]) ** 2
+
+    constraint = NonlinearConstraint(constraint_func, 0, 4.0)
+
+    optimizer = BayesianOptimization(target_func, pbounds, constraint=constraint)
+    init_points = [
+        {"p1": 0.5, "p2": 1.5, "p3": 1, "fruit": "banana"},
+        {"p1": 0.5, "p2": 1.5, "p3": 2, "fruit": "mango"},
+    ]
+    for p in init_points:
+        optimizer.register(p, target=target_func(**p), constraint_value=constraint_func(**p))
+    optimizer.maximize(init_points=0, n_iter=2)
+
+
+def test_wrapped_kernel_fit():
+    pbounds = {"p1": (0, 1), "p2": (1, 10, int)}
+    space = TargetSpace(None, pbounds)
+
+    space.register(space.random_sample(0), 1.0)
+    space.register(space.random_sample(1), 5.0)
+
+    kernel = wrap_kernel(kernels.Matern(nu=2.5, length_scale=1e5), space.kernel_transform)
+    gp = GaussianProcessRegressor(kernel=kernel, alpha=1e-6, n_restarts_optimizer=5)
+
+    gp.fit(space.params, space.target)
+
+    assert gp.kernel_.length_scale != 1e5
