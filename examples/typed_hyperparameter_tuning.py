@@ -5,7 +5,6 @@ from sklearn.datasets import load_digits
 from sklearn.model_selection import KFold
 from sklearn.metrics import log_loss
 import matplotlib.pyplot as plt
-from tqdm import tqdm
 
 N_FOLDS = 10
 N_START = 2
@@ -34,7 +33,8 @@ res_discrete = []
 
 METRIC_SIGN = -1
 
-for i, (train_idx, test_idx) in enumerate(tqdm(kfold.split(data.data), total=N_FOLDS)):
+for i, (train_idx, test_idx) in enumerate(kfold.split(data.data)):
+    print(f'Fold {i + 1}/{N_FOLDS}')
     def gboost(log_learning_rate, max_depth, min_samples_split):
         clf = GradientBoostingClassifier(
             n_estimators=10,
@@ -50,6 +50,7 @@ for i, (train_idx, test_idx) in enumerate(tqdm(kfold.split(data.data), total=N_F
     continuous_optimizer = BayesianOptimization(
         f=gboost,
         pbounds=continuous_pbounds,
+        acquisition_function=acquisition.ExpectedImprovement(xi=1e-2, random_state=42),
         verbose=0,
         random_state=42,
     )
@@ -57,6 +58,7 @@ for i, (train_idx, test_idx) in enumerate(tqdm(kfold.split(data.data), total=N_F
     discrete_optimizer = BayesianOptimization(
         f=gboost,
         pbounds=discrete_pbounds,
+        acquisition_function=acquisition.ExpectedImprovement(xi=1e-2, random_state=42),
         verbose=0,
         random_state=42,
     )
