@@ -477,7 +477,7 @@ def wrap_kernel(kernel: kernels.Kernel, transform: Callable[[Any], Any]) -> kern
     kernel_type = type(kernel)
 
     class WrappedKernel(kernel_type):
-        @copy_signature(getattr(kernel_type.__init__, "deprecated_original", kernel_type.__init__))
+        @_copy_signature(getattr(kernel_type.__init__, "deprecated_original", kernel_type.__init__))
         def __init__(self, **kwargs: Any) -> None:
             super().__init__(**kwargs)
 
@@ -492,8 +492,8 @@ def wrap_kernel(kernel: kernels.Kernel, transform: Callable[[Any], Any]) -> kern
     return WrappedKernel(**kernel.get_params())
 
 
-def copy_signature(source_fct: Callable[..., Any]) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-    """Clones a signature from a source function to a target function.
+def _copy_signature(source_fct: Callable[..., Any]) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    """Clone a signature from a source function to a target function.
 
     via
     https://stackoverflow.com/a/58989918/

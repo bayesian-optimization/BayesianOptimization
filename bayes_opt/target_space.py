@@ -242,22 +242,33 @@ class TargetSpace:
             A dictionary with the parameter names as keys and the corresponding
             parameter objects as values.
         """
+        any_is_not_float = False  # TODO: remove in an upcoming release
         params: dict[str, BayesParameter] = {}
         for key in pbounds:
             pbound = pbounds[key]
 
             if isinstance(pbound, BayesParameter):
                 res = pbound
+                if not isinstance(pbound, FloatParameter):
+                    any_is_not_float = True
             elif (len(pbound) == 2 and is_numeric(pbound[0]) and is_numeric(pbound[1])) or (
                 len(pbound) == 3 and pbound[-1] is float
             ):
                 res = FloatParameter(name=key, bounds=(float(pbound[0]), float(pbound[1])))
             elif len(pbound) == 3 and pbound[-1] is int:
                 res = IntParameter(name=key, bounds=(int(pbound[0]), int(pbound[1])))
+                any_is_not_float = True
             else:
                 # assume categorical variable with pbound as list of possible values
                 res = CategoricalParameter(name=key, categories=pbound)
+                any_is_not_float = True
             params[key] = res
+        if any_is_not_float:
+            msg = (
+                "Non-float parameters are experimental and may not work as expected."
+                " Exercise caution when using them and please report any issues you encounter."
+            )
+            warn(msg, stacklevel=4)
         return params
 
     def make_masks(self) -> dict[str, NDArray[np.bool_]]:
