@@ -11,6 +11,7 @@
    Basic Tour </basic-tour>
    Advanced Tour </advanced-tour>
    Constrained Bayesian Optimization </constraints>
+   Parameter Types </parameter_types>
    Sequential Domain Reduction </domain_reduction>
    Acquisition Functions </acquisition_functions>
    Exploration vs. Exploitation </exploitation_vs_exploration>
@@ -26,6 +27,7 @@
    reference/constraint
    reference/domain_reduction
    reference/target_space
+   reference/parameter
    reference/exception
    reference/other
 
@@ -121,11 +123,13 @@ section. We suggest that you:
    to learn how to use the package's most important features.
 -  Take a look at the `advanced tour
    notebook <advanced-tour.html>`__
-   to learn how to make the package more flexible, how to deal with
-   categorical parameters, how to use observers, and more.
+   to learn how to make the package more flexible or how to use observers.
 -  To learn more about acquisition functions, a central building block
    of bayesian optimization, see the `acquisition functions
    notebook <acquisition_functions.html>`__
+-  If you want to optimize over integer-valued or categorical
+   parameters, see the `parameter types
+   notebook <parameter_types.html>`__.
 -  Check out this
    `notebook <visualization.html>`__
    with a step by step visualization of how this method works.
