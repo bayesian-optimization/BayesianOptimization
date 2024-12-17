@@ -13,7 +13,7 @@ scikit-learn = "^1.0.0"
 numpy = ">=1.25"
 scipy =  [
     {version = "^1.0.0", python = "<3.13"},
-    {version = "1.14", python = ">=3.13"}
+    {version = "1.14.1", python = ">=3.13"}
 ]
 colorama = "^0.4.6"
 
