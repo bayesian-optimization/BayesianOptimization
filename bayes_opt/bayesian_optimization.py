@@ -224,10 +224,10 @@ class BayesianOptimization(Observable):
         # TODO: remove in future version
         if isinstance(params, np.ndarray) and not self._sorting_warning_already_shown:
             msg = (
-                "You're attempting to register an np.ndarray. Currently, the optimizer internally sorts"
-                " parameters by key and expects any registered array to respect this order. In future"
-                " versions this behaviour will change and the order as given by the pbounds dictionary"
-                " will be used. If you wish to retain sorted parameters, please manually sort your pbounds"
+                "You're attempting to register an np.ndarray. In previous versions, the optimizer internally"
+                " sorted parameters by key and expected any registered array to respect this order."
+                " In the current and any future version the order as given by the pbounds dictionary will be"
+                " used. If you wish to retain sorted parameters, please manually sort your pbounds"
                 " dictionary before constructing the optimizer."
             )
             warn(msg, stacklevel=1)
@@ -252,10 +252,10 @@ class BayesianOptimization(Observable):
         # TODO: remove in future version
         if isinstance(params, np.ndarray) and not self._sorting_warning_already_shown:
             msg = (
-                "You're attempting to register an np.ndarray. Currently, the optimizer internally sorts"
-                " parameters by key and expects any registered array to respect this order. In future"
-                " versions this behaviour will change and the order as given by the pbounds dictionary"
-                " will be used. If you wish to retain sorted parameters, please manually sort your pbounds"
+                "You're attempting to register an np.ndarray. In previous versions, the optimizer internally"
+                " sorted parameters by key and expected any registered array to respect this order."
+                " In the current and any future version the order as given by the pbounds dictionary will be"
+                " used. If you wish to retain sorted parameters, please manually sort your pbounds"
                 " dictionary before constructing the optimizer."
             )
             warn(msg, stacklevel=1)
