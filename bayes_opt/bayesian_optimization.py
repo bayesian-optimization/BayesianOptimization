@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 
 
 class Observable:
-    """Inspired by https://www.protechtraining.com/blog/post/879#simple-observer."""
+    """Inspired by https://www.protechtraining.com/blog/post/tutorial-the-observer-pattern-in-python-879."""
 
     def __init__(self, events: Iterable[Any]) -> None:
         # maps event names to subscribers
