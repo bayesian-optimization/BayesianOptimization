@@ -8,7 +8,9 @@ from __future__ import annotations
 
 from collections import deque
 from typing import TYPE_CHECKING, Any
+from warnings import warn
 
+import numpy as np
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
 
@@ -22,7 +24,6 @@ from bayes_opt.util import ensure_rng
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Mapping, Sequence
 
-    import numpy as np
     from numpy.random import RandomState
     from numpy.typing import NDArray
     from scipy.optimize import NonlinearConstraint
@@ -166,6 +167,7 @@ class BayesianOptimization(Observable):
                 error_msg = "The transformer must be an instance of DomainTransformer"
                 raise TypeError(error_msg) from exc
 
+        self._sorting_warning_already_shown = False  # TODO: remove in future version
         super().__init__(events=DEFAULT_EVENTS)
 
     @property
@@ -220,6 +222,17 @@ class BayesianOptimization(Observable):
         constraint_value: float or None
             Value of the constraint function at the observation, if any.
         """
+        # TODO: remove in future version
+        if isinstance(params, np.ndarray) and not self._sorting_warning_already_shown:
+            msg = (
+                "You're attempting to register an np.ndarray. Currently, the optimizer internally sorts"
+                " parameters by key and expects any registered array to respect this order. In future"
+                " versions this behaviour will change and the order as given by the pbounds dictionary"
+                " will be used. If you wish to retain sorted parameters, please manually sort your pbounds"
+                " dictionary before constructing the optimizer."
+            )
+            warn(msg, stacklevel=1)
+            self._sorting_warning_already_shown = True
         self._space.register(params, target, constraint_value)
         self.dispatch(Events.OPTIMIZATION_STEP)
 
@@ -239,6 +252,18 @@ class BayesianOptimization(Observable):
             If True, the optimizer will evaluate the points when calling
             maximize(). Otherwise it will evaluate it at the moment.
         """
+        # TODO: remove in future version
+        if isinstance(params, np.ndarray) and not self._sorting_warning_already_shown:
+            msg = (
+                "You're attempting to register an np.ndarray. Currently, the optimizer internally sorts"
+                " parameters by key and expects any registered array to respect this order. In future"
+                " versions this behaviour will change and the order as given by the pbounds dictionary"
+                " will be used. If you wish to retain sorted parameters, please manually sort your pbounds"
+                " dictionary before constructing the optimizer."
+            )
+            warn(msg, stacklevel=1)
+            self._sorting_warning_already_shown = True
+            params = self._space.array_to_params(params)
         if lazy:
             self._queue.append(params)
         else:
@@ -267,7 +292,8 @@ class BayesianOptimization(Observable):
             init_points = max(init_points, 1)
 
         for _ in range(init_points):
-            self._queue.append(self._space.random_sample())
+            sample = self._space.random_sample()
+            self._queue.append(self._space.array_to_params(sample))
 
     def _prime_subscriptions(self) -> None:
         if not any([len(subs) for subs in self._events.values()]):

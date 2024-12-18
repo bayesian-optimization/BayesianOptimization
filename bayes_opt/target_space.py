@@ -102,8 +102,6 @@ class TargetSpace:
             else:
                 self._constraint_values = np.empty(shape=(0, constraint.lb.size), dtype=float)
 
-        self._sorting_warning_already_shown = False  # TODO: remove in future version
-
     def __contains__(self, x: NDArray[Float]) -> bool:
         """Check if this parameter has already been registered.
 
@@ -332,17 +330,6 @@ class TargetSpace:
         >>> len(space)
         1
         """
-        # TODO: remove in future version
-        if isinstance(params, np.ndarray) and not self._sorting_warning_already_shown:
-            msg = (
-                "You're attempting to register an np.ndarray. Currently, the optimizer internally sorts"
-                " parameters by key and expects any registered array to respect this order. In future"
-                " versions this behaviour will change and the order as given by the pbounds dictionary"
-                " will be used. If you wish to retain sorted parameters, please manually sort your pbounds"
-                " dictionary before constructing the optimizer."
-            )
-            warn(msg, stacklevel=1)
-            self._sorting_warning_already_shown = True
         x = self._as_array(params)
         if x in self:
             if self._allow_duplicate_points:
