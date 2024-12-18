@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bayesian-optimization"
-version = "2.0.1"
+version = "2.0.2"
 description = "Bayesian Optimization package"
 authors = ["Fernando Nogueira"]
 license = "MIT"
