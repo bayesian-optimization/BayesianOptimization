@@ -114,7 +114,7 @@ def test_l_bfgs_fails(target_space, random_state):
         except IndexError:
             return np.nan
 
-    _, min_acq_l = acq._l_bfgs_b_minimize(fun, bounds=target_space.bounds, n_x_seeds=1)
+    _, min_acq_l = acq._l_bfgs_b_minimize(fun, space=target_space, x_seeds=np.array([[2.5, 0.5]]))
     assert min_acq_l == np.inf
 
 

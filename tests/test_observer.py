@@ -114,13 +114,3 @@ def test_tracker():
     assert start_time == tracker._start_time
     if "win" not in sys.platform:
         assert previous_time < tracker._previous_time
-
-
-if __name__ == "__main__":
-    r"""
-    CommandLine:
-        python tests/test_observer.py
-    """
-    import pytest
-
-    pytest.main([__file__])
