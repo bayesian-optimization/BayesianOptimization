@@ -199,6 +199,20 @@ For constrained optimization:
        year={2014}
    }
 
+For optimization over non-float parameters:
+
+::
+
+   @article{garrido2020dealing,
+       title={Dealing with categorical and integer-valued variables in bayesian optimization with gaussian processes},
+       author={Garrido-Merch{\'a}n, Eduardo C and Hern{\'a}ndez-Lobato, Daniel},
+       journal={Neurocomputing},
+       volume={380},
+       pages={20--35},
+       year={2020},
+       publisher={Elsevier}
+   }
+
 .. |tests| image:: https://github.com/bayesian-optimization/BayesianOptimization/actions/workflows/run_tests.yml/badge.svg
 .. |Codecov| image:: https://codecov.io/github/bayesian-optimization/BayesianOptimization/badge.svg?branch=master&service=github
    :target: https://codecov.io/github/bayesian-optimization/BayesianOptimization?branch=master
