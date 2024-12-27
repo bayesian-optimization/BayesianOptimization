@@ -127,19 +127,19 @@ class ScreenLogger(_Tracker):
         x_ = ("T" if x else "F") if self._default_cell_size < 5 else str(x)
         return f"{x_:<{self._default_cell_size}}"
 
-    def _format_key(self, key: str) -> str:
-        """Format a key.
+    def _format_str(self, str_: str) -> str:
+        """Format a str.
 
         Parameters
         ----------
-        key : string
+        str_ : str
             Value to format.
 
         Returns
         -------
         A stringified, formatted version of `x`.
         """
-        s = f"{key:^{self._default_cell_size}}"
+        s = f"{str_:^{self._default_cell_size}}"
         if len(s) > self._default_cell_size:
             return s[: self._default_cell_size - 3] + "..."
         return s
@@ -168,7 +168,10 @@ class ScreenLogger(_Tracker):
         if self._is_constrained:
             cells[2] = self._format_bool(res["allowed"])
         params = res.get("params", {})
-        cells[3:] = [self._format_number(params.get(key, float("nan"))) for key in keys]
+        cells[3:] = [
+            instance.space._params_config[key].to_string(val, self._default_cell_size)
+            for key, val in params.items()
+        ]
 
         return "| " + " | ".join(colour + x + self._colour_reset for x in cells if x is not None) + " |"
 
@@ -188,10 +191,10 @@ class ScreenLogger(_Tracker):
         # iter, target, allowed [, *params]
         cells: list[str | None] = [None] * (3 + len(keys))
 
-        cells[:2] = self._format_key("iter"), self._format_key("target")
+        cells[:2] = self._format_str("iter"), self._format_str("target")
         if self._is_constrained:
-            cells[2] = self._format_key("allowed")
-        cells[3:] = [self._format_key(key) for key in keys]
+            cells[2] = self._format_str("allowed")
+        cells[3:] = [self._format_str(key) for key in keys]
 
         line = "| " + " | ".join(x for x in cells if x is not None) + " |"
         self._header_length = len(line)

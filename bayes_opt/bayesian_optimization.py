@@ -16,13 +16,15 @@ from sklearn.gaussian_process.kernels import Matern
 
 from bayes_opt import acquisition
 from bayes_opt.constraint import ConstraintModel
+from bayes_opt.domain_reduction import DomainTransformer
 from bayes_opt.event import DEFAULT_EVENTS, Events
 from bayes_opt.logger import _get_default_logger
+from bayes_opt.parameter import wrap_kernel
 from bayes_opt.target_space import TargetSpace
 from bayes_opt.util import ensure_rng
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable, Mapping, Sequence
+    from collections.abc import Callable, Iterable, Mapping
 
     from numpy.random import RandomState
     from numpy.typing import NDArray
@@ -31,6 +33,7 @@ if TYPE_CHECKING:
     from bayes_opt.acquisition import AcquisitionFunction
     from bayes_opt.constraint import ConstraintModel
     from bayes_opt.domain_reduction import DomainTransformer
+    from bayes_opt.parameter import BoundsMapping, ParamsType
 
     Float = np.floating[Any]
 
@@ -114,7 +117,7 @@ class BayesianOptimization(Observable):
     ):
         self._random_state = ensure_rng(random_state)
         self._allow_duplicate_points = allow_duplicate_points
-        self._queue: deque[Mapping[str, float] | Sequence[float] | NDArray[Float]] = deque()
+        self._queue: deque[ParamsType] = deque()
 
         if acquisition_function is None:
             if constraint is None:
@@ -127,15 +130,6 @@ class BayesianOptimization(Observable):
                 )
         else:
             self._acquisition_function = acquisition_function
-
-        # Internal GP regressor
-        self._gp = GaussianProcessRegressor(
-            kernel=Matern(nu=2.5),
-            alpha=1e-6,
-            normalize_y=True,
-            n_restarts_optimizer=5,
-            random_state=self._random_state,
-        )
 
         if constraint is None:
             # Data structure containing the function to be optimized, the
@@ -158,14 +152,22 @@ class BayesianOptimization(Observable):
             )
             self.is_constrained = True
 
+        # Internal GP regressor
+        self._gp = GaussianProcessRegressor(
+            kernel=wrap_kernel(Matern(nu=2.5), transform=self._space.kernel_transform),
+            alpha=1e-6,
+            normalize_y=True,
+            n_restarts_optimizer=5,
+            random_state=self._random_state,
+        )
+
         self._verbose = verbose
         self._bounds_transformer = bounds_transformer
         if self._bounds_transformer:
-            try:
-                self._bounds_transformer.initialize(self._space)
-            except (AttributeError, TypeError) as exc:
-                error_msg = "The transformer must be an instance of DomainTransformer"
-                raise TypeError(error_msg) from exc
+            if not isinstance(self._bounds_transformer, DomainTransformer):
+                msg = "The transformer must be an instance of DomainTransformer"
+                raise TypeError(msg)
+            self._bounds_transformer.initialize(self._space)
 
         self._sorting_warning_already_shown = False  # TODO: remove in future version
         super().__init__(events=DEFAULT_EVENTS)
@@ -204,10 +206,7 @@ class BayesianOptimization(Observable):
         return self._space.res()
 
     def register(
-        self,
-        params: Mapping[str, float] | Sequence[float] | NDArray[Float],
-        target: float,
-        constraint_value: float | NDArray[Float] | None = None,
+        self, params: ParamsType, target: float, constraint_value: float | NDArray[Float] | None = None
     ) -> None:
         """Register an observation with known target.
 
@@ -225,10 +224,10 @@ class BayesianOptimization(Observable):
         # TODO: remove in future version
         if isinstance(params, np.ndarray) and not self._sorting_warning_already_shown:
             msg = (
-                "You're attempting to register an np.ndarray. Currently, the optimizer internally sorts"
-                " parameters by key and expects any registered array to respect this order. In future"
-                " versions this behaviour will change and the order as given by the pbounds dictionary"
-                " will be used. If you wish to retain sorted parameters, please manually sort your pbounds"
+                "You're attempting to register an np.ndarray. In previous versions, the optimizer internally"
+                " sorted parameters by key and expected any registered array to respect this order."
+                " In the current and any future version the order as given by the pbounds dictionary will be"
+                " used. If you wish to retain sorted parameters, please manually sort your pbounds"
                 " dictionary before constructing the optimizer."
             )
             warn(msg, stacklevel=1)
@@ -236,9 +235,7 @@ class BayesianOptimization(Observable):
         self._space.register(params, target, constraint_value)
         self.dispatch(Events.OPTIMIZATION_STEP)
 
-    def probe(
-        self, params: Mapping[str, float] | Sequence[float] | NDArray[Float], lazy: bool = True
-    ) -> None:
+    def probe(self, params: ParamsType, lazy: bool = True) -> None:
         """Evaluate the function at the given points.
 
         Useful to guide the optimizer.
@@ -255,10 +252,10 @@ class BayesianOptimization(Observable):
         # TODO: remove in future version
         if isinstance(params, np.ndarray) and not self._sorting_warning_already_shown:
             msg = (
-                "You're attempting to register an np.ndarray. Currently, the optimizer internally sorts"
-                " parameters by key and expects any registered array to respect this order. In future"
-                " versions this behaviour will change and the order as given by the pbounds dictionary"
-                " will be used. If you wish to retain sorted parameters, please manually sort your pbounds"
+                "You're attempting to register an np.ndarray. In previous versions, the optimizer internally"
+                " sorted parameters by key and expected any registered array to respect this order."
+                " In the current and any future version the order as given by the pbounds dictionary will be"
+                " used. If you wish to retain sorted parameters, please manually sort your pbounds"
                 " dictionary before constructing the optimizer."
             )
             warn(msg, stacklevel=1)
@@ -270,10 +267,10 @@ class BayesianOptimization(Observable):
             self._space.probe(params)
             self.dispatch(Events.OPTIMIZATION_STEP)
 
-    def suggest(self) -> dict[str, float]:
+    def suggest(self) -> dict[str, float | NDArray[Float]]:
         """Suggest a promising point to probe next."""
         if len(self._space) == 0:
-            return self._space.array_to_params(self._space.random_sample())
+            return self._space.array_to_params(self._space.random_sample(random_state=self._random_state))
 
         # Finding argmax of the acquisition function.
         suggestion = self._acquisition_function.suggest(gp=self._gp, target_space=self._space, fit_gp=True)
@@ -292,7 +289,7 @@ class BayesianOptimization(Observable):
             init_points = max(init_points, 1)
 
         for _ in range(init_points):
-            sample = self._space.random_sample()
+            sample = self._space.random_sample(random_state=self._random_state)
             self._queue.append(self._space.array_to_params(sample))
 
     def _prime_subscriptions(self) -> None:
@@ -344,7 +341,7 @@ class BayesianOptimization(Observable):
 
         self.dispatch(Events.OPTIMIZATION_END)
 
-    def set_bounds(self, new_bounds: Mapping[str, NDArray[Float] | Sequence[float]]) -> None:
+    def set_bounds(self, new_bounds: BoundsMapping) -> None:
         """Modify the bounds of the search space.
 
         Parameters
@@ -356,4 +353,6 @@ class BayesianOptimization(Observable):
 
     def set_gp_params(self, **params: Any) -> None:
         """Set parameters of the internal Gaussian Process Regressor."""
+        if "kernel" in params:
+            params["kernel"] = wrap_kernel(kernel=params["kernel"], transform=self._space.kernel_transform)
         self._gp.set_params(**params)
