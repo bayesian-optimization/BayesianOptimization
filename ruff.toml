@@ -126,3 +126,6 @@ split-on-trailing-comma = false
 
 [lint.pydocstyle]
 convention = "numpy"
+
+[lint.flake8-pytest-style]
+fixture-parentheses = false

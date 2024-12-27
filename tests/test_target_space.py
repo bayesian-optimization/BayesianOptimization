@@ -22,9 +22,9 @@ def test_keys_and_bounds_in_same_order():
 
     assert space.dim == len(pbounds)
     assert space.empty
-    assert space.keys == ["p1", "p2", "p3", "p4"]
+    assert space.keys == ["p1", "p3", "p2", "p4"]
     assert all(space.bounds[:, 0] == np.array([0, 0, 0, 0]))
-    assert all(space.bounds[:, 1] == np.array([1, 2, 3, 4]))
+    assert all(space.bounds[:, 1] == np.array([1, 3, 2, 4]))
 
 
 def test_params_to_array():
@@ -50,25 +50,23 @@ def test_array_to_params():
         space.array_to_params(np.array([2, 3, 5]))
 
 
-def test_as_array():
+def test_to_float():
     space = TargetSpace(target_func, PBOUNDS)
 
-    x = space._as_array([0, 1])
+    x = space._to_float({"p2": 0, "p1": 1})
     assert x.shape == (2,)
-    assert all(x == np.array([0, 1]))
-
-    x = space._as_array({"p2": 1, "p1": 2})
-    assert x.shape == (2,)
-    assert all(x == np.array([2, 1]))
+    assert all(x == np.array([1, 0]))
 
     with pytest.raises(ValueError):
-        x = space._as_array([2, 1, 7])
+        x = space._to_float([0, 1])
     with pytest.raises(ValueError):
-        x = space._as_array({"p2": 1, "p1": 2, "other": 7})
+        x = space._to_float([2, 1, 7])
     with pytest.raises(ValueError):
-        x = space._as_array({"p2": 1})
+        x = space._to_float({"p2": 1, "p1": 2, "other": 7})
     with pytest.raises(ValueError):
-        x = space._as_array({"other": 7})
+        x = space._to_float({"p2": 1})
+    with pytest.raises(ValueError):
+        x = space._to_float({"other": 7})
 
 
 def test_register():
@@ -82,11 +80,17 @@ def test_register():
     assert all(space.params[0] == np.array([1, 2]))
     assert all(space.target == np.array([3]))
 
-    # registering with array
-    space.register(params={"p1": 5, "p2": 4}, target=9)
+    # registering with dict out of order
+    space.register(params={"p2": 4, "p1": 5}, target=9)
     assert len(space) == 2
     assert all(space.params[1] == np.array([5, 4]))
     assert all(space.target == np.array([3, 9]))
+
+    # registering with array
+    space.register(params=np.array([0, 1]), target=1)
+    assert len(space) == 3
+    assert all(space.params[2] == np.array([0, 1]))
+    assert all(space.target == np.array([3, 9, 1]))
 
     with pytest.raises(NotUniqueError):
         space.register(params={"p1": 1, "p2": 2}, target=3)
@@ -95,8 +99,7 @@ def test_register():
 
 
 def test_register_with_constraint():
-    PBOUNDS = {"p1": (0, 10), "p2": (1, 100)}
-    constraint = ConstraintModel(lambda x: x, -2, 2)
+    constraint = ConstraintModel(lambda x: x, -2, 2, transform=lambda x: x)
     space = TargetSpace(target_func, PBOUNDS, constraint=constraint)
 
     assert len(space) == 0
@@ -108,14 +111,14 @@ def test_register_with_constraint():
     assert all(space.constraint_values == np.array([0]))
 
     # registering with array
-    space.register(params={"p1": 5, "p2": 4}, target=9, constraint_value=2)
+    space.register(params={"p1": 0.5, "p2": 4}, target=4.5, constraint_value=2)
     assert len(space) == 2
-    assert all(space.params[1] == np.array([5, 4]))
-    assert all(space.target == np.array([3, 9]))
+    assert all(space.params[1] == np.array([0.5, 4]))
+    assert all(space.target == np.array([3, 4.5]))
     assert all(space.constraint_values == np.array([0, 2]))
 
     with pytest.raises(ValueError):
-        space.register(params={"p1": 2, "p2": 2}, target=3)
+        space.register(params={"p1": 0.2, "p2": 2}, target=2.2)
 
 
 def test_register_point_beyond_bounds():
@@ -134,7 +137,7 @@ def test_probe():
     # probing with dict
     space.probe(params={"p1": 1, "p2": 2})
     assert len(space) == 1
-    assert all(space.params[0] == np.array([1, 2]))
+    assert all(space.params[-1] == np.array([1, 2]))
     assert all(space.target == np.array([3]))
 
     # probing with array
@@ -146,7 +149,7 @@ def test_probe():
     # probing same point with dict
     space.probe(params={"p1": 1, "p2": 2})
     assert len(space) == 3
-    assert all(space.params[1] == np.array([5, 4]))
+    assert all(space.params[2] == np.array([1, 2]))
     assert all(space.target == np.array([3, 9, 3]))
 
     # probing same point with array
@@ -277,12 +280,12 @@ def test_set_bounds():
     # Ignore unknown keys
     space.set_bounds({"other": (7, 8)})
     assert all(space.bounds[:, 0] == np.array([0, 0, 0, 0]))
-    assert all(space.bounds[:, 1] == np.array([1, 2, 3, 4]))
+    assert all(space.bounds[:, 1] == np.array([1, 3, 2, 4]))
 
     # Update bounds accordingly
     space.set_bounds({"p2": (1, 8)})
-    assert all(space.bounds[:, 0] == np.array([0, 1, 0, 0]))
-    assert all(space.bounds[:, 1] == np.array([1, 8, 3, 4]))
+    assert all(space.bounds[:, 0] == np.array([0, 0, 1, 0]))
+    assert all(space.bounds[:, 1] == np.array([1, 3, 8, 4]))
 
 
 def test_no_target_func():
@@ -291,9 +294,18 @@ def test_no_target_func():
         target_space.probe({"p1": 1, "p2": 2})
 
 
-if __name__ == "__main__":
-    r"""
-    CommandLine:
-        python tests/test_target_space.py
-    """
-    pytest.main([__file__])
+def test_change_typed_bounds():
+    pbounds = {
+        "p1": (0, 1),
+        "p2": (1, 2),
+        "p3": (-1, 3, int),
+        "fruit": ("apple", "banana", "mango", "honeydew melon", "strawberry"),
+    }
+
+    space = TargetSpace(None, pbounds)
+
+    with pytest.raises(ValueError):
+        space.set_bounds({"fruit": ("apple", "banana", "mango", "honeydew melon")})
+
+    with pytest.raises(ValueError):
+        space.set_bounds({"p3": (-1, 2, float)})
