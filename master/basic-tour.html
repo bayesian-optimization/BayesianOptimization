@@ -428,6 +428,21 @@
   
   
     <li class="md-nav__item">
+      <a href="parameter_types.html" class="md-nav__link">
+        <span title="/parameter_types.ipynb (reference label)" class="md-ellipsis">Parameter Types</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="domain_reduction.html" class="md-nav__link">
         <span title="/domain_reduction.ipynb (reference label)" class="md-ellipsis">Sequential Domain Reduction</span>
       </a>
@@ -586,6 +601,21 @@
     <li class="md-nav__item">
       <a href="reference/target_space.html" class="md-nav__link">
         <span title="/reference/target_space.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>Target<wbr>Space</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/parameter.html" class="md-nav__link">
+        <span title="/reference/parameter.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>parameter</span>
       </a>
     </li>
   
@@ -798,7 +828,11 @@ See the references for a proper discussion of this method.</p>
 </div>
 </div>
 <p>The BayesianOptimization object will work out of the box without much tuning needed. The main method you should be aware of is <code class="docutils literal notranslate"><span class="pre">maximize</span></code>, which does exactly what you think it does.</p>
-<p>There are many parameters you can pass to maximize, nonetheless, the most important ones are: - <code class="docutils literal notranslate"><span class="pre">n_iter</span></code>: How many steps of bayesian optimization you want to perform. The more steps the more likely to find a good maximum you are. - <code class="docutils literal notranslate"><span class="pre">init_points</span></code>: How many steps of <strong>random</strong> exploration you want to perform. Random exploration can help by diversifying the exploration space.</p>
+<p>There are many parameters you can pass to maximize, nonetheless, the most important ones are:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">n_iter</span></code>: How many steps of bayesian optimization you want to perform. The more steps the more likely to find a good maximum you are.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">init_points</span></code>: How many steps of <strong>random</strong> exploration you want to perform. Random exploration can help by diversifying the exploration space.</p></li>
+</ul>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[5]:
 </code></pre></div>
@@ -919,7 +953,7 @@ Iteration 4:
 </code></pre></div>
 </div>
 </div>
-<p>Or as an iterable. Beware that the order has to be alphabetical. You can usee <code class="docutils literal notranslate"><span class="pre">optimizer.space.keys</span></code> for guidance</p>
+<p>Or as an iterable. Beware that the order has to match the order of the initial <code class="docutils literal notranslate"><span class="pre">pbounds</span></code> dictionary. You can usee <code class="docutils literal notranslate"><span class="pre">optimizer.space.keys</span></code> for guidance</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[11]:
 </code></pre></div>
@@ -979,7 +1013,11 @@ Iteration 4:
 </code></pre></div>
 </div>
 </div>
-<p>The observer paradigm works by: 1. Instantiating an observer object. 2. Tying the observer object to a particular event fired by an optimizer.</p>
+<p>The observer paradigm works by:</p>
+<ol class="arabic simple">
+<li><p>Instantiating an observer object.</p></li>
+<li><p>Tying the observer object to a particular event fired by an optimizer.</p></li>
+</ol>
 <p>The <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code> object fires a number of internal events during optimization, in particular, every time it probes the function and obtains a new parameter-target combination it will fire an <code class="docutils literal notranslate"><span class="pre">Events.OPTIMIZATION_STEP</span></code> event, which our logger will listen to.</p>
 <p><strong>Caveat:</strong> The logger will not look back at previously probed points.</p>
 <div class="nbinput nblast docutils container">

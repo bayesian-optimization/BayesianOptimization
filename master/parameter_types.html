@@ -1,0 +1,1474 @@
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="_static/func.ico">
+    
+    
+      
+        <title>Optimizing over non-float Parameters - Bayesian Optimization</title>
+      
+    
+    
+      
+        
+        
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+        <link rel="stylesheet" type="text/css" href="_static/sphinx_immaterial_theme.4b4a8c74e2ff2ab5b.min.css?v=afa97f93" />
+        <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <script>__md_scope=new URL("/",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="light-blue" data-md-color-accent="light-green">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#1.-Simple-integer-valued-function" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="index.html" title="Bayesian Optimization" class="md-header__button md-logo" aria-label="Bayesian Optimization" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Bayesian Optimization
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Optimizing over non-float Parameters
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="light-blue" data-md-color-accent="light-green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7M9 21v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1m3-17a5 5 0 0 0-5 5c0 2.05 1.23 3.81 3 4.58V16h4v-2.42c1.77-.77 3-2.53 3-4.58a5 5 0 0 0-5-5Z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-orange" data-md-color-accent="lime"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7M9 21a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-1H9v1Z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7 0-.24-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91 1.61 0 2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08Z"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/bayesian-optimization/BayesianOptimization/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    bayesian-optimization
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="index.html" title="Bayesian Optimization" class="md-nav__button md-logo" aria-label="Bayesian Optimization" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+    </a>
+    Bayesian Optimization
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/bayesian-optimization/BayesianOptimization/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    bayesian-optimization
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
+        <span title="/index.rst (reference label)" class="md-ellipsis">Quickstart</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          <span class="md-ellipsis">Example Notebooks:<wbr></span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Example Notebooks:" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">Example Notebooks:<wbr></span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="basic-tour.html" class="md-nav__link">
+        <span title="/basic-tour.ipynb (reference label)" class="md-ellipsis">Basic Tour</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="advanced-tour.html" class="md-nav__link">
+        <span title="/advanced-tour.ipynb (reference label)" class="md-ellipsis">Advanced Tour</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="constraints.html" class="md-nav__link">
+        <span title="/constraints.ipynb (reference label)" class="md-ellipsis">Constrained Bayesian Optimization</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          <span title="/parameter_types.ipynb (reference label)" class="md-ellipsis">Parameter Types</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="#" class="md-nav__link md-nav__link--active">
+        <span title="/parameter_types.ipynb (reference label)" class="md-ellipsis">Parameter Types</span>
+      </a>
+      
+        
+
+  
+
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      <span title="/parameter_types.ipynb (reference label)" class="md-ellipsis">Parameter Types</span>
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1.-Simple-integer-valued-function" class="md-nav__link">
+    <span title="/parameter_types.ipynb#1.-simple-integer-valued-function (reference label)" class="md-ellipsis">1.<wbr> Simple integer-<wbr>valued function</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2.-Mixed-parameter-optimization" class="md-nav__link">
+    <span title="/parameter_types.ipynb#2.-mixed-parameter-optimization (reference label)" class="md-ellipsis">2.<wbr> Mixed-<wbr>parameter optimization</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3.-Categorical-variables" class="md-nav__link">
+    <span title="/parameter_types.ipynb#3.-categorical-variables (reference label)" class="md-ellipsis">3.<wbr> Categorical variables</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4.-Use-in-ML" class="md-nav__link">
+    <span title="/parameter_types.ipynb#4.-use-in-ml (reference label)" class="md-ellipsis">4.<wbr> Use in ML</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5.-Defining-your-own-Parameter" class="md-nav__link">
+    <span title="/parameter_types.ipynb#5.-defining-your-own-parameter (reference label)" class="md-ellipsis">5.<wbr> Defining your own Parameter</span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="domain_reduction.html" class="md-nav__link">
+        <span title="/domain_reduction.ipynb (reference label)" class="md-ellipsis">Sequential Domain Reduction</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="acquisition_functions.html" class="md-nav__link">
+        <span title="/acquisition_functions.ipynb (reference label)" class="md-ellipsis">Acquisition Functions</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="exploitation_vs_exploration.html" class="md-nav__link">
+        <span title="/exploitation_vs_exploration.ipynb (reference label)" class="md-ellipsis">Exploration vs.<wbr> Exploitation</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="visualization.html" class="md-nav__link">
+        <span title="/visualization.ipynb (reference label)" class="md-ellipsis">Visualization of a 1D-<wbr>Optimization</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          <span class="md-ellipsis">API reference:<wbr></span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="API reference:" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">API reference:<wbr></span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/bayes_opt.html" class="md-nav__link">
+        <span title="/reference/bayes_opt.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>Bayesian<wbr>Optimization</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/acquisition.html" class="md-nav__link">
+        <span title="/reference/acquisition.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>acquisition</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/constraint.html" class="md-nav__link">
+        <span title="/reference/constraint.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>Constraint<wbr>Model</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/domain_reduction.html" class="md-nav__link">
+        <span title="/reference/domain_reduction.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>Sequential<wbr>Domain<wbr>Reduction<wbr>Transformer</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/target_space.html" class="md-nav__link">
+        <span title="/reference/target_space.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>Target<wbr>Space</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/parameter.html" class="md-nav__link">
+        <span title="/reference/parameter.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>parameter</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/exception.html" class="md-nav__link">
+        <span title="/reference/exception.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>exception</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/other.html" class="md-nav__link">
+        <span title="/reference/other.rst (reference label)" class="md-ellipsis">Other</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+<nav class="md-nav md-nav--secondary">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      <span title="/parameter_types.ipynb (reference label)" class="md-ellipsis">Parameter Types</span>
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1.-Simple-integer-valued-function" class="md-nav__link">
+    <span title="/parameter_types.ipynb#1.-simple-integer-valued-function (reference label)" class="md-ellipsis">1.<wbr> Simple integer-<wbr>valued function</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2.-Mixed-parameter-optimization" class="md-nav__link">
+    <span title="/parameter_types.ipynb#2.-mixed-parameter-optimization (reference label)" class="md-ellipsis">2.<wbr> Mixed-<wbr>parameter optimization</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3.-Categorical-variables" class="md-nav__link">
+    <span title="/parameter_types.ipynb#3.-categorical-variables (reference label)" class="md-ellipsis">3.<wbr> Categorical variables</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4.-Use-in-ML" class="md-nav__link">
+    <span title="/parameter_types.ipynb#4.-use-in-ml (reference label)" class="md-ellipsis">4.<wbr> Use in ML</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5.-Defining-your-own-Parameter" class="md-nav__link">
+    <span title="/parameter_types.ipynb#5.-defining-your-own-parameter (reference label)" class="md-ellipsis">5.<wbr> Defining your own Parameter</span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset" role="main">
+                  
+
+
+  <a href="https://github.com/bayesian-optimization/BayesianOptimization/blob/master/docsrc/parameter_types.ipynb" title="Edit this page" class="md-content__button md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
+  </a>
+
+<h1 id="Optimizing-over-non-float-Parameters">Optimizing over non-float Parameters<a class="headerlink" href="#Optimizing-over-non-float-Parameters" title="Link to this heading">¶</a></h1>
+<p>Sometimes, you need to optimize a target that is not just a function of floating-point values, but relies on integer or categorical parameters. This notebook shows how such problems are handled by following an approach from <a class="reference external" href="https://arxiv.org/abs/1805.03463">“Dealing with categorical and integer-valued variables in Bayesian Optimization with Gaussian processes” by Garrido-Merchán and Hernández-Lobato</a>. One simple way of handling an integer-valued parameter is to run the optimization as
+normal, but then round to the nearest integer after a point has been suggested. This method is similar, except that the rounding is performed in the <em>kernel</em>. Why does this matter? It means that the kernel is aware that two parameters, that map the to same point but are potentially distinct before this transformation are the same.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[1]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">bayes_opt</span> <span class="kn">import</span> <span class="n">BayesianOptimization</span>
+<span class="kn">from</span> <span class="nn">bayes_opt</span> <span class="kn">import</span> <span class="n">acquisition</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.gaussian_process.kernels</span> <span class="kn">import</span> <span class="n">Matern</span>
+
+<span class="c1"># suppress warnings about this being an experimental feature</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+<h2 id="1.-Simple-integer-valued-function">1. Simple integer-valued function<a class="headerlink" href="#1.-Simple-integer-valued-function" title="Link to this heading">¶</a></h2>
+<p>Let’s look at a simple, one-dimensional, integer-valued target function and compare a typed optimizer and a continuous optimizer.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[2]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">target_function_1d</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="mi">5</span><span class="p">)</span>
+
+<span class="n">c_pbounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)}</span>
+<span class="n">bo_cont</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span><span class="n">target_function_1d</span><span class="p">,</span> <span class="n">c_pbounds</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># one way of constructing an integer-valued parameter is to add a third element to the tuple</span>
+<span class="n">d_pbounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="nb">int</span><span class="p">)}</span>
+<span class="n">bo_disc</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span><span class="n">target_function_1d</span><span class="p">,</span> <span class="n">d_pbounds</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">bo_cont</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">bo_cont</span><span class="o">.</span><span class="n">acquisition_function</span><span class="o">.</span><span class="n">_fit_gp</span><span class="p">(</span><span class="n">bo_cont</span><span class="o">.</span><span class="n">_gp</span><span class="p">,</span> <span class="n">bo_cont</span><span class="o">.</span><span class="n">space</span><span class="p">)</span>
+
+<span class="n">y_mean</span><span class="p">,</span> <span class="n">y_std</span> <span class="o">=</span> <span class="n">bo_cont</span><span class="o">.</span><span class="n">_gp</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">return_std</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Continuous&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span> <span class="n">target_function_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)),</span> <span class="s1">&#39;k--&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;True function&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span> <span class="n">y_mean</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Predicted mean&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span> <span class="n">y_mean</span> <span class="o">-</span> <span class="n">y_std</span><span class="p">,</span> <span class="n">y_mean</span> <span class="o">+</span> <span class="n">y_std</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Predicted std&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">bo_cont</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">bo_cont</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="s1">&#39;ro&#39;</span><span class="p">)</span>
+
+<span class="n">bo_disc</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">bo_disc</span><span class="o">.</span><span class="n">acquisition_function</span><span class="o">.</span><span class="n">_fit_gp</span><span class="p">(</span><span class="n">bo_disc</span><span class="o">.</span><span class="n">_gp</span><span class="p">,</span> <span class="n">bo_disc</span><span class="o">.</span><span class="n">space</span><span class="p">)</span>
+
+<span class="n">y_mean</span><span class="p">,</span> <span class="n">y_std</span> <span class="o">=</span> <span class="n">bo_disc</span><span class="o">.</span><span class="n">_gp</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">return_std</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Discrete&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span> <span class="n">target_function_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)),</span> <span class="s1">&#39;k--&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;True function&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span> <span class="n">y_mean</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Predicted mean&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span> <span class="n">y_mean</span> <span class="o">-</span> <span class="n">y_std</span><span class="p">,</span> <span class="n">y_mean</span> <span class="o">+</span> <span class="n">y_std</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Predicted std&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">bo_disc</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">bo_disc</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="s1">&#39;ro&#39;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axs</span><span class="p">:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/parameter_types_3_0.png" src="_images/parameter_types_3_0.png" />
+</div>
+</div>
+<p>We can see, that the discrete optimizer is aware that the function is discrete and does not try to predict values between the integers. The continuous optimizer tries to predict values between the integers, despite the fact that these are known. We can also see that the discrete optimizer predicts blocky mean and standard deviations, which is a result of the discrete nature of the function.</p>
+<h2 id="2.-Mixed-parameter-optimization">2. Mixed-parameter optimization<a class="headerlink" href="#2.-Mixed-parameter-optimization" title="Link to this heading">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[3]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">discretized_function</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">**</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">+</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">y</span><span class="p">))</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.01</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[4]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="c1"># Bounded region of parameter space</span>
+<span class="n">c_pbounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)}</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[5]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;All-float Optimizer&quot;</span><span class="p">,</span> <span class="s2">&quot;Typed Optimizer&quot;</span><span class="p">]</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[6]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">continuous_optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span>
+    <span class="n">f</span><span class="o">=</span><span class="n">discretized_function</span><span class="p">,</span>
+    <span class="n">acquisition_function</span><span class="o">=</span><span class="n">acquisition</span><span class="o">.</span><span class="n">ExpectedImprovement</span><span class="p">(</span><span class="n">xi</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+    <span class="n">pbounds</span><span class="o">=</span><span class="n">c_pbounds</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">continuous_optimizer</span><span class="o">.</span><span class="n">set_gp_params</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="n">Matern</span><span class="p">(</span><span class="n">nu</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">length_scale</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span>
+
+<span class="n">d_pbounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="nb">int</span><span class="p">)}</span>
+<span class="n">discrete_optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span>
+    <span class="n">f</span><span class="o">=</span><span class="n">discretized_function</span><span class="p">,</span>
+    <span class="n">acquisition_function</span><span class="o">=</span><span class="n">acquisition</span><span class="o">.</span><span class="n">ExpectedImprovement</span><span class="p">(</span><span class="n">xi</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+    <span class="n">pbounds</span><span class="o">=</span><span class="n">d_pbounds</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">discrete_optimizer</span><span class="o">.</span><span class="n">set_gp_params</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="n">Matern</span><span class="p">(</span><span class="n">nu</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">length_scale</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">2</span><span class="p">)));</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[7]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">lbl</span><span class="p">,</span> <span class="n">optimizer</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="p">[</span><span class="n">continuous_optimizer</span><span class="p">,</span> <span class="n">discrete_optimizer</span><span class="p">]):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;====================  </span><span class="si">{</span><span class="n">lbl</span><span class="si">}</span><span class="s2">  ====================</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span>
+        <span class="n">init_points</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">n_iter</span><span class="o">=</span><span class="mi">13</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Max: </span><span class="si">{</span><span class="n">optimizer</span><span class="o">.</span><span class="n">max</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+====================  All-float Optimizer  ====================
+
+|   iter    |  target   |     x     |     y     |
+-------------------------------------------------
+| 1         | 0.03061   | -0.829779 | 2.2032449 |
+| 2         | -0.6535   | -4.998856 | -1.976674 |
+| <span class="ansi-magenta-fg">3        </span> | <span class="ansi-magenta-fg">0.8025   </span> | <span class="ansi-magenta-fg">-0.829779</span> | <span class="ansi-magenta-fg">2.6549696</span> |
+| <span class="ansi-magenta-fg">4        </span> | <span class="ansi-magenta-fg">0.9203   </span> | <span class="ansi-magenta-fg">-0.981065</span> | <span class="ansi-magenta-fg">2.6644394</span> |
+| <span class="ansi-magenta-fg">5        </span> | <span class="ansi-magenta-fg">1.008    </span> | <span class="ansi-magenta-fg">-1.652553</span> | <span class="ansi-magenta-fg">2.7133425</span> |
+| 6         | 0.9926    | -1.119714 | 2.8358733 |
+| <span class="ansi-magenta-fg">7        </span> | <span class="ansi-magenta-fg">1.322    </span> | <span class="ansi-magenta-fg">-2.418942</span> | <span class="ansi-magenta-fg">3.4600371</span> |
+| 8         | -0.5063   | -3.092074 | 3.7368226 |
+| 9         | -0.6432   | -4.089558 | -0.560384 |
+| 10        | 1.267     | -2.360726 | 3.3725022 |
+| 11        | 0.4649    | -2.247113 | 3.7419056 |
+| 12        | 1.0       | -1.740988 | 3.4854116 |
+| 13        | 0.986     | 1.2164322 | 4.4938459 |
+| 14        | -2.27     | -2.213867 | 0.3585570 |
+| 15        | -1.853    | 1.7935035 | -0.377351 |
+=================================================
+Max: 1.321554535694256
+
+
+====================  Typed Optimizer  ====================
+
+|   iter    |  target   |     x     |     y     |
+-------------------------------------------------
+| 1         | 0.8025    | -0.829779 | 3         |
+| 2         | -2.75     | -4.998856 | 0         |
+| 3         | 0.8007    | -0.827713 | 3         |
+| 4         | -0.749    | 2.2682240 | -5        |
+| 5         | 0.3718    | -2.339072 | 4         |
+| 6         | 0.2146    | 4.9971028 | 5         |
+| 7         | 0.7473    | 4.9970839 | 2         |
+| <span class="ansi-magenta-fg">8        </span> | <span class="ansi-magenta-fg">0.8275   </span> | <span class="ansi-magenta-fg">4.9986856</span> | <span class="ansi-magenta-fg">-3       </span> |
+| 9         | 0.3464    | 4.9987136 | -2        |
+| 10        | -0.7852   | 4.9892216 | -5        |
+| 11        | -0.6627   | -4.999635 | -4        |
+| 12        | -0.1697   | -4.992664 | -3        |
+| <span class="ansi-magenta-fg">13       </span> | <span class="ansi-magenta-fg">1.428    </span> | <span class="ansi-magenta-fg">4.9950290</span> | <span class="ansi-magenta-fg">3        </span> |
+| 14        | 1.137     | 4.9970984 | 4         |
+| <span class="ansi-magenta-fg">15       </span> | <span class="ansi-magenta-fg">1.641    </span> | <span class="ansi-magenta-fg">4.0889271</span> | <span class="ansi-magenta-fg">3        </span> |
+=================================================
+Max: 1.6407143853831352
+
+
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[8]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">c_pbounds</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">c_pbounds</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">c_pbounds</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">c_pbounds</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1000</span><span class="p">)</span>
+
+<span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="n">Z</span> <span class="o">=</span> <span class="n">discretized_function</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+
+<span class="n">params</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">x_i</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">y_j</span><span class="p">}</span> <span class="k">for</span> <span class="n">y_j</span> <span class="ow">in</span> <span class="n">y</span> <span class="k">for</span> <span class="n">x_i</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]</span>
+<span class="n">array_params</span> <span class="o">=</span> <span class="p">[</span><span class="n">continuous_optimizer</span><span class="o">.</span><span class="n">_space</span><span class="o">.</span><span class="n">params_to_array</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span><span class="p">]</span>
+<span class="n">c_pred</span> <span class="o">=</span> <span class="n">continuous_optimizer</span><span class="o">.</span><span class="n">_gp</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">array_params</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="n">d_pred</span> <span class="o">=</span> <span class="n">discrete_optimizer</span><span class="o">.</span><span class="n">_gp</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">array_params</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+<span class="n">vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">Z</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">c_pred</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">d_pred</span><span class="p">)])</span>
+<span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">Z</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">c_pred</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">d_pred</span><span class="p">)])</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Actual function&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">coolwarm</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
+
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">c_pred</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">coolwarm</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">continuous_optimizer</span><span class="o">.</span><span class="n">_space</span><span class="o">.</span><span class="n">params</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">continuous_optimizer</span><span class="o">.</span><span class="n">_space</span><span class="o">.</span><span class="n">params</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">d_pred</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">coolwarm</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">discrete_optimizer</span><span class="o">.</span><span class="n">_space</span><span class="o">.</span><span class="n">params</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">discrete_optimizer</span><span class="o">.</span><span class="n">_space</span><span class="o">.</span><span class="n">params</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">make_plot_fancy</span><span class="p">(</span><span class="n">ax</span><span class="p">:</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s2">&quot;equal&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;x (float)&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([</span><span class="o">-</span><span class="mf">5.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;y (int)&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+
+<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axs</span><span class="p">:</span>
+    <span class="n">make_plot_fancy</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/parameter_types_11_0.png" src="_images/parameter_types_11_0.png" />
+</div>
+</div>
+<h2 id="3.-Categorical-variables">3. Categorical variables<a class="headerlink" href="#3.-Categorical-variables" title="Link to this heading">¶</a></h2>
+<p>We can also handle categorical variables! This is done under-the-hood by constructing parameters in a one-hot-encoding representation, with a transformation in the kernel rounding to the nearest one-hot representation. If you want to use this, you can specify a collection of strings as options.</p>
+<p>NB: As internally, the categorical variables are within a range of <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">1]</span></code> and the GP used for BO is by default isotropic, you might want to ensure your other features are similarly scaled to a range of <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">1]</span></code> or use an anisotropic GP.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[9]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">f1</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">):</span>
+    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="p">(</span><span class="n">x1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">x2</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">x2</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">x2</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">f2</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">):</span>
+    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">x2</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">x2</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">x2</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">SPIRAL</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;cf Ladislav-Luksan</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">k</span><span class="o">==</span><span class="s1">&#39;1&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">f1</span><span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="n">x1</span><span class="p">,</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">x2</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">k</span><span class="o">==</span><span class="s1">&#39;2&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">f2</span><span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="n">x1</span><span class="p">,</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">x2</span><span class="p">)</span>
+</code><br/></pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[10]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">pbounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;x1&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;x2&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;k&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s1">&#39;2&#39;</span><span class="p">)}</span>
+
+<span class="n">categorical_optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span>
+    <span class="n">f</span><span class="o">=</span><span class="n">SPIRAL</span><span class="p">,</span>
+    <span class="n">acquisition_function</span><span class="o">=</span><span class="n">acquisition</span><span class="o">.</span><span class="n">ExpectedImprovement</span><span class="p">(</span><span class="mf">1e-2</span><span class="p">),</span>
+    <span class="n">pbounds</span><span class="o">=</span><span class="n">pbounds</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">discrete_optimizer</span><span class="o">.</span><span class="n">set_gp_params</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+
+<span class="n">categorical_optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span>
+        <span class="n">init_points</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">n_iter</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span>
+    <span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+|   iter    |  target   |    x1     |    x2     |     k     |
+-------------------------------------------------------------
+| 1         | -2.052    | -0.165955 | 0.4406489 | 2         |
+| <span class="ansi-magenta-fg">2        </span> | <span class="ansi-magenta-fg">13.49    </span> | <span class="ansi-magenta-fg">-0.743751</span> | <span class="ansi-magenta-fg">0.9980810</span> | <span class="ansi-magenta-fg">1        </span> |
+| 3         | -14.49    | -0.743433 | 0.9709879 | 2         |
+| 4         | -13.33    | 0.9950794 | -0.352913 | 1         |
+| 5         | 9.674     | 0.5436849 | -0.574376 | 2         |
+| 6         | 9.498     | -0.218693 | -0.709177 | 2         |
+| 7         | 11.43     | -0.918642 | -0.648372 | 2         |
+| 8         | 0.4882    | -0.218182 | -0.012177 | 2         |
+| 9         | 7.542     | -0.787692 | 0.3452580 | 1         |
+| 10        | -2.161    | 0.1392349 | -0.125728 | 1         |
+| 11        | -0.8336   | 0.1206357 | -0.543264 | 1         |
+| 12        | -8.413    | 0.4981209 | 0.6434939 | 1         |
+| 13        | 6.372     | 0.0587256 | -0.892371 | 2         |
+| 14        | -12.71    | 0.7529885 | -0.780621 | 1         |
+| 15        | -1.521    | 0.4118274 | -0.517960 | 1         |
+| 16        | 11.88     | -0.755390 | -0.533137 | 1         |
+| 17        | 0.6373    | 0.2249733 | -0.053787 | 2         |
+| 18        | 2.154     | 0.0583506 | 0.6550869 | 1         |
+| <span class="ansi-magenta-fg">19       </span> | <span class="ansi-magenta-fg">13.69    </span> | <span class="ansi-magenta-fg">-0.741717</span> | <span class="ansi-magenta-fg">-0.820073</span> | <span class="ansi-magenta-fg">2        </span> |
+| 20        | 1.615     | -0.663312 | -0.905925 | 1         |
+=============================================================
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[11]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">res</span> <span class="o">=</span> <span class="n">categorical_optimizer</span><span class="o">.</span><span class="n">_space</span><span class="o">.</span><span class="n">res</span><span class="p">()</span>
+<span class="n">k1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">][</span><span class="s1">&#39;x1&#39;</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">][</span><span class="s1">&#39;x2&#39;</span><span class="p">]]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">res</span> <span class="k">if</span> <span class="n">p</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">][</span><span class="s1">&#39;k&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;1&#39;</span><span class="p">])</span>
+<span class="n">k2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">][</span><span class="s1">&#39;x1&#39;</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">][</span><span class="s1">&#39;x2&#39;</span><span class="p">]]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">res</span> <span class="k">if</span> <span class="n">p</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">][</span><span class="s1">&#39;k&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;2&#39;</span><span class="p">])</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[12]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">x1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">pbounds</span><span class="p">[</span><span class="s1">&#39;x1&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">pbounds</span><span class="p">[</span><span class="s1">&#39;x1&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">x2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">pbounds</span><span class="p">[</span><span class="s1">&#39;x2&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">pbounds</span><span class="p">[</span><span class="s1">&#39;x2&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1000</span><span class="p">)</span>
+
+<span class="n">X1</span><span class="p">,</span> <span class="n">X2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">)</span>
+<span class="n">Z1</span> <span class="o">=</span> <span class="n">SPIRAL</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">)</span>
+<span class="n">Z2</span> <span class="o">=</span> <span class="n">SPIRAL</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="s1">&#39;2&#39;</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="n">vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">Z1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">Z2</span><span class="p">)])</span>
+<span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">Z1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">Z2</span><span class="p">)])</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="n">Z1</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s2">&quot;equal&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">k1</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">k1</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="n">Z2</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">k2</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">k2</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s2">&quot;equal&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;k=1&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;k=2&#39;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</code><br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/parameter_types_17_0.png" src="_images/parameter_types_17_0.png" />
+</div>
+</div>
+<h2 id="4.-Use-in-ML">4. Use in ML<a class="headerlink" href="#4.-Use-in-ML" title="Link to this heading">¶</a></h2>
+<p>A typical usecase for integer and categorical parameters is optimizing the hyperparameters of a machine learning model. Below you can find an example where the hyperparameters of an SVM are optimized.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[13]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_breast_cancer</span>
+<span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <span class="n">SVC</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">log_loss</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="nn">bayes_opt</span> <span class="kn">import</span> <span class="n">BayesianOptimization</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">load_breast_cancer</span><span class="p">()</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">]</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_val</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_val</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">kernels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rbf&#39;</span><span class="p">,</span> <span class="s1">&#39;poly&#39;</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">f_target</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="n">log10_C</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s1">&#39;poly2&#39;</span><span class="p">:</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="s1">&#39;poly&#39;</span>
+        <span class="n">degree</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="k">elif</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s1">&#39;poly3&#39;</span><span class="p">:</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="s1">&#39;poly&#39;</span>
+        <span class="n">degree</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="k">elif</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s1">&#39;rbf&#39;</span><span class="p">:</span>
+        <span class="n">degree</span> <span class="o">=</span> <span class="mi">3</span> <span class="c1"># not used, equal to default</span>
+
+    <span class="n">C</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="n">log10_C</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">SVC</span><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="p">,</span> <span class="n">kernel</span><span class="o">=</span><span class="n">kernel</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="n">degree</span><span class="p">,</span> <span class="n">probability</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+
+    <span class="c1"># Package looks for maximum, so we return -1 * log_loss</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">log_loss</span><span class="p">(</span><span class="n">y_val</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_val</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">loss</span>
+
+
+<span class="n">params_svm</span> <span class="o">=</span><span class="p">{</span>
+    <span class="s1">&#39;kernel&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;rbf&#39;</span><span class="p">,</span> <span class="s1">&#39;poly2&#39;</span><span class="p">,</span> <span class="s1">&#39;poly3&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;log10_C&#39;</span><span class="p">:(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">+</span><span class="mi">1</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span>
+    <span class="n">f_target</span><span class="p">,</span>
+    <span class="n">params_svm</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span>
+<span class="p">)</span>
+
+<span class="n">kernel</span> <span class="o">=</span> <span class="n">Matern</span><span class="p">(</span><span class="n">nu</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">length_scale</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">optimizer</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">dim</span><span class="p">))</span>
+<span class="n">discrete_optimizer</span><span class="o">.</span><span class="n">set_gp_params</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="n">kernel</span><span class="p">)</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+|   iter    |  target   |  kernel   |  log10_C  |
+-------------------------------------------------
+| 1         | -0.2361   | poly2     | 0.9943696 |
+| 2         | -0.2864   | rbf       | -0.999771 |
+| 3         | -0.2625   | poly3     | 0.7449728 |
+| <span class="ansi-magenta-fg">4        </span> | <span class="ansi-magenta-fg">-0.2361  </span> | <span class="ansi-magenta-fg">poly2    </span> | <span class="ansi-magenta-fg">0.9944598</span> |
+| 5         | -0.298    | poly3     | -0.999625 |
+| <span class="ansi-magenta-fg">6        </span> | <span class="ansi-magenta-fg">-0.2361  </span> | <span class="ansi-magenta-fg">poly2    </span> | <span class="ansi-magenta-fg">0.9945010</span> |
+| <span class="ansi-magenta-fg">7        </span> | <span class="ansi-magenta-fg">-0.2152  </span> | <span class="ansi-magenta-fg">rbf      </span> | <span class="ansi-magenta-fg">0.9928960</span> |
+| 8         | -0.2153   | rbf       | 0.9917667 |
+| 9         | -0.2362   | poly2     | 0.9897298 |
+| 10        | -0.2362   | poly2     | 0.9874217 |
+=================================================
+</pre></div></div>
+</div>
+<h2 id="5.-Defining-your-own-Parameter">5. Defining your own Parameter<a class="headerlink" href="#5.-Defining-your-own-Parameter" title="Link to this heading">¶</a></h2>
+<p>Maybe you want to optimize over another form of parameters, which does not align with <code class="docutils literal notranslate"><span class="pre">float</span></code>, <code class="docutils literal notranslate"><span class="pre">int</span></code> or categorical. For this purpose, you can create your own, custom parameter. A simple example is a parameter that is discrete, but still admits a distance representation (like an integer) while not being uniformly spaced.</p>
+<p>However, you can go further even and encode constraints and even symmetries in your parameter. Let’s consider the problem of finding a triangle which maximizes an area given its sides <span class="math notranslate nohighlight">\(a, b, c\)</span> with a constraint that the perimeter is fixed, i.e. <span class="math notranslate nohighlight">\(a + b + c=s\)</span>.</p>
+<p>We will create a parameter that encodes such a triangle, and via it’s kernel transform ensures that the sides sum to the required length <span class="math notranslate nohighlight">\(s\)</span>. As you might expect, the solution to this problem is an equilateral triangle, i.e. <span class="math notranslate nohighlight">\(a=b=c=s/3\)</span>.</p>
+<p>To define the parameter, we need to subclass <code class="docutils literal notranslate"><span class="pre">BayesParameter</span></code> and define a few important functions/properties.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">is_continuous</span></code> is a property which denotes whether a parameter is continuous. When optimizing the acquisition function, non-continuous parameters will not be optimized using gradient-based methods, but only via random sampling.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">random_sample</span></code> is a function that samples randomly from the space of the parameter.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">to_float</span></code> transforms the canonical representation of a parameter into float values for the target space to store. There is a one-to-one correspondence between valid float representations produced by this function and canonical representations of the parameter. This function is most important when working with parameters that use a non-numeric canonical representation, such as categorical parameters.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">to_param</span></code> performs the inverse of <code class="docutils literal notranslate"><span class="pre">to_float</span></code>: Given a float-based representation, it creates a canonical representation. This function should perform binning whenever appropriate, e.g. in the case of the <code class="docutils literal notranslate"><span class="pre">IntParameter</span></code>, this function would round any float values supplied to it.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">kernel_transform</span></code> is the most important function of the Parameter and defines how to represent a value in the kernel space. In contrast to <code class="docutils literal notranslate"><span class="pre">to_float</span></code>, this function expects both the input, as well as the output to be float-representations of the value.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">to_string</span></code> produces a stringified version of the parameter, which allows users to define custom pretty-print rules for ththe ScreenLogger use.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dim</span></code> is a property which defines the dimensionality of the parameter. In most cases, this will be 1, but e.g. for categorical parameters it is equivalent to the cardinality of the category space.</p></li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[14]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">bayes_opt.logger</span> <span class="kn">import</span> <span class="n">ScreenLogger</span>
+<span class="kn">from</span> <span class="nn">bayes_opt.parameter</span> <span class="kn">import</span> <span class="n">BayesParameter</span>
+<span class="kn">from</span> <span class="nn">bayes_opt.event</span> <span class="kn">import</span> <span class="n">Events</span>
+<span class="kn">from</span> <span class="nn">bayes_opt.util</span> <span class="kn">import</span> <span class="n">ensure_rng</span>
+
+
+<span class="k">class</span> <span class="nc">FixedPerimeterTriangleParameter</span><span class="p">(</span><span class="n">BayesParameter</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">perimeter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">bounds</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">perimeter</span> <span class="o">=</span> <span class="n">perimeter</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_continuous</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">random_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">random_state</span><span class="p">):</span>
+        <span class="n">random_state</span> <span class="o">=</span> <span class="n">ensure_rng</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">n_samples</span><span class="p">:</span>
+            <span class="n">samples_</span> <span class="o">=</span> <span class="n">random_state</span><span class="o">.</span><span class="n">dirichlet</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">n_samples</span><span class="p">)</span>
+            <span class="n">samples_</span> <span class="o">=</span> <span class="n">samples_</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">perimeter</span> <span class="c1"># scale samples by perimeter</span>
+
+            <span class="n">samples_</span> <span class="o">=</span> <span class="n">samples_</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">samples_</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">samples_</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)]</span>
+            <span class="n">samples</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">samples_</span><span class="p">))</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">samples</span><span class="p">[:</span><span class="n">n_samples</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">samples</span>
+
+    <span class="k">def</span> <span class="nf">to_float</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">to_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">value</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">perimeter</span> <span class="o">/</span> <span class="nb">sum</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">kernel_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">value</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">perimeter</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">to_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">str_len</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">len_each</span> <span class="o">=</span> <span class="p">(</span><span class="n">str_len</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">//</span> <span class="mi">3</span>
+        <span class="n">str_</span> <span class="o">=</span> <span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="w"> </span><span class="mi">4</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">[:</span><span class="n">len_each</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)])</span>
+        <span class="k">return</span> <span class="n">str_</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="n">str_len</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">3</span> <span class="c1"># as we have three float values, each representing the length of one side.</span>
+
+<span class="k">def</span> <span class="nf">area_of_triangle</span><span class="p">(</span><span class="n">sides</span><span class="p">):</span>
+    <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">sides</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sides</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># perimeter</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">s</span> <span class="o">*</span> <span class="p">(</span><span class="n">s</span><span class="o">-</span><span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">s</span><span class="o">-</span><span class="n">b</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">s</span><span class="o">-</span><span class="n">c</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">A</span>
+</code><br/></pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[15]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">param</span> <span class="o">=</span> <span class="n">FixedPerimeterTriangleParameter</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;sides&#39;</span><span class="p">,</span>
+    <span class="n">bounds</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]]),</span>
+    <span class="n">perimeter</span><span class="o">=</span><span class="mf">1.</span>
+<span class="p">)</span>
+
+<span class="n">pbounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;sides&#39;</span><span class="p">:</span> <span class="n">param</span><span class="p">}</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span>
+    <span class="n">area_of_triangle</span><span class="p">,</span>
+    <span class="n">pbounds</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Increase the cell size to accommodate the three float values</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">ScreenLogger</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">is_constrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">_default_cell_size</span> <span class="o">=</span> <span class="mi">15</span>
+
+<span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="p">[</span><span class="n">Events</span><span class="o">.</span><span class="n">OPTIMIZATION_START</span><span class="p">,</span> <span class="n">Events</span><span class="o">.</span><span class="n">OPTIMIZATION_STEP</span><span class="p">,</span> <span class="n">Events</span><span class="o">.</span><span class="n">OPTIMIZATION_END</span><span class="p">]:</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+
+<span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">23</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+|      iter       |     target      |      sides      |
+-------------------------------------------------------
+| 1               | 0.4572          | 0.29|0.70|0.00  |
+| <span class="ansi-magenta-fg">2              </span> | <span class="ansi-magenta-fg">0.5096         </span> | <span class="ansi-magenta-fg">0.58|0.25|0.15 </span> |
+| 3               | 0.5081          | 0.58|0.25|0.15  |
+| <span class="ansi-magenta-fg">4              </span> | <span class="ansi-magenta-fg">0.5386         </span> | <span class="ansi-magenta-fg">0.44|0.28|0.26 </span> |
+| 5               | 0.5279          | 0.38|0.14|0.47  |
+| 6               | 0.5328          | 0.18|0.36|0.45  |
+| 7               | 0.4366          | 0.02|0.22|0.74  |
+| 8               | 0.4868          | 0.00|0.61|0.37  |
+| 9               | 0.4977          | 0.56|0.01|0.42  |
+| <span class="ansi-magenta-fg">10             </span> | <span class="ansi-magenta-fg">0.5418         </span> | <span class="ansi-magenta-fg">0.29|0.40|0.30 </span> |
+| 11              | 0.3361          | 0.06|0.87|0.06  |
+| 12              | 0.06468         | 0.99|0.00|0.00  |
+| 13              | 0.01589         | 0.0|0.00|0.99   |
+| 14              | 0.4999          | 0.21|0.16|0.61  |
+| 15              | 0.499           | 0.53|0.46|0.00  |
+| 16              | 0.4937          | 0.00|0.41|0.58  |
+| 17              | 0.5233          | 0.33|0.51|0.14  |
+| 18              | 0.5204          | 0.17|0.54|0.28  |
+| 19              | 0.5235          | 0.51|0.15|0.32  |
+| 20              | 0.5412          | 0.31|0.27|0.41  |
+| 21              | 0.4946          | 0.41|0.00|0.57  |
+| 22              | 0.5355          | 0.41|0.39|0.19  |
+| <span class="ansi-magenta-fg">23             </span> | <span class="ansi-magenta-fg">0.5442         </span> | <span class="ansi-magenta-fg">0.35|0.32|0.32 </span> |
+| 24              | 0.5192          | 0.16|0.28|0.54  |
+| 25              | 0.5401          | 0.39|0.23|0.36  |
+=======================================================
+</pre></div></div>
+</div>
+<p>This seems to work decently well, but we can improve it significantly if we consider the symmetries inherent in the problem: This problem is permutation invariant, i.e. we do not care which side specifically is denoted as <span class="math notranslate nohighlight">\(a\)</span>, <span class="math notranslate nohighlight">\(b\)</span> or <span class="math notranslate nohighlight">\(c\)</span>. Instead, we can, without loss of generality, decide that the shortest side will always be denoted as <span class="math notranslate nohighlight">\(a\)</span>, and the longest always as <span class="math notranslate nohighlight">\(c\)</span>. If we enhance our kernel transform with this symmetry, the performance improves significantly.
+This can be easily done by sub-classing the previously created triangle parameter.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[16]:
+</code></pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">SortingFixedPerimeterTriangleParameter</span><span class="p">(</span><span class="n">FixedPerimeterTriangleParameter</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">perimeter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">perimeter</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">to_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">to_param</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">kernel_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">kernel_transform</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+<span class="n">param</span> <span class="o">=</span> <span class="n">SortingFixedPerimeterTriangleParameter</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;sides&#39;</span><span class="p">,</span>
+    <span class="n">bounds</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]]),</span>
+    <span class="n">perimeter</span><span class="o">=</span><span class="mf">1.</span>
+<span class="p">)</span>
+
+<span class="n">pbounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;sides&#39;</span><span class="p">:</span> <span class="n">param</span><span class="p">}</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span>
+    <span class="n">area_of_triangle</span><span class="p">,</span>
+    <span class="n">pbounds</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">ScreenLogger</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">is_constrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">_default_cell_size</span> <span class="o">=</span> <span class="mi">15</span>
+
+<span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="p">[</span><span class="n">Events</span><span class="o">.</span><span class="n">OPTIMIZATION_START</span><span class="p">,</span> <span class="n">Events</span><span class="o">.</span><span class="n">OPTIMIZATION_STEP</span><span class="p">,</span> <span class="n">Events</span><span class="o">.</span><span class="n">OPTIMIZATION_END</span><span class="p">]:</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+
+<span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+|      iter       |     target      |      sides      |
+-------------------------------------------------------
+| 1               | 0.4572          | 0.00|0.29|0.70  |
+| <span class="ansi-magenta-fg">2              </span> | <span class="ansi-magenta-fg">0.5096         </span> | <span class="ansi-magenta-fg">0.15|0.25|0.58 </span> |
+| 3               | 0.498           | 0.06|0.33|0.60  |
+| <span class="ansi-magenta-fg">4              </span> | <span class="ansi-magenta-fg">0.5097         </span> | <span class="ansi-magenta-fg">0.13|0.27|0.58 </span> |
+| <span class="ansi-magenta-fg">5              </span> | <span class="ansi-magenta-fg">0.5358         </span> | <span class="ansi-magenta-fg">0.19|0.36|0.43 </span> |
+| <span class="ansi-magenta-fg">6              </span> | <span class="ansi-magenta-fg">0.5443         </span> | <span class="ansi-magenta-fg">0.33|0.33|0.33 </span> |
+| 7               | 0.5405          | 0.28|0.28|0.42  |
+| 8               | 0.5034          | 0.01|0.49|0.49  |
+| 9               | 0.4977          | 0.01|0.42|0.56  |
+| 10              | 0.5427          | 0.27|0.36|0.36  |
+=======================================================
+</pre></div></div>
+</div>
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var tab,labels=set.querySelector(".tabbed-labels");for(tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+        </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+            Back to top
+          </a>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="constraints.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Constrained Optimization" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Constrained Optimization
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="domain_reduction.html" class="md-footer__link md-footer__link--next" aria-label="Next: Sequential Domain Reduction" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Sequential Domain Reduction
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  
+  
+  <div class="md-footer-meta md-typeset">
+    
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-footer-copyright__highlight">
+        &#169; Copyright 2024, Fernando Nogueira and the bayesian-optimization developers.
+        
+    </div>
+  
+    Created using
+    <a href="https://www.sphinx-doc.org/" target="_blank" rel="noopener">Sphinx</a>
+    8.1.3.
+     and
+    <a href="https://github.com/jbms/sphinx-immaterial/" target="_blank" rel="noopener">Sphinx-Immaterial</a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    <a href="https://github.com/bayesian-optimization/BayesianOptimization" target="_blank" rel="noopener" title="Source on github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+    
+    
+      
+      
+    
+    <a href="https://pypi.org/project/bayesian-optimization/" target="_blank" rel="noopener" title="pypi.org" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.8c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-13.6h160.2c31.1 0 42.6-21.7 53.4-54.2 11.2-33.5 10.7-65.7 0-108.6zM286.2 404c11.1 0 20.1 9.1 20.1 20.3 0 11.3-9 20.4-20.1 20.4-11 0-20.1-9.2-20.1-20.4.1-11.3 9.1-20.3 20.1-20.3zM167.8 248.1h106.8c29.7 0 53.4-24.5 53.4-54.3V91.9c0-29-24.4-50.7-53.4-55.6-35.8-5.9-74.7-5.6-106.8.1-45.2 8-53.4 24.7-53.4 55.6v40.7h106.9v13.6h-147c-31.1 0-58.3 18.7-66.8 54.2-9.8 40.7-10.2 66.1 0 108.6 7.6 31.6 25.7 54.2 56.8 54.2H101v-48.8c0-35.3 30.5-66.4 66.8-66.4zm-6.7-142.6c-11.1 0-20.1-9.1-20.1-20.3.1-11.3 9-20.4 20.1-20.4 11 0 20.1 9.2 20.1 20.4s-9 20.3-20.1 20.3z"/></svg>
+    </a>
+  
+    
+    
+      
+      
+    
+    <a href="https://anaconda.org/conda-forge/bayesian-optimization" target="_blank" rel="noopener" title="anaconda.org" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.8c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-13.6h160.2c31.1 0 42.6-21.7 53.4-54.2 11.2-33.5 10.7-65.7 0-108.6zM286.2 404c11.1 0 20.1 9.1 20.1 20.3 0 11.3-9 20.4-20.1 20.4-11 0-20.1-9.2-20.1-20.4.1-11.3 9.1-20.3 20.1-20.3zM167.8 248.1h106.8c29.7 0 53.4-24.5 53.4-54.3V91.9c0-29-24.4-50.7-53.4-55.6-35.8-5.9-74.7-5.6-106.8.1-45.2 8-53.4 24.7-53.4 55.6v40.7h106.9v13.6h-147c-31.1 0-58.3 18.7-66.8 54.2-9.8 40.7-10.2 66.1 0 108.6 7.6 31.6 25.7 54.2 56.8 54.2H101v-48.8c0-35.3 30.5-66.4 66.8-66.4zm-6.7-142.6c-11.1 0-20.1-9.1-20.1-20.3.1-11.3 9-20.4 20.1-20.4 11 0 20.1 9.2 20.1 20.4s-9 20.3-20.1 20.3z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+    
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.expand", "navigation.sections", "navigation.top", "search.share", "toc.follow", "toc.sticky", "content.tabs.link", "announce.dismiss"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike", "staticVersions": null, "versionPath": "../versions.json"}}</script>
+    
+      
+        <script src="_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js?v=8ec58cb5"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script id="MathJax-script" src="_static/mathjax/tex-mml-chtml.js?v=cadf963e"></script>
+    
+  </body>
+</html>

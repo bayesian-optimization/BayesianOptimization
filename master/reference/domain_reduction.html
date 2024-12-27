@@ -324,6 +324,21 @@
   
   
     <li class="md-nav__item">
+      <a href="../parameter_types.html" class="md-nav__link">
+        <span title="/parameter_types.ipynb (reference label)" class="md-ellipsis">Parameter Types</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../domain_reduction.html" class="md-nav__link">
         <span title="/domain_reduction.ipynb (reference label)" class="md-ellipsis">Sequential Domain Reduction</span>
       </a>
@@ -543,6 +558,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#bayes_opt.SequentialDomainReductionTransformer.__init__.parameters" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="bayes_opt.SequentialDomainReductionTransformer.__init__.parameters (Python parameter)" class="md-ellipsis">parameters</span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -671,6 +693,21 @@
   
   
     <li class="md-nav__item">
+      <a href="parameter.html" class="md-nav__link">
+        <span title="/reference/parameter.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>parameter</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="exception.html" class="md-nav__link">
         <span title="/reference/exception.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>exception</span>
       </a>
@@ -766,6 +803,13 @@
           <li class="md-nav__item">
   <a href="#bayes_opt.SequentialDomainReductionTransformer.__init__.minimum_window" class="md-nav__link">
     <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="bayes_opt.SequentialDomainReductionTransformer.__init__.minimum_window (Python parameter) — Minimum window size for each parameter." class="md-ellipsis">minimum_<wbr>window</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes_opt.SequentialDomainReductionTransformer.__init__.parameters" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="bayes_opt.SequentialDomainReductionTransformer.__init__.parameters (Python parameter)" class="md-ellipsis">parameters</span>
   </a>
   
 </li>
@@ -890,7 +934,7 @@
 <p>See the <a class="reference external" href="../domain_reduction.html">Sequential Domain Reduction notebook</a> for a complete example.</p>
 <dl class="py class objdesc">
 <dt class="sig sig-object highlight sig-wrap py" id="bayes_opt.SequentialDomainReductionTransformer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bayes_opt.</span></span><span class="sig-name descname"><span class="pre">SequentialDomainReductionTransformer</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.SequentialDomainReductionTransformer.__init__.gamma_osc" title="bayes_opt.SequentialDomainReductionTransformer.__init__.gamma_osc (Python parameter) — Parameter used to scale (typically dampen) oscillations."><span class="n"><span class="pre">gamma_osc</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">0.7</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.SequentialDomainReductionTransformer.__init__.gamma_pan" title="bayes_opt.SequentialDomainReductionTransformer.__init__.gamma_pan (Python parameter) — Parameter used to scale (typically unitary) panning."><span class="n"><span class="pre">gamma_pan</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">1.0</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.SequentialDomainReductionTransformer.__init__.eta" title="bayes_opt.SequentialDomainReductionTransformer.__init__.eta (Python parameter) — Zooming parameter used to shrink the region of interest."><span class="n"><span class="pre">eta</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">0.9</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.SequentialDomainReductionTransformer.__init__.minimum_window" title="bayes_opt.SequentialDomainReductionTransformer.__init__.minimum_window (Python parameter) — Minimum window size for each parameter."><span class="n"><span class="pre">minimum_window</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">Float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">collections.abc.Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">0.0</span></code></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span></span><a class="headerlink" href="#bayes_opt.SequentialDomainReductionTransformer" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bayes_opt.</span></span><span class="sig-name descname"><span class="pre">SequentialDomainReductionTransformer</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.SequentialDomainReductionTransformer.__init__.parameters" title="bayes_opt.SequentialDomainReductionTransformer.__init__.parameters (Python parameter)"><span class="n"><span class="pre">parameters</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="kc">None</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.SequentialDomainReductionTransformer.__init__.gamma_osc" title="bayes_opt.SequentialDomainReductionTransformer.__init__.gamma_osc (Python parameter) — Parameter used to scale (typically dampen) oscillations."><span class="n"><span class="pre">gamma_osc</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">0.7</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.SequentialDomainReductionTransformer.__init__.gamma_pan" title="bayes_opt.SequentialDomainReductionTransformer.__init__.gamma_pan (Python parameter) — Parameter used to scale (typically unitary) panning."><span class="n"><span class="pre">gamma_pan</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">1.0</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.SequentialDomainReductionTransformer.__init__.eta" title="bayes_opt.SequentialDomainReductionTransformer.__init__.eta (Python parameter) — Zooming parameter used to shrink the region of interest."><span class="n"><span class="pre">eta</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">0.9</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#bayes_opt.SequentialDomainReductionTransformer.__init__.minimum_window" title="bayes_opt.SequentialDomainReductionTransformer.__init__.minimum_window (Python parameter) — Minimum window size for each parameter."><span class="n"><span class="pre">minimum_window</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">Float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">collections.abc.Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">0.0</span></code></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span></span><a class="headerlink" href="#bayes_opt.SequentialDomainReductionTransformer" title="Link to this definition">¶</a></dt>
 <dd><p>Reduce the searchable space.</p>
 <p>A sequential domain reduction transformer based on the work by Stander, N. and Craig, K:
 “On the robustness of a simple domain reduction scheme for simulation-based optimization”</p>
@@ -905,6 +949,8 @@
 </dd>
 <dt id="bayes_opt.SequentialDomainReductionTransformer.__init__.minimum_window"><span class="sig-name descname">minimum_window</span><span class="p"> : </span><span class="desctype"><span class="desctype"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a> or np.ndarray or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>, default=0.0</span></span><a class="headerlink" href="#bayes_opt.SequentialDomainReductionTransformer.__init__.minimum_window" title="Permalink to this definition">¶</a></dt><dd><p>Minimum window size for each parameter. If a float is provided,
 the same value is used for all parameters.</p>
+</dd>
+<dt id="bayes_opt.SequentialDomainReductionTransformer.__init__.parameters"><span class="sig-name descname">parameters</span><span class="p"> : </span><span class="desctype"><span class="desctype">Iterable[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>] | None</span></span><a class="headerlink" href="#bayes_opt.SequentialDomainReductionTransformer.__init__.parameters" title="Permalink to this definition">¶</a></dt><dd><p></p>
 </dd>
 </dl>
 </dd>

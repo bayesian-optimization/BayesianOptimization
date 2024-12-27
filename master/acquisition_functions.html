@@ -322,6 +322,21 @@
   
   
     <li class="md-nav__item">
+      <a href="parameter_types.html" class="md-nav__link">
+        <span title="/parameter_types.ipynb (reference label)" class="md-ellipsis">Parameter Types</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="domain_reduction.html" class="md-nav__link">
         <span title="/domain_reduction.ipynb (reference label)" class="md-ellipsis">Sequential Domain Reduction</span>
       </a>
@@ -488,6 +503,21 @@
     <li class="md-nav__item">
       <a href="reference/target_space.html" class="md-nav__link">
         <span title="/reference/target_space.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>Target<wbr>Space</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/parameter.html" class="md-nav__link">
+        <span title="/reference/parameter.rst (reference label)" class="md-ellipsis">bayes_<wbr>opt.<wbr>parameter</span>
       </a>
     </li>
   
@@ -698,8 +728,12 @@
 </div>
 </div>
 <p>As we can see, the greedy policy is <em>too</em> greedy and does not explore enough to find the maximum.</p>
-<p>What if our acquisition function does not depend solely on <code class="docutils literal notranslate"><span class="pre">mean</span></code> and <code class="docutils literal notranslate"><span class="pre">std</span></code>? In that case, we can intervene at a deeper level, and overwrite the <code class="docutils literal notranslate"><span class="pre">._get_acq</span></code> function. The built-in version of <code class="docutils literal notranslate"><span class="pre">._get_acq</span></code> is a higher-order function which returns a function accepting an array-like <code class="docutils literal notranslate"><span class="pre">x</span></code> and performing the following: 1. Evaluate the GP mean <span class="math notranslate nohighlight">\(\mu\)</span> and std <span class="math notranslate nohighlight">\(\sigma\)</span> at points <code class="docutils literal notranslate"><span class="pre">x</span></code>. 2. If applicapable, evaluate the constraint fulfilment probability <span class="math notranslate nohighlight">\(p_c\)</span> at x. 3. Return
-<code class="docutils literal notranslate"><span class="pre">-1</span> <span class="pre">*</span> <span class="pre">base_acq(mean,</span> <span class="pre">std)</span></code> or <code class="docutils literal notranslate"><span class="pre">-1</span> <span class="pre">*</span> <span class="pre">base_acq(mean,</span> <span class="pre">std)</span> <span class="pre">*</span> <span class="pre">p_c</span></code></p>
+<p>What if our acquisition function does not depend solely on <code class="docutils literal notranslate"><span class="pre">mean</span></code> and <code class="docutils literal notranslate"><span class="pre">std</span></code>? In that case, we can intervene at a deeper level, and overwrite the <code class="docutils literal notranslate"><span class="pre">._get_acq</span></code> function. The built-in version of <code class="docutils literal notranslate"><span class="pre">._get_acq</span></code> is a higher-order function which returns a function accepting an array-like <code class="docutils literal notranslate"><span class="pre">x</span></code> and performing the following:</p>
+<ol class="arabic simple">
+<li><p>Evaluate the GP mean <span class="math notranslate nohighlight">\(\mu\)</span> and std <span class="math notranslate nohighlight">\(\sigma\)</span> at points <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p></li>
+<li><p>If applicapable, evaluate the constraint fulfilment probability <span class="math notranslate nohighlight">\(p_c\)</span> at x.</p></li>
+<li><p>Return <code class="docutils literal notranslate"><span class="pre">-1</span> <span class="pre">*</span> <span class="pre">base_acq(mean,</span> <span class="pre">std)</span></code> or <code class="docutils literal notranslate"><span class="pre">-1</span> <span class="pre">*</span> <span class="pre">base_acq(mean,</span> <span class="pre">std)</span> <span class="pre">*</span> <span class="pre">p_c</span></code></p></li>
+</ol>
 <p>An example of such an acquisition function is Thompson Sampling. If you consider a Gaussian Process as a prior over functions, Thompson Sampling works by sampling a function from this prior and then selecting the argmax as next point of interest. This is a somewhat noisy version of the greedy acquisition, which will encourage some exploration.</p>
 <p>While we usually find the argmax of the acquisition function through a combination of random sampling and gradient-based optimization, we will skip the gradient-based optimization here, as it is quite expensive and would require us to fix the multivariate normal. We can do this by additionally overwriting <code class="docutils literal notranslate"><span class="pre">.suggest</span></code>, specifically by changing the default argument of <code class="docutils literal notranslate"><span class="pre">n_l_bfgs_b</span></code> to <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p>
 <div class="nbinput nblast docutils container">
