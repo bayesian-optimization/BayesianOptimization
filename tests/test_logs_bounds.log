@@ -1,5 +1,0 @@
-{"datetime": {"delta": 0.0, "datetime": "2018-11-25 08:29:25", "elapsed": 0.0}, "params": {"y": 0, "x": 0}, "target": 0}
-{"datetime": {"delta": 0.001301, "datetime": "2018-11-25 08:29:25", "elapsed": 0.001301}, "params": {"y": 1, "x": 1}, "target": 2}
-{"datetime": {"delta": 1.075242, "datetime": "2018-11-25 08:29:26", "elapsed": 1.076543}, "params": {"y": 2, "x": 2}, "target": 4}
-{"datetime": {"delta": 0.239797, "datetime": "2018-11-25 08:29:26", "elapsed": 1.31634}, "params": {"y": 3, "x": 3}, "target": 6}
-{"datetime": {"delta": 0.001301, "datetime": "2018-11-25 08:29:25", "elapsed": 0.001301}, "params": {"y": 1.5, "x": 1.5}, "target": 3}

@@ -1,9 +1,0 @@
-repos:
-  - hooks:
-      - id: ruff
-        name: ruff-lint
-      - id: ruff-format
-        name: ruff-format
-        args: [--check]
-    repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.6
