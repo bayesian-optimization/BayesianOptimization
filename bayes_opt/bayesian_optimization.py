@@ -10,9 +10,15 @@ from collections import deque
 from typing import TYPE_CHECKING, Any
 from warnings import warn
 
+import json
+from pathlib import Path
+from os import PathLike
+
 import numpy as np
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
+
+from scipy.optimize import NonlinearConstraint
 
 from bayes_opt import acquisition
 from bayes_opt.constraint import ConstraintModel
@@ -28,7 +34,6 @@ if TYPE_CHECKING:
 
     from numpy.random import RandomState
     from numpy.typing import NDArray
-    from scipy.optimize import NonlinearConstraint
 
     from bayes_opt.acquisition import AcquisitionFunction
     from bayes_opt.constraint import ConstraintModel
@@ -356,3 +361,136 @@ class BayesianOptimization(Observable):
         if "kernel" in params:
             params["kernel"] = wrap_kernel(kernel=params["kernel"], transform=self._space.kernel_transform)
         self._gp.set_params(**params)
+
+    def save_state(self, path: str | PathLike[str]) -> None:
+        """Save complete state for reconstruction of the optimizer.
+        
+        Parameters
+        ----------
+        path : str or PathLike
+            Path to save the optimization state
+        """
+        random_state = None
+        if self._random_state is not None:
+            state_tuple = self._random_state.get_state()
+            random_state = {
+                'bit_generator': state_tuple[0],
+                'state': state_tuple[1].tolist(),
+                'pos': state_tuple[2],
+                'has_gauss': state_tuple[3],
+                'cached_gaussian': state_tuple[4],
+            }
+        
+        state = {
+            "pbounds": {
+                key: self._space._bounds[i].tolist() 
+                for i, key in enumerate(self._space.keys)
+            },
+            "keys": self._space.keys,
+
+            "params": self._space.params.tolist(),
+            "target": self._space.target.tolist(),
+
+            "is_constrained": self.is_constrained,
+            "constraint_values": (self._space._constraint_values.tolist() 
+                                if self.is_constrained and self._space._constraint_values is not None 
+                                else None),
+
+            "gp_params": {
+                "kernel": self._gp.kernel.get_params(),
+                "alpha": self._gp.alpha,
+                "normalize_y": self._gp.normalize_y,
+                "n_restarts_optimizer": self._gp.n_restarts_optimizer,
+            },
+
+            "allow_duplicate_points": self._allow_duplicate_points,
+            "verbose": self._verbose,
+
+            "random_state": random_state,
+        }
+        
+        with Path(path).open('w') as f:
+            json.dump(state, f, indent=2)
+
+    @classmethod
+    def load(cls, path: str | Path, f: Callable[..., float] | None = None) -> BayesianOptimization:
+        """Load a saved optimizer state.
+        
+        Parameters
+        ----------
+        path : str or Path
+            Path to the saved state file
+        f : callable, optional
+            The function to optimize. If None, the optimizer will be initialized
+            without a function (useful for analyzing previous results)
+            
+        Returns
+        -------
+        BayesianOptimization
+            A new optimizer instance with the loaded state
+        """
+        with Path(path).open('r') as file:
+            state = json.load(file)
+        
+        # If the original optimizer was constrained, create a dummy constraint
+        constraint = None
+        if state["is_constrained"]:
+            # Create a dummy constraint function that will be replaced by the actual one
+            def dummy_constraint(*args): return 0
+            constraint = NonlinearConstraint(dummy_constraint, -np.inf, np.inf)
+        
+        # Initialize a new optimizer with constraint if needed
+        optimizer = cls(
+            f=f,
+            pbounds=state["pbounds"],
+            random_state=None,
+            verbose=state["verbose"],
+            allow_duplicate_points=state["allow_duplicate_points"],
+            constraint=constraint
+        )
+        
+        # Restore random state if it was saved
+        if state["random_state"] is not None:
+            random_state_tuple = (
+                state["random_state"]["bit_generator"],
+                np.array(state["random_state"]["state"], dtype=np.uint32),
+                state["random_state"]["pos"],
+                state["random_state"]["has_gauss"],
+                state["random_state"]["cached_gaussian"],
+            )
+            optimizer._random_state.set_state(random_state_tuple)
+        
+        # Register all previous points
+        params_array = np.array(state["params"])
+        target_array = np.array(state["target"])
+        constraint_array = (np.array(state["constraint_values"]) 
+                           if state["constraint_values"] is not None 
+                           else None)
+        
+        for i in range(len(params_array)):
+            params = optimizer._space.array_to_params(params_array[i])
+            target = target_array[i]
+            constraint = constraint_array[i] if constraint_array is not None else None
+            optimizer.register(
+                params=params,
+                target=target,
+                constraint_value=constraint,
+            )
+        
+        # Set GP parameters
+        optimizer._gp.set_params(**state["gp_params"])
+        
+        # Before fitting the GP, reconstruct the kernel
+        if isinstance(optimizer._gp.kernel, dict):
+            kernel_params = optimizer._gp.kernel
+            optimizer._gp.kernel = Matern(
+                length_scale=kernel_params['length_scale'],
+                length_scale_bounds=kernel_params['length_scale_bounds'],
+                nu=kernel_params['nu']
+            )
+        
+        # Only fit GP if there are samples
+        if len(optimizer._space) > 0:
+            optimizer._gp.fit(optimizer._space.params, optimizer._space.target)
+        
+        return optimizer

@@ -333,3 +333,112 @@ def test_duplicate_points():
     optimizer.register(params=next_point_to_probe, target=target)
     # and again (should throw warning)
     optimizer.register(params=next_point_to_probe, target=target)
+
+
+def test_save_load_state(tmp_path):
+    """Test saving and loading optimizer state."""
+    # Initialize and run original optimizer
+    optimizer = BayesianOptimization(
+        f=target_func, 
+        pbounds=PBOUNDS,
+        random_state=1,
+        verbose=0
+    )
+    optimizer.maximize(init_points=2, n_iter=3)
+    
+    # Save state
+    state_path = tmp_path / "optimizer_state.json"
+    optimizer.save_state(state_path)
+    
+    # Load state into new optimizer
+    new_optimizer = BayesianOptimization.load(state_path, f=target_func)
+    
+    # Test that key properties match
+    assert len(optimizer.space) == len(new_optimizer.space)
+    assert optimizer.max["target"] == new_optimizer.max["target"]
+    assert optimizer.max["params"] == new_optimizer.max["params"]
+    np.testing.assert_array_equal(optimizer.space.params, new_optimizer.space.params)
+    np.testing.assert_array_equal(optimizer.space.target, new_optimizer.space.target)
+
+
+def test_load_without_function(tmp_path):
+    """Test loading state without providing target function (analysis mode)."""
+    # Initialize and run original optimizer
+    optimizer = BayesianOptimization(
+        f=target_func, 
+        pbounds=PBOUNDS,
+        random_state=1,
+        verbose=0
+    )
+    optimizer.maximize(init_points=2, n_iter=3)
+    
+    # Save state
+    state_path = tmp_path / "optimizer_state.json"
+    optimizer.save_state(state_path)
+    
+    # Load state without function
+    analysis_optimizer = BayesianOptimization.load(state_path)
+    
+    # Should have same history but can't run maximize
+    assert len(optimizer.space) == len(analysis_optimizer.space)
+    assert optimizer.max["target"] == analysis_optimizer.max["target"]
+    with pytest.raises(ValueError, match="No target function has been provided."):
+        analysis_optimizer.maximize()
+
+
+def test_save_load_with_constraints(tmp_path):
+    """Test saving and loading state with constraints."""
+    from scipy.optimize import NonlinearConstraint
+    
+    # Define a simple constraint
+    def constraint_f(p1, p2):
+        return p1 + p2
+    constraint = NonlinearConstraint(constraint_f, -np.inf, 15)
+    
+    # Initialize and run original optimizer
+    optimizer = BayesianOptimization(
+        f=target_func,
+        pbounds=PBOUNDS,
+        constraint=constraint,
+        random_state=1,
+        verbose=0
+    )
+    optimizer.maximize(init_points=2, n_iter=3)
+    
+    # Save state
+    state_path = tmp_path / "optimizer_state.json"
+    optimizer.save_state(state_path)
+    
+    # Load state into new optimizer
+    new_optimizer = BayesianOptimization.load(state_path, f=target_func)
+    
+    # Test that constraint information is preserved
+    assert optimizer.is_constrained == new_optimizer.is_constrained
+    if optimizer.is_constrained:
+        np.testing.assert_array_equal(
+            optimizer._space._constraint_values,
+            new_optimizer._space._constraint_values
+        )
+
+
+def test_save_load_random_state(tmp_path):
+    """Test that random state is properly preserved."""
+    # Initialize optimizer
+    optimizer = BayesianOptimization(
+        f=target_func,
+        pbounds=PBOUNDS,
+        random_state=1,
+        verbose=0
+    )
+    
+    # Save state
+    state_path = tmp_path / "optimizer_state.json"
+    optimizer.save_state(state_path)
+    
+    # Load state and get next suggestion
+    new_optimizer = BayesianOptimization.load(state_path, f=target_func)
+    
+    # Both optimizers should suggest the same point
+    suggestion1 = optimizer.suggest()
+    suggestion2 = new_optimizer.suggest()
+    assert suggestion1 == suggestion2
