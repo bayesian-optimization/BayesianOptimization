@@ -107,6 +107,9 @@ class BayesianOptimization(Observable):
         This behavior may be desired in high noise situations where repeatedly probing
         the same point will give different answers. In other situations, the acquisition
         may occasionally generate a duplicate point.
+
+    load_state_path: str | Path | None, optional (default=None)
+        If provided, load optimizer state from this path instead of initializing fresh
     """
 
     def __init__(
@@ -119,6 +122,7 @@ class BayesianOptimization(Observable):
         verbose: int = 2,
         bounds_transformer: DomainTransformer | None = None,
         allow_duplicate_points: bool = False,
+        load_state_path: str | Path | None = None,
     ):
         self._random_state = ensure_rng(random_state)
         self._allow_duplicate_points = allow_duplicate_points
@@ -176,6 +180,55 @@ class BayesianOptimization(Observable):
 
         self._sorting_warning_already_shown = False  # TODO: remove in future version
         super().__init__(events=DEFAULT_EVENTS)
+
+        if load_state_path is not None:
+            with Path(load_state_path).open('r') as file:
+                state = json.load(file)
+            self._set_state_from_dict(state)
+
+    def _set_state_from_dict(self, state: dict[str, Any]) -> None:
+        """Set optimizer state from a dictionary of saved values."""
+        if state["random_state"] is not None:
+            random_state_tuple = (
+                state["random_state"]["bit_generator"],
+                np.array(state["random_state"]["state"], dtype=np.uint32),
+                state["random_state"]["pos"],
+                state["random_state"]["has_gauss"],
+                state["random_state"]["cached_gaussian"],
+            )
+            self._random_state.set_state(random_state_tuple)
+
+        self._gp.set_params(**state["gp_params"])
+        
+        # Handle kernel separately since it needs reconstruction
+        if isinstance(self._gp.kernel, dict):
+            kernel_params = self._gp.kernel
+            self._gp.kernel = Matern(
+                length_scale=kernel_params['length_scale'],
+                length_scale_bounds=kernel_params['length_scale_bounds'],
+                nu=kernel_params['nu']
+            )
+
+        # Register previous points
+        params_array = np.array(state["params"])
+        target_array = np.array(state["target"])
+        constraint_array = (np.array(state["constraint_values"]) 
+                          if state["constraint_values"] is not None 
+                          else None)
+        
+        for i in range(len(params_array)):
+            params = self._space.array_to_params(params_array[i])
+            target = target_array[i]
+            constraint = constraint_array[i] if constraint_array is not None else None
+            self.register(
+                params=params,
+                target=target,
+                constraint_value=constraint,
+            )
+
+        # Fit GP if there are samples
+        if len(self._space) > 0:
+            self._gp.fit(self._space.params, self._space.target)
 
     @property
     def space(self) -> TargetSpace:
@@ -381,116 +434,30 @@ class BayesianOptimization(Observable):
                 'cached_gaussian': state_tuple[4],
             }
         
+        # Get constraint values if they exist
+        constraint_values = (self._space._constraint_values.tolist() 
+                           if self.is_constrained 
+                           else None)
+        
         state = {
             "pbounds": {
                 key: self._space._bounds[i].tolist() 
                 for i, key in enumerate(self._space.keys)
             },
             "keys": self._space.keys,
-
             "params": self._space.params.tolist(),
             "target": self._space.target.tolist(),
-
-            "is_constrained": self.is_constrained,
-            "constraint_values": (self._space._constraint_values.tolist() 
-                                if self.is_constrained and self._space._constraint_values is not None 
-                                else None),
-
+            "constraint_values": constraint_values,
             "gp_params": {
                 "kernel": self._gp.kernel.get_params(),
                 "alpha": self._gp.alpha,
                 "normalize_y": self._gp.normalize_y,
                 "n_restarts_optimizer": self._gp.n_restarts_optimizer,
             },
-
             "allow_duplicate_points": self._allow_duplicate_points,
             "verbose": self._verbose,
-
             "random_state": random_state,
         }
         
         with Path(path).open('w') as f:
             json.dump(state, f, indent=2)
-
-    @classmethod
-    def load(cls, path: str | Path, f: Callable[..., float] | None = None) -> BayesianOptimization:
-        """Load a saved optimizer state.
-        
-        Parameters
-        ----------
-        path : str or Path
-            Path to the saved state file
-        f : callable, optional
-            The function to optimize. If None, the optimizer will be initialized
-            without a function (useful for analyzing previous results)
-            
-        Returns
-        -------
-        BayesianOptimization
-            A new optimizer instance with the loaded state
-        """
-        with Path(path).open('r') as file:
-            state = json.load(file)
-        
-        # If the original optimizer was constrained, create a dummy constraint
-        constraint = None
-        if state["is_constrained"]:
-            # Create a dummy constraint function that will be replaced by the actual one
-            def dummy_constraint(*args): return 0
-            constraint = NonlinearConstraint(dummy_constraint, -np.inf, np.inf)
-        
-        # Initialize a new optimizer with constraint if needed
-        optimizer = cls(
-            f=f,
-            pbounds=state["pbounds"],
-            random_state=None,
-            verbose=state["verbose"],
-            allow_duplicate_points=state["allow_duplicate_points"],
-            constraint=constraint
-        )
-        
-        # Restore random state if it was saved
-        if state["random_state"] is not None:
-            random_state_tuple = (
-                state["random_state"]["bit_generator"],
-                np.array(state["random_state"]["state"], dtype=np.uint32),
-                state["random_state"]["pos"],
-                state["random_state"]["has_gauss"],
-                state["random_state"]["cached_gaussian"],
-            )
-            optimizer._random_state.set_state(random_state_tuple)
-        
-        # Register all previous points
-        params_array = np.array(state["params"])
-        target_array = np.array(state["target"])
-        constraint_array = (np.array(state["constraint_values"]) 
-                           if state["constraint_values"] is not None 
-                           else None)
-        
-        for i in range(len(params_array)):
-            params = optimizer._space.array_to_params(params_array[i])
-            target = target_array[i]
-            constraint = constraint_array[i] if constraint_array is not None else None
-            optimizer.register(
-                params=params,
-                target=target,
-                constraint_value=constraint,
-            )
-        
-        # Set GP parameters
-        optimizer._gp.set_params(**state["gp_params"])
-        
-        # Before fitting the GP, reconstruct the kernel
-        if isinstance(optimizer._gp.kernel, dict):
-            kernel_params = optimizer._gp.kernel
-            optimizer._gp.kernel = Matern(
-                length_scale=kernel_params['length_scale'],
-                length_scale_bounds=kernel_params['length_scale_bounds'],
-                nu=kernel_params['nu']
-            )
-        
-        # Only fit GP if there are samples
-        if len(optimizer._space) > 0:
-            optimizer._gp.fit(optimizer._space.params, optimizer._space.target)
-        
-        return optimizer
