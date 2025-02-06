@@ -69,18 +69,57 @@ class AcquisitionFunction(abc.ABC):
             self.random_state = RandomState()
         self.i = 0
 
+    def _serialize_random_state(self) -> dict | None:
+        """Convert random state to JSON serializable format."""
+        if self.random_state is not None:
+            state = self.random_state.get_state()
+            return {
+                'bit_generator': state[0],
+                'state': state[1].tolist(),  # Convert numpy array to list
+                'pos': state[2],
+                'has_gauss': state[3],
+                'cached_gaussian': state[4]
+            }
+        return None
+
+    def _deserialize_random_state(self, state_dict: dict | None) -> None:
+        """Restore random state from JSON serializable format."""
+        if state_dict is not None:
+            if self.random_state is None:
+                self.random_state = RandomState()
+            state = (
+                state_dict['bit_generator'],
+                np.array(state_dict['state'], dtype=np.uint32),
+                state_dict['pos'],
+                state_dict['has_gauss'],
+                state_dict['cached_gaussian']
+            )
+            self.random_state.set_state(state)
+
     @abc.abstractmethod
     def base_acq(self, *args: Any, **kwargs: Any) -> NDArray[Float]:
         """Provide access to the base acquisition function."""
-
-    def _fit_gp(self, gp: GaussianProcessRegressor, target_space: TargetSpace) -> None:
-        # Sklearn's GP throws a large number of warnings at times, but
-        # we don't really need to see them here.
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            gp.fit(target_space.params, target_space.target)
-            if target_space.constraint is not None:
-                target_space.constraint.fit(target_space.params, target_space._constraint_values)
+        
+    @abc.abstractmethod
+    def get_acquisition_params(self) -> dict[str, Any]:
+        """Get the acquisition function parameters.
+        
+        Returns
+        -------
+        dict
+            Dictionary containing the acquisition function parameters.
+            All values must be JSON serializable.
+        """
+        
+    @abc.abstractmethod
+    def set_acquisition_params(self, params: dict[str, Any]) -> None:
+        """Set the acquisition function parameters.
+        
+        Parameters
+        ----------
+        params : dict
+            Dictionary containing the acquisition function parameters.
+        """
 
     def suggest(
         self,
@@ -128,6 +167,15 @@ class AcquisitionFunction(abc.ABC):
 
         acq = self._get_acq(gp=gp, constraint=target_space.constraint)
         return self._acq_min(acq, target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b)
+    
+    def _fit_gp(self, gp: GaussianProcessRegressor, target_space: TargetSpace) -> None:
+        # Sklearn's GP throws a large number of warnings at times, but
+        # we don't really need to see them here.
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            gp.fit(target_space.params, target_space.target)
+            if target_space.constraint is not None:
+                target_space.constraint.fit(target_space.params, target_space._constraint_values)
 
     def _get_acq(
         self, gp: GaussianProcessRegressor, constraint: ConstraintModel | None = None
@@ -453,6 +501,20 @@ class UpperConfidenceBound(AcquisitionFunction):
             self.exploration_decay_delay is None or self.exploration_decay_delay <= self.i
         ):
             self.kappa = self.kappa * self.exploration_decay
+    
+    def get_acquisition_params(self) -> dict:
+        return {
+            "kappa": self.kappa,
+            "exploration_decay": self.exploration_decay,
+            "exploration_decay_delay": self.exploration_decay_delay,
+            "random_state": self._serialize_random_state()
+        }
+
+    def set_acquisition_params(self, params: dict) -> None:
+        self.kappa = params["kappa"]
+        self.exploration_decay = params["exploration_decay"]
+        self.exploration_decay_delay = params["exploration_decay_delay"]
+        self._deserialize_random_state(params["random_state"])
 
 
 class ProbabilityOfImprovement(AcquisitionFunction):
@@ -586,6 +648,21 @@ class ProbabilityOfImprovement(AcquisitionFunction):
             self.exploration_decay_delay is None or self.exploration_decay_delay <= self.i
         ):
             self.xi = self.xi * self.exploration_decay
+            
+    def get_acquisition_params(self) -> dict:
+        """Get the acquisition function parameters."""
+        return {
+            "xi": self.xi,
+            "exploration_decay": self.exploration_decay,
+            "exploration_decay_delay": self.exploration_decay_delay,
+            "random_state": self._serialize_random_state()
+        }
+        
+    def set_acquisition_params(self, params: dict) -> None:
+        self.xi = params["xi"]
+        self.exploration_decay = params["exploration_decay"]
+        self.exploration_decay_delay = params["exploration_decay_delay"]
+        self._deserialize_random_state(params["random_state"])
 
 
 class ExpectedImprovement(AcquisitionFunction):
@@ -727,6 +804,20 @@ class ExpectedImprovement(AcquisitionFunction):
             self.exploration_decay_delay is None or self.exploration_decay_delay <= self.i
         ):
             self.xi = self.xi * self.exploration_decay
+            
+    def get_acquisition_params(self) -> dict:
+        return {
+            "xi": self.xi,
+            "exploration_decay": self.exploration_decay,
+            "exploration_decay_delay": self.exploration_decay_delay,
+            "random_state": self._serialize_random_state()
+        }
+        
+    def set_acquisition_params(self, params: dict) -> None:
+        self.xi = params["xi"]
+        self.exploration_decay = params["exploration_decay"]
+        self.exploration_decay_delay = params["exploration_decay_delay"]
+        self._deserialize_random_state(params["random_state"])
 
 
 class ConstantLiar(AcquisitionFunction):
@@ -917,6 +1008,24 @@ class ConstantLiar(AcquisitionFunction):
         self.dummies.append(x_max)
 
         return x_max
+    
+    def get_acquisition_params(self) -> dict:
+        return {
+            "dummies": [dummy.tolist() for dummy in self.dummies],
+            "base_acquisition_params": self.base_acquisition.get_acquisition_params(),
+            "strategy": self.strategy,
+            "atol": self.atol,
+            "rtol": self.rtol,
+            "random_state": self._serialize_random_state()
+        }
+        
+    def set_acquisition_params(self, params: dict) -> None:
+        self.dummies = [np.array(dummy) for dummy in params["dummies"]]
+        self.base_acquisition.set_acquisition_params(params["base_acquisition_params"])
+        self.strategy = params["strategy"]
+        self.atol = params["atol"]
+        self.rtol = params["rtol"]
+        self._deserialize_random_state(params["random_state"])
 
 
 class GPHedge(AcquisitionFunction):
@@ -1035,3 +1144,28 @@ class GPHedge(AcquisitionFunction):
         self.previous_candidates = np.array(x_max)
         idx = self._sample_idx_from_softmax_gains()
         return x_max[idx]
+    
+    def get_acquisition_params(self) -> dict:
+        return {
+            "base_acquisitions_params": [acq.get_acquisition_params() for acq in self.base_acquisitions],
+            "gains": self.gains.tolist(),
+            "previous_candidates": self.previous_candidates.tolist() if self.previous_candidates is not None else None,
+            "random_states": [acq._serialize_random_state() for acq in self.base_acquisitions] + [self._serialize_random_state()]
+        }
+        
+    def set_acquisition_params(self, params: dict) -> None:
+        for acq, acq_params, random_state in zip(
+            self.base_acquisitions, 
+            params["base_acquisitions_params"],
+            params["random_states"][:-1]
+        ):
+            acq.set_acquisition_params(acq_params)
+            acq._deserialize_random_state(random_state)
+            
+        self.gains = np.array(params["gains"])
+        self.previous_candidates = (np.array(params["previous_candidates"]) 
+                                  if params["previous_candidates"] is not None 
+                                  else None)
+        
+        self._deserialize_random_state(params["random_states"][-1])
+
