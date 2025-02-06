@@ -107,9 +107,6 @@ class BayesianOptimization(Observable):
         This behavior may be desired in high noise situations where repeatedly probing
         the same point will give different answers. In other situations, the acquisition
         may occasionally generate a duplicate point.
-
-    load_state_path: str | Path | None, optional (default=None)
-        If provided, load optimizer state from this path instead of initializing fresh
     """
 
     def __init__(
@@ -122,7 +119,6 @@ class BayesianOptimization(Observable):
         verbose: int = 2,
         bounds_transformer: DomainTransformer | None = None,
         allow_duplicate_points: bool = False,
-        load_state_path: str | Path | None = None,
     ):
         self._random_state = ensure_rng(random_state)
         self._allow_duplicate_points = allow_duplicate_points
@@ -180,55 +176,6 @@ class BayesianOptimization(Observable):
 
         self._sorting_warning_already_shown = False  # TODO: remove in future version
         super().__init__(events=DEFAULT_EVENTS)
-
-        if load_state_path is not None:
-            with Path(load_state_path).open('r') as file:
-                state = json.load(file)
-            self._set_state_from_dict(state)
-
-    def _set_state_from_dict(self, state: dict[str, Any]) -> None:
-        """Set optimizer state from a dictionary of saved values."""
-        if state["random_state"] is not None:
-            random_state_tuple = (
-                state["random_state"]["bit_generator"],
-                np.array(state["random_state"]["state"], dtype=np.uint32),
-                state["random_state"]["pos"],
-                state["random_state"]["has_gauss"],
-                state["random_state"]["cached_gaussian"],
-            )
-            self._random_state.set_state(random_state_tuple)
-
-        self._gp.set_params(**state["gp_params"])
-        
-        # Handle kernel separately since it needs reconstruction
-        if isinstance(self._gp.kernel, dict):
-            kernel_params = self._gp.kernel
-            self._gp.kernel = Matern(
-                length_scale=kernel_params['length_scale'],
-                length_scale_bounds=kernel_params['length_scale_bounds'],
-                nu=kernel_params['nu']
-            )
-
-        # Register previous points
-        params_array = np.array(state["params"])
-        target_array = np.array(state["target"])
-        constraint_array = (np.array(state["constraint_values"]) 
-                          if state["constraint_values"] is not None 
-                          else None)
-        
-        for i in range(len(params_array)):
-            params = self._space.array_to_params(params_array[i])
-            target = target_array[i]
-            constraint = constraint_array[i] if constraint_array is not None else None
-            self.register(
-                params=params,
-                target=target,
-                constraint_value=constraint,
-            )
-
-        # Fit GP if there are samples
-        if len(self._space) > 0:
-            self._gp.fit(self._space.params, self._space.target)
 
     @property
     def space(self) -> TargetSpace:
@@ -433,12 +380,12 @@ class BayesianOptimization(Observable):
                 'has_gauss': state_tuple[3],
                 'cached_gaussian': state_tuple[4],
             }
-        
+
         # Get constraint values if they exist
         constraint_values = (self._space._constraint_values.tolist() 
                            if self.is_constrained 
                            else None)
-        
+        acquisition_params = self._acquisition_function.get_acquisition_params()
         state = {
             "pbounds": {
                 key: self._space._bounds[i].tolist() 
@@ -457,7 +404,51 @@ class BayesianOptimization(Observable):
             "allow_duplicate_points": self._allow_duplicate_points,
             "verbose": self._verbose,
             "random_state": random_state,
+            "acquisition_params": acquisition_params,
         }
         
         with Path(path).open('w') as f:
             json.dump(state, f, indent=2)
+        
+    def load_state(self, path: str | PathLike[str]) -> None:
+        with Path(path).open('r') as file:
+            state = json.load(file)
+
+        if state["random_state"] is not None:
+            random_state_tuple = (
+                state["random_state"]["bit_generator"],
+                np.array(state["random_state"]["state"], dtype=np.uint32),
+                state["random_state"]["pos"],
+                state["random_state"]["has_gauss"],
+                state["random_state"]["cached_gaussian"],
+            )
+            self._random_state.set_state(random_state_tuple)
+
+        self._gp.set_params(**state["gp_params"])
+        
+        if isinstance(self._gp.kernel, dict):
+            kernel_params = self._gp.kernel
+            self._gp.kernel = Matern(
+                length_scale=kernel_params['length_scale'],
+                length_scale_bounds=tuple(kernel_params['length_scale_bounds']),
+                nu=kernel_params['nu']
+            )
+
+        params_array = np.array(state["params"])
+        target_array = np.array(state["target"])
+        constraint_array = (np.array(state["constraint_values"]) 
+                          if state["constraint_values"] is not None 
+                          else None)
+
+        for i in range(len(params_array)):
+            params = self._space.array_to_params(params_array[i])
+            target = target_array[i]
+            constraint = constraint_array[i] if constraint_array is not None else None
+            self.register(
+                params=params,
+                target=target,
+                constraint_value=constraint
+            )
+            
+        self._acquisition_function.set_acquisition_params(state["acquisition_params"])
+        self._gp.fit(self._space.params, self._space.target)
