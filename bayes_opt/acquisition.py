@@ -99,8 +99,7 @@ class AcquisitionFunction(abc.ABC):
     @abc.abstractmethod
     def base_acq(self, *args: Any, **kwargs: Any) -> NDArray[Float]:
         """Provide access to the base acquisition function."""
-        
-    @abc.abstractmethod
+
     def get_acquisition_params(self) -> dict[str, Any]:
         """Get the acquisition function parameters.
         
@@ -110,8 +109,8 @@ class AcquisitionFunction(abc.ABC):
             Dictionary containing the acquisition function parameters.
             All values must be JSON serializable.
         """
+        return {}
         
-    @abc.abstractmethod
     def set_acquisition_params(self, params: dict[str, Any]) -> None:
         """Set the acquisition function parameters.
         
@@ -120,6 +119,7 @@ class AcquisitionFunction(abc.ABC):
         params : dict
             Dictionary containing the acquisition function parameters.
         """
+        pass
 
     def suggest(
         self,
