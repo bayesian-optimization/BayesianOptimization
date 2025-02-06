@@ -12,6 +12,7 @@ from bayes_opt.event import DEFAULT_EVENTS, Events
 from bayes_opt.exception import NotUniqueError
 from bayes_opt.logger import ScreenLogger
 from bayes_opt.target_space import TargetSpace
+from scipy.optimize import NonlinearConstraint
 
 
 def target_func(**kwargs):
@@ -350,14 +351,14 @@ def test_save_load_state(tmp_path):
     state_path = tmp_path / "optimizer_state.json"
     optimizer.save_state(state_path)
     
-    # Load state into new optimizer
+    # Create new optimizer and load state
     new_optimizer = BayesianOptimization(
         f=target_func, 
         pbounds=PBOUNDS,
         random_state=1,
-        verbose=0,
-        load_state_path=state_path
+        verbose=0
     )
+    new_optimizer.load_state(state_path)
     
     # Test that key properties match
     assert len(optimizer.space) == len(new_optimizer.space)
@@ -365,9 +366,10 @@ def test_save_load_state(tmp_path):
     assert optimizer.max["params"] == new_optimizer.max["params"]
     np.testing.assert_array_equal(optimizer.space.params, new_optimizer.space.params)
     np.testing.assert_array_equal(optimizer.space.target, new_optimizer.space.target)
-    
-def test_save_load_w_string_params(tmp_path):
-    """Test saving and loading optimizer state with string parameters."""
+
+
+def test_save_load_w_categorical_params(tmp_path):
+    """Test saving and loading optimizer state with categorical parameters."""
     def str_target_func(param1: str, param2: str) -> float:
         # Simple function that maps strings to numbers
         value_map = {
@@ -398,9 +400,9 @@ def test_save_load_w_string_params(tmp_path):
         f=str_target_func,
         pbounds=str_pbounds,
         random_state=1,
-        verbose=0,
-        load_state_path=state_path
+        verbose=0
     )
+    new_optimizer.load_state(state_path)
     
     assert len(optimizer.space) == len(new_optimizer.space)
     assert optimizer.max["target"] == new_optimizer.max["target"]
@@ -415,12 +417,16 @@ def test_save_load_w_string_params(tmp_path):
 
 def test_probe_point_returns_same_point(tmp_path):
     """Check that probe returns same point after save/load."""
-    # Initialize optimizer
     optimizer = BayesianOptimization(
         f=target_func,
         pbounds=PBOUNDS,
         random_state=1,
         verbose=0
+    )
+
+    optimizer.register(
+        params={"p1": 5.0, "p2": 5.0},
+        target=10.0
     )
 
     state_path = tmp_path / "optimizer_state.json"
@@ -430,15 +436,42 @@ def test_probe_point_returns_same_point(tmp_path):
         f=target_func,
         pbounds=PBOUNDS,
         random_state=1,
-        verbose=0,
-        load_state_path=state_path
-        )
+        verbose=0
+    )
+    new_optimizer.load_state(state_path)
 
     # Both optimizers should probe the same point
     point = {"p1": 1.5, "p2": 0.5}
     probe1 = optimizer.probe(point)
     probe2 = new_optimizer.probe(point)
     assert probe1 == probe2
+
+
+def test_suggest_point_returns_same_point(tmp_path):
+    """Check that suggest returns same point after save/load."""
+    optimizer = BayesianOptimization(
+        f=target_func,
+        pbounds=PBOUNDS,
+        random_state=1,
+        verbose=0
+    )
+    optimizer.maximize(init_points=2, n_iter=3)
+    
+    state_path = tmp_path / "optimizer_state.json"
+    optimizer.save_state(state_path)
+
+    new_optimizer = BayesianOptimization(
+        f=target_func,
+        pbounds=PBOUNDS,
+        random_state=1,
+        verbose=0
+    )
+    new_optimizer.load_state(state_path)
+    
+    # Both optimizers should suggest the same point
+    suggestion1 = optimizer.suggest()
+    suggestion2 = new_optimizer.suggest()
+    assert suggestion1 == suggestion2
 
 
 def test_save_load_random_state(tmp_path):
@@ -460,11 +493,84 @@ def test_save_load_random_state(tmp_path):
         f=target_func,
         pbounds=PBOUNDS,
         random_state=1,
-        verbose=0,
-        load_state_path=state_path
+        verbose=0
     )
     
     # Both optimizers should suggest the same point
     suggestion1 = optimizer.suggest()
     suggestion2 = new_optimizer.suggest()
     assert suggestion1 == suggestion2
+
+
+def test_save_load_w_constraint(tmp_path):
+    """Test saving and loading optimizer state with constraints."""
+    def constraint_func(x: float, y: float) -> float:
+        return x + y  # Simple constraint: sum of parameters should be within bounds
+    
+    constraint = NonlinearConstraint(
+        fun=constraint_func,
+        lb=0.0,
+        ub=3.0
+    )
+    
+    # Initialize optimizer with constraint
+    optimizer = BayesianOptimization(
+        f=target_func,
+        pbounds={"x": (-1, 3), "y": (0, 5)},
+        constraint=constraint,
+        random_state=1,
+        verbose=0
+    )
+    
+    # Register some points, some that satisfy constraint and some that don't
+    optimizer.register(
+        params={"x": 1.0, "y": 1.0},  # Satisfies constraint: sum = 2.0
+        target=2.0,
+        constraint_value=2.0
+    )
+    optimizer.register(
+        params={"x": 2.0, "y": 2.0},  # Violates constraint: sum = 4.0
+        target=4.0,
+        constraint_value=4.0
+    )
+    optimizer.register(
+        params={"x": 0.5, "y": 0.5},  # Satisfies constraint: sum = 1.0
+        target=1.0,
+        constraint_value=1.0
+    )
+    
+    state_path = tmp_path / "optimizer_state.json"
+    optimizer.save_state(state_path)
+    
+    new_optimizer = BayesianOptimization(
+        f=target_func,
+        pbounds={"x": (-1, 3), "y": (0, 5)},
+        constraint=constraint,
+        random_state=1,
+        verbose=0
+    )
+    new_optimizer.load_state(state_path)
+    
+    # Test that key properties match
+    assert len(optimizer.space) == len(new_optimizer.space)
+    assert optimizer.max["target"] == new_optimizer.max["target"]
+    assert optimizer.max["params"] == new_optimizer.max["params"]
+    np.testing.assert_array_equal(optimizer.space.params, new_optimizer.space.params)
+    np.testing.assert_array_equal(optimizer.space.target, new_optimizer.space.target)
+    
+    # Test that constraint values were properly saved and loaded
+    np.testing.assert_array_equal(
+        optimizer.space._constraint_values,
+        new_optimizer.space._constraint_values
+    )
+    
+    # Test that both optimizers suggest the same point (should respect constraints)
+    suggestion1 = optimizer.suggest()
+    suggestion2 = new_optimizer.suggest()
+    assert suggestion1 == suggestion2
+    
+    # Verify that suggested point satisfies constraint
+    constraint_value = constraint_func(**suggestion1)
+    assert 0.0 <= constraint_value <= 3.0, "Suggested point violates constraint"
+
+

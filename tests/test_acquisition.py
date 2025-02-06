@@ -53,6 +53,12 @@ class MockAcquisition(acquisition.AcquisitionFunction):
     def base_acq(self, mean, std):
         pass
 
+    def get_acquisition_params(self) -> dict:
+        return {}
+
+    def set_acquisition_params(self, params: dict) -> None:
+        pass
+
 
 def test_base_acquisition():
     acq = acquisition.UpperConfidenceBound()
