@@ -369,7 +369,18 @@ class BayesianOptimization(Observable):
         ----------
         path : str or PathLike
             Path to save the optimization state
+        
+        Raises
+        ------
+        ValueError
+            If attempting to save state before collecting any samples.
         """
+        if len(self._space) == 0:
+            raise ValueError(
+                "Cannot save optimizer state before collecting any samples. "
+                "Please probe or register at least one point before saving."
+            )
+        
         random_state = None
         if self._random_state is not None:
             state_tuple = self._random_state.get_state()
@@ -391,8 +402,14 @@ class BayesianOptimization(Observable):
                 key: self._space._bounds[i].tolist() 
                 for i, key in enumerate(self._space.keys)
             },
+            # Add current transformed bounds if using bounds transformer
+            "transformed_bounds": (
+                self._space.bounds.tolist() 
+                if self._bounds_transformer 
+                else None
+            ),
             "keys": self._space.keys,
-            "params": self._space.params.tolist(),
+            "params": np.array(self._space.params).tolist(),
             "target": self._space.target.tolist(),
             "constraint_values": constraint_values,
             "gp_params": {
@@ -414,28 +431,8 @@ class BayesianOptimization(Observable):
         with Path(path).open('r') as file:
             state = json.load(file)
 
-        if state["random_state"] is not None:
-            random_state_tuple = (
-                state["random_state"]["bit_generator"],
-                np.array(state["random_state"]["state"], dtype=np.uint32),
-                state["random_state"]["pos"],
-                state["random_state"]["has_gauss"],
-                state["random_state"]["cached_gaussian"],
-            )
-            self._random_state.set_state(random_state_tuple)
-
-        self._gp.set_params(**state["gp_params"])
-        
-        if isinstance(self._gp.kernel, dict):
-            kernel_params = self._gp.kernel
-            self._gp.kernel = Matern(
-                length_scale=kernel_params['length_scale'],
-                length_scale_bounds=tuple(kernel_params['length_scale_bounds']),
-                nu=kernel_params['nu']
-            )
-
-        params_array = np.array(state["params"])
-        target_array = np.array(state["target"])
+        params_array = np.asarray(state["params"], dtype=np.float64)
+        target_array = np.asarray(state["target"], dtype=np.float64)
         constraint_array = (np.array(state["constraint_values"]) 
                           if state["constraint_values"] is not None 
                           else None)
@@ -449,6 +446,37 @@ class BayesianOptimization(Observable):
                 target=target,
                 constraint_value=constraint
             )
-            
+        
         self._acquisition_function.set_acquisition_params(state["acquisition_params"])
+        
+        if state.get("transformed_bounds") and self._bounds_transformer:
+            new_bounds = {
+                key: bounds for key, bounds in zip(
+                    self._space.keys, 
+                    np.array(state["transformed_bounds"])
+                )
+            }
+            self._space.set_bounds(new_bounds)
+            self._bounds_transformer.initialize(self._space)
+        
+        self._gp.set_params(**state["gp_params"])
+        if isinstance(self._gp.kernel, dict):
+            kernel_params = self._gp.kernel
+            self._gp.kernel = Matern(
+                length_scale=kernel_params['length_scale'],
+                length_scale_bounds=tuple(kernel_params['length_scale_bounds']),
+                nu=kernel_params['nu']
+            )
+            
         self._gp.fit(self._space.params, self._space.target)
+        
+        if state["random_state"] is not None:
+            random_state_tuple = (
+                state["random_state"]["bit_generator"],
+                np.array(state["random_state"]["state"], dtype=np.uint32),
+                state["random_state"]["pos"],
+                state["random_state"]["has_gauss"],
+                state["random_state"]["cached_gaussian"],
+            )
+            self._random_state.set_state(random_state_tuple)
+        
