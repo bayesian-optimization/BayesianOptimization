@@ -720,14 +720,31 @@ def test_save_load_w_custom_parameter(tmp_path):
     )
     new_optimizer.load_state(state_path)
 
-    suggestion1 = optimizer.suggest()        
-    suggestion2 = new_optimizer.suggest()
+    # Test that key properties match
+    assert len(optimizer.space) == len(new_optimizer.space)
+    assert optimizer.max["target"] == new_optimizer.max["target"]
+    assert optimizer.max["params"] == new_optimizer.max["params"]
     
-    # Compare suggestions with reduced precision
-    np.testing.assert_array_almost_equal(
-        suggestion1['sides'],
-        suggestion2['sides'],
-        decimal=10
-    )
+    # Test that all historical data matches
+    for i in range(len(optimizer.space)):
+        np.testing.assert_array_almost_equal(
+            optimizer.space.params[i],
+            new_optimizer.space.params[i]
+        )
+        assert optimizer.space.target[i] == new_optimizer.space.target[i]
+        np.testing.assert_array_almost_equal(
+            optimizer.res[i]["params"]["sides"],
+            new_optimizer.res[i]["params"]["sides"]
+        )
+        assert optimizer.res[i]["target"] == new_optimizer.res[i]["target"]
 
+    # Test that multiple subsequent suggestions match
+    for _ in range(5):
+        suggestion1 = optimizer.suggest()        
+        suggestion2 = new_optimizer.suggest()
+        np.testing.assert_array_almost_equal(
+            suggestion1['sides'],
+            suggestion2['sides'],
+            decimal=10
+        )
 
