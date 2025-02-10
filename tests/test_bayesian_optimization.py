@@ -13,6 +13,9 @@ from bayes_opt.exception import NotUniqueError
 from bayes_opt.logger import ScreenLogger
 from bayes_opt.target_space import TargetSpace
 from scipy.optimize import NonlinearConstraint
+from bayes_opt.domain_reduction import SequentialDomainReductionTransformer
+from bayes_opt.parameter import BayesParameter
+from bayes_opt.util import ensure_rng
 
 
 def target_func(**kwargs):
@@ -415,38 +418,6 @@ def test_save_load_w_categorical_params(tmp_path):
         assert optimizer.res[i]["params"] == new_optimizer.res[i]["params"]
 
 
-def test_probe_point_returns_same_point(tmp_path):
-    """Check that probe returns same point after save/load."""
-    optimizer = BayesianOptimization(
-        f=target_func,
-        pbounds=PBOUNDS,
-        random_state=1,
-        verbose=0
-    )
-
-    optimizer.register(
-        params={"p1": 5.0, "p2": 5.0},
-        target=10.0
-    )
-
-    state_path = tmp_path / "optimizer_state.json"
-    optimizer.save_state(state_path)
-
-    new_optimizer = BayesianOptimization(
-        f=target_func,
-        pbounds=PBOUNDS,
-        random_state=1,
-        verbose=0
-    )
-    new_optimizer.load_state(state_path)
-
-    # Both optimizers should probe the same point
-    point = {"p1": 1.5, "p2": 0.5}
-    probe1 = optimizer.probe(point)
-    probe2 = new_optimizer.probe(point)
-    assert probe1 == probe2
-
-
 def test_suggest_point_returns_same_point(tmp_path):
     """Check that suggest returns same point after save/load."""
     optimizer = BayesianOptimization(
@@ -484,17 +455,24 @@ def test_save_load_random_state(tmp_path):
         verbose=0
     )
     
+    # Register a point before saving
+    optimizer.probe(
+        params={"p1": 1, "p2": 2},
+        lazy=False
+    )
+    
     # Save state
     state_path = tmp_path / "optimizer_state.json"
     optimizer.save_state(state_path)
     
-    # Load state and get next suggestion
+    # Create new optimizer with same configuration
     new_optimizer = BayesianOptimization(
         f=target_func,
         pbounds=PBOUNDS,
         random_state=1,
         verbose=0
     )
+    new_optimizer.load_state(state_path)
     
     # Both optimizers should suggest the same point
     suggestion1 = optimizer.suggest()
@@ -502,7 +480,43 @@ def test_save_load_random_state(tmp_path):
     assert suggestion1 == suggestion2
 
 
-def test_save_load_w_constraint(tmp_path):
+def test_save_load_unused_optimizer(tmp_path):
+    """Test saving and loading optimizer state with unused optimizer."""
+    optimizer = BayesianOptimization(
+        f=target_func,
+        pbounds=PBOUNDS,
+        random_state=1,
+        verbose=0
+    )
+    
+    # Test that saving without samples raises an error
+    with pytest.raises(ValueError, match="Cannot save optimizer state before collecting any samples"):
+        optimizer.save_state(tmp_path / "optimizer_state.json")
+    
+    # Add a sample point
+    optimizer.probe(
+        params={"p1": 1, "p2": 2},
+        lazy=False
+    )
+    
+    # Now saving should work
+    optimizer.save_state(tmp_path / "optimizer_state.json")
+
+    new_optimizer = BayesianOptimization(
+        f=target_func,
+        pbounds=PBOUNDS,
+        random_state=1,
+        verbose=0
+    )
+    new_optimizer.load_state(tmp_path / "optimizer_state.json")
+    
+    assert len(optimizer.space) == len(new_optimizer.space)
+    assert optimizer.max["target"] == new_optimizer.max["target"]
+    assert optimizer.max["params"] == new_optimizer.max["params"]
+    np.testing.assert_array_equal(optimizer.space.params, new_optimizer.space.params)
+    np.testing.assert_array_equal(optimizer.space.target, new_optimizer.space.target)
+
+
     """Test saving and loading optimizer state with constraints."""
     def constraint_func(x: float, y: float) -> float:
         return x + y  # Simple constraint: sum of parameters should be within bounds
@@ -572,5 +586,148 @@ def test_save_load_w_constraint(tmp_path):
     # Verify that suggested point satisfies constraint
     constraint_value = constraint_func(**suggestion1)
     assert 0.0 <= constraint_value <= 3.0, "Suggested point violates constraint"
+
+
+def test_save_load_w_domain_reduction(tmp_path):
+    """Test saving and loading optimizer state with domain reduction transformer."""
+    # Initialize optimizer with bounds transformer
+    bounds_transformer = SequentialDomainReductionTransformer()
+    optimizer = BayesianOptimization(
+        f=target_func,
+        pbounds=PBOUNDS,
+        random_state=1,
+        verbose=0,
+        bounds_transformer=bounds_transformer
+    )
+    
+    # Run some iterations to trigger domain reduction
+    optimizer.maximize(init_points=2, n_iter=3)
+    
+    # Save state
+    state_path = tmp_path / "optimizer_state.json"
+    optimizer.save_state(state_path)
+    
+    # Create new optimizer with same configuration
+    new_bounds_transformer = SequentialDomainReductionTransformer()
+    new_optimizer = BayesianOptimization(
+        f=target_func,
+        pbounds=PBOUNDS,
+        random_state=1,
+        verbose=0,
+        bounds_transformer=new_bounds_transformer
+    )
+    new_optimizer.load_state(state_path)
+    
+    # Both optimizers should probe the same point
+    point = {"p1": 1.5, "p2": 0.5}
+    probe1 = optimizer.probe(point)
+    probe2 = new_optimizer.probe(point)
+    assert probe1 == probe2
+    
+    # Both optimizers should suggest the same point
+    suggestion1 = optimizer.suggest()
+    suggestion2 = new_optimizer.suggest()
+    assert suggestion1 == suggestion2
+    
+    # Verify that the transformed bounds match
+    assert optimizer._space.bounds.tolist() == new_optimizer._space.bounds.tolist()
+
+
+def test_save_load_w_custom_parameter(tmp_path):
+    """Test saving and loading optimizer state with custom parameter types."""
+    
+    class FixedPerimeterTriangleParameter(BayesParameter):
+        def __init__(self, name: str, bounds, perimeter) -> None:
+            super().__init__(name, bounds)
+            self.perimeter = perimeter
+
+        @property
+        def is_continuous(self):
+            return True
+
+        def random_sample(self, n_samples: int, random_state):
+            random_state = ensure_rng(random_state)
+            samples = []
+            while len(samples) < n_samples:
+                samples_ = random_state.dirichlet(np.ones(3), n_samples)
+                samples_ = samples_ * self.perimeter # scale samples by perimeter
+
+                samples_ = samples_[np.all((self.bounds[:, 0] <= samples_) & (samples_ <= self.bounds[:, 1]), axis=-1)]
+                samples.extend(np.atleast_2d(samples_))
+            samples = np.array(samples[:n_samples])
+            return samples
+
+        def to_float(self, value):
+            return value
+
+        def to_param(self, value):
+            return value * self.perimeter / sum(value)
+
+        def kernel_transform(self, value):
+            return value * self.perimeter / np.sum(value, axis=-1, keepdims=True)
+
+        def to_string(self, value, str_len: int) -> str:
+            len_each = (str_len - 2) // 3
+            str_ = '|'.join([f"{float(np.round(value[i], 4))}"[:len_each] for i in range(3)])
+            return str_.ljust(str_len)
+
+        @property
+        def dim(self):
+            return 3 # as we have three float values, each representing the length of one side.
+
+    def area_of_triangle(sides):
+        a, b, c = sides
+        s = np.sum(sides, axis=-1) # perimeter
+        A = np.sqrt(s * (s-a) * (s-b) * (s-c))
+        return A
+
+    # Create parameter and bounds
+    param = FixedPerimeterTriangleParameter(
+        name='sides',
+        bounds=np.array([[0., 1.], [0., 1.], [0., 1.]]),
+        perimeter=1.
+    )
+    pbounds = {'sides': param}
+
+    # Print initial pbounds
+    print("\nOriginal pbounds:")
+    print(pbounds)
+    
+    # Initialize first optimizer
+    optimizer = BayesianOptimization(
+        f=area_of_triangle,
+        pbounds=pbounds,
+        random_state=1,
+        verbose=0
+    )
+
+    # Run iterations and immediately save state
+    optimizer.maximize(init_points=2, n_iter=5)
+    
+    # Force GP update before saving
+    optimizer._gp.fit(optimizer.space.params, optimizer.space.target)
+    
+    # Save state
+    state_path = tmp_path / "optimizer_state.json"
+    optimizer.save_state(state_path)
+    
+    # Create new optimizer and load state
+    new_optimizer = BayesianOptimization(
+        f=area_of_triangle,
+        pbounds=pbounds,
+        random_state=1,
+        verbose=0
+    )
+    new_optimizer.load_state(state_path)
+
+    suggestion1 = optimizer.suggest()        
+    suggestion2 = new_optimizer.suggest()
+    
+    # Compare suggestions with reduced precision
+    np.testing.assert_array_almost_equal(
+        suggestion1['sides'],
+        suggestion2['sides'],
+        decimal=10
+    )
 
 
