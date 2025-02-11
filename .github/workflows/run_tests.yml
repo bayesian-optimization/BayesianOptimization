@@ -38,8 +38,13 @@ jobs:
         uv tool install poetry
     - name: Install test dependencies
       run: |
-        poetry add "numpy${{ matrix.numpy-version }}"
-        poetry install --with dev,nbtools
+        poetry self add poetry-plugin-export
+        poetry export -f requirements.txt --with dev,nbtools --without-hashes --output requirements-dev.txt
+        echo "numpy${{ matrix.numpy-version }}" >> constraints.txt
+        uv pip compile requirements-dev.txt --output-file requirements.txt \
+          --python-version ${{ matrix.python-version }} \
+          --override constraints.txt
+        poetry run pip install -r requirements.txt
     - name: Test with pytest
       run: |
         poetry run pytest --cov-report xml --cov=bayes_opt/
