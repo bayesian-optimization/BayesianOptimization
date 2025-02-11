@@ -45,6 +45,7 @@ jobs:
           --python-version ${{ matrix.python-version }} \
           --override constraints.txt
         poetry run pip install -r requirements.txt
+        poetry install --only-root
     - name: Test with pytest
       run: |
         poetry run pytest --cov-report xml --cov=bayes_opt/
