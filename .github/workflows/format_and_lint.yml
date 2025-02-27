@@ -17,13 +17,10 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: "3.9"
-    - name: Install the latest version of uv
-      uses: astral-sh/setup-uv@v5
-      with:
-        version: "latest"
     - name: Install Poetry
-      run: |
-        uv tool install poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: 'latest'
     - name: Install dependencies
       run: |
         poetry install --with dev

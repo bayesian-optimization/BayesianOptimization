@@ -26,13 +26,10 @@ jobs:
         uses: olegtarasov/get-tag@v2.1
       - name: Install pandoc
         run: sudo apt-get install -y pandoc
-      - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          version: "latest"
       - name: Install Poetry
-        run: |
-          uv tool install poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 'latest'
       - name: Install package and test dependencies
         run: |
           poetry install --with dev,nbtools

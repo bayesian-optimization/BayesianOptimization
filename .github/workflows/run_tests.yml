@@ -34,8 +34,9 @@ jobs:
       with:
         version: "latest"
     - name: Install Poetry
-      run: |
-        uv tool install poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: 'latest'
     - name: Install test dependencies
       run: |
         poetry self add poetry-plugin-export
