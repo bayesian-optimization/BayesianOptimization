@@ -28,6 +28,8 @@ jobs:
         run: sudo apt-get install -y pandoc
       - name: Install Poetry
         uses: snok/install-poetry@v1
+        with:
+          version: 'latest'
       - name: Install package and test dependencies
         run: |
           poetry install --with dev,nbtools

@@ -19,6 +19,8 @@ jobs:
         python-version: "3.9"
     - name: Install Poetry
       uses: snok/install-poetry@v1
+      with:
+        version: 'latest'
     - name: Install dependencies
       run: |
         poetry install --with dev
