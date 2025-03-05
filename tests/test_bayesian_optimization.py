@@ -632,7 +632,9 @@ def test_save_load_w_custom_parameter(tmp_path):
 
     # Test that all historical data matches
     for i in range(len(optimizer.space)):
-        np.testing.assert_array_almost_equal(optimizer.space.params[i], new_optimizer.space.params[i], decimal=10)
+        np.testing.assert_array_almost_equal(
+            optimizer.space.params[i], new_optimizer.space.params[i], decimal=10
+        )
         assert optimizer.space.target[i] == new_optimizer.space.target[i]
         np.testing.assert_array_almost_equal(
             optimizer.res[i]["params"]["sides"], new_optimizer.res[i]["params"]["sides"], decimal=10
