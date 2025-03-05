@@ -405,7 +405,7 @@ def verify_optimizers_match(optimizer1, optimizer2):
         assert optimizer1.space._constraint.ub == optimizer2.space._constraint.ub
 
     rng = np.random.default_rng()
-    assert rng.bit_generator.state['state']['state'] == rng.bit_generator.state['state']['state']
+    assert rng.bit_generator.state["state"]["state"] == rng.bit_generator.state["state"]["state"]
 
     assert optimizer1._gp.kernel.get_params() == optimizer2._gp.kernel.get_params()
 

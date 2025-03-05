@@ -375,9 +375,9 @@ class BayesianOptimization(Observable):
         """
         if len(self._space) == 0:
             msg = (
-                    "Cannot save optimizer state before collecting any samples. "
-                    "Please probe or register at least one point before saving."
-                )
+                "Cannot save optimizer state before collecting any samples. "
+                "Please probe or register at least one point before saving."
+            )
             raise ValueError(msg)
 
         random_state = None
