@@ -626,14 +626,16 @@ def test_save_load_w_custom_parameter(tmp_path):
     # Test that key properties match
     assert len(optimizer.space) == len(new_optimizer.space)
     assert optimizer.max["target"] == new_optimizer.max["target"]
-    assert optimizer.max["params"] == new_optimizer.max["params"]
+    np.testing.assert_array_almost_equal(
+        optimizer.max["params"]["sides"], new_optimizer.max["params"]["sides"], decimal=10
+    )
 
     # Test that all historical data matches
     for i in range(len(optimizer.space)):
-        np.testing.assert_array_almost_equal(optimizer.space.params[i], new_optimizer.space.params[i])
+        np.testing.assert_array_almost_equal(optimizer.space.params[i], new_optimizer.space.params[i], decimal=10)
         assert optimizer.space.target[i] == new_optimizer.space.target[i]
         np.testing.assert_array_almost_equal(
-            optimizer.res[i]["params"]["sides"], new_optimizer.res[i]["params"]["sides"]
+            optimizer.res[i]["params"]["sides"], new_optimizer.res[i]["params"]["sides"], decimal=10
         )
         assert optimizer.res[i]["target"] == new_optimizer.res[i]["target"]
 
