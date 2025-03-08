@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING, Any, Literal, NoReturn
 
 import numpy as np
 from numpy.random import RandomState
-from scipy.optimize import minimize
+from scipy.optimize import minimize, differential_evolution
 from scipy.special import softmax
 from scipy.stats import norm
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -295,8 +295,10 @@ class AcquisitionFunction(abc.ABC):
         min_acq : float
             Acquisition function value at `x_min`
         """
+        bounds = space.bounds
         continuous_dimensions = space.continuous_dimensions
         continuous_bounds = space.bounds[continuous_dimensions]
+        discrete_dimensions = ~continuous_dimensions
 
         if not continuous_dimensions.any():
             min_acq = np.inf
@@ -308,21 +310,23 @@ class AcquisitionFunction(abc.ABC):
         x_min: NDArray[Float]
         for x_try in x_seeds:
 
-            def continuous_acq(x: NDArray[Float], x_try=x_try) -> NDArray[Float]:
-                x_try[continuous_dimensions] = x
-                return acq(x_try)
-
+            # def continuous_acq(x: NDArray[Float], x_try=x_try) -> NDArray[Float]:
+            #     x_try[continuous_dimensions] = x
+            #     return acq(x_try)
+            if all(continuous_dimensions):
             # Find the minimum of minus the acquisition function
-            res: OptimizeResult = minimize(
-                continuous_acq, x_try[continuous_dimensions], bounds=continuous_bounds, method="L-BFGS-B"
-            )
+                res: OptimizeResult = minimize(acq, x_try, bounds=continuous_bounds, method="L-BFGS-B")
+            else:
+                res: OptimizeResult = differential_evolution(acq, bounds=bounds, 
+                                                             integrality=discrete_dimensions, 
+                                                             seed=self.random_state)
             # See if success
             if not res.success:
                 continue
 
             # Store it if better than previous minimum(maximum).
             if min_acq is None or np.squeeze(res.fun) >= min_acq:
-                x_try[continuous_dimensions] = res.x
+                x_try = res.x
                 x_min = x_try
                 min_acq = np.squeeze(res.fun)
 
