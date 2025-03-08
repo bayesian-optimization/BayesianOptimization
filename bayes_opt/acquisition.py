@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING, Any, Literal, NoReturn
 
 import numpy as np
 from numpy.random import RandomState
-from scipy.optimize import minimize, differential_evolution
+from scipy.optimize import differential_evolution, minimize
 from scipy.special import softmax
 from scipy.stats import norm
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -317,8 +317,8 @@ class AcquisitionFunction(abc.ABC):
             # Find the minimum of minus the acquisition function
                 res: OptimizeResult = minimize(acq, x_try, bounds=continuous_bounds, method="L-BFGS-B")
             else:
-                res: OptimizeResult = differential_evolution(acq, bounds=bounds, 
-                                                             integrality=discrete_dimensions, 
+                res: OptimizeResult = differential_evolution(acq, bounds=bounds,
+                                                             integrality=discrete_dimensions,
                                                              seed=self.random_state)
             # See if success
             if not res.success:
