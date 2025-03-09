@@ -1221,8 +1221,7 @@ class GPHedge(AcquisitionFunction):
             "previous_candidates": self.previous_candidates.tolist()
             if self.previous_candidates is not None
             else None,
-            "random_states": [acq._serialize_random_state() for acq in self.base_acquisitions]
-            + [self._serialize_random_state()],
+            "gphedge_random_state": self._serialize_random_state(),
         }
 
     def set_acquisition_params(self, params: dict) -> None:
@@ -1233,15 +1232,14 @@ class GPHedge(AcquisitionFunction):
         params : dict
             Dictionary containing the acquisition function parameters.
         """
-        for acq, acq_params, random_state in zip(
-            self.base_acquisitions, params["base_acquisitions_params"], params["random_states"][:-1]
+        for acq, acq_params in zip(
+            self.base_acquisitions, params["base_acquisitions_params"]
         ):
             acq.set_acquisition_params(acq_params)
-            acq._deserialize_random_state(random_state)
 
         self.gains = np.array(params["gains"])
         self.previous_candidates = (
             np.array(params["previous_candidates"]) if params["previous_candidates"] is not None else None
         )
 
-        self._deserialize_random_state(params["random_states"][-1])
+        self._deserialize_random_state(params["gphedge_random_state"])

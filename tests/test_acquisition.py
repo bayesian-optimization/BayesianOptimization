@@ -596,3 +596,45 @@ def test_integration_constrained(target_func_x_and_y, pbounds, constraint, tmp_p
     new_optimizer.load_state(state_path)
 
     verify_optimizers_match(optimizer, new_optimizer)
+
+
+def test_custom_acquisition_without_get_params():
+    """Test that a custom acquisition function without get_acquisition_params raises NotImplementedError."""
+
+    class CustomAcqWithoutGetParams(acquisition.AcquisitionFunction):
+        def __init__(self, random_state=None):
+            super().__init__(random_state=random_state)
+
+        def base_acq(self, mean, std):
+            return mean + std
+
+        def set_acquisition_params(self, params):
+            pass
+
+    acq = CustomAcqWithoutGetParams()
+    with pytest.raises(
+        NotImplementedError,
+        match="Custom AcquisitionFunction subclasses must implement their own get_acquisition_params method",
+    ):
+        acq.get_acquisition_params()
+
+
+def test_custom_acquisition_without_set_params():
+    """Test that a custom acquisition function without set_acquisition_params raises NotImplementedError."""
+
+    class CustomAcqWithoutSetParams(acquisition.AcquisitionFunction):
+        def __init__(self, random_state=None):
+            super().__init__(random_state=random_state)
+
+        def base_acq(self, mean, std):
+            return mean + std
+
+        def get_acquisition_params(self):
+            return {}
+
+    acq = CustomAcqWithoutSetParams()
+    with pytest.raises(
+        NotImplementedError,
+        match="Custom AcquisitionFunction subclasses must implement their own set_acquisition_params method",
+    ):
+        acq.set_acquisition_params(params={})
