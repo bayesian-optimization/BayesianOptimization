@@ -6,11 +6,15 @@ function over a specific target space.
 
 from __future__ import annotations
 
+import json
 from collections import deque
+from os import PathLike
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from warnings import warn
 
 import numpy as np
+from scipy.optimize import NonlinearConstraint
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
 
@@ -28,7 +32,6 @@ if TYPE_CHECKING:
 
     from numpy.random import RandomState
     from numpy.typing import NDArray
-    from scipy.optimize import NonlinearConstraint
 
     from bayes_opt.acquisition import AcquisitionFunction
     from bayes_opt.constraint import ConstraintModel
@@ -356,3 +359,113 @@ class BayesianOptimization(Observable):
         if "kernel" in params:
             params["kernel"] = wrap_kernel(kernel=params["kernel"], transform=self._space.kernel_transform)
         self._gp.set_params(**params)
+
+    def save_state(self, path: str | PathLike[str]) -> None:
+        """Save complete state for reconstruction of the optimizer.
+
+        Parameters
+        ----------
+        path : str or PathLike
+            Path to save the optimization state
+
+        Raises
+        ------
+        ValueError
+            If attempting to save state before collecting any samples.
+        """
+        if len(self._space) == 0:
+            msg = (
+                "Cannot save optimizer state before collecting any samples. "
+                "Please probe or register at least one point before saving."
+            )
+            raise ValueError(msg)
+
+        random_state = None
+        if self._random_state is not None:
+            state_tuple = self._random_state.get_state()
+            random_state = {
+                "bit_generator": state_tuple[0],
+                "state": state_tuple[1].tolist(),
+                "pos": state_tuple[2],
+                "has_gauss": state_tuple[3],
+                "cached_gaussian": state_tuple[4],
+            }
+
+        # Get constraint values if they exist
+        constraint_values = self._space._constraint_values.tolist() if self.is_constrained else None
+        acquisition_params = self._acquisition_function.get_acquisition_params()
+        state = {
+            "pbounds": {key: self._space._bounds[i].tolist() for i, key in enumerate(self._space.keys)},
+            # Add current transformed bounds if using bounds transformer
+            "transformed_bounds": (self._space.bounds.tolist() if self._bounds_transformer else None),
+            "keys": self._space.keys,
+            "params": np.array(self._space.params).tolist(),
+            "target": self._space.target.tolist(),
+            "constraint_values": constraint_values,
+            "gp_params": {
+                "kernel": self._gp.kernel.get_params(),
+                "alpha": self._gp.alpha,
+                "normalize_y": self._gp.normalize_y,
+                "n_restarts_optimizer": self._gp.n_restarts_optimizer,
+            },
+            "allow_duplicate_points": self._allow_duplicate_points,
+            "verbose": self._verbose,
+            "random_state": random_state,
+            "acquisition_params": acquisition_params,
+        }
+
+        with Path(path).open("w") as f:
+            json.dump(state, f, indent=2)
+
+    def load_state(self, path: str | PathLike[str]) -> None:
+        """Load optimizer state from a JSON file.
+
+        Parameters
+        ----------
+        path : str or PathLike
+            Path to the JSON file containing the optimizer state.
+        """
+        with Path(path).open("r") as file:
+            state = json.load(file)
+
+        params_array = np.asarray(state["params"], dtype=np.float64)
+        target_array = np.asarray(state["target"], dtype=np.float64)
+        constraint_array = (
+            np.array(state["constraint_values"]) if state["constraint_values"] is not None else None
+        )
+
+        for i in range(len(params_array)):
+            params = self._space.array_to_params(params_array[i])
+            target = target_array[i]
+            constraint = constraint_array[i] if constraint_array is not None else None
+            self.register(params=params, target=target, constraint_value=constraint)
+
+        self._acquisition_function.set_acquisition_params(state["acquisition_params"])
+
+        if state.get("transformed_bounds") and self._bounds_transformer:
+            new_bounds = {
+                key: bounds for key, bounds in zip(self._space.keys, np.array(state["transformed_bounds"]))
+            }
+            self._space.set_bounds(new_bounds)
+            self._bounds_transformer.initialize(self._space)
+
+        self._gp.set_params(**state["gp_params"])
+        if isinstance(self._gp.kernel, dict):
+            kernel_params = self._gp.kernel
+            self._gp.kernel = Matern(
+                length_scale=kernel_params["length_scale"],
+                length_scale_bounds=tuple(kernel_params["length_scale_bounds"]),
+                nu=kernel_params["nu"],
+            )
+
+        self._gp.fit(self._space.params, self._space.target)
+
+        if state["random_state"] is not None:
+            random_state_tuple = (
+                state["random_state"]["bit_generator"],
+                np.array(state["random_state"]["state"], dtype=np.uint32),
+                state["random_state"]["pos"],
+                state["random_state"]["has_gauss"],
+                state["random_state"]["cached_gaussian"],
+            )
+            self._random_state.set_state(random_state_tuple)
