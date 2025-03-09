@@ -321,7 +321,7 @@ class AcquisitionFunction(abc.ABC):
                     x_try = res.x
                     x_min = x_try
                     min_acq = np.squeeze(res.fun)
-        
+
         #Case of mixed-integer optimization
         else:
             ntrials = max(1, len(x_seeds)//100)
@@ -339,7 +339,7 @@ class AcquisitionFunction(abc.ABC):
                     x_try = res.x
                     x_min = x_try
                     min_acq = np.squeeze(res.fun)
-        
+
         if min_acq is None:
             min_acq = np.inf
             x_min = np.array([np.nan] * space.bounds.shape[0])
