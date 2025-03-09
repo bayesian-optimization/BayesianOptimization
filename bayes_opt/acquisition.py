@@ -1232,9 +1232,7 @@ class GPHedge(AcquisitionFunction):
         params : dict
             Dictionary containing the acquisition function parameters.
         """
-        for acq, acq_params in zip(
-            self.base_acquisitions, params["base_acquisitions_params"]
-        ):
+        for acq, acq_params in zip(self.base_acquisitions, params["base_acquisitions_params"]):
             acq.set_acquisition_params(acq_params)
 
         self.gains = np.array(params["gains"])
