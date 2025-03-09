@@ -309,7 +309,7 @@ class AcquisitionFunction(abc.ABC):
         x_try: NDArray[Float]
         x_min: NDArray[Float]
 
-        #Case of continous optimization
+        # Case of continous optimization
         if all(continuous_dimensions):
             for x_try in x_seeds:
                 res: OptimizeResult = minimize(acq, x_try, bounds=continuous_bounds, method="L-BFGS-B")
@@ -322,14 +322,14 @@ class AcquisitionFunction(abc.ABC):
                     x_min = x_try
                     min_acq = np.squeeze(res.fun)
 
-        #Case of mixed-integer optimization
+        # Case of mixed-integer optimization
         else:
-            ntrials = max(1, len(x_seeds)//100)
+            ntrials = max(1, len(x_seeds) // 100)
             for i in range(ntrials):
-                xinit = space.random_sample(15*len(space.bounds), random_state=i)
-                res: OptimizeResult = differential_evolution(acq, bounds=bounds, init=xinit,
-                                                             integrality=discrete_dimensions,
-                                                             seed=self.random_state)
+                xinit = space.random_sample(15 * len(space.bounds), random_state=i)
+                res: OptimizeResult = differential_evolution(
+                    acq, bounds=bounds, init=xinit, integrality=discrete_dimensions, seed=self.random_state
+                )
                 # See if success
                 if not res.success:
                     continue
