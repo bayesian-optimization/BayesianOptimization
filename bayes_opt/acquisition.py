@@ -100,26 +100,42 @@ class AcquisitionFunction(abc.ABC):
     def base_acq(self, *args: Any, **kwargs: Any) -> NDArray[Float]:
         """Provide access to the base acquisition function."""
 
-    def get_acquisition_params(self) -> dict[str, Any]:
-        """Get the acquisition function parameters.
+    def _fit_gp(self, gp: GaussianProcessRegressor, target_space: TargetSpace) -> None:
+        # Sklearn's GP throws a large number of warnings at times, but
+        # we don't really need to see them here.
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            gp.fit(target_space.params, target_space.target)
+            if target_space.constraint is not None:
+                target_space.constraint.fit(target_space.params, target_space._constraint_values)
+
+    def get_acquisition_params(self):
+        """
+        Get the parameters of the acquisition function.
 
         Returns
         -------
         dict
-            Dictionary containing the acquisition function parameters.
-            All values must be JSON serializable.
+            The parameters of the acquisition function.
         """
-        return {}
+        error_msg = (
+            "Custom AcquisitionFunction subclasses must implement their own get_acquisition_params method."
+        )
+        raise NotImplementedError(error_msg)
 
-    def set_acquisition_params(self, params: dict) -> None:
-        """Set the acquisition function parameters.
+    def set_acquisition_params(self, **params):
+        """
+        Set the parameters of the acquisition function.
 
         Parameters
         ----------
-        params : dict
-            Dictionary containing the acquisition function parameters.
+        **params : dict
+            The parameters of the acquisition function.
         """
-        return {}
+        error_msg = (
+            "Custom AcquisitionFunction subclasses must implement their own set_acquisition_params method."
+        )
+        raise NotImplementedError(error_msg)
 
     def suggest(
         self,
@@ -167,15 +183,6 @@ class AcquisitionFunction(abc.ABC):
 
         acq = self._get_acq(gp=gp, constraint=target_space.constraint)
         return self._acq_min(acq, target_space, n_random=n_random, n_l_bfgs_b=n_l_bfgs_b)
-
-    def _fit_gp(self, gp: GaussianProcessRegressor, target_space: TargetSpace) -> None:
-        # Sklearn's GP throws a large number of warnings at times, but
-        # we don't really need to see them here.
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            gp.fit(target_space.params, target_space.target)
-            if target_space.constraint is not None:
-                target_space.constraint.fit(target_space.params, target_space._constraint_values)
 
     def _get_acq(
         self, gp: GaussianProcessRegressor, constraint: ConstraintModel | None = None

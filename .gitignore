@@ -37,3 +37,7 @@ docsrc/static/*
 docsrc/README.md
 
 poetry.lock
+
+# Add log files and optimizer state files to gitignore
+examples/logs.log
+examples/optimizer_state.json
