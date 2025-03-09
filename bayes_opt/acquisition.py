@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING, Any, Literal, NoReturn
 
 import numpy as np
 from numpy.random import RandomState
-from scipy.optimize import minimize
+from scipy.optimize import differential_evolution, minimize
 from scipy.special import softmax
 from scipy.stats import norm
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -295,8 +295,10 @@ class AcquisitionFunction(abc.ABC):
         min_acq : float
             Acquisition function value at `x_min`
         """
+        bounds = space.bounds
         continuous_dimensions = space.continuous_dimensions
         continuous_bounds = space.bounds[continuous_dimensions]
+        discrete_dimensions = ~continuous_dimensions
 
         if not continuous_dimensions.any():
             min_acq = np.inf
@@ -306,25 +308,37 @@ class AcquisitionFunction(abc.ABC):
         min_acq: float | None = None
         x_try: NDArray[Float]
         x_min: NDArray[Float]
-        for x_try in x_seeds:
 
-            def continuous_acq(x: NDArray[Float], x_try=x_try) -> NDArray[Float]:
-                x_try[continuous_dimensions] = x
-                return acq(x_try)
+        # Case of continous optimization
+        if all(continuous_dimensions):
+            for x_try in x_seeds:
+                res: OptimizeResult = minimize(acq, x_try, bounds=continuous_bounds, method="L-BFGS-B")
+                if not res.success:
+                    continue
 
-            # Find the minimum of minus the acquisition function
-            res: OptimizeResult = minimize(
-                continuous_acq, x_try[continuous_dimensions], bounds=continuous_bounds, method="L-BFGS-B"
-            )
-            # See if success
-            if not res.success:
-                continue
+                # Store it if better than previous minimum(maximum).
+                if min_acq is None or np.squeeze(res.fun) >= min_acq:
+                    x_try = res.x
+                    x_min = x_try
+                    min_acq = np.squeeze(res.fun)
 
-            # Store it if better than previous minimum(maximum).
-            if min_acq is None or np.squeeze(res.fun) >= min_acq:
-                x_try[continuous_dimensions] = res.x
-                x_min = x_try
-                min_acq = np.squeeze(res.fun)
+        # Case of mixed-integer optimization
+        else:
+            ntrials = max(1, len(x_seeds) // 100)
+            for i in range(ntrials):
+                xinit = space.random_sample(15 * len(space.bounds), random_state=i)
+                res: OptimizeResult = differential_evolution(
+                    acq, bounds=bounds, init=xinit, integrality=discrete_dimensions, seed=self.random_state
+                )
+                # See if success
+                if not res.success:
+                    continue
+
+                # Store it if better than previous minimum(maximum).
+                if min_acq is None or np.squeeze(res.fun) >= min_acq:
+                    x_try = res.x
+                    x_min = x_try
+                    min_acq = np.squeeze(res.fun)
 
         if min_acq is None:
             min_acq = np.inf
