@@ -109,7 +109,7 @@ class AcquisitionFunction(abc.ABC):
             if target_space.constraint is not None:
                 target_space.constraint.fit(target_space.params, target_space._constraint_values)
 
-    def get_acquisition_params(self) -> dict[str, Any] | NoReturn:
+    def get_acquisition_params(self) -> dict[str, Any]:
         """
         Get the parameters of the acquisition function.
 
@@ -123,7 +123,7 @@ class AcquisitionFunction(abc.ABC):
         )
         raise NotImplementedError(error_msg)
 
-    def set_acquisition_params(self, **params) -> None | NoReturn:
+    def set_acquisition_params(self, **params) -> None:
         """
         Set the parameters of the acquisition function.
 
