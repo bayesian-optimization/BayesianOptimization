@@ -140,7 +140,7 @@ class BayesParameter(abc.ABC):
         -------
         str
         """
-        s = f"{value!r:<{str_len}}"
+        s = f"{value:<{str_len}}"
 
         if len(s) > str_len:
             return s[: str_len - 3] + "..."
