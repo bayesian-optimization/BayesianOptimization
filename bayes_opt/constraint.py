@@ -203,7 +203,7 @@ class ConstraintModel:
                 norm(loc=y_mean, scale=y_std).cdf(self._lb[0]) if self._lb[0] != -np.inf else np.array([0])
             )
             p_upper = (
-                norm(loc=y_mean, scale=y_std).cdf(self._ub[0]) if self._lb[0] != np.inf else np.array([1])
+                norm(loc=y_mean, scale=y_std).cdf(self._ub[0]) if self._ub[0] != np.inf else np.array([1])
             )
             result = p_upper - p_lower
             return result.reshape(X_shape[:-1])
@@ -215,7 +215,7 @@ class ConstraintModel:
                 norm(loc=y_mean, scale=y_std).cdf(self._lb[j]) if self._lb[j] != -np.inf else np.array([0])
             )
             p_upper = (
-                norm(loc=y_mean, scale=y_std).cdf(self._ub[j]) if self._lb[j] != np.inf else np.array([1])
+                norm(loc=y_mean, scale=y_std).cdf(self._ub[j]) if self._ub[j] != np.inf else np.array([1])
             )
             result = result * (p_upper - p_lower)
         return result.reshape(X_shape[:-1])
