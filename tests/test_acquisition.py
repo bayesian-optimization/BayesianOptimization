@@ -4,12 +4,36 @@ import sys
 
 import numpy as np
 import pytest
+from scipy.optimize import NonlinearConstraint
 from scipy.spatial.distance import pdist
 from sklearn.gaussian_process import GaussianProcessRegressor
 
-from bayes_opt import acquisition, exception
+from bayes_opt import BayesianOptimization, acquisition, exception
+from bayes_opt.acquisition import (
+    ConstantLiar,
+    ExpectedImprovement,
+    GPHedge,
+    ProbabilityOfImprovement,
+    UpperConfidenceBound,
+)
 from bayes_opt.constraint import ConstraintModel
 from bayes_opt.target_space import TargetSpace
+
+
+# Test fixtures
+@pytest.fixture
+def target_func_x_and_y():
+    return lambda x, y: -((x - 1) ** 2) - (y - 2) ** 2
+
+
+@pytest.fixture
+def pbounds():
+    return {"x": (-5, 5), "y": (-5, 5)}
+
+
+@pytest.fixture
+def constraint(constraint_func):
+    return NonlinearConstraint(fun=constraint_func, lb=-1.0, ub=4.0)
 
 
 @pytest.fixture
@@ -33,6 +57,11 @@ def target_space(target_func):
 
 
 @pytest.fixture
+def constraint_func():
+    return lambda x, y: x + y
+
+
+@pytest.fixture
 def constrained_target_space(target_func):
     constraint_model = ConstraintModel(fun=lambda params: params["x"] + params["y"], lb=0.0, ub=1.0)
     return TargetSpace(
@@ -51,6 +80,12 @@ class MockAcquisition(acquisition.AcquisitionFunction):
         return mock_acq
 
     def base_acq(self, mean, std):
+        pass
+
+    def get_acquisition_params(self) -> dict:
+        return {}
+
+    def set_acquisition_params(self, params: dict) -> None:
         pass
 
 
@@ -351,3 +386,255 @@ def test_gphedge_integration(gp, target_space, random_state):
 def test_upper_confidence_bound_invalid_kappa_error(kappa: float):
     with pytest.raises(ValueError, match="kappa must be greater than or equal to 0."):
         acquisition.UpperConfidenceBound(kappa=kappa)
+
+
+def verify_optimizers_match(optimizer1, optimizer2):
+    """Helper function to verify two optimizers match."""
+    assert len(optimizer1.space) == len(optimizer2.space)
+    assert optimizer1.max["target"] == optimizer2.max["target"]
+    assert optimizer1.max["params"] == optimizer2.max["params"]
+
+    np.testing.assert_array_equal(optimizer1.space.params, optimizer2.space.params)
+    np.testing.assert_array_equal(optimizer1.space.target, optimizer2.space.target)
+
+    if optimizer1.is_constrained:
+        np.testing.assert_array_equal(
+            optimizer1.space._constraint_values, optimizer2.space._constraint_values
+        )
+        assert optimizer1.space._constraint.lb == optimizer2.space._constraint.lb
+        assert optimizer1.space._constraint.ub == optimizer2.space._constraint.ub
+
+    rng = np.random.default_rng()
+    assert rng.bit_generator.state["state"]["state"] == rng.bit_generator.state["state"]["state"]
+
+    assert optimizer1._gp.kernel.get_params() == optimizer2._gp.kernel.get_params()
+
+    suggestion1 = optimizer1.suggest()
+    suggestion2 = optimizer2.suggest()
+    assert suggestion1 == suggestion2, f"\nSuggestion 1: {suggestion1}\nSuggestion 2: {suggestion2}"
+
+
+def test_integration_upper_confidence_bound(target_func_x_and_y, pbounds, tmp_path):
+    """Test save/load integration with UpperConfidenceBound acquisition."""
+    acquisition_function = UpperConfidenceBound(kappa=2.576)
+
+    # Create and run first optimizer
+    optimizer = BayesianOptimization(
+        f=target_func_x_and_y,
+        pbounds=pbounds,
+        acquisition_function=acquisition_function,
+        random_state=1,
+        verbose=0,
+    )
+    optimizer.maximize(init_points=2, n_iter=3)
+
+    # Save state
+    state_path = tmp_path / "ucb_state.json"
+    optimizer.save_state(state_path)
+
+    # Create new optimizer and load state
+    new_optimizer = BayesianOptimization(
+        f=target_func_x_and_y,
+        pbounds=pbounds,
+        acquisition_function=UpperConfidenceBound(kappa=2.576),
+        random_state=1,
+        verbose=0,
+    )
+    new_optimizer.load_state(state_path)
+
+    verify_optimizers_match(optimizer, new_optimizer)
+
+
+def test_integration_probability_improvement(target_func_x_and_y, pbounds, tmp_path):
+    """Test save/load integration with ProbabilityOfImprovement acquisition."""
+    acquisition_function = ProbabilityOfImprovement(xi=0.01)
+
+    optimizer = BayesianOptimization(
+        f=target_func_x_and_y,
+        pbounds=pbounds,
+        acquisition_function=acquisition_function,
+        random_state=1,
+        verbose=0,
+    )
+    optimizer.maximize(init_points=2, n_iter=3)
+
+    state_path = tmp_path / "pi_state.json"
+    optimizer.save_state(state_path)
+
+    new_optimizer = BayesianOptimization(
+        f=target_func_x_and_y,
+        pbounds=pbounds,
+        acquisition_function=ProbabilityOfImprovement(xi=0.01),
+        random_state=1,
+        verbose=0,
+    )
+    new_optimizer.load_state(state_path)
+
+    verify_optimizers_match(optimizer, new_optimizer)
+
+
+def test_integration_expected_improvement(target_func_x_and_y, pbounds, tmp_path):
+    """Test save/load integration with ExpectedImprovement acquisition."""
+    acquisition_function = ExpectedImprovement(xi=0.01)
+
+    optimizer = BayesianOptimization(
+        f=target_func_x_and_y,
+        pbounds=pbounds,
+        acquisition_function=acquisition_function,
+        random_state=1,
+        verbose=0,
+    )
+    optimizer.maximize(init_points=2, n_iter=3)
+
+    state_path = tmp_path / "ei_state.json"
+    optimizer.save_state(state_path)
+
+    new_optimizer = BayesianOptimization(
+        f=target_func_x_and_y,
+        pbounds=pbounds,
+        acquisition_function=ExpectedImprovement(xi=0.01),
+        random_state=1,
+        verbose=0,
+    )
+    new_optimizer.load_state(state_path)
+
+    verify_optimizers_match(optimizer, new_optimizer)
+
+
+def test_integration_constant_liar(target_func_x_and_y, pbounds, tmp_path):
+    """Test save/load integration with ConstantLiar acquisition."""
+    base_acq = UpperConfidenceBound(kappa=2.576)
+    acquisition_function = ConstantLiar(base_acquisition=base_acq)
+
+    optimizer = BayesianOptimization(
+        f=target_func_x_and_y,
+        pbounds=pbounds,
+        acquisition_function=acquisition_function,
+        random_state=1,
+        verbose=0,
+    )
+    optimizer.maximize(init_points=2, n_iter=3)
+
+    state_path = tmp_path / "cl_state.json"
+    optimizer.save_state(state_path)
+
+    new_optimizer = BayesianOptimization(
+        f=target_func_x_and_y,
+        pbounds=pbounds,
+        acquisition_function=ConstantLiar(base_acquisition=UpperConfidenceBound(kappa=2.576)),
+        random_state=1,
+        verbose=0,
+    )
+    new_optimizer.load_state(state_path)
+
+    verify_optimizers_match(optimizer, new_optimizer)
+
+
+def test_integration_gp_hedge(target_func_x_and_y, pbounds, tmp_path):
+    """Test save/load integration with GPHedge acquisition."""
+    base_acquisitions = [
+        UpperConfidenceBound(kappa=2.576),
+        ProbabilityOfImprovement(xi=0.01),
+        ExpectedImprovement(xi=0.01),
+    ]
+    acquisition_function = GPHedge(base_acquisitions=base_acquisitions)
+
+    optimizer = BayesianOptimization(
+        f=target_func_x_and_y,
+        pbounds=pbounds,
+        acquisition_function=acquisition_function,
+        random_state=1,
+        verbose=0,
+    )
+    optimizer.maximize(init_points=2, n_iter=3)
+
+    state_path = tmp_path / "gphedge_state.json"
+    optimizer.save_state(state_path)
+
+    new_base_acquisitions = [
+        UpperConfidenceBound(kappa=2.576),
+        ProbabilityOfImprovement(xi=0.01),
+        ExpectedImprovement(xi=0.01),
+    ]
+    new_optimizer = BayesianOptimization(
+        f=target_func_x_and_y,
+        pbounds=pbounds,
+        acquisition_function=GPHedge(base_acquisitions=new_base_acquisitions),
+        random_state=1,
+        verbose=0,
+    )
+    new_optimizer.load_state(state_path)
+
+    verify_optimizers_match(optimizer, new_optimizer)
+
+
+def test_integration_constrained(target_func_x_and_y, pbounds, constraint, tmp_path):
+    """Test save/load integration with constraints."""
+    acquisition_function = ExpectedImprovement(xi=0.01)
+
+    optimizer = BayesianOptimization(
+        f=target_func_x_and_y,
+        pbounds=pbounds,
+        acquisition_function=acquisition_function,
+        constraint=constraint,
+        random_state=1,
+        verbose=0,
+    )
+    optimizer.maximize(init_points=2, n_iter=3)
+
+    state_path = tmp_path / "constrained_state.json"
+    optimizer.save_state(state_path)
+
+    new_optimizer = BayesianOptimization(
+        f=target_func_x_and_y,
+        pbounds=pbounds,
+        acquisition_function=ExpectedImprovement(xi=0.01),
+        constraint=constraint,
+        random_state=1,
+        verbose=0,
+    )
+    new_optimizer.load_state(state_path)
+
+    verify_optimizers_match(optimizer, new_optimizer)
+
+
+def test_custom_acquisition_without_get_params():
+    """Test that a custom acquisition function without get_acquisition_params raises NotImplementedError."""
+
+    class CustomAcqWithoutGetParams(acquisition.AcquisitionFunction):
+        def __init__(self, random_state=None):
+            super().__init__(random_state=random_state)
+
+        def base_acq(self, mean, std):
+            return mean + std
+
+        def set_acquisition_params(self, params):
+            pass
+
+    acq = CustomAcqWithoutGetParams()
+    with pytest.raises(
+        NotImplementedError,
+        match="Custom AcquisitionFunction subclasses must implement their own get_acquisition_params method",
+    ):
+        acq.get_acquisition_params()
+
+
+def test_custom_acquisition_without_set_params():
+    """Test that a custom acquisition function without set_acquisition_params raises NotImplementedError."""
+
+    class CustomAcqWithoutSetParams(acquisition.AcquisitionFunction):
+        def __init__(self, random_state=None):
+            super().__init__(random_state=random_state)
+
+        def base_acq(self, mean, std):
+            return mean + std
+
+        def get_acquisition_params(self):
+            return {}
+
+    acq = CustomAcqWithoutSetParams()
+    with pytest.raises(
+        NotImplementedError,
+        match="Custom AcquisitionFunction subclasses must implement their own set_acquisition_params method",
+    ):
+        acq.set_acquisition_params(params={})
