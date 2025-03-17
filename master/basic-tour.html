@@ -349,29 +349,29 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4.-Saving,-loading-and-restarting" class="md-nav__link">
-    <span title="/basic-tour.ipynb#4.-saving,-loading-and-restarting (reference label)" class="md-ellipsis">4.<wbr> Saving, loading and restarting</span>
+  <a href="#4.-Saving-and-loading-the-optimizer" class="md-nav__link">
+    <span title="/basic-tour.ipynb#4.-saving-and-loading-the-optimizer (reference label)" class="md-ellipsis">4.<wbr> Saving and loading the optimizer</span>
   </a>
   
-    <nav class="md-nav" aria-label="4. Saving, loading and restarting">
+    <nav class="md-nav" aria-label="4. Saving and loading the optimizer">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#4.1-Saving-progress" class="md-nav__link">
-    <span title="/basic-tour.ipynb#4.1-saving-progress (reference label)" class="md-ellipsis">4.<wbr>1 Saving progress</span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4.2-Loading-progress" class="md-nav__link">
-    <span title="/basic-tour.ipynb#4.2-loading-progress (reference label)" class="md-ellipsis">4.<wbr>2 Loading progress</span>
+  <a href="#4.1-Saving-the-optimizer-state" class="md-nav__link">
+    <span title="/basic-tour.ipynb#4.1-saving-the-optimizer-state (reference label)" class="md-ellipsis">4.<wbr>1 Saving the optimizer state</span>
   </a>
   
 </li>
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4.2-Loading-the-optimizer-state" class="md-nav__link">
+    <span title="/basic-tour.ipynb#4.2-loading-the-optimizer-state (reference label)" class="md-ellipsis">4.<wbr>2 Loading the optimizer state</span>
+  </a>
   
 </li>
       
@@ -719,29 +719,29 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4.-Saving,-loading-and-restarting" class="md-nav__link">
-    <span title="/basic-tour.ipynb#4.-saving,-loading-and-restarting (reference label)" class="md-ellipsis">4.<wbr> Saving, loading and restarting</span>
+  <a href="#4.-Saving-and-loading-the-optimizer" class="md-nav__link">
+    <span title="/basic-tour.ipynb#4.-saving-and-loading-the-optimizer (reference label)" class="md-ellipsis">4.<wbr> Saving and loading the optimizer</span>
   </a>
   
-    <nav class="md-nav" aria-label="4. Saving, loading and restarting">
+    <nav class="md-nav" aria-label="4. Saving and loading the optimizer">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#4.1-Saving-progress" class="md-nav__link">
-    <span title="/basic-tour.ipynb#4.1-saving-progress (reference label)" class="md-ellipsis">4.<wbr>1 Saving progress</span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4.2-Loading-progress" class="md-nav__link">
-    <span title="/basic-tour.ipynb#4.2-loading-progress (reference label)" class="md-ellipsis">4.<wbr>2 Loading progress</span>
+  <a href="#4.1-Saving-the-optimizer-state" class="md-nav__link">
+    <span title="/basic-tour.ipynb#4.1-saving-the-optimizer-state (reference label)" class="md-ellipsis">4.<wbr>1 Saving the optimizer state</span>
   </a>
   
 </li>
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4.2-Loading-the-optimizer-state" class="md-nav__link">
+    <span title="/basic-tour.ipynb#4.2-loading-the-optimizer-state (reference label)" class="md-ellipsis">4.<wbr>2 Loading the optimizer state</span>
+  </a>
   
 </li>
       
@@ -851,11 +851,11 @@ See the references for a proper discussion of this method.</p>
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |     y     |
 -------------------------------------------------
-| 1         | -7.135    | 2.834     | 1.322     |
-| 2         | -7.78     | 2.0       | -1.186    |
-| <span class="ansi-magenta-intense-fg">3        </span> | <span class="ansi-magenta-intense-fg">-6.967   </span> | <span class="ansi-magenta-intense-fg">2.582    </span> | <span class="ansi-magenta-intense-fg">-0.1396  </span> |
-| 4         | -12.24    | 2.015     | -2.029    |
-| 5         | -18.0     | 3.302     | -1.846    |
+| 1         | -7.135    | 2.8340440 | 1.3219469 |
+| 2         | -7.78     | 2.0002287 | -1.186004 |
+| 3         | -7.157    | 2.8375977 | 1.3238498 |
+| <span class="ansi-magenta-fg">4        </span> | <span class="ansi-magenta-fg">-6.633   </span> | <span class="ansi-magenta-fg">2.7487090</span> | <span class="ansi-magenta-fg">1.2790562</span> |
+| <span class="ansi-magenta-fg">5        </span> | <span class="ansi-magenta-fg">-5.751   </span> | <span class="ansi-magenta-fg">2.5885326</span> | <span class="ansi-magenta-fg">1.2246876</span> |
 =================================================
 </pre></div></div>
 </div>
@@ -873,7 +873,7 @@ See the references for a proper discussion of this method.</p>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-{&#39;target&#39;: -6.966506881014352, &#39;params&#39;: {&#39;x&#39;: 2.5822074982517598, &#39;y&#39;: -0.13961016009280103}}
+{&#39;target&#39;: np.float64(-5.750985875689304), &#39;params&#39;: {&#39;x&#39;: np.float64(2.5885326650623566), &#39;y&#39;: np.float64(1.2246876000015976)}}
 </pre></div></div>
 </div>
 <p>While the list of all parameters probed and their corresponding target values is available via the property <code class="docutils literal notranslate"><span class="pre">bo.res</span></code>.</p>
@@ -892,15 +892,15 @@ See the references for a proper discussion of this method.</p>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Iteration 0:
-        {&#39;target&#39;: -7.135455292718879, &#39;params&#39;: {&#39;x&#39;: 2.8340440094051482, &#39;y&#39;: 1.3219469606529486}}
+        {&#39;target&#39;: np.float64(-7.135455292718879), &#39;params&#39;: {&#39;x&#39;: np.float64(2.8340440094051482), &#39;y&#39;: np.float64(1.3219469606529486)}}
 Iteration 1:
-        {&#39;target&#39;: -7.779531005607566, &#39;params&#39;: {&#39;x&#39;: 2.0002287496346898, &#39;y&#39;: -1.1860045642089614}}
+        {&#39;target&#39;: np.float64(-7.779531005607566), &#39;params&#39;: {&#39;x&#39;: np.float64(2.0002287496346898), &#39;y&#39;: np.float64(-1.1860045642089614)}}
 Iteration 2:
-        {&#39;target&#39;: -6.966506881014352, &#39;params&#39;: {&#39;x&#39;: 2.5822074982517598, &#39;y&#39;: -0.13961016009280103}}
+        {&#39;target&#39;: np.float64(-7.156839989425082), &#39;params&#39;: {&#39;x&#39;: np.float64(2.8375977943744273), &#39;y&#39;: np.float64(1.3238498831039895)}}
 Iteration 3:
-        {&#39;target&#39;: -12.235835023240657, &#39;params&#39;: {&#39;x&#39;: 2.0154397119682423, &#39;y&#39;: -2.0288343947238228}}
+        {&#39;target&#39;: np.float64(-6.633273772355583), &#39;params&#39;: {&#39;x&#39;: np.float64(2.7487090390562576), &#39;y&#39;: np.float64(1.2790562505410115)}}
 Iteration 4:
-        {&#39;target&#39;: -17.99963711795217, &#39;params&#39;: {&#39;x&#39;: 3.301617813728339, &#39;y&#39;: -1.8458666395359906}}
+        {&#39;target&#39;: np.float64(-5.750985875689304), &#39;params&#39;: {&#39;x&#39;: np.float64(2.5885326650623566), &#39;y&#39;: np.float64(1.2246876000015976)}}
 </pre></div></div>
 </div>
 <h3 id="2.1-Changing-bounds">2.1 Changing bounds<a class="headerlink" href="#2.1-Changing-bounds" title="Link to this heading">¶</a></h3>
@@ -931,11 +931,11 @@ Iteration 4:
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |     y     |
 -------------------------------------------------
-| <span class="ansi-magenta-intense-fg">6        </span> | <span class="ansi-magenta-intense-fg">-1.378   </span> | <span class="ansi-magenta-intense-fg">1.229    </span> | <span class="ansi-magenta-intense-fg">0.06916  </span> |
-| <span class="ansi-magenta-intense-fg">7        </span> | <span class="ansi-magenta-intense-fg">-0.9471  </span> | <span class="ansi-magenta-intense-fg">-0.9434  </span> | <span class="ansi-magenta-intense-fg">-0.02816 </span> |
-| 8         | -3.651    | -1.168    | 2.813     |
-| 9         | -17.13    | -2.0      | -2.758    |
-| <span class="ansi-magenta-intense-fg">10       </span> | <span class="ansi-magenta-intense-fg">0.8427   </span> | <span class="ansi-magenta-intense-fg">-0.193   </span> | <span class="ansi-magenta-intense-fg">0.6535   </span> |
+| <span class="ansi-magenta-fg">6        </span> | <span class="ansi-magenta-fg">-4.438   </span> | <span class="ansi-magenta-fg">2.3269441</span> | <span class="ansi-magenta-fg">1.1533794</span> |
+| <span class="ansi-magenta-fg">7        </span> | <span class="ansi-magenta-fg">-2.42    </span> | <span class="ansi-magenta-fg">1.8477442</span> | <span class="ansi-magenta-fg">0.9230233</span> |
+| <span class="ansi-magenta-fg">8        </span> | <span class="ansi-magenta-fg">-0.2088  </span> | <span class="ansi-magenta-fg">1.0781674</span> | <span class="ansi-magenta-fg">1.2152869</span> |
+| <span class="ansi-magenta-fg">9        </span> | <span class="ansi-magenta-fg">0.7797   </span> | <span class="ansi-magenta-fg">-0.298812</span> | <span class="ansi-magenta-fg">1.3619705</span> |
+| 10        | -3.391    | -0.655060 | 2.9904883 |
 =================================================
 </pre></div></div>
 </div>
@@ -1001,147 +1001,43 @@ Iteration 4:
 =================================================
 </pre></div></div>
 </div>
-<h2 id="4.-Saving,-loading-and-restarting">4. Saving, loading and restarting<a class="headerlink" href="#4.-Saving,-loading-and-restarting" title="Link to this heading">¶</a></h2>
-<p>By default you can follow the progress of your optimization by setting <code class="docutils literal notranslate"><span class="pre">verbose&gt;0</span></code> when instantiating the <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code> object. If you need more control over logging/alerting you will need to use an observer. For more information about observers checkout the advanced tour notebook. Here we will only see how to use the native <code class="docutils literal notranslate"><span class="pre">JSONLogger</span></code> object to save to and load progress from files.</p>
-<h3 id="4.1-Saving-progress">4.1 Saving progress<a class="headerlink" href="#4.1-Saving-progress" title="Link to this heading">¶</a></h3>
+<h2 id="4.-Saving-and-loading-the-optimizer">4. Saving and loading the optimizer<a class="headerlink" href="#4.-Saving-and-loading-the-optimizer" title="Link to this heading">¶</a></h2>
+<p>The optimizer state can be saved to a file and loaded from a file. This is useful for continuing an optimization from a previous state, or for analyzing the optimization history without running the optimizer again.</p>
+<p>Note: if you are using your own custom acquisition function, you will need to save and load the acquisition function state as well. This is done by calling the <code class="docutils literal notranslate"><span class="pre">get_acquisition_params</span></code> and <code class="docutils literal notranslate"><span class="pre">set_acquisition_params</span></code> methods of the acquisition function. See the acquisition function documentation for more information.</p>
+<h3 id="4.1-Saving-the-optimizer-state">4.1 Saving the optimizer state<a class="headerlink" href="#4.1-Saving-the-optimizer-state" title="Link to this heading">¶</a></h3>
+<p>The optimizer state can be saved to a file using the <code class="docutils literal notranslate"><span class="pre">save_state</span></code> method. optimizer.save_state(“./optimizer_state.json”)</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[22]:
 </code></pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">bayes_opt.logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">JSONLogger</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">bayes_opt.event</span><span class="w"> </span><span class="kn">import</span> <span class="n">Events</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">optimizer</span><span class="o">.</span><span class="n">save_state</span><span class="p">(</span><span class="s2">&quot;optimizer_state.json&quot;</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
-<p>The observer paradigm works by:</p>
-<ol class="arabic simple">
-<li><p>Instantiating an observer object.</p></li>
-<li><p>Tying the observer object to a particular event fired by an optimizer.</p></li>
-</ol>
-<p>The <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code> object fires a number of internal events during optimization, in particular, every time it probes the function and obtains a new parameter-target combination it will fire an <code class="docutils literal notranslate"><span class="pre">Events.OPTIMIZATION_STEP</span></code> event, which our logger will listen to.</p>
-<p><strong>Caveat:</strong> The logger will not look back at previously probed points.</p>
+<h2 id="4.2-Loading-the-optimizer-state">4.2 Loading the optimizer state<a class="headerlink" href="#4.2-Loading-the-optimizer-state" title="Link to this heading">¶</a></h2>
+<p>To load with a previously saved state, pass the path of your saved state file to the <code class="docutils literal notranslate"><span class="pre">load_state_path</span></code> parameter. Note that if you’ve changed the bounds of your parameters, you’ll need to pass the updated bounds to the new optimizer.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[15]:
-</code></pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">logger</span> <span class="o">=</span> <span class="n">JSONLogger</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;./logs.log&quot;</span><span class="p">)</span>
-<span class="n">optimizer</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">Events</span><span class="o">.</span><span class="n">OPTIMIZATION_STEP</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-</code></pre></div>
-</div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[16]:
-</code></pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span>
-    <span class="n">init_points</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-    <span class="n">n_iter</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-<span class="p">)</span>
-</code></pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-|   iter    |  target   |     x     |     y     |
--------------------------------------------------
-| 13        | -12.48    | -1.266    | -2.446    |
-| 14        | -3.854    | -1.069    | -0.9266   |
-| <span class="ansi-magenta-intense-fg">15       </span> | <span class="ansi-magenta-intense-fg">0.967    </span> | <span class="ansi-magenta-intense-fg">0.04749  </span> | <span class="ansi-magenta-intense-fg">1.175    </span> |
-| <span class="ansi-magenta-intense-fg">16       </span> | <span class="ansi-magenta-intense-fg">0.9912   </span> | <span class="ansi-magenta-intense-fg">0.07374  </span> | <span class="ansi-magenta-intense-fg">0.9421   </span> |
-| 17        | -3.565    | 0.7821    | 2.988     |
-=================================================
-</pre></div></div>
-</div>
-<h3 id="4.2-Loading-progress">4.2 Loading progress<a class="headerlink" href="#4.2-Loading-progress" title="Link to this heading">¶</a></h3>
-<p>Naturally, if you stored progress you will be able to load that onto a new instance of <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code>. The easiest way to do it is by invoking the <code class="docutils literal notranslate"><span class="pre">load_logs</span></code> function, from the <code class="docutils literal notranslate"><span class="pre">util</span></code> submodule.</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[17]:
-</code></pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">bayes_opt.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_logs</span>
-</code></pre></div>
-</div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[18]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[23]:
 </code></pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">new_optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span>
     <span class="n">f</span><span class="o">=</span><span class="n">black_box_function</span><span class="p">,</span>
-    <span class="n">pbounds</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)},</span>
-    <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-    <span class="n">random_state</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
+    <span class="n">pbounds</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)},</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span>
 <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">new_optimizer</span><span class="o">.</span><span class="n">space</span><span class="p">))</span>
-</code></pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-0
-</pre></div></div>
-</div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[19]:
-</code></pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">load_logs</span><span class="p">(</span><span class="n">new_optimizer</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;./logs.log&quot;</span><span class="p">]);</span>
-</code></pre></div>
-</div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[20]:
-</code></pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;New optimizer is now aware of </span><span class="si">{}</span><span class="s2"> points.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">new_optimizer</span><span class="o">.</span><span class="n">space</span><span class="p">)))</span>
-</code></pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-New optimizer is now aware of 5 points.
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[21]:
-</code></pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">new_optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span>
+
+<span class="n">new_optimizer</span><span class="o">.</span><span class="n">load_state</span><span class="p">(</span><span class="s2">&quot;./optimizer_state.json&quot;</span><span class="p">)</span>
+
+<span class="c1"># Continue optimization</span>
+<span class="n">new_optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span>
     <span class="n">init_points</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">n_iter</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">n_iter</span><span class="o">=</span><span class="mi">5</span>
 <span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-|   iter    |  target   |     x     |     y     |
--------------------------------------------------
-| 1         | -0.6164   | -1.271    | 1.045     |
-| <span class="ansi-magenta-intense-fg">2        </span> | <span class="ansi-magenta-intense-fg">0.9988   </span> | <span class="ansi-magenta-intense-fg">0.005532 </span> | <span class="ansi-magenta-intense-fg">1.034    </span> |
-| 3         | 0.9757    | 0.1501    | 1.043     |
-| 4         | 0.9819    | -0.07993  | 0.8917    |
-| 5         | -3.35     | 1.976     | 0.3338    |
-| 6         | 0.9778    | -0.1166   | 1.093     |
-| 7         | 0.6605    | -0.02272  | 0.4178    |
-| 8         | -0.5044   | -0.7146   | 1.997     |
-| <span class="ansi-magenta-intense-fg">9        </span> | <span class="ansi-magenta-intense-fg">0.9997   </span> | <span class="ansi-magenta-intense-fg">0.0084   </span> | <span class="ansi-magenta-intense-fg">1.016    </span> |
-| 10        | -11.83    | 1.995     | -1.974    |
-=================================================
-</pre></div></div>
-</div>
+<p>This provides a simpler alternative to the logging system shown in section 4, especially when you want to continue optimization from a previous state.</p>
 <h2 id="Next-Steps">Next Steps<a class="headerlink" href="#Next-Steps" title="Link to this heading">¶</a></h2>
 <p>This tour should be enough to cover most usage scenarios of this package. If, however, you feel like you need to know more, please checkout the <code class="docutils literal notranslate"><span class="pre">advanced-tour</span></code> notebook. There you will be able to find other, more advanced features of this package that could be what you’re looking for. Also, browse the examples folder for implementation tips and ideas.</p>
 
