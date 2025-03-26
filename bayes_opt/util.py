@@ -39,22 +39,22 @@ def load_logs(
         logs = [logs]
 
     for log in logs:
-        with Path(log).open("r") as j:
-            while True:
-                try:
-                    iteration = next(j)
-                except StopIteration:
-                    break
+        try:
+            with Path(log).open("r") as fil:
+                fileData = json.load(fil)
+        except json.JSONDecodeError:
+            print(f"ERROR: JSON decode error when decoding '{log}'")
+            continue
 
-                iteration = json.loads(iteration)
-                try:
-                    optimizer.register(
-                        params=iteration["params"],
-                        target=iteration["target"],
-                        constraint_value=(iteration["constraint"] if optimizer.is_constrained else None),
-                    )
-                except NotUniqueError:
-                    continue
+        for iteration in fileData:
+            try:
+                optimizer.register(
+                    params=iteration["params"],
+                    target=iteration["target"],
+                    constraint_value=(iteration["constraint"] if optimizer.is_constrained else None),
+                )
+            except NotUniqueError:
+                continue
 
     return optimizer
 

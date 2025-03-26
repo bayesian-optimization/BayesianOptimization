@@ -298,7 +298,15 @@ class JSONLogger(_Tracker):
             if "constraint" in data and isinstance(data["constraint"], np.ndarray):
                 data["constraint"] = data["constraint"].tolist()
 
-            with self._path.open("a") as f:
-                f.write(json.dumps(data) + "\n")
+            # Read current data
+            with self._path.open("r") as f:
+                fileData = json.load(f)
+
+            # Append next data point
+            fileData.append(data)
+
+            # Writes content back to a file
+            with self._path.open("w") as f:
+                json.dumps(fileData)
 
         self._update_tracker(event, instance)
