@@ -5,7 +5,6 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
-import numpy as np
 from colorama import Fore, just_fix_windows_console
 
 if TYPE_CHECKING:

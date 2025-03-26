@@ -11,7 +11,6 @@ from bayes_opt import BayesianOptimization, acquisition
 from bayes_opt.acquisition import AcquisitionFunction
 from bayes_opt.domain_reduction import SequentialDomainReductionTransformer
 from bayes_opt.exception import NotUniqueError
-from bayes_opt.logger import ScreenLogger
 from bayes_opt.parameter import BayesParameter
 from bayes_opt.target_space import TargetSpace
 from bayes_opt.util import ensure_rng
