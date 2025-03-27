@@ -167,7 +167,11 @@ class BayesianOptimization:
         self._sorting_warning_already_shown = False  # TODO: remove in future version
 
         # Initialize logger
-        self.logger = ScreenLogger(verbose=self._verbose, is_constrained=self.is_constrained)
+        self.logger = ScreenLogger(
+            verbose=self._verbose,
+            is_constrained=self.is_constrained,
+            params_config=self._space._params_config,
+        )
 
     @property
     def space(self) -> TargetSpace:
@@ -230,7 +234,7 @@ class BayesianOptimization:
             warn(msg, stacklevel=1)
             self._sorting_warning_already_shown = True
         self._space.register(params, target, constraint_value)
-        self.logger.log_optimization_step(self)
+        self.logger.log_optimization_step(self._space.keys, self._space.res()[-1], self.max)
 
     def probe(self, params: ParamsType, lazy: bool = True) -> None:
         """Evaluate the function at the given points.
@@ -262,7 +266,7 @@ class BayesianOptimization:
             self._queue.append(params)
         else:
             self._space.probe(params)
-            self.logger.log_optimization_step(self)
+            self.logger.log_optimization_step(self._space.keys, self._space.res()[-1], self.max)
 
     def suggest(self) -> dict[str, float | NDArray[Float]]:
         """Suggest a promising point to probe next."""
@@ -312,7 +316,7 @@ class BayesianOptimization:
             ``optimizer._gp.fit(optimizer.space.params, optimizer.space.target)``.
         """
         # Log optimization start
-        self.logger.log_optimization_start(self)
+        self.logger.log_optimization_start(self._space.keys)
 
         # Prime the queue with random points
         self._prime_queue(init_points)
@@ -332,7 +336,7 @@ class BayesianOptimization:
                 self.set_bounds(self._bounds_transformer.transform(self._space))
 
         # Log optimization end
-        self.logger.log_optimization_end(self)
+        self.logger.log_optimization_end()
 
     def set_bounds(self, new_bounds: BoundsMapping) -> None:
         """Modify the bounds of the search space.

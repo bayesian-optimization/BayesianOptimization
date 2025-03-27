@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 from colorama import Fore, just_fix_windows_console
 
 if TYPE_CHECKING:
-    from bayes_opt.bayesian_optimization import BayesianOptimization
+    from bayes_opt.parameter import ParameterConfig
 
 just_fix_windows_console()
 
@@ -32,9 +33,15 @@ class ScreenLogger:
     _colour_regular_message = Fore.RESET
     _colour_reset = Fore.RESET
 
-    def __init__(self, verbose: int = 2, is_constrained: bool = False) -> None:
+    def __init__(
+        self,
+        verbose: int = 2,
+        is_constrained: bool = False,
+        params_config: Mapping[str, ParameterConfig] | None = None,
+    ) -> None:
         self._verbose = verbose
         self._is_constrained = is_constrained
+        self._params_config = params_config
         self._header_length = None
         self._iterations = 0
         self._previous_max = None
@@ -62,6 +69,22 @@ class ScreenLogger:
     def is_constrained(self) -> bool:
         """Return whether the logger is constrained."""
         return self._is_constrained
+
+    @property
+    def params_config(self) -> Mapping[str, ParameterConfig] | None:
+        """Return the parameter configuration used for formatting."""
+        return self._params_config
+
+    @params_config.setter
+    def params_config(self, config: Mapping[str, ParameterConfig]) -> None:
+        """Set the parameter configuration used for formatting.
+
+        Parameters
+        ----------
+        config : Mapping[str, ParameterConfig]
+            New parameter configuration.
+        """
+        self._params_config = config
 
     def _format_number(self, x: float) -> str:
         """Format a number.
@@ -118,50 +141,56 @@ class ScreenLogger:
             return s[: self._default_cell_size - 3] + "..."
         return s
 
-    def _step(self, instance: BayesianOptimization, colour: str = _colour_regular_message) -> str:
-        """Log a step.
+    def _print_step(
+        self, result: dict[str, Any], keys: list[str], colour: str = _colour_regular_message
+    ) -> str:
+        """Print a step.
 
         Parameters
         ----------
-        instance : bayesian_optimization.BayesianOptimization
-            The instance associated with the event.
+        result : dict[str, Any]
+            The result dictionary for the most recent step.
 
-        colour :
+        keys : list[str]
+            The parameter keys.
+
+        colour : str, optional
+            Color to use for the output.
             (Default value = _colour_regular_message, equivalent to Fore.RESET)
 
         Returns
         -------
         A stringified, formatted version of the most recent optimization step.
         """
-        res: dict[str, Any] = instance.res[-1]
-        keys: list[str] = instance.space.keys
+        if self._params_config is None:
+            err_msg = "Parameter configuration is not set. Call set_params_config before logging."
+            raise ValueError(err_msg)
+
         # iter, target, allowed [, *params]
         cells: list[str | None] = [None] * (3 + len(keys))
 
-        cells[:2] = self._format_number(self._iterations + 1), self._format_number(res["target"])
+        cells[:2] = self._format_number(self._iterations + 1), self._format_number(result["target"])
         if self._is_constrained:
-            cells[2] = self._format_bool(res["allowed"])
-        params = res.get("params", {})
+            cells[2] = self._format_bool(result["allowed"])
+        params = result.get("params", {})
         cells[3:] = [
-            instance.space._params_config[key].to_string(val, self._default_cell_size)
-            for key, val in params.items()
+            self._params_config[key].to_string(val, self._default_cell_size) for key, val in params.items()
         ]
 
         return "| " + " | ".join(colour + x + self._colour_reset for x in cells if x is not None) + " |"
 
-    def _header(self, instance: BayesianOptimization) -> str:
+    def _print_header(self, keys: list[str]) -> str:
         """Print the header of the log.
 
         Parameters
         ----------
-        instance : bayesian_optimization.BayesianOptimization
-            The instance associated with the header.
+        keys : list[str]
+            The parameter keys.
 
         Returns
         -------
         A stringified, formatted version of the most header.
         """
-        keys: list[str] = instance.space.keys
         # iter, target, allowed [, *params]
         cells: list[str | None] = [None] * (3 + len(keys))
 
@@ -174,41 +203,39 @@ class ScreenLogger:
         self._header_length = len(line)
         return line + "\n" + ("-" * self._header_length)
 
-    def _is_new_max(self, instance: BayesianOptimization) -> bool:
+    def _is_new_max(self, current_max: dict[str, Any] | None) -> bool:
         """Check if the step to log produced a new maximum.
 
         Parameters
         ----------
-        instance : bayesian_optimization.BayesianOptimization
-            The instance associated with the step.
+        current_max : dict[str, Any] | None
+            The current maximum target value and its parameters.
 
         Returns
         -------
         boolean
         """
-        if instance.max is None:
+        if current_max is None:
             # During constrained optimization, there might not be a maximum
             # value since the optimizer might've not encountered any points
             # that fulfill the constraints.
             return False
         if self._previous_max is None:
-            self._previous_max = instance.max["target"]
-        return instance.max["target"] > self._previous_max
+            self._previous_max = current_max["target"]
+        return current_max["target"] > self._previous_max
 
-    def _update_tracker(self, instance: BayesianOptimization) -> None:
+    def _update_tracker(self, current_max: dict[str, Any] | None) -> None:
         """Update the tracker.
 
         Parameters
         ----------
-        instance : bayesian_optimization.BayesianOptimization
-            The instance associated with the step.
+        current_max : dict[str, Any] | None
+            The current maximum target value and its parameters.
         """
         self._iterations += 1
 
-        if instance.max is None:
+        if current_max is None:
             return
-
-        current_max = instance.max
 
         if self._previous_max is None or current_max["target"] > self._previous_max:
             self._previous_max = current_max["target"]
@@ -228,43 +255,45 @@ class ScreenLogger:
         self._previous_time = now
         return (now.strftime("%Y-%m-%d %H:%M:%S"), time_elapsed.total_seconds(), time_delta.total_seconds())
 
-    def log_optimization_start(self, instance: BayesianOptimization) -> None:
+    def log_optimization_start(self, keys: list[str]) -> None:
         """Log the start of the optimization process.
 
         Parameters
         ----------
-        instance : BayesianOptimization
-            The instance associated with the event.
+        keys : list[str]
+            The parameter keys.
         """
         if self._verbose:
-            line = self._header(instance) + "\n"
+            line = self._print_header(keys) + "\n"
             print(line, end="")
 
-    def log_optimization_step(self, instance: BayesianOptimization) -> None:
+    def log_optimization_step(
+        self, keys: list[str], result: dict[str, Any], current_max: dict[str, Any] | None
+    ) -> None:
         """Log an optimization step.
 
         Parameters
         ----------
-        instance : BayesianOptimization
-            The instance associated with the event.
+        keys : list[str]
+            The parameter keys.
+
+        result : dict[str, Any]
+            The result dictionary for the most recent step.
+
+        current_max : dict[str, Any] | None
+            The current maximum target value and its parameters.
         """
-        is_new_max = self._is_new_max(instance)
-        self._update_tracker(instance)
+        is_new_max = self._is_new_max(current_max)
+        self._update_tracker(current_max)
 
         if self._verbose != 1 or is_new_max:
             colour = self._colour_new_max if is_new_max else self._colour_regular_message
-            line = self._step(instance, colour=colour) + "\n"
+            line = self._print_step(result, keys, colour=colour) + "\n"
             if self._verbose:
                 print(line, end="")
 
-    def log_optimization_end(self, instance: BayesianOptimization) -> None:
-        """Log the end of the optimization process.
-
-        Parameters
-        ----------
-        instance : BayesianOptimization
-            The instance associated with the event.
-        """
+    def log_optimization_end(self) -> None:
+        """Log the end of the optimization process."""
         if self._verbose and self._header_length is not None:
             line = "=" * self._header_length + "\n"
             print(line, end="")

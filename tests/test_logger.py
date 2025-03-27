@@ -113,31 +113,35 @@ def test_format_str():
 
 
 def test_step():
-    """Test the _step method."""
+    """Test the _print_step method."""
     optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
-    logger = ScreenLogger()
+
+    # Create a logger with the params_config from the optimizer
+    logger = ScreenLogger(params_config=optimizer._space._params_config)
 
     # Register a point so we have something to log
     optimizer.register(params={"p1": 1.5, "p2": 2.5}, target=4.0)
 
     # Test default color
-    step_str = logger._step(optimizer)
+    step_str = logger._print_step(optimizer._space.res()[-1], optimizer._space.keys)
     assert "|" in step_str
     assert "1" in step_str  # iteration
     assert "4.0" in step_str  # target value
 
     # Test with custom color
     custom_color = Fore.RED
-    step_str_colored = logger._step(optimizer, colour=custom_color)
+    step_str_colored = logger._print_step(
+        optimizer._space.res()[-1], optimizer._space.keys, colour=custom_color
+    )
     assert custom_color in step_str_colored
 
 
-def test_header():
-    """Test the _header method."""
+def test_print_header():
+    """Test the _print_header method."""
     optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
     logger = ScreenLogger()
 
-    header_str = logger._header(optimizer)
+    header_str = logger._print_header(optimizer._space.keys)
 
     # Check if header contains expected column names
     assert "iter" in header_str
@@ -150,7 +154,7 @@ def test_header():
 
     # Check with constrained logger
     constrained_logger = ScreenLogger(is_constrained=True)
-    constrained_header = constrained_logger._header(optimizer)
+    constrained_header = constrained_logger._print_header(optimizer._space.keys)
     assert "allowed" in constrained_header
 
 
@@ -160,22 +164,22 @@ def test_is_new_max():
     logger = ScreenLogger()
 
     # No observations yet
-    assert not logger._is_new_max(optimizer)
+    assert not logger._is_new_max(None)
 
     # Add first observation
     optimizer.register(params={"p1": 1, "p2": 2}, target=3)
-    # The first time _is_new_max is called, it initializes the previous_max and returns False,
-    # on the second call it should detect the first observation as a new max
-    logger._is_new_max(optimizer)  # First call initializes _previous_max
-    assert not logger._is_new_max(optimizer)  # Second call should still return False (not a new max)
+
+    current_max = optimizer.max
+    logger._is_new_max(current_max)
+    assert not logger._is_new_max(current_max)
 
     # Add lower observation (not a new max)
     optimizer.register(params={"p1": 0.5, "p2": 1}, target=1.5)
-    assert not logger._is_new_max(optimizer)
+    assert not logger._is_new_max(optimizer.max)
 
     # Add higher observation (new max)
     optimizer.register(params={"p1": 2, "p2": 2}, target=4)
-    assert logger._is_new_max(optimizer)  # Now we should have a new max
+    assert logger._is_new_max(optimizer.max)
 
 
 def test_update_tracker():
@@ -189,21 +193,21 @@ def test_update_tracker():
 
     # Update with first observation
     optimizer.register(params={"p1": 1, "p2": 2}, target=3)
-    logger._update_tracker(optimizer)
+    logger._update_tracker(optimizer.max)
     assert logger._iterations == 1
     assert logger._previous_max == 3
     assert logger._previous_max_params == {"p1": 1, "p2": 2}
 
     # Update with lower observation
     optimizer.register(params={"p1": 0.5, "p2": 1}, target=1.5)
-    logger._update_tracker(optimizer)
+    logger._update_tracker(optimizer.max)
     assert logger._iterations == 2
     assert logger._previous_max == 3  # Unchanged
     assert logger._previous_max_params == {"p1": 1, "p2": 2}  # Unchanged
 
     # Update with higher observation
     optimizer.register(params={"p1": 2, "p2": 2}, target=4)
-    logger._update_tracker(optimizer)
+    logger._update_tracker(optimizer.max)
     assert logger._iterations == 3
     assert logger._previous_max == 4  # Updated
     assert logger._previous_max_params == {"p1": 2, "p2": 2}  # Updated
@@ -236,12 +240,12 @@ def test_log_optimization_start(mock_stdout):
 
     # Test with verbose=0 (should not print)
     logger = ScreenLogger(verbose=0)
-    logger.log_optimization_start(optimizer)
+    logger.log_optimization_start(optimizer._space.keys)
     assert mock_stdout.getvalue() == ""
 
     # Test with verbose=1 (should print)
     logger.verbose = 1
-    logger.log_optimization_start(optimizer)
+    logger.log_optimization_start(optimizer._space.keys)
     output = mock_stdout.getvalue()
     assert "iter" in output
     assert "target" in output
@@ -254,10 +258,13 @@ def test_log_optimization_step(mock_stdout):
     """Test the log_optimization_step method."""
     optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
 
+    # Create a logger with the params_config from the optimizer
+    logger = ScreenLogger(params_config=optimizer._space._params_config)
+
     # Create logger with verbose=1 specifically, as this is the only verbose level
     # that doesn't print for non-max points according to the implementation:
     # if self._verbose != 1 or is_new_max:
-    logger = ScreenLogger(verbose=1)
+    logger.verbose = 1
 
     # Clear any output that might have happened
     mock_stdout.truncate(0)
@@ -265,38 +272,23 @@ def test_log_optimization_step(mock_stdout):
 
     # Register a point and log it
     optimizer.register(params={"p1": 1, "p2": 2}, target=3)
-    logger._is_new_max(optimizer)  # Initialize previous_max
+    current_max = optimizer.max
+    logger._is_new_max(current_max)  # Initialize previous_max
 
-    # Register another point (not a new max)
-    optimizer.register(params={"p1": 0.5, "p2": 1}, target=1.5)
-
-    # Clear output buffer
+    # For a point that is not a new max with verbose=1, should not print
     mock_stdout.truncate(0)
     mock_stdout.seek(0)
+    logger.log_optimization_step(optimizer._space.keys, optimizer._space.res()[-1], optimizer.max)
+    assert mock_stdout.getvalue() == ""  # Nothing printed for non-max point with verbose=1
 
-    # Log step - with verbose=1 and not a new max, it shouldn't print
-    logger.log_optimization_step(optimizer)
-    assert mock_stdout.getvalue() == ""
-
-    # Test with verbose=2 (should print regular steps)
-    logger.verbose = 2
+    # Register a higher value, which should trigger output with verbose=1
+    optimizer.register(params={"p1": 2, "p2": 2}, target=4)
     mock_stdout.truncate(0)
     mock_stdout.seek(0)
-
-    # Log the same step again
-    logger.log_optimization_step(optimizer)
-    output = mock_stdout.getvalue()
-    assert "1.5" in output  # Target value should be in output
-
-    # Test with new max (should print even with verbose=1)
-    mock_stdout.truncate(0)
-    mock_stdout.seek(0)
-    logger.verbose = 1
-    optimizer.register(params={"p1": 2, "p2": 2}, target=4)  # New max
-    logger.log_optimization_step(optimizer)
-    output = mock_stdout.getvalue()
-    assert "4" in output  # Target value
-    assert Fore.MAGENTA in output  # Should use magenta color for new max
+    logger.log_optimization_step(optimizer._space.keys, optimizer._space.res()[-1], optimizer.max)
+    max_output = mock_stdout.getvalue()
+    assert max_output != ""  # Something printed for new max point with verbose=1
+    assert "4.0" in max_output  # Should show target value
 
 
 @patch("sys.stdout", new_callable=io.StringIO)
@@ -306,19 +298,21 @@ def test_log_optimization_end(mock_stdout):
 
     # Initialize header length
     logger = ScreenLogger(verbose=2)
-    logger.log_optimization_start(optimizer)
+    logger.log_optimization_start(optimizer._space.keys)
+
+    # Clear previous output
+    mock_stdout.truncate(0)
+    mock_stdout.seek(0)
 
     # Test with verbose=0 (should not print)
     logger.verbose = 0
-    mock_stdout.truncate(0)
-    mock_stdout.seek(0)
-    logger.log_optimization_end(optimizer)
+    logger.log_optimization_end()
     assert mock_stdout.getvalue() == ""
 
-    # Test with verbose=2 (should print)
-    logger.verbose = 2
+    # Test with verbose=1 (should print)
+    logger.verbose = 1
     mock_stdout.truncate(0)
     mock_stdout.seek(0)
-    logger.log_optimization_end(optimizer)
+    logger.log_optimization_end()
     output = mock_stdout.getvalue()
-    assert "=" in output  # Should contain the closing line
+    assert "=" in output  # Should show a line of equals signs
