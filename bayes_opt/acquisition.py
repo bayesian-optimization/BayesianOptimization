@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING, Any, Literal, NoReturn
 
 import numpy as np
 from numpy.random import RandomState
-from scipy.optimize import differential_evolution, minimize
+from scipy.optimize._differentialevolution import DifferentialEvolutionSolver, minimize
 from scipy.special import softmax
 from scipy.stats import norm
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -297,12 +297,6 @@ class AcquisitionFunction(abc.ABC):
         """
         continuous_dimensions = space.continuous_dimensions
         continuous_bounds = space.bounds[continuous_dimensions]
-        discrete_dimensions = ~continuous_dimensions
-
-        # if not continuous_dimensions.any():
-        #     min_acq = np.inf
-        #     x_min = np.array([np.nan] * space.bounds.shape[0])
-        #     return x_min, min_acq
 
         min_acq: float | None = None
         x_try: NDArray[Float]
@@ -326,20 +320,17 @@ class AcquisitionFunction(abc.ABC):
             ntrials = max(1, len(x_seeds) // 100)
             for _ in range(ntrials):
                 xinit = space.random_sample(15 * len(space.bounds), random_state=self.random_state)
-                res: OptimizeResult = differential_evolution(
-                    acq,
-                    bounds=space.bounds,
-                    init=xinit,
-                    integrality=discrete_dimensions,
-                    rng=self.random_state,
-                )
+                de = DifferentialEvolutionSolver(acq, bounds=space.bounds, init=xinit, rng=self.random_state)
+                res: OptimizeResult = de.solve()
+
                 # See if success
                 if not res.success:
                     continue
 
                 # Store it if better than previous minimum(maximum).
                 if min_acq is None or np.squeeze(res.fun) >= min_acq:
-                    x_try = res.x
+                    x_try_sc = de._unscale_parameters(res.x)
+                    x_try = space.kernel_transform(x_try_sc).flatten()
                     x_min = x_try
                     min_acq = np.squeeze(res.fun)
 
