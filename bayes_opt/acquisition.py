@@ -219,7 +219,7 @@ class AcquisitionFunction(abc.ABC):
             acq, space, n_random=max(n_random, n_l_bfgs_b), n_x_seeds=n_l_bfgs_b
         )
         if n_l_bfgs_b:
-            x_min_l, min_acq_l = self._l_bfgs_b_minimize(acq, space, x_seeds=x_seeds)
+            x_min_l, min_acq_l = self._smart_minimize(acq, space, x_seeds=x_seeds)
             # Either n_random or n_l_bfgs_b is not 0 => at least one of x_min_r and x_min_l is not None
             if min_acq_r > min_acq_l:
                 return x_min_l
@@ -268,7 +268,7 @@ class AcquisitionFunction(abc.ABC):
             x_seeds = []
         return x_min, min_acq, x_seeds
 
-    def _l_bfgs_b_minimize(
+    def _smart_minimize(
         self,
         acq: Callable[[NDArray[Float]], NDArray[Float]],
         space: TargetSpace,
@@ -295,15 +295,14 @@ class AcquisitionFunction(abc.ABC):
         min_acq : float
             Acquisition function value at `x_min`
         """
-        bounds = space.bounds
         continuous_dimensions = space.continuous_dimensions
         continuous_bounds = space.bounds[continuous_dimensions]
         discrete_dimensions = ~continuous_dimensions
 
-        if not continuous_dimensions.any():
-            min_acq = np.inf
-            x_min = np.array([np.nan] * space.bounds.shape[0])
-            return x_min, min_acq
+        # if not continuous_dimensions.any():
+        #     min_acq = np.inf
+        #     x_min = np.array([np.nan] * space.bounds.shape[0])
+        #     return x_min, min_acq
 
         min_acq: float | None = None
         x_try: NDArray[Float]
@@ -325,10 +324,14 @@ class AcquisitionFunction(abc.ABC):
         # Case of mixed-integer optimization
         else:
             ntrials = max(1, len(x_seeds) // 100)
-            for i in range(ntrials):
-                xinit = space.random_sample(15 * len(space.bounds), random_state=i)
+            for _ in range(ntrials):
+                xinit = space.random_sample(15 * len(space.bounds), random_state=self.random_state)
                 res: OptimizeResult = differential_evolution(
-                    acq, bounds=bounds, init=xinit, integrality=discrete_dimensions, seed=self.random_state
+                    acq,
+                    bounds=space.bounds,
+                    init=xinit,
+                    integrality=discrete_dimensions,
+                    rng=self.random_state,
                 )
                 # See if success
                 if not res.success:

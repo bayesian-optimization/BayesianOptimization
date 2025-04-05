@@ -105,7 +105,7 @@ def test_upper_confidence_bound(gp, target_space, random_state):
     assert acq.kappa == 0.5
 
 
-def test_l_bfgs_fails(target_space, random_state):
+def test_smart_minimize_fails(target_space, random_state):
     acq = acquisition.UpperConfidenceBound(random_state=random_state)
 
     def fun(x):
@@ -114,7 +114,7 @@ def test_l_bfgs_fails(target_space, random_state):
         except IndexError:
             return np.nan
 
-    _, min_acq_l = acq._l_bfgs_b_minimize(fun, space=target_space, x_seeds=np.array([[2.5, 0.5]]))
+    _, min_acq_l = acq._smart_minimize(fun, space=target_space, x_seeds=np.array([[2.5, 0.5]]))
     assert min_acq_l == np.inf
 
 
