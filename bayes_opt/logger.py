@@ -258,8 +258,10 @@ class ScreenLogger:
         """
         is_new_max = self._is_new_max(current_max)
         self._update_tracker(current_max)
+        if self._verbose == 0:
+            return
 
-        if self._verbose != 1 or is_new_max:
+        if self._verbose == 2 or is_new_max:
             colour = self._colour_new_max if is_new_max else self._colour_regular_message
             line = self._print_step(result, keys, params_config, colour=colour) + "\n"
             if self._verbose:

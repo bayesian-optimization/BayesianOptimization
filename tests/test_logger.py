@@ -243,7 +243,7 @@ def test_log_optimization_step(mock_stdout):
 
     # Create logger with verbose=1 specifically, as this is the only verbose level
     # that doesn't print for non-max points according to the implementation:
-    # if self._verbose != 1 or is_new_max:
+    # if self._verbose == 2 or is_new_max:
     logger.verbose = 1
 
     # Clear any output that might have happened
@@ -273,6 +273,18 @@ def test_log_optimization_step(mock_stdout):
     max_output = mock_stdout.getvalue()
     assert max_output != ""  # Something printed for new max point with verbose=1
     assert "4.0" in max_output  # Should show target value
+
+    # Test with verbose=2 (should print even for non-max points)
+    logger.verbose = 2
+    optimizer.register(params={"p1": 1, "p2": 1}, target=1)
+    mock_stdout.truncate(0)
+    mock_stdout.seek(0)
+    logger.log_optimization_step(
+        optimizer._space.keys, optimizer._space.res()[-1], optimizer._space.params_config, optimizer.max
+    )
+    non_max_output = mock_stdout.getvalue()
+    assert non_max_output != ""  # Something printed for non-max point with verbose=2
+    assert "1.0" in non_max_output  # Should show target value
 
 
 @patch("sys.stdout", new_callable=io.StringIO)
