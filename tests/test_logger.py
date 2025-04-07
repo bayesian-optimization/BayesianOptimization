@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import io
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
-import pytest
 from colorama import Fore
 
 from bayes_opt import BayesianOptimization
@@ -50,44 +49,6 @@ def test_is_constrained_property():
 
     logger = ScreenLogger(is_constrained=True)
     assert logger.is_constrained
-
-
-def test_params_config_property():
-    """Test the params_config property getter and setter."""
-    # Test the getter with default initialization (None)
-    logger = ScreenLogger()
-    assert logger.params_config is None
-
-    # Test initialization with a params_config
-    mock_config = {"param1": MagicMock(), "param2": MagicMock()}
-    logger_with_config = ScreenLogger(params_config=mock_config)
-    assert logger_with_config.params_config is mock_config
-
-    # Test the setter
-    new_config = {"param3": MagicMock(), "param4": MagicMock()}
-    logger.params_config = new_config
-    assert logger.params_config is new_config
-
-    # Test that the logger actually uses the params_config
-    optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
-    logger.params_config = optimizer._space._params_config
-    optimizer.register(params={"p1": 1.5, "p2": 2.5}, target=4.0)
-
-    # This should not raise an error now that params_config is set
-    step_str = logger._print_step(optimizer._space.res()[-1], optimizer._space.keys)
-    assert "|" in step_str
-    assert "1" in step_str  # iteration
-    assert "4.0" in step_str  # target value
-
-
-def test_print_step_without_params_config():
-    """Test that _print_step raises an error when params_config is None."""
-    logger = ScreenLogger()
-    optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
-    optimizer.register(params={"p1": 1.5, "p2": 2.5}, target=4.0)
-
-    with pytest.raises(ValueError, match="Parameter configuration is not set"):
-        logger._print_step(optimizer._space.res()[-1], optimizer._space.keys)
 
 
 def test_format_number():
@@ -155,14 +116,15 @@ def test_step():
     """Test the _print_step method."""
     optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
 
-    # Create a logger with the params_config from the optimizer
-    logger = ScreenLogger(params_config=optimizer._space._params_config)
+    logger = ScreenLogger()
 
     # Register a point so we have something to log
     optimizer.register(params={"p1": 1.5, "p2": 2.5}, target=4.0)
 
     # Test default color
-    step_str = logger._print_step(optimizer._space.res()[-1], optimizer._space.keys)
+    step_str = logger._print_step(
+        optimizer._space.res()[-1], optimizer._space.keys, optimizer._space.params_config
+    )
     assert "|" in step_str
     assert "1" in step_str  # iteration
     assert "4.0" in step_str  # target value
@@ -170,7 +132,7 @@ def test_step():
     # Test with custom color
     custom_color = Fore.RED
     step_str_colored = logger._print_step(
-        optimizer._space.res()[-1], optimizer._space.keys, colour=custom_color
+        optimizer._space.res()[-1], optimizer._space.keys, optimizer._space.params_config, colour=custom_color
     )
     assert custom_color in step_str_colored
 
@@ -252,26 +214,6 @@ def test_update_tracker():
     assert logger._previous_max_params == {"p1": 2, "p2": 2}  # Updated
 
 
-def test_time_metrics():
-    """Test the _time_metrics method."""
-    logger = ScreenLogger()
-
-    # First call initializes times
-    time_str, total_elapsed, delta = logger._time_metrics()
-    assert isinstance(time_str, str)
-    assert isinstance(total_elapsed, float)
-    assert isinstance(delta, float)
-    assert delta <= 0.1  # First call should have very small delta
-
-    # Subsequent call should show time difference
-    import time
-
-    time.sleep(0.01)  # Small delay to ensure time difference
-    time_str2, total_elapsed2, delta2 = logger._time_metrics()
-    assert total_elapsed2 > total_elapsed
-    assert delta2 > 0
-
-
 @patch("sys.stdout", new_callable=io.StringIO)
 def test_log_optimization_start(mock_stdout):
     """Test the log_optimization_start method."""
@@ -297,8 +239,7 @@ def test_log_optimization_step(mock_stdout):
     """Test the log_optimization_step method."""
     optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
 
-    # Create a logger with the params_config from the optimizer
-    logger = ScreenLogger(params_config=optimizer._space._params_config)
+    logger = ScreenLogger()
 
     # Create logger with verbose=1 specifically, as this is the only verbose level
     # that doesn't print for non-max points according to the implementation:
@@ -317,14 +258,18 @@ def test_log_optimization_step(mock_stdout):
     # For a point that is not a new max with verbose=1, should not print
     mock_stdout.truncate(0)
     mock_stdout.seek(0)
-    logger.log_optimization_step(optimizer._space.keys, optimizer._space.res()[-1], optimizer.max)
+    logger.log_optimization_step(
+        optimizer._space.keys, optimizer._space.res()[-1], optimizer._space.params_config, optimizer.max
+    )
     assert mock_stdout.getvalue() == ""  # Nothing printed for non-max point with verbose=1
 
     # Register a higher value, which should trigger output with verbose=1
     optimizer.register(params={"p1": 2, "p2": 2}, target=4)
     mock_stdout.truncate(0)
     mock_stdout.seek(0)
-    logger.log_optimization_step(optimizer._space.keys, optimizer._space.res()[-1], optimizer.max)
+    logger.log_optimization_step(
+        optimizer._space.keys, optimizer._space.res()[-1], optimizer._space.params_config, optimizer.max
+    )
     max_output = mock_stdout.getvalue()
     assert max_output != ""  # Something printed for new max point with verbose=1
     assert "4.0" in max_output  # Should show target value

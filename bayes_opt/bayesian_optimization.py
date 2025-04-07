@@ -76,27 +76,6 @@ class BayesianOptimization:
         This behavior may be desired in high noise situations where repeatedly probing
         the same point will give different answers. In other situations, the acquisition
         may occasionally generate a duplicate point.
-
-    Attributes
-    ----------
-    space : TargetSpace
-        The target space object containing the function to optimize.
-
-    acquisition_function : AcquisitionFunction
-        The acquisition function used to propose new points.
-
-    constraint : ConstraintModel or None
-        The constraint model, if any.
-
-    max : dict or None
-        Maximum target value observed and corresponding parameters.
-
-    res : list
-        All target values observed and corresponding parameters and timestamps.
-
-    logger : ScreenLogger
-        The logger used for displaying optimization progress.
-        You can customize the logger's properties (e.g., colors, verbosity, formatting).
     """
 
     def __init__(
@@ -167,11 +146,7 @@ class BayesianOptimization:
         self._sorting_warning_already_shown = False  # TODO: remove in future version
 
         # Initialize logger
-        self.logger = ScreenLogger(
-            verbose=self._verbose,
-            is_constrained=self.is_constrained,
-            params_config=self._space._params_config,
-        )
+        self.logger = ScreenLogger(verbose=self._verbose, is_constrained=self.is_constrained)
 
     @property
     def space(self) -> TargetSpace:
@@ -234,7 +209,9 @@ class BayesianOptimization:
             warn(msg, stacklevel=1)
             self._sorting_warning_already_shown = True
         self._space.register(params, target, constraint_value)
-        self.logger.log_optimization_step(self._space.keys, self._space.res()[-1], self.max)
+        self.logger.log_optimization_step(
+            self._space.keys, self._space.res()[-1], self._space.params_config, self.max
+        )
 
     def probe(self, params: ParamsType, lazy: bool = True) -> None:
         """Evaluate the function at the given points.
@@ -266,7 +243,9 @@ class BayesianOptimization:
             self._queue.append(params)
         else:
             self._space.probe(params)
-            self.logger.log_optimization_step(self._space.keys, self._space.res()[-1], self.max)
+            self.logger.log_optimization_step(
+                self._space.keys, self._space.res()[-1], self._space.params_config, self.max
+            )
 
     def suggest(self) -> dict[str, float | NDArray[Float]]:
         """Suggest a promising point to probe next."""
