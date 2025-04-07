@@ -67,12 +67,37 @@ def test_format_number():
     long_int = 12345678901234
     formatted = logger._format_number(long_int)
     assert len(formatted) == logger._default_cell_size
-    assert "..." in formatted
+    assert formatted == "1.234e+13"
 
     # Test long float truncation
     long_float = 1234.5678901234
     formatted = logger._format_number(long_float)
     assert len(formatted) == logger._default_cell_size
+    assert formatted == "1234.5678"
+
+    # Test negative long float truncation
+    long_float = -1234.5678901234
+    formatted = logger._format_number(long_float)
+    assert len(formatted) == logger._default_cell_size
+    assert formatted == "-1234.567"
+
+    # Test scientific notation truncation
+    sci_float = 12345678901234.5678901234
+    formatted = logger._format_number(sci_float)
+    assert len(formatted) == logger._default_cell_size
+    assert formatted == "1.234e+13"
+
+    # Test negative scientific notation truncation
+    sci_float = -12345678901234.5678901234
+    formatted = logger._format_number(sci_float)
+    assert len(formatted) == logger._default_cell_size
+    assert formatted == "-1.23e+13"
+
+    # Test long scientific notation truncation
+    sci_float = -12345678901234.534e132
+    formatted = logger._format_number(sci_float)
+    assert len(formatted) == logger._default_cell_size
+    assert formatted == "-1.2e+145"
 
 
 def test_format_bool():

@@ -75,16 +75,38 @@ class ScreenLogger:
         -------
         A stringified, formatted version of `x`.
         """
-        if isinstance(x, int):
-            s = f"{x:<{self._default_cell_size}}"
+        if abs(x) > 1e7 - 1:
+            s = f"{x:.5e}"
         else:
-            s = f"{x:<{self._default_cell_size}.{self._default_precision}}"
+            s = str(x)
 
         if len(s) > self._default_cell_size:
+            # Convert to str representation of scientific notation
+            result = ""
+            width = self._default_cell_size
+            # Keep negative sign, exponent, and as many decimal places as possible
+            if "-" in s:
+                result += "-"
+                width -= 1
+                s = s[1:]
+            if "e" in s:
+                e_pos = s.find("e")
+                end = s[e_pos:]
+                width -= len(end)
             if "." in s:
-                return s[: self._default_cell_size]
-            return s[: self._default_cell_size - 3] + "..."
-        return s
+                dot_pos = s.find(".") + 1
+                result += s[:dot_pos]
+                width -= dot_pos
+                if width > 0:
+                    result += s[dot_pos : dot_pos + width]
+            else:
+                result += s[:width]
+            if "e" in s:
+                result += end
+            result = result.ljust(self._default_cell_size)
+        else:
+            result = s.ljust(self._default_cell_size)
+        return result
 
     def _format_bool(self, x: bool) -> str:
         """Format a boolean.
