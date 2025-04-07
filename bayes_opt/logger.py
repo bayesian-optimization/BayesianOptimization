@@ -75,10 +75,7 @@ class ScreenLogger:
         -------
         A stringified, formatted version of `x`.
         """
-        if abs(x) > 1e7 - 1:
-            s = f"{x:.5e}"
-        else:
-            s = str(x)
+        s = f"{x:.5e}" if abs(x) >= 10000000.0 else str(x)
 
         if len(s) > self._default_cell_size:
             # Convert to str representation of scientific notation
