@@ -148,7 +148,7 @@ def test_step():
 
     # Test default color
     step_str = logger._print_step(
-        optimizer._space.res()[-1], optimizer._space.keys, optimizer._space.params_config
+        optimizer._space.keys, optimizer._space.res()[-1], optimizer._space.params_config
     )
     assert "|" in step_str
     assert "1" in step_str  # iteration
@@ -157,7 +157,7 @@ def test_step():
     # Test with custom color
     custom_color = Fore.RED
     step_str_colored = logger._print_step(
-        optimizer._space.res()[-1], optimizer._space.keys, optimizer._space.params_config, colour=custom_color
+        optimizer._space.keys, optimizer._space.res()[-1], optimizer._space.params_config, colour=custom_color
     )
     assert custom_color in step_str_colored
 

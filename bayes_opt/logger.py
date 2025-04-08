@@ -139,8 +139,8 @@ class ScreenLogger:
 
     def _print_step(
         self,
-        result: dict[str, Any],
         keys: list[str],
+        result: dict[str, Any],
         params_config: Mapping[str, ParameterConfig],
         colour: str = _colour_regular_message,
     ) -> str:
@@ -173,9 +173,11 @@ class ScreenLogger:
             cells[2] = self._format_bool(result["allowed"])
         params = result.get("params", {})
         cells[3:] = [
-            params_config[key].to_string(val, self._default_cell_size) for key, val in params.items()
+            self._format_number(val)
+            if isinstance(val, (int, float))
+            else params_config[key].to_string(val, self._default_cell_size)
+            for key, val in params.items()
         ]
-
         return "| " + " | ".join(colour + x + self._colour_reset for x in cells if x is not None) + " |"
 
     def _print_header(self, keys: list[str]) -> str:
@@ -282,7 +284,7 @@ class ScreenLogger:
 
         if self._verbose == 2 or is_new_max:
             colour = self._colour_new_max if is_new_max else self._colour_regular_message
-            line = self._print_step(result, keys, params_config, colour=colour) + "\n"
+            line = self._print_step(keys, result, params_config, colour=colour) + "\n"
             if self._verbose:
                 print(line, end="")
 
