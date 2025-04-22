@@ -383,13 +383,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#Observers-Continued" class="md-nav__link">
-    <span title="/advanced-tour.ipynb#observers-continued (reference label)" class="md-ellipsis">Observers Continued</span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -731,13 +724,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#Observers-Continued" class="md-nav__link">
-    <span title="/advanced-tour.ipynb#observers-continued (reference label)" class="md-ellipsis">Observers Continued</span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -843,7 +829,7 @@ Found the target value to be: 0.7861845912690544
 </pre></div></div>
 </div>
 <p>Last thing left to do is to tell the optimizer what target value was observed.</p>
-<div class="nbinput nblast docutils container">
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[7]:
 </code></pre></div>
 </div>
@@ -854,10 +840,18 @@ Found the target value to be: 0.7861845912690544
 </code></pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+| 2         | 0.7862    | -0.331911 | 1.3219469 |
+</pre></div></div>
+</div>
 <h3 id="1.1-The-maximize-loop">1.1 The maximize loop<a class="headerlink" href="#1.1-The-maximize-loop" title="Link to this heading">¶</a></h3>
 <p>And that’s it. By repeating the steps above you recreate the internals of the <code class="docutils literal notranslate"><span class="pre">maximize</span></code> method. This should give you all the flexibility you need to log progress, hault execution, perform concurrent evaluations, etc.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[ ]:
 </code></pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
@@ -875,11 +869,16 @@ Found the target value to be: 0.7861845912690544
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
--18.707136686093495 {&#39;x&#39;: np.float64(1.9261486197444082), &#39;y&#39;: np.float64(-2.9996360060323246)}
-0.750594563473972 {&#39;x&#39;: np.float64(-0.3763326769822668), &#39;y&#39;: np.float64(1.328297354179696)}
--6.559031075654336 {&#39;x&#39;: np.float64(1.979183535803597), &#39;y&#39;: np.float64(2.9083667381450318)}
--6.915481333972961 {&#39;x&#39;: np.float64(-1.9686133847781613), &#39;y&#39;: np.float64(-1.009985740060171)}
--6.8600832617014085 {&#39;x&#39;: np.float64(-1.9763198875239296), &#39;y&#39;: np.float64(2.9885278383464513)}
+| 3         | -18.41    | 1.9506186 | -2.950721 |
+-18.413111112960056 {&#39;x&#39;: np.float64(1.9506186451101901), &#39;y&#39;: np.float64(-2.9507212017944955)}
+| 4         | 0.7603    | -0.379805 | 1.3089202 |
+0.7603162209132889 {&#39;x&#39;: np.float64(-0.37980530851809036), &#39;y&#39;: np.float64(1.3089202270946163)}
+| 5         | -6.841    | -1.990473 | 2.9694974 |
+-6.840906127161674 {&#39;x&#39;: np.float64(-1.9904737772920469), &#39;y&#39;: np.float64(2.9694974661254085)}
+| 6         | -6.879    | 1.9740210 | 2.9954409 |
+-6.8785435274794136 {&#39;x&#39;: np.float64(1.9740210595375953), &#39;y&#39;: np.float64(2.995440899646362)}
+| 7         | -7.124    | -1.985509 | -1.044851 |
+-7.123667302755344 {&#39;x&#39;: np.float64(-1.9855094780813816), &#39;y&#39;: np.float64(-1.0448519298972099)}
 {&#39;target&#39;: np.float64(0.7861845912690544), &#39;params&#39;: {&#39;x&#39;: np.float64(-0.331911981189704), &#39;y&#39;: np.float64(1.3219469606529486)}}
 </pre></div></div>
 </div>
@@ -912,12 +911,12 @@ Found the target value to be: 0.7861845912690544
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |     y     |
 -------------------------------------------------
-| 1         | 0.7862    | -0.331911 | 1.3219469 |
-| 2         | -18.34    | 1.9021640 | -2.965222 |
-| <span class="ansi-magenta-fg">3        </span> | <span class="ansi-magenta-fg">0.8731   </span> | <span class="ansi-magenta-fg">-0.298167</span> | <span class="ansi-magenta-fg">1.1948749</span> |
-| 4         | -6.497    | 1.9876938 | 2.8830942 |
-| 5         | -4.286    | -1.995643 | -0.141769 |
-| 6         | -6.781    | -1.953302 | 2.9913127 |
+| 2         | 0.7862    | -0.331911 | 1.3219469 |
+| 3         | -18.34    | 1.9021640 | -2.965222 |
+| <span class="ansi-magenta-fg">4        </span> | <span class="ansi-magenta-fg">0.8731   </span> | <span class="ansi-magenta-fg">-0.298167</span> | <span class="ansi-magenta-fg">1.1948749</span> |
+| 5         | -6.497    | 1.9876938 | 2.8830942 |
+| 6         | -4.286    | -1.995643 | -0.141769 |
+| 7         | -6.781    | -1.953302 | 2.9913127 |
 =================================================
 </pre></div></div>
 </div>
@@ -925,108 +924,6 @@ Found the target value to be: 0.7861845912690544
 <p>When dealing with functions with discrete parameters,or particularly erratic target space it might be beneficial to increase the value of the <code class="docutils literal notranslate"><span class="pre">alpha</span></code> parameter. This parameters controls how much noise the GP can handle, so increase it whenever you think that extra flexibility is needed.</p>
 <h3 id="2.3-Changing-kernels">2.3 Changing kernels<a class="headerlink" href="#2.3-Changing-kernels" title="Link to this heading">¶</a></h3>
 <p>By default this package uses the Matern 2.5 kernel. Depending on your use case you may find that tuning the GP kernel could be beneficial. You’re on your own here since these are very specific solutions to very specific problems. You should start with the <a class="reference external" href="https://scikit-learn.org/stable/modules/gaussian_process.html#kernels-for-gaussian-processes">scikit learn docs</a>.</p>
-<h2 id="Observers-Continued">Observers Continued<a class="headerlink" href="#Observers-Continued" title="Link to this heading">¶</a></h2>
-<p>Observers are objects that subscribe and listen to particular events fired by the <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code> object.</p>
-<p>When an event gets fired a callback function is called with the event and the <code class="docutils literal notranslate"><span class="pre">BayesianOptimization</span></code> instance passed as parameters. The callback can be specified at the time of subscription. If none is given it will look for an <code class="docutils literal notranslate"><span class="pre">update</span></code> method from the observer.</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[10]:
-</code></pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">bayes_opt.event</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_EVENTS</span><span class="p">,</span> <span class="n">Events</span>
-</code></pre></div>
-</div>
-</div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[11]:
-</code></pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span>
-    <span class="n">f</span><span class="o">=</span><span class="n">black_box_function</span><span class="p">,</span>
-    <span class="n">pbounds</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)},</span>
-    <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-    <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-<span class="p">)</span>
-</code></pre></div>
-</div>
-</div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[12]:
-</code></pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BasicObserver</span><span class="p">:</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Does whatever you want with the event and `BayesianOptimization` instance.&quot;&quot;&quot;</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Event `</span><span class="si">{}</span><span class="s2">` was observed&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">event</span><span class="p">))</span>
-</code></pre></div>
-</div>
-</div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[13]:
-</code></pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">my_observer</span> <span class="o">=</span> <span class="n">BasicObserver</span><span class="p">()</span>
-
-<span class="n">optimizer</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span>
-    <span class="n">event</span><span class="o">=</span><span class="n">Events</span><span class="o">.</span><span class="n">OPTIMIZATION_STEP</span><span class="p">,</span>
-    <span class="n">subscriber</span><span class="o">=</span><span class="n">my_observer</span><span class="p">,</span>
-    <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="c1"># Will use the `update` method as callback</span>
-<span class="p">)</span>
-</code></pre></div>
-</div>
-</div>
-<p>Alternatively you have the option to pass a completely different callback.</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[14]:
-</code></pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">my_callback</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Go nuts here!&quot;</span><span class="p">)</span>
-
-<span class="n">optimizer</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span>
-    <span class="n">event</span><span class="o">=</span><span class="n">Events</span><span class="o">.</span><span class="n">OPTIMIZATION_START</span><span class="p">,</span>
-    <span class="n">subscriber</span><span class="o">=</span><span class="s2">&quot;Any hashable object&quot;</span><span class="p">,</span>
-    <span class="n">callback</span><span class="o">=</span><span class="n">my_callback</span><span class="p">,</span>
-<span class="p">)</span>
-</code></pre></div>
-</div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[15]:
-</code></pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-</code></pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Go nuts here!
-Event `optimization:step` was observed
-Event `optimization:step` was observed
-Event `optimization:step` was observed
-</pre></div></div>
-</div>
-<p>For a list of all default events you can checkout <code class="docutils literal notranslate"><span class="pre">DEFAULT_EVENTS</span></code></p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[16]:
-</code></pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">DEFAULT_EVENTS</span>
-</code></pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[16]:
-</code></pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-[&#39;optimization:start&#39;, &#39;optimization:step&#39;, &#39;optimization:end&#39;]
-</pre></div></div>
-</div>
 
 
 
