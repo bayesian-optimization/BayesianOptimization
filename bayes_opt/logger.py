@@ -2,48 +2,18 @@
 
 from __future__ import annotations
 
-import json
-from contextlib import suppress
-from pathlib import Path
+from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any
 
-import numpy as np
 from colorama import Fore, just_fix_windows_console
 
-from bayes_opt.event import Events
-from bayes_opt.observer import _Tracker
-
 if TYPE_CHECKING:
-    from os import PathLike
-
-    from bayes_opt.bayesian_optimization import BayesianOptimization
+    from bayes_opt.parameter import ParameterConfig
 
 just_fix_windows_console()
 
 
-def _get_default_logger(verbose: int, is_constrained: bool) -> ScreenLogger:
-    """
-    Return the default logger.
-
-    Parameters
-    ----------
-    verbose : int
-        Verbosity level of the logger.
-
-    is_constrained : bool
-        Whether the underlying optimizer uses constraints (this requires
-        an additional column in the output).
-
-    Returns
-    -------
-    ScreenLogger
-        The default logger.
-
-    """
-    return ScreenLogger(verbose=verbose, is_constrained=is_constrained)
-
-
-class ScreenLogger(_Tracker):
+class ScreenLogger:
     """Logger that outputs text, e.g. to log to a terminal.
 
     Parameters
@@ -66,7 +36,11 @@ class ScreenLogger(_Tracker):
         self._verbose = verbose
         self._is_constrained = is_constrained
         self._header_length = None
-        super().__init__()
+        self._iterations = 0
+        self._previous_max = None
+        self._previous_max_params = None
+        self._start_time = None
+        self._previous_time = None
 
     @property
     def verbose(self) -> int:
@@ -101,16 +75,35 @@ class ScreenLogger(_Tracker):
         -------
         A stringified, formatted version of `x`.
         """
-        if isinstance(x, int):
-            s = f"{x:<{self._default_cell_size}}"
-        else:
-            s = f"{x:<{self._default_cell_size}.{self._default_precision}}"
+        s = f"{x:.5e}" if abs(x) >= 10000000.0 else str(x)
 
         if len(s) > self._default_cell_size:
+            # Convert to str representation of scientific notation
+            result = ""
+            width = self._default_cell_size
+            # Keep negative sign, exponent, and as many decimal places as possible
+            if "-" in s:
+                result += "-"
+                width -= 1
+                s = s[1:]
+            if "e" in s:
+                e_pos = s.find("e")
+                end = s[e_pos:]
+                width -= len(end)
             if "." in s:
-                return s[: self._default_cell_size]
-            return s[: self._default_cell_size - 3] + "..."
-        return s
+                dot_pos = s.find(".") + 1
+                result += s[:dot_pos]
+                width -= dot_pos
+                if width > 0:
+                    result += s[dot_pos : dot_pos + width]
+            else:
+                result += s[:width]
+            if "e" in s:
+                result += end
+            result = result.ljust(self._default_cell_size)
+        else:
+            result = s.ljust(self._default_cell_size)
+        return result
 
     def _format_bool(self, x: bool) -> str:
         """Format a boolean.
@@ -144,50 +137,61 @@ class ScreenLogger(_Tracker):
             return s[: self._default_cell_size - 3] + "..."
         return s
 
-    def _step(self, instance: BayesianOptimization, colour: str = _colour_regular_message) -> str:
-        """Log a step.
+    def _print_step(
+        self,
+        keys: list[str],
+        result: dict[str, Any],
+        params_config: Mapping[str, ParameterConfig],
+        colour: str = _colour_regular_message,
+    ) -> str:
+        """Print a step.
 
         Parameters
         ----------
-        instance : bayesian_optimization.BayesianOptimization
-            The instance associated with the event.
+        result : dict[str, Any]
+            The result dictionary for the most recent step.
 
-        colour :
+        keys : list[str]
+            The parameter keys.
+
+        params_config : Mapping[str, ParameterConfig]
+            The configuration to map the key to the parameter for correct formatting.
+
+        colour : str, optional
+            Color to use for the output.
             (Default value = _colour_regular_message, equivalent to Fore.RESET)
 
         Returns
         -------
         A stringified, formatted version of the most recent optimization step.
         """
-        res: dict[str, Any] = instance.res[-1]
-        keys: list[str] = instance.space.keys
         # iter, target, allowed [, *params]
         cells: list[str | None] = [None] * (3 + len(keys))
 
-        cells[:2] = self._format_number(self._iterations + 1), self._format_number(res["target"])
+        cells[:2] = self._format_number(self._iterations + 1), self._format_number(result["target"])
         if self._is_constrained:
-            cells[2] = self._format_bool(res["allowed"])
-        params = res.get("params", {})
+            cells[2] = self._format_bool(result["allowed"])
+        params = result.get("params", {})
         cells[3:] = [
-            instance.space._params_config[key].to_string(val, self._default_cell_size)
+            self._format_number(val)
+            if isinstance(val, (int, float))
+            else params_config[key].to_string(val, self._default_cell_size)
             for key, val in params.items()
         ]
-
         return "| " + " | ".join(colour + x + self._colour_reset for x in cells if x is not None) + " |"
 
-    def _header(self, instance: BayesianOptimization) -> str:
+    def _print_header(self, keys: list[str]) -> str:
         """Print the header of the log.
 
         Parameters
         ----------
-        instance : bayesian_optimization.BayesianOptimization
-            The instance associated with the header.
+        keys : list[str]
+            The parameter keys.
 
         Returns
         -------
         A stringified, formatted version of the most header.
         """
-        keys: list[str] = instance.space.keys
         # iter, target, allowed [, *params]
         cells: list[str | None] = [None] * (3 + len(keys))
 
@@ -200,105 +204,92 @@ class ScreenLogger(_Tracker):
         self._header_length = len(line)
         return line + "\n" + ("-" * self._header_length)
 
-    def _is_new_max(self, instance: BayesianOptimization) -> bool:
+    def _is_new_max(self, current_max: dict[str, Any] | None) -> bool:
         """Check if the step to log produced a new maximum.
 
         Parameters
         ----------
-        instance : bayesian_optimization.BayesianOptimization
-            The instance associated with the step.
+        current_max : dict[str, Any] | None
+            The current maximum target value and its parameters.
 
         Returns
         -------
         boolean
         """
-        if instance.max is None:
+        if current_max is None:
             # During constrained optimization, there might not be a maximum
             # value since the optimizer might've not encountered any points
             # that fulfill the constraints.
             return False
         if self._previous_max is None:
-            self._previous_max = instance.max["target"]
-        return instance.max["target"] > self._previous_max
+            self._previous_max = current_max["target"]
+        return current_max["target"] > self._previous_max
 
-    def update(self, event: str, instance: BayesianOptimization) -> None:
-        """Handle incoming events.
+    def _update_tracker(self, current_max: dict[str, Any] | None) -> None:
+        """Update the tracker.
 
         Parameters
         ----------
-        event : str
-            One of the values associated with `Events.OPTIMIZATION_START`,
-            `Events.OPTIMIZATION_STEP` or `Events.OPTIMIZATION_END`.
-
-        instance : bayesian_optimization.BayesianOptimization
-            The instance associated with the step.
+        current_max : dict[str, Any] | None
+            The current maximum target value and its parameters.
         """
-        line = ""
-        if event == Events.OPTIMIZATION_START:
-            line = self._header(instance) + "\n"
-        elif event == Events.OPTIMIZATION_STEP:
-            is_new_max = self._is_new_max(instance)
-            if self._verbose != 1 or is_new_max:
-                colour = self._colour_new_max if is_new_max else self._colour_regular_message
-                line = self._step(instance, colour=colour) + "\n"
-        elif event == Events.OPTIMIZATION_END:
-            line = "=" * self._header_length + "\n"
+        self._iterations += 1
 
+        if current_max is None:
+            return
+
+        if self._previous_max is None or current_max["target"] > self._previous_max:
+            self._previous_max = current_max["target"]
+            self._previous_max_params = current_max["params"]
+
+    def log_optimization_start(self, keys: list[str]) -> None:
+        """Log the start of the optimization process.
+
+        Parameters
+        ----------
+        keys : list[str]
+            The parameter keys.
+        """
         if self._verbose:
+            line = self._print_header(keys) + "\n"
             print(line, end="")
-        self._update_tracker(event, instance)
 
-
-class JSONLogger(_Tracker):
-    """
-    Logger that outputs steps in JSON format.
-
-    The resulting file can be used to restart the optimization from an earlier state.
-
-    Parameters
-    ----------
-    path : str or os.PathLike
-        Path to the file to write to.
-
-    reset : bool
-        Whether to overwrite the file if it already exists.
-
-    """
-
-    def __init__(self, path: str | PathLike[str], reset: bool = True):
-        self._path = Path(path)
-        if reset:
-            with suppress(OSError):
-                self._path.unlink(missing_ok=True)
-        super().__init__()
-
-    def update(self, event: str, instance: BayesianOptimization) -> None:
-        """
-        Handle incoming events.
+    def log_optimization_step(
+        self,
+        keys: list[str],
+        result: dict[str, Any],
+        params_config: Mapping[str, ParameterConfig],
+        current_max: dict[str, Any] | None,
+    ) -> None:
+        """Log an optimization step.
 
         Parameters
         ----------
-        event : str
-            One of the values associated with `Events.OPTIMIZATION_START`,
-            `Events.OPTIMIZATION_STEP` or `Events.OPTIMIZATION_END`.
+        keys : list[str]
+            The parameter keys.
 
-        instance : bayesian_optimization.BayesianOptimization
-            The instance associated with the step.
+        result : dict[str, Any]
+            The result dictionary for the most recent step.
 
+        params_config : Mapping[str, ParameterConfig]
+            The configuration to map the key to the parameter for correct formatting.
+
+        current_max : dict[str, Any] | None
+            The current maximum target value and its parameters.
         """
-        if event == Events.OPTIMIZATION_STEP:
-            data = dict(instance.res[-1])
+        is_new_max = self._is_new_max(current_max)
+        self._update_tracker(current_max)
+        if self._verbose == 0:
+            return
 
-            now, time_elapsed, time_delta = self._time_metrics()
-            data["datetime"] = {"datetime": now, "elapsed": time_elapsed, "delta": time_delta}
+        if self._verbose == 2 or is_new_max:
+            colour = self._colour_new_max if is_new_max else self._colour_regular_message
+            line = self._print_step(keys, result, params_config, colour=colour) + "\n"
+            if self._verbose:
+                print(line, end="")
 
-            if "allowed" in data:  # fix: github.com/fmfn/BayesianOptimization/issues/361
-                data["allowed"] = bool(data["allowed"])
-
-            if "constraint" in data and isinstance(data["constraint"], np.ndarray):
-                data["constraint"] = data["constraint"].tolist()
-
-            with self._path.open("a") as f:
-                f.write(json.dumps(data) + "\n")
-
-        self._update_tracker(event, instance)
+    def log_optimization_end(self) -> None:
+        """Log the end of the optimization process."""
+        if self._verbose and self._header_length is not None:
+            line = "=" * self._header_length + "\n"
+            print(line, end="")

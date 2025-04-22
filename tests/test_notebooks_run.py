@@ -8,6 +8,7 @@ from pathlib import Path
 
 import nbformat
 import pytest
+from nbclient.exceptions import CellExecutionError
 from nbconvert.preprocessors import ExecutePreprocessor
 
 this_file_loc = Path(__file__).parent
@@ -25,5 +26,9 @@ def test_all_notebooks_run(notebook: Path):
     with notebook.open(encoding="utf8") as f:
         nb = nbformat.read(f, as_version=4)
     ep = ExecutePreprocessor(timeout=600, kernel_name="python3")
-    ep.preprocess(nb, {"metadata": {"path": notebook.parent}})
-    print("success!")
+    try:
+        ep.preprocess(nb, {"metadata": {"path": notebook.parent}})
+        print("success!")
+    except CellExecutionError as e:
+        # Wrap the original error with the notebook name
+        pytest.fail(f"Error executing notebook {notebook}: {e!s}")
