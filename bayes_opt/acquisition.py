@@ -69,6 +69,33 @@ class AcquisitionFunction(abc.ABC):
             self.random_state = RandomState()
         self.i = 0
 
+    def _serialize_random_state(self) -> dict | None:
+        """Convert random state to JSON serializable format."""
+        if self.random_state is not None:
+            state = self.random_state.get_state()
+            return {
+                "bit_generator": state[0],
+                "state": state[1].tolist(),  # Convert numpy array to list
+                "pos": state[2],
+                "has_gauss": state[3],
+                "cached_gaussian": state[4],
+            }
+        return None
+
+    def _deserialize_random_state(self, state_dict: dict | None) -> None:
+        """Restore random state from JSON serializable format."""
+        if state_dict is not None:
+            if self.random_state is None:
+                self.random_state = RandomState()
+            state = (
+                state_dict["bit_generator"],
+                np.array(state_dict["state"], dtype=np.uint32),
+                state_dict["pos"],
+                state_dict["has_gauss"],
+                state_dict["cached_gaussian"],
+            )
+            self.random_state.set_state(state)
+
     @abc.abstractmethod
     def base_acq(self, *args: Any, **kwargs: Any) -> NDArray[Float]:
         """Provide access to the base acquisition function."""
@@ -81,6 +108,34 @@ class AcquisitionFunction(abc.ABC):
             gp.fit(target_space.params, target_space.target)
             if target_space.constraint is not None:
                 target_space.constraint.fit(target_space.params, target_space._constraint_values)
+
+    def get_acquisition_params(self) -> dict[str, Any]:
+        """
+        Get the parameters of the acquisition function.
+
+        Returns
+        -------
+        dict
+            The parameters of the acquisition function.
+        """
+        error_msg = (
+            "Custom AcquisitionFunction subclasses must implement their own get_acquisition_params method."
+        )
+        raise NotImplementedError(error_msg)
+
+    def set_acquisition_params(self, **params) -> None:
+        """
+        Set the parameters of the acquisition function.
+
+        Parameters
+        ----------
+        **params : dict
+            The parameters of the acquisition function.
+        """
+        error_msg = (
+            "Custom AcquisitionFunction subclasses must implement their own set_acquisition_params method."
+        )
+        raise NotImplementedError(error_msg)
 
     def suggest(
         self,
@@ -462,6 +517,34 @@ class UpperConfidenceBound(AcquisitionFunction):
         ):
             self.kappa = self.kappa * self.exploration_decay
 
+    def get_acquisition_params(self) -> dict:
+        """Get the current acquisition function parameters.
+
+        Returns
+        -------
+        dict
+            Dictionary containing the current acquisition function parameters.
+        """
+        return {
+            "kappa": self.kappa,
+            "exploration_decay": self.exploration_decay,
+            "exploration_decay_delay": self.exploration_decay_delay,
+            "random_state": self._serialize_random_state(),
+        }
+
+    def set_acquisition_params(self, params: dict) -> None:
+        """Set the acquisition function parameters.
+
+        Parameters
+        ----------
+        params : dict
+            Dictionary containing the acquisition function parameters.
+        """
+        self.kappa = params["kappa"]
+        self.exploration_decay = params["exploration_decay"]
+        self.exploration_decay_delay = params["exploration_decay_delay"]
+        self._deserialize_random_state(params["random_state"])
+
 
 class ProbabilityOfImprovement(AcquisitionFunction):
     r"""Probability of Improvement acqusition function.
@@ -594,6 +677,34 @@ class ProbabilityOfImprovement(AcquisitionFunction):
             self.exploration_decay_delay is None or self.exploration_decay_delay <= self.i
         ):
             self.xi = self.xi * self.exploration_decay
+
+    def get_acquisition_params(self) -> dict:
+        """Get the current acquisition function parameters.
+
+        Returns
+        -------
+        dict
+            Dictionary containing the current acquisition function parameters.
+        """
+        return {
+            "xi": self.xi,
+            "exploration_decay": self.exploration_decay,
+            "exploration_decay_delay": self.exploration_decay_delay,
+            "random_state": self._serialize_random_state(),
+        }
+
+    def set_acquisition_params(self, params: dict) -> None:
+        """Set the acquisition function parameters.
+
+        Parameters
+        ----------
+        params : dict
+            Dictionary containing the acquisition function parameters.
+        """
+        self.xi = params["xi"]
+        self.exploration_decay = params["exploration_decay"]
+        self.exploration_decay_delay = params["exploration_decay_delay"]
+        self._deserialize_random_state(params["random_state"])
 
 
 class ExpectedImprovement(AcquisitionFunction):
@@ -735,6 +846,34 @@ class ExpectedImprovement(AcquisitionFunction):
             self.exploration_decay_delay is None or self.exploration_decay_delay <= self.i
         ):
             self.xi = self.xi * self.exploration_decay
+
+    def get_acquisition_params(self) -> dict:
+        """Get the current acquisition function parameters.
+
+        Returns
+        -------
+        dict
+            Dictionary containing the current acquisition function parameters.
+        """
+        return {
+            "xi": self.xi,
+            "exploration_decay": self.exploration_decay,
+            "exploration_decay_delay": self.exploration_decay_delay,
+            "random_state": self._serialize_random_state(),
+        }
+
+    def set_acquisition_params(self, params: dict) -> None:
+        """Set the acquisition function parameters.
+
+        Parameters
+        ----------
+        params : dict
+            Dictionary containing the acquisition function parameters.
+        """
+        self.xi = params["xi"]
+        self.exploration_decay = params["exploration_decay"]
+        self.exploration_decay_delay = params["exploration_decay_delay"]
+        self._deserialize_random_state(params["random_state"])
 
 
 class ConstantLiar(AcquisitionFunction):
@@ -926,6 +1065,38 @@ class ConstantLiar(AcquisitionFunction):
 
         return x_max
 
+    def get_acquisition_params(self) -> dict:
+        """Get the current acquisition function parameters.
+
+        Returns
+        -------
+        dict
+            Dictionary containing the current acquisition function parameters.
+        """
+        return {
+            "dummies": [dummy.tolist() for dummy in self.dummies],
+            "base_acquisition_params": self.base_acquisition.get_acquisition_params(),
+            "strategy": self.strategy,
+            "atol": self.atol,
+            "rtol": self.rtol,
+            "random_state": self._serialize_random_state(),
+        }
+
+    def set_acquisition_params(self, params: dict) -> None:
+        """Set the acquisition function parameters.
+
+        Parameters
+        ----------
+        params : dict
+            Dictionary containing the acquisition function parameters.
+        """
+        self.dummies = [np.array(dummy) for dummy in params["dummies"]]
+        self.base_acquisition.set_acquisition_params(params["base_acquisition_params"])
+        self.strategy = params["strategy"]
+        self.atol = params["atol"]
+        self.rtol = params["rtol"]
+        self._deserialize_random_state(params["random_state"])
+
 
 class GPHedge(AcquisitionFunction):
     """GPHedge acquisition function.
@@ -1043,3 +1214,38 @@ class GPHedge(AcquisitionFunction):
         self.previous_candidates = np.array(x_max)
         idx = self._sample_idx_from_softmax_gains()
         return x_max[idx]
+
+    def get_acquisition_params(self) -> dict:
+        """Get the current acquisition function parameters.
+
+        Returns
+        -------
+        dict
+            Dictionary containing the current acquisition function parameters.
+        """
+        return {
+            "base_acquisitions_params": [acq.get_acquisition_params() for acq in self.base_acquisitions],
+            "gains": self.gains.tolist(),
+            "previous_candidates": self.previous_candidates.tolist()
+            if self.previous_candidates is not None
+            else None,
+            "gphedge_random_state": self._serialize_random_state(),
+        }
+
+    def set_acquisition_params(self, params: dict) -> None:
+        """Set the acquisition function parameters.
+
+        Parameters
+        ----------
+        params : dict
+            Dictionary containing the acquisition function parameters.
+        """
+        for acq, acq_params in zip(self.base_acquisitions, params["base_acquisitions_params"]):
+            acq.set_acquisition_params(acq_params)
+
+        self.gains = np.array(params["gains"])
+        self.previous_candidates = (
+            np.array(params["previous_candidates"]) if params["previous_candidates"] is not None else None
+        )
+
+        self._deserialize_random_state(params["gphedge_random_state"])

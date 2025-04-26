@@ -6,29 +6,31 @@ function over a specific target space.
 
 from __future__ import annotations
 
+import json
 from collections import deque
+from os import PathLike
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from warnings import warn
 
 import numpy as np
+from scipy.optimize import NonlinearConstraint
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
 
 from bayes_opt import acquisition
 from bayes_opt.constraint import ConstraintModel
 from bayes_opt.domain_reduction import DomainTransformer
-from bayes_opt.event import DEFAULT_EVENTS, Events
-from bayes_opt.logger import _get_default_logger
+from bayes_opt.logger import ScreenLogger
 from bayes_opt.parameter import wrap_kernel
 from bayes_opt.target_space import TargetSpace
 from bayes_opt.util import ensure_rng
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable, Mapping
+    from collections.abc import Callable, Mapping
 
     from numpy.random import RandomState
     from numpy.typing import NDArray
-    from scipy.optimize import NonlinearConstraint
 
     from bayes_opt.acquisition import AcquisitionFunction
     from bayes_opt.constraint import ConstraintModel
@@ -38,35 +40,7 @@ if TYPE_CHECKING:
     Float = np.floating[Any]
 
 
-class Observable:
-    """Inspired by https://www.protechtraining.com/blog/post/879#simple-observer."""
-
-    def __init__(self, events: Iterable[Any]) -> None:
-        # maps event names to subscribers
-        # str -> dict
-        self._events = {event: dict() for event in events}
-
-    def get_subscribers(self, event: Any) -> Any:
-        """Return the subscribers of an event."""
-        return self._events[event]
-
-    def subscribe(self, event: Any, subscriber: Any, callback: Callable[..., Any] | None = None) -> None:
-        """Add subscriber to an event."""
-        if callback is None:
-            callback = subscriber.update
-        self.get_subscribers(event)[subscriber] = callback
-
-    def unsubscribe(self, event: Any, subscriber: Any) -> None:
-        """Remove a subscriber for a particular event."""
-        del self.get_subscribers(event)[subscriber]
-
-    def dispatch(self, event: Any) -> None:
-        """Trigger callbacks for subscribers of an event."""
-        for callback in self.get_subscribers(event).values():
-            callback(event, self)
-
-
-class BayesianOptimization(Observable):
+class BayesianOptimization:
     """Handle optimization of a target function over a specific target space.
 
     This class takes the function to optimize as well as the parameters bounds
@@ -170,7 +144,9 @@ class BayesianOptimization(Observable):
             self._bounds_transformer.initialize(self._space)
 
         self._sorting_warning_already_shown = False  # TODO: remove in future version
-        super().__init__(events=DEFAULT_EVENTS)
+
+        # Initialize logger
+        self.logger = ScreenLogger(verbose=self._verbose, is_constrained=self.is_constrained)
 
     @property
     def space(self) -> TargetSpace:
@@ -233,7 +209,9 @@ class BayesianOptimization(Observable):
             warn(msg, stacklevel=1)
             self._sorting_warning_already_shown = True
         self._space.register(params, target, constraint_value)
-        self.dispatch(Events.OPTIMIZATION_STEP)
+        self.logger.log_optimization_step(
+            self._space.keys, self._space.res()[-1], self._space.params_config, self.max
+        )
 
     def probe(self, params: ParamsType, lazy: bool = True) -> None:
         """Evaluate the function at the given points.
@@ -265,7 +243,9 @@ class BayesianOptimization(Observable):
             self._queue.append(params)
         else:
             self._space.probe(params)
-            self.dispatch(Events.OPTIMIZATION_STEP)
+            self.logger.log_optimization_step(
+                self._space.keys, self._space.res()[-1], self._space.params_config, self.max
+            )
 
     def suggest(self) -> dict[str, float | NDArray[Float]]:
         """Suggest a promising point to probe next."""
@@ -292,13 +272,6 @@ class BayesianOptimization(Observable):
             sample = self._space.random_sample(random_state=self._random_state)
             self._queue.append(self._space.array_to_params(sample))
 
-    def _prime_subscriptions(self) -> None:
-        if not any([len(subs) for subs in self._events.values()]):
-            _logger = _get_default_logger(self._verbose, self.is_constrained)
-            self.subscribe(Events.OPTIMIZATION_START, _logger)
-            self.subscribe(Events.OPTIMIZATION_STEP, _logger)
-            self.subscribe(Events.OPTIMIZATION_END, _logger)
-
     def maximize(self, init_points: int = 5, n_iter: int = 25) -> None:
         r"""
         Maximize the given function over the target space.
@@ -321,8 +294,10 @@ class BayesianOptimization(Observable):
             optimization routine, make sure to fit it manually, e.g. by calling
             ``optimizer._gp.fit(optimizer.space.params, optimizer.space.target)``.
         """
-        self._prime_subscriptions()
-        self.dispatch(Events.OPTIMIZATION_START)
+        # Log optimization start
+        self.logger.log_optimization_start(self._space.keys)
+
+        # Prime the queue with random points
         self._prime_queue(init_points)
 
         iteration = 0
@@ -339,7 +314,8 @@ class BayesianOptimization(Observable):
                 # the init_points points (only for the true iterations)
                 self.set_bounds(self._bounds_transformer.transform(self._space))
 
-        self.dispatch(Events.OPTIMIZATION_END)
+        # Log optimization end
+        self.logger.log_optimization_end()
 
     def set_bounds(self, new_bounds: BoundsMapping) -> None:
         """Modify the bounds of the search space.
@@ -356,3 +332,113 @@ class BayesianOptimization(Observable):
         if "kernel" in params:
             params["kernel"] = wrap_kernel(kernel=params["kernel"], transform=self._space.kernel_transform)
         self._gp.set_params(**params)
+
+    def save_state(self, path: str | PathLike[str]) -> None:
+        """Save complete state for reconstruction of the optimizer.
+
+        Parameters
+        ----------
+        path : str or PathLike
+            Path to save the optimization state
+
+        Raises
+        ------
+        ValueError
+            If attempting to save state before collecting any samples.
+        """
+        if len(self._space) == 0:
+            msg = (
+                "Cannot save optimizer state before collecting any samples. "
+                "Please probe or register at least one point before saving."
+            )
+            raise ValueError(msg)
+
+        random_state = None
+        if self._random_state is not None:
+            state_tuple = self._random_state.get_state()
+            random_state = {
+                "bit_generator": state_tuple[0],
+                "state": state_tuple[1].tolist(),
+                "pos": state_tuple[2],
+                "has_gauss": state_tuple[3],
+                "cached_gaussian": state_tuple[4],
+            }
+
+        # Get constraint values if they exist
+        constraint_values = self._space._constraint_values.tolist() if self.is_constrained else None
+        acquisition_params = self._acquisition_function.get_acquisition_params()
+        state = {
+            "pbounds": {key: self._space._bounds[i].tolist() for i, key in enumerate(self._space.keys)},
+            # Add current transformed bounds if using bounds transformer
+            "transformed_bounds": (self._space.bounds.tolist() if self._bounds_transformer else None),
+            "keys": self._space.keys,
+            "params": np.array(self._space.params).tolist(),
+            "target": self._space.target.tolist(),
+            "constraint_values": constraint_values,
+            "gp_params": {
+                "kernel": self._gp.kernel.get_params(),
+                "alpha": self._gp.alpha,
+                "normalize_y": self._gp.normalize_y,
+                "n_restarts_optimizer": self._gp.n_restarts_optimizer,
+            },
+            "allow_duplicate_points": self._allow_duplicate_points,
+            "verbose": self._verbose,
+            "random_state": random_state,
+            "acquisition_params": acquisition_params,
+        }
+
+        with Path(path).open("w") as f:
+            json.dump(state, f, indent=2)
+
+    def load_state(self, path: str | PathLike[str]) -> None:
+        """Load optimizer state from a JSON file.
+
+        Parameters
+        ----------
+        path : str or PathLike
+            Path to the JSON file containing the optimizer state.
+        """
+        with Path(path).open("r") as file:
+            state = json.load(file)
+
+        params_array = np.asarray(state["params"], dtype=np.float64)
+        target_array = np.asarray(state["target"], dtype=np.float64)
+        constraint_array = (
+            np.array(state["constraint_values"]) if state["constraint_values"] is not None else None
+        )
+
+        for i in range(len(params_array)):
+            params = self._space.array_to_params(params_array[i])
+            target = target_array[i]
+            constraint = constraint_array[i] if constraint_array is not None else None
+            self.register(params=params, target=target, constraint_value=constraint)
+
+        self._acquisition_function.set_acquisition_params(state["acquisition_params"])
+
+        if state.get("transformed_bounds") and self._bounds_transformer:
+            new_bounds = {
+                key: bounds for key, bounds in zip(self._space.keys, np.array(state["transformed_bounds"]))
+            }
+            self._space.set_bounds(new_bounds)
+            self._bounds_transformer.initialize(self._space)
+
+        self._gp.set_params(**state["gp_params"])
+        if isinstance(self._gp.kernel, dict):
+            kernel_params = self._gp.kernel
+            self._gp.kernel = Matern(
+                length_scale=kernel_params["length_scale"],
+                length_scale_bounds=tuple(kernel_params["length_scale_bounds"]),
+                nu=kernel_params["nu"],
+            )
+
+        self._gp.fit(self._space.params, self._space.target)
+
+        if state["random_state"] is not None:
+            random_state_tuple = (
+                state["random_state"]["bit_generator"],
+                np.array(state["random_state"]["state"], dtype=np.uint32),
+                state["random_state"]["pos"],
+                state["random_state"]["has_gauss"],
+                state["random_state"]["cached_gaussian"],
+            )
+            self._random_state.set_state(random_state_tuple)
