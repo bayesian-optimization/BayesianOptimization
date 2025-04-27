@@ -38,6 +38,7 @@ from bayes_opt.exception import (
     TargetSpaceEmptyError,
 )
 from bayes_opt.target_space import TargetSpace
+from bayes_opt.util import ensure_rng
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
@@ -60,13 +61,7 @@ class AcquisitionFunction(abc.ABC):
     """
 
     def __init__(self, random_state: int | RandomState | None = None) -> None:
-        if random_state is not None:
-            if isinstance(random_state, RandomState):
-                self.random_state = random_state
-            else:
-                self.random_state = RandomState(random_state)
-        else:
-            self.random_state = RandomState()
+        self.random_state = ensure_rng(random_state)
         self.i = 0
 
     def _serialize_random_state(self) -> dict | None:
