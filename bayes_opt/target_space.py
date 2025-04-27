@@ -312,9 +312,7 @@ class TargetSpace:
             Representation of the parameters as an array.
         """
         if set(params) != set(self.keys):
-            error_msg = (
-                f"Parameters' keys ({params}) do " f"not match the expected set of keys ({self.keys})."
-            )
+            error_msg = f"Parameters' keys ({params}) do not match the expected set of keys ({self.keys})."
             raise ValueError(error_msg)
         return self._to_float(params)
 
@@ -356,15 +354,14 @@ class TargetSpace:
         """
         if len(x) != self._dim:
             error_msg = (
-                f"Size of array ({len(x)}) is different than the "
-                f"expected number of parameters ({self._dim})."
+                f"Size of array ({len(x)}) is different than the expected number of parameters ({self._dim})."
             )
             raise ValueError(error_msg)
         return self._to_params(x)
 
     def _to_float(self, value: Mapping[str, float | NDArray[Float]]) -> NDArray[Float]:
         if set(value) != set(self.keys):
-            msg = f"Parameters' keys ({value}) do " f"not match the expected set of keys ({self.keys})."
+            msg = f"Parameters' keys ({value}) do not match the expected set of keys ({self.keys})."
             raise ValueError(msg)
         res = np.zeros(self._dim)
         for key in self._keys:
@@ -704,9 +701,7 @@ class TargetSpace:
                 params_config[key] = new_params_config[key]
             dims = dims + params_config[key].dim
         if dims != self.dim:
-            msg = (
-                f"Dimensions of new bounds ({dims}) does not match" f" dimensions of old bounds ({self.dim})."
-            )
+            msg = f"Dimensions of new bounds ({dims}) does not match dimensions of old bounds ({self.dim})."
             raise ValueError(msg)
         self._params_config = params_config
         self._bounds = self.calculate_bounds()
