@@ -27,6 +27,8 @@ from typing import TYPE_CHECKING, Any, Literal, NoReturn
 
 import numpy as np
 from numpy.random import RandomState
+from packaging import version
+from scipy import __version__ as scipy_version
 from scipy.optimize._differentialevolution import DifferentialEvolutionSolver, minimize
 from scipy.special import softmax
 from scipy.stats import norm
@@ -373,11 +375,17 @@ class AcquisitionFunction(abc.ABC):
         # Case of mixed-integer optimization
         else:
             ntrials = max(1, len(x_seeds) // 100)
+
             for _ in range(ntrials):
                 xinit = space.random_sample(15 * len(space.bounds), random_state=self.random_state)
-                de = DifferentialEvolutionSolver(
-                    acq, bounds=space.bounds, init=xinit, rng=self.random_state, polish=False
-                )
+
+                de_parameters = {"func": acq, "bounds": space.bounds, "polish": False, "init": xinit}
+                if version.parse(scipy_version) < version.parse("1.15.0"):
+                    de_parameters["seed"] = self.random_state
+                else:
+                    de_parameters["rng"] = self.random_state
+
+                de = DifferentialEvolutionSolver(**de_parameters)
                 res_de: OptimizeResult = de.solve()
                 # Check if success
                 if not res_de.success:
