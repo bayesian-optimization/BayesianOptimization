@@ -375,19 +375,35 @@ class AcquisitionFunction(abc.ABC):
             ntrials = max(1, len(x_seeds) // 100)
             for _ in range(ntrials):
                 xinit = space.random_sample(15 * len(space.bounds), random_state=self.random_state)
-                de = DifferentialEvolutionSolver(acq, bounds=space.bounds, init=xinit, rng=self.random_state)
-                res: OptimizeResult = de.solve()
-
-                # See if success
-                if not res.success:
+                de = DifferentialEvolutionSolver(
+                    acq, bounds=space.bounds, init=xinit, rng=self.random_state, polish=False
+                )
+                res_de: OptimizeResult = de.solve()
+                # Check if success
+                if not res_de.success:
                     continue
 
-                # Store it if better than previous minimum(maximum).
-                if min_acq is None or np.squeeze(res.fun) >= min_acq:
-                    x_try_sc = de._unscale_parameters(res.x)
-                    x_try = space.kernel_transform(x_try_sc).flatten()
-                    x_min = x_try
-                    min_acq = np.squeeze(res.fun)
+                x_min = res_de.x
+                min_acq = np.squeeze(res_de.fun)
+
+                # Refine the identification of continous parameters with deterministic search
+                if any(continuous_dimensions):
+                    x_try = x_min.copy()
+
+                    def continuous_acq(x: NDArray[Float], x_try=x_try) -> NDArray[Float]:
+                        x_try[continuous_dimensions] = x
+                        return acq(x_try)
+
+                    res: OptimizeResult = minimize(
+                        continuous_acq,
+                        x_min[continuous_dimensions],
+                        bounds=continuous_bounds,
+                        method="L-BFGS-B",
+                    )
+                    if np.squeeze(res.fun) >= min_acq and res.success:
+                        x_try[continuous_dimensions] = res.x
+                        x_min = x_try
+                        min_acq = np.squeeze(res.fun)
 
         if min_acq is None:
             min_acq = np.inf
