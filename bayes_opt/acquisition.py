@@ -405,9 +405,7 @@ class AcquisitionFunction(abc.ABC):
                     res: OptimizeResult = minimize(
                         continuous_acq,
                         x_min[continuous_dimensions],
-                        bounds=continuous_bounds,
-                        method="L-BFGS-B",
-                    )
+                        bounds=continuous_bounds)
                     if np.squeeze(res.fun) >= min_acq and res.success:
                         x_try[continuous_dimensions] = res.x
                         x_min = x_try
@@ -417,6 +415,7 @@ class AcquisitionFunction(abc.ABC):
             min_acq = np.inf
             x_min = np.array([np.nan] * space.bounds.shape[0])
 
+        x_min=space.kernel_transform(x_min).reshape(x_min.shape)
         # Clip output to make sure it lies within the bounds. Due to floating
         # point technicalities this is not always the case.
         return np.clip(x_min, space.bounds[:, 0], space.bounds[:, 1]), min_acq
