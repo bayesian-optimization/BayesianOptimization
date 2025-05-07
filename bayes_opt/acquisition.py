@@ -27,7 +27,9 @@ from typing import TYPE_CHECKING, Any, Literal, NoReturn
 
 import numpy as np
 from numpy.random import RandomState
-from scipy.optimize import minimize
+from packaging import version
+from scipy import __version__ as scipy_version
+from scipy.optimize._differentialevolution import DifferentialEvolutionSolver, minimize
 from scipy.special import softmax
 from scipy.stats import norm
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -269,7 +271,7 @@ class AcquisitionFunction(abc.ABC):
             acq, space, n_random=max(n_random, n_l_bfgs_b), n_x_seeds=n_l_bfgs_b
         )
         if n_l_bfgs_b:
-            x_min_l, min_acq_l = self._l_bfgs_b_minimize(acq, space, x_seeds=x_seeds)
+            x_min_l, min_acq_l = self._smart_minimize(acq, space, x_seeds=x_seeds)
             # Either n_random or n_l_bfgs_b is not 0 => at least one of x_min_r and x_min_l is not None
             if min_acq_r > min_acq_l:
                 return x_min_l
@@ -318,7 +320,7 @@ class AcquisitionFunction(abc.ABC):
             x_seeds = []
         return x_min, min_acq, x_seeds
 
-    def _l_bfgs_b_minimize(
+    def _smart_minimize(
         self,
         acq: Callable[[NDArray[Float]], NDArray[Float]],
         space: TargetSpace,
@@ -348,38 +350,66 @@ class AcquisitionFunction(abc.ABC):
         continuous_dimensions = space.continuous_dimensions
         continuous_bounds = space.bounds[continuous_dimensions]
 
-        if not continuous_dimensions.any():
-            min_acq = np.inf
-            x_min = np.array([np.nan] * space.bounds.shape[0])
-            return x_min, min_acq
-
         min_acq: float | None = None
         x_try: NDArray[Float]
         x_min: NDArray[Float]
-        for x_try in x_seeds:
 
-            def continuous_acq(x: NDArray[Float], x_try=x_try) -> NDArray[Float]:
-                x_try[continuous_dimensions] = x
-                return acq(x_try)
+        # Case of continous optimization
+        if all(continuous_dimensions):
+            for x_try in x_seeds:
+                res: OptimizeResult = minimize(acq, x_try, bounds=continuous_bounds, method="L-BFGS-B")
+                if not res.success:
+                    continue
 
-            # Find the minimum of minus the acquisition function
-            res: OptimizeResult = minimize(
-                continuous_acq, x_try[continuous_dimensions], bounds=continuous_bounds, method="L-BFGS-B"
-            )
-            # See if success
-            if not res.success:
-                continue
+                # Store it if better than previous minimum(maximum).
+                if min_acq is None or np.squeeze(res.fun) >= min_acq:
+                    x_try = res.x
+                    x_min = x_try
+                    min_acq = np.squeeze(res.fun)
 
-            # Store it if better than previous minimum(maximum).
-            if min_acq is None or np.squeeze(res.fun) >= min_acq:
-                x_try[continuous_dimensions] = res.x
-                x_min = x_try
-                min_acq = np.squeeze(res.fun)
+        # Case of mixed-integer optimization
+        else:
+            ntrials = max(1, len(x_seeds) // 100)
+
+            for _ in range(ntrials):
+                xinit = space.random_sample(15 * len(space.bounds), random_state=self.random_state)
+
+                de_parameters = {"func": acq, "bounds": space.bounds, "polish": False, "init": xinit}
+                if version.parse(scipy_version) < version.parse("1.15.0"):
+                    de_parameters["seed"] = self.random_state
+                else:
+                    de_parameters["rng"] = self.random_state
+
+                de = DifferentialEvolutionSolver(**de_parameters)
+                res_de: OptimizeResult = de.solve()
+                # Check if success
+                if not res_de.success:
+                    continue
+
+                x_min = res_de.x
+                min_acq = np.squeeze(res_de.fun)
+
+                # Refine the identification of continous parameters with deterministic search
+                if any(continuous_dimensions):
+                    x_try = x_min.copy()
+
+                    def continuous_acq(x: NDArray[Float], x_try=x_try) -> NDArray[Float]:
+                        x_try[continuous_dimensions] = x
+                        return acq(x_try)
+
+                    res: OptimizeResult = minimize(
+                        continuous_acq, x_min[continuous_dimensions], bounds=continuous_bounds
+                    )
+                    if np.squeeze(res.fun) >= min_acq and res.success:
+                        x_try[continuous_dimensions] = res.x
+                        x_min = x_try
+                        min_acq = np.squeeze(res.fun)
 
         if min_acq is None:
             min_acq = np.inf
             x_min = np.array([np.nan] * space.bounds.shape[0])
 
+        x_min = space.kernel_transform(x_min).reshape(x_min.shape)
         # Clip output to make sure it lies within the bounds. Due to floating
         # point technicalities this is not always the case.
         return np.clip(x_min, space.bounds[:, 0], space.bounds[:, 1]), min_acq
