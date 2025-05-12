@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   build-docs-and-publish:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
