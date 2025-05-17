@@ -362,7 +362,7 @@ class AcquisitionFunction(abc.ABC):
                     continue
 
                 # Store it if better than previous minimum(maximum).
-                if min_acq is None or np.squeeze(res.fun) >= min_acq:
+                if min_acq is None or np.squeeze(res.fun) < min_acq:
                     x_try = res.x
                     x_min = x_try
                     min_acq = np.squeeze(res.fun)

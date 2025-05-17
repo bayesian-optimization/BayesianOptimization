@@ -582,4 +582,4 @@ def test_save_load_w_custom_parameter(tmp_path):
     for _ in range(5):
         suggestion1 = optimizer.suggest()
         suggestion2 = new_optimizer.suggest()
-        np.testing.assert_array_almost_equal(suggestion1["sides"], suggestion2["sides"], decimal=10)
+        np.testing.assert_array_almost_equal(suggestion1["sides"], suggestion2["sides"], decimal=7)

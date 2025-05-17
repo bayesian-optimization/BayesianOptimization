@@ -422,14 +422,14 @@ class BayesianOptimization:
             self._space.set_bounds(new_bounds)
             self._bounds_transformer.initialize(self._space)
 
-        self._gp.set_params(**state["gp_params"])
-        if isinstance(self._gp.kernel, dict):
-            kernel_params = self._gp.kernel
-            self._gp.kernel = Matern(
-                length_scale=kernel_params["length_scale"],
-                length_scale_bounds=tuple(kernel_params["length_scale_bounds"]),
-                nu=kernel_params["nu"],
-            )
+        # Construct the GP kernel
+        kernel = Matern(**state["gp_params"]["kernel"])
+        # Re-construct the GP parameters
+        gp_params = {k: v for k, v in state["gp_params"].items() if k != "kernel"}
+        gp_params["kernel"] = kernel
+
+        # Set the GP parameters
+        self.set_gp_params(**gp_params)
 
         self._gp.fit(self._space.params, self._space.target)
 
