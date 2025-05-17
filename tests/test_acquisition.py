@@ -407,7 +407,10 @@ def verify_optimizers_match(optimizer1, optimizer2):
     rng = np.random.default_rng()
     assert rng.bit_generator.state["state"]["state"] == rng.bit_generator.state["state"]["state"]
 
-    assert optimizer1._gp.kernel.get_params() == optimizer2._gp.kernel.get_params()
+    kernel_params1 = optimizer1._gp.kernel.get_params()
+    kernel_params2 = optimizer2._gp.kernel.get_params()
+    for k in kernel_params1:
+        assert (np.array(kernel_params1[k]) == np.array(kernel_params2[k])).all()
 
     suggestion1 = optimizer1.suggest()
     suggestion2 = optimizer2.suggest()
