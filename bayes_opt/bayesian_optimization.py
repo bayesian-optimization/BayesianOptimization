@@ -95,13 +95,9 @@ class BayesianOptimization:
 
         if acquisition_function is None:
             if constraint is None:
-                self._acquisition_function = acquisition.UpperConfidenceBound(
-                    kappa=2.576, random_state=self._random_state
-                )
+                self._acquisition_function = acquisition.UpperConfidenceBound(kappa=2.576)
             else:
-                self._acquisition_function = acquisition.ExpectedImprovement(
-                    xi=0.01, random_state=self._random_state
-                )
+                self._acquisition_function = acquisition.ExpectedImprovement(xi=0.01)
         else:
             self._acquisition_function = acquisition_function
 
@@ -253,7 +249,9 @@ class BayesianOptimization:
             return self._space.array_to_params(self._space.random_sample(random_state=self._random_state))
 
         # Finding argmax of the acquisition function.
-        suggestion = self._acquisition_function.suggest(gp=self._gp, target_space=self._space, fit_gp=True)
+        suggestion = self._acquisition_function.suggest(
+            gp=self._gp, target_space=self._space, fit_gp=True, random_state=self._random_state
+        )
 
         return self._space.array_to_params(suggestion)
 
