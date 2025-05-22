@@ -228,7 +228,7 @@ class AcquisitionFunction(abc.ABC):
         """Find the maximum of the acquisition function.
 
         Uses a combination of random sampling (cheap) and either 'L-BFGS-B' or differential evolution
-        optimization (smarter, but expensive). First samples `n_warmup` (1e5) points at random, then
+        optimization (smarter, but expensive). First samples `n_random` (1e5) points at random, then
         uses the best points as starting points for the smart optimizer.
 
         Parameters
@@ -277,7 +277,7 @@ class AcquisitionFunction(abc.ABC):
         random_state: RandomState,
         n_random: int,
         n_x_seeds: int = 0,
-    ) -> tuple[NDArray[Float] | None, float]:
+    ) -> tuple[NDArray[Float] | None, float, NDArray[Float]]:
         """Random search to find the minimum of `acq` function.
 
         Parameters
