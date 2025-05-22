@@ -580,7 +580,6 @@ def test_save_load_w_custom_parameter(tmp_path):
 
     # Test that multiple subsequent suggestions match
     for _ in range(5):
-        print(i)
         suggestion1 = optimizer.suggest()
         suggestion2 = new_optimizer.suggest()
         np.testing.assert_array_almost_equal(suggestion1["sides"], suggestion2["sides"], decimal=7)
