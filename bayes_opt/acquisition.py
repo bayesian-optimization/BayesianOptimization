@@ -312,7 +312,7 @@ class AcquisitionFunction(abc.ABC):
         x_min = x_tries[ys.argmin()]
         min_acq = ys.min()
         if n_x_seeds != 0:
-            idxs = np.argsort(ys)[-n_x_seeds:]
+            idxs = np.argsort(ys)[:n_x_seeds]
             x_seeds = x_tries[idxs]
         else:
             x_seeds = []

@@ -43,7 +43,7 @@ def target_func():
 
 @pytest.fixture
 def random_state():
-    return np.random.RandomState()
+    return np.random.RandomState(0)
 
 
 @pytest.fixture
@@ -99,12 +99,19 @@ def test_acquisition_optimization(gp, target_space):
         acq.suggest(gp=gp, target_space=target_space, n_random=0, n_smart=0)
 
 
-def test_acquisition_optimization_only_random(gp, target_space):
+def test_acquisition_optimization_only_random(gp, target_space, random_state):
     acq = MockAcquisition()
     target_space.register(params={"x": 2.5, "y": 0.5}, target=3.0)
-    res = acq.suggest(gp=gp, target_space=target_space, n_smart=0, n_random=10_000)
+    res = acq.suggest(gp=gp, target_space=target_space, n_smart=0, n_random=10_000, random_state=random_state)
     # very lenient comparison as we're just considering random samples
     assert np.array([3.0, 1.0]) == pytest.approx(res, abs=1e-1, rel=1e-1)
+
+    # make sure that the best random sample is in the seeds
+    acq_f = acq._get_acq(gp=gp, constraint=target_space.constraint)
+    x_min, _, x_seeds = acq._random_sample_minimize(
+        acq_f, target_space, random_state=random_state, n_random=10_000, n_x_seeds=3
+    )
+    assert x_min in x_seeds
 
 
 def test_acquisition_optimization_only_l_bfgs_b(gp, target_space):
