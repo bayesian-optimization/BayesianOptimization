@@ -1260,6 +1260,7 @@ class GPHedge(AcquisitionFunction):
             )
             raise TargetSpaceEmptyError(msg)
         self.i += 1
+        random_state = ensure_rng(random_state)
         if fit_gp:
             self._fit_gp(gp=gp, target_space=target_space)
 
