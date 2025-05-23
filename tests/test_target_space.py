@@ -99,8 +99,9 @@ def test_register():
 
 
 def test_register_with_constraint():
-    constraint = ConstraintModel(lambda x: x, -2, 2, transform=lambda x: x)
-    space = TargetSpace(target_func, PBOUNDS, constraint=constraint)
+    constraint = ConstraintModel(lambda x: x, -2, 2, transform=None)
+    space = TargetSpace(target_func, PBOUNDS)
+    space.set_constraint(constraint)
 
     assert len(space) == 0
     # registering with dict
@@ -195,7 +196,8 @@ def test_y_max():
 def test_y_max_with_constraint():
     PBOUNDS = {"p1": (0, 10), "p2": (1, 100)}
     constraint = ConstraintModel(lambda p1, p2: p1 - p2, -2, 2)
-    space = TargetSpace(target_func, PBOUNDS, constraint)
+    space = TargetSpace(target_func, PBOUNDS)
+    space.set_constraint(constraint)
     assert space._target_max() is None
     space.probe(params={"p1": 1, "p2": 2})  # Feasible
     space.probe(params={"p1": 5, "p2": 1})  # Unfeasible
@@ -229,7 +231,8 @@ def test_max():
 def test_max_with_constraint():
     PBOUNDS = {"p1": (0, 10), "p2": (1, 100)}
     constraint = ConstraintModel(lambda p1, p2: p1 - p2, -2, 2)
-    space = TargetSpace(target_func, PBOUNDS, constraint=constraint)
+    space = TargetSpace(target_func, PBOUNDS)
+    space.set_constraint(constraint)
 
     assert space.max() is None
     space.probe(params={"p1": 1, "p2": 2})  # Feasible
@@ -242,7 +245,8 @@ def test_max_with_constraint():
 def test_max_with_constraint_identical_target_value():
     PBOUNDS = {"p1": (0, 10), "p2": (1, 100)}
     constraint = ConstraintModel(lambda p1, p2: p1 - p2, -2, 2)
-    space = TargetSpace(target_func, PBOUNDS, constraint=constraint)
+    space = TargetSpace(target_func, PBOUNDS)
+    space.set_constraint(constraint)
 
     assert space.max() is None
     space.probe(params={"p1": 1, "p2": 2})  # Feasible
