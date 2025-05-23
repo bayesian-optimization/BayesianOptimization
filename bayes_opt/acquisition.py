@@ -992,11 +992,11 @@ class ConstantLiar(AcquisitionFunction):
         keys = target_space.keys
         pbounds = {key: bound for key, bound in zip(keys, target_space.bounds)}
         target_space_copy = TargetSpace(
-            None,
-            pbounds=pbounds,
-            constraint=target_space.constraint,
-            allow_duplicate_points=target_space._allow_duplicate_points,
+            None, pbounds=pbounds, allow_duplicate_points=target_space._allow_duplicate_points
         )
+        if target_space._constraint is not None:
+            target_space_copy.set_constraint(target_space.constraint)
+
         target_space_copy._params = deepcopy(target_space._params)
         target_space_copy._target = deepcopy(target_space._target)
 

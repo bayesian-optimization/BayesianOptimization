@@ -71,7 +71,6 @@ class TargetSpace:
         self,
         target_func: Callable[..., float] | None,
         pbounds: BoundsMapping,
-        constraint: ConstraintModel | None = None,
         random_state: int | RandomState | None = None,
         allow_duplicate_points: bool | None = False,
     ) -> None:
@@ -98,17 +97,24 @@ class TargetSpace:
         # keep track of unique points we have seen so far
         self._cache: dict[tuple[float, ...], float | tuple[float, float | NDArray[Float]]] = {}
 
-        self._constraint: ConstraintModel | None = constraint
+        self._constraint: ConstraintModel | None = None
 
-        if constraint is not None:
-            # preallocated memory for constraint fulfillment
-            self._constraint_values: NDArray[Float]
-            if constraint.lb.size == 1:
-                self._constraint_values = np.empty(shape=(0), dtype=float)
-            else:
-                self._constraint_values = np.empty(shape=(0, self._constraint.lb.size), dtype=float)
+    def set_constraint(self, constraint: ConstraintModel) -> None:
+        """Set the constraint model.
+
+        Parameters
+        ----------
+        constraint : ConstraintModel
+            The constraint model to be set.
+        """
+        self._constraint = constraint
+
+        # preallocated memory for constraint fulfillment
+        self._constraint_values: NDArray[Float]
+        if constraint.lb.size == 1:
+            self._constraint_values = np.empty(shape=(0), dtype=float)
         else:
-            self._constraint = None
+            self._constraint_values = np.empty(shape=(0, self._constraint.lb.size), dtype=float)
 
     def __contains__(self, x: NDArray[Float]) -> bool:
         """Check if this parameter has already been registered.
