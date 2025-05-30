@@ -95,35 +95,25 @@ class BayesianOptimization:
 
         if acquisition_function is None:
             if constraint is None:
-                self._acquisition_function = acquisition.UpperConfidenceBound(
-                    kappa=2.576, random_state=self._random_state
-                )
+                self._acquisition_function = acquisition.UpperConfidenceBound(kappa=2.576)
             else:
-                self._acquisition_function = acquisition.ExpectedImprovement(
-                    xi=0.01, random_state=self._random_state
-                )
+                self._acquisition_function = acquisition.ExpectedImprovement(xi=0.01)
         else:
             self._acquisition_function = acquisition_function
 
+        # Data structure containing the function to be optimized, the
+        # bounds of its domain, and a record of the evaluations we have
+        # done so far
+        self._space = TargetSpace(
+            f,
+            pbounds,
+            constraint=constraint,
+            random_state=random_state,
+            allow_duplicate_points=self._allow_duplicate_points,
+        )
         if constraint is None:
-            # Data structure containing the function to be optimized, the
-            # bounds of its domain, and a record of the evaluations we have
-            # done so far
-            self._space = TargetSpace(
-                f, pbounds, random_state=random_state, allow_duplicate_points=self._allow_duplicate_points
-            )
             self.is_constrained = False
         else:
-            constraint_ = ConstraintModel(
-                constraint.fun, constraint.lb, constraint.ub, random_state=random_state
-            )
-            self._space = TargetSpace(
-                f,
-                pbounds,
-                constraint=constraint_,
-                random_state=random_state,
-                allow_duplicate_points=self._allow_duplicate_points,
-            )
             self.is_constrained = True
 
         # Internal GP regressor
@@ -253,7 +243,9 @@ class BayesianOptimization:
             return self._space.array_to_params(self._space.random_sample(random_state=self._random_state))
 
         # Finding argmax of the acquisition function.
-        suggestion = self._acquisition_function.suggest(gp=self._gp, target_space=self._space, fit_gp=True)
+        suggestion = self._acquisition_function.suggest(
+            gp=self._gp, target_space=self._space, fit_gp=True, random_state=self._random_state
+        )
 
         return self._space.array_to_params(suggestion)
 

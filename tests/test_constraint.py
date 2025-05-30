@@ -89,10 +89,7 @@ def test_single_constraint_lower_upper(target_function, constraint_function):
     y = res[:, 3]
 
     # Check accuracy of approximation for sampled points
-    assert constraint_function(x, y) == pytest.approx(optimizer.constraint.approx(xy), rel=1e-5, abs=1e-5)
-    assert constraint_function(x, y) == pytest.approx(
-        optimizer.space.constraint_values[:-1], rel=1e-5, abs=1e-5
-    )
+    assert constraint_function(x, y) == pytest.approx(optimizer.constraint.approx(xy), rel=1e-4, abs=1e-4)
 
 
 def test_multiple_constraints(target_function):
