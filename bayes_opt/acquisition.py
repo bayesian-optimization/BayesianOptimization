@@ -995,7 +995,7 @@ class ConstantLiar(AcquisitionFunction):
             None, pbounds=pbounds, allow_duplicate_points=target_space._allow_duplicate_points
         )
         if target_space._constraint is not None:
-            target_space_copy.set_constraint(target_space.constraint)
+            target_space_copy.set_constraint(deepcopy(target_space.constraint))
 
         target_space_copy._params = deepcopy(target_space._params)
         target_space_copy._target = deepcopy(target_space._target)
