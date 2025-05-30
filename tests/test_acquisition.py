@@ -64,9 +64,9 @@ def constraint_func():
 @pytest.fixture
 def constrained_target_space(target_func):
     constraint_model = ConstraintModel(fun=lambda params: params["x"] + params["y"], lb=0.0, ub=1.0)
-    space = TargetSpace(target_func=target_func, pbounds={"x": (1, 4), "y": (0, 3)})
-    space.set_constraint(constraint_model)
-    return space
+    return TargetSpace(
+        target_func=target_func, pbounds={"x": (1, 4), "y": (0, 3)}, constraint=constraint_model
+    )
 
 
 class MockAcquisition(acquisition.AcquisitionFunction):

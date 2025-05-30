@@ -105,19 +105,15 @@ class BayesianOptimization:
         # bounds of its domain, and a record of the evaluations we have
         # done so far
         self._space = TargetSpace(
-            f, pbounds, random_state=random_state, allow_duplicate_points=self._allow_duplicate_points
+            f,
+            pbounds,
+            constraint=constraint,
+            random_state=random_state,
+            allow_duplicate_points=self._allow_duplicate_points,
         )
         if constraint is None:
             self.is_constrained = False
         else:
-            constraint_ = ConstraintModel(
-                constraint.fun,
-                constraint.lb,
-                constraint.ub,
-                transform=self._space.kernel_transform,
-                random_state=random_state,
-            )
-            self._space.set_constraint(constraint_)
             self.is_constrained = True
 
         # Internal GP regressor

@@ -9,6 +9,7 @@ from warnings import warn
 import numpy as np
 from colorama import Fore
 
+from bayes_opt.constraint import ConstraintModel
 from bayes_opt.exception import NotUniqueError
 from bayes_opt.parameter import BayesParameter, CategoricalParameter, FloatParameter, IntParameter, is_numeric
 from bayes_opt.util import ensure_rng
@@ -18,8 +19,8 @@ if TYPE_CHECKING:
 
     from numpy.random import RandomState
     from numpy.typing import NDArray
+    from scipy.optimize import NonlinearConstraint
 
-    from bayes_opt.constraint import ConstraintModel
     from bayes_opt.parameter import BoundsMapping, ParamsType
 
     Float = np.floating[Any]
@@ -71,6 +72,7 @@ class TargetSpace:
         self,
         target_func: Callable[..., float] | None,
         pbounds: BoundsMapping,
+        constraint: NonlinearConstraint | None = None,
         random_state: int | RandomState | None = None,
         allow_duplicate_points: bool | None = False,
     ) -> None:
@@ -98,23 +100,23 @@ class TargetSpace:
         self._cache: dict[tuple[float, ...], float | tuple[float, float | NDArray[Float]]] = {}
 
         self._constraint: ConstraintModel | None = None
-
-    def set_constraint(self, constraint: ConstraintModel) -> None:
-        """Set the constraint model.
-
-        Parameters
-        ----------
-        constraint : ConstraintModel
-            The constraint model to be set.
-        """
-        self._constraint = constraint
-
-        # preallocated memory for constraint fulfillment
-        self._constraint_values: NDArray[Float]
-        if constraint.lb.size == 1:
-            self._constraint_values = np.empty(shape=(0), dtype=float)
+        if constraint is None:
+            self._constraint = None
         else:
-            self._constraint_values = np.empty(shape=(0, self._constraint.lb.size), dtype=float)
+            self._constraint = ConstraintModel(
+                constraint.fun,
+                constraint.lb,
+                constraint.ub,
+                transform=self.kernel_transform,
+                random_state=random_state,
+            )
+
+            # preallocated memory for constraint fulfillment
+            self._constraint_values: NDArray[Float]
+            if self._constraint.lb.size == 1:
+                self._constraint_values = np.empty(shape=(0), dtype=float)
+            else:
+                self._constraint_values = np.empty(shape=(0, self._constraint.lb.size), dtype=float)
 
     def __contains__(self, x: NDArray[Float]) -> bool:
         """Check if this parameter has already been registered.
