@@ -66,7 +66,8 @@ class AcquisitionFunction(abc.ABC):
         if random_state is not None:
             msg = (
                 "Providing a random_state to an acquisition function during initialization is deprecated "
-                "and will be ignored. The random_state should be provided during the suggest() call."
+                "and will be ignored. The random_state is instead provided automatically during the "
+                "suggest() call."
             )
             warnings.warn(msg, DeprecationWarning, stacklevel=2)
         self.i = 0
