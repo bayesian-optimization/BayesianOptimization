@@ -71,10 +71,20 @@ class TargetSpace:
         self,
         target_func: Callable[..., float] | None,
         pbounds: BoundsMapping,
-        constraint: ConstraintModel | None = None,
         random_state: int | RandomState | None = None,
         allow_duplicate_points: bool | None = False,
     ) -> None:
+        """
+        Initializes a TargetSpace for managing parameter points and target values.
+        
+        Configures the optimization domain with parameter bounds, types, and random state. Prepares internal storage for registered parameter points, target values, and uniqueness checks. Constraints are not set at initialization and must be configured separately if needed.
+        
+        Args:
+            target_func: The function to be optimized, or None if not provided.
+            pbounds: Mapping of parameter names to their bounds and types.
+            random_state: Seed or random state for reproducible sampling (optional).
+            allow_duplicate_points: If True, allows duplicate parameter points to be registered.
+        """
         self.random_state = ensure_rng(random_state)
         self._allow_duplicate_points = allow_duplicate_points or False
         self.n_duplicate_points = 0
@@ -98,24 +108,32 @@ class TargetSpace:
         # keep track of unique points we have seen so far
         self._cache: dict[tuple[float, ...], float | tuple[float, float | NDArray[Float]]] = {}
 
-        self._constraint: ConstraintModel | None = constraint
+        self._constraint: ConstraintModel | None = None
 
-        if constraint is not None:
-            # preallocated memory for constraint fulfillment
-            self._constraint_values: NDArray[Float]
-            if constraint.lb.size == 1:
-                self._constraint_values = np.empty(shape=(0), dtype=float)
-            else:
-                self._constraint_values = np.empty(shape=(0, self._constraint.lb.size), dtype=float)
+    def set_constraint(self, constraint: ConstraintModel) -> None:
+        """
+        Sets the constraint model for the parameter space.
+        
+        Initializes internal storage for constraint values based on the dimensionality of the constraint model.
+        """
+        self._constraint = constraint
+
+        # preallocated memory for constraint fulfillment
+        self._constraint_values: NDArray[Float]
+        if constraint.lb.size == 1:
+            self._constraint_values = np.empty(shape=(0), dtype=float)
         else:
-            self._constraint = None
+            self._constraint_values = np.empty(shape=(0, self._constraint.lb.size), dtype=float)
 
     def __contains__(self, x: NDArray[Float]) -> bool:
-        """Check if this parameter has already been registered.
-
-        Returns
-        -------
-        bool
+        """
+        Checks whether a parameter point has already been registered.
+        
+        Args:
+            x: A flattened numpy array representing a parameter point.
+        
+        Returns:
+            True if the parameter point is present in the internal cache, False otherwise.
         """
         return _hashable(x) in self._cache
 

@@ -99,8 +99,13 @@ def test_register():
 
 
 def test_register_with_constraint():
-    constraint = ConstraintModel(lambda x: x, -2, 2, transform=lambda x: x)
-    space = TargetSpace(target_func, PBOUNDS, constraint=constraint)
+    """
+    Tests that registering points with a constraint in TargetSpace requires a constraint value,
+    correctly stores constraint values, and raises a ValueError if the constraint value is missing.
+    """
+    constraint = ConstraintModel(lambda x: x, -2, 2, transform=None)
+    space = TargetSpace(target_func, PBOUNDS)
+    space.set_constraint(constraint)
 
     assert len(space) == 0
     # registering with dict
@@ -193,9 +198,15 @@ def test_y_max():
 
 
 def test_y_max_with_constraint():
+    """
+    Tests that `_target_max` returns the maximum target value among feasible points when a constraint is set.
+    
+    Verifies that only points satisfying the constraint are considered, and that the method returns `None` if no feasible points exist.
+    """
     PBOUNDS = {"p1": (0, 10), "p2": (1, 100)}
     constraint = ConstraintModel(lambda p1, p2: p1 - p2, -2, 2)
-    space = TargetSpace(target_func, PBOUNDS, constraint)
+    space = TargetSpace(target_func, PBOUNDS)
+    space.set_constraint(constraint)
     assert space._target_max() is None
     space.probe(params={"p1": 1, "p2": 2})  # Feasible
     space.probe(params={"p1": 5, "p2": 1})  # Unfeasible
@@ -227,9 +238,15 @@ def test_max():
 
 
 def test_max_with_constraint():
+    """
+    Tests that the `max` method of `TargetSpace` returns the best feasible point when a constraint is set.
+    
+    Verifies that only points satisfying the constraint are considered, and the returned result includes the parameters, target value, and constraint value.
+    """
     PBOUNDS = {"p1": (0, 10), "p2": (1, 100)}
     constraint = ConstraintModel(lambda p1, p2: p1 - p2, -2, 2)
-    space = TargetSpace(target_func, PBOUNDS, constraint=constraint)
+    space = TargetSpace(target_func, PBOUNDS)
+    space.set_constraint(constraint)
 
     assert space.max() is None
     space.probe(params={"p1": 1, "p2": 2})  # Feasible
@@ -240,9 +257,15 @@ def test_max_with_constraint():
 
 
 def test_max_with_constraint_identical_target_value():
+    """
+    Tests that `TargetSpace.max()` returns the best feasible point when multiple points have identical target values but different constraint satisfaction.
+    
+    Ensures that only points satisfying the constraint are considered, and among feasible points with the same target value, the correct one is selected.
+    """
     PBOUNDS = {"p1": (0, 10), "p2": (1, 100)}
     constraint = ConstraintModel(lambda p1, p2: p1 - p2, -2, 2)
-    space = TargetSpace(target_func, PBOUNDS, constraint=constraint)
+    space = TargetSpace(target_func, PBOUNDS)
+    space.set_constraint(constraint)
 
     assert space.max() is None
     space.probe(params={"p1": 1, "p2": 2})  # Feasible

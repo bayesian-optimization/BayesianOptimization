@@ -89,41 +89,40 @@ class BayesianOptimization:
         bounds_transformer: DomainTransformer | None = None,
         allow_duplicate_points: bool = False,
     ):
+        """
+        Initializes a BayesianOptimization instance for maximizing a target function over a parameter space.
+        
+        Configures the optimizer with the target function, parameter bounds, optional acquisition function, optional nonlinear constraint, random state, verbosity, optional domain bounds transformer, and duplicate point handling. Sets up the internal Gaussian Process regressor, parameter space management, constraint modeling, and logging. If no acquisition function is provided, selects an appropriate default based on the presence of constraints.
+        """
         self._random_state = ensure_rng(random_state)
         self._allow_duplicate_points = allow_duplicate_points
         self._queue: deque[ParamsType] = deque()
 
         if acquisition_function is None:
             if constraint is None:
-                self._acquisition_function = acquisition.UpperConfidenceBound(
-                    kappa=2.576, random_state=self._random_state
-                )
+                self._acquisition_function = acquisition.UpperConfidenceBound(kappa=2.576)
             else:
-                self._acquisition_function = acquisition.ExpectedImprovement(
-                    xi=0.01, random_state=self._random_state
-                )
+                self._acquisition_function = acquisition.ExpectedImprovement(xi=0.01)
         else:
             self._acquisition_function = acquisition_function
 
+        # Data structure containing the function to be optimized, the
+        # bounds of its domain, and a record of the evaluations we have
+        # done so far
+        self._space = TargetSpace(
+            f, pbounds, random_state=random_state, allow_duplicate_points=self._allow_duplicate_points
+        )
         if constraint is None:
-            # Data structure containing the function to be optimized, the
-            # bounds of its domain, and a record of the evaluations we have
-            # done so far
-            self._space = TargetSpace(
-                f, pbounds, random_state=random_state, allow_duplicate_points=self._allow_duplicate_points
-            )
             self.is_constrained = False
         else:
             constraint_ = ConstraintModel(
-                constraint.fun, constraint.lb, constraint.ub, random_state=random_state
-            )
-            self._space = TargetSpace(
-                f,
-                pbounds,
-                constraint=constraint_,
+                constraint.fun,
+                constraint.lb,
+                constraint.ub,
+                transform=self._space.kernel_transform,
                 random_state=random_state,
-                allow_duplicate_points=self._allow_duplicate_points,
             )
+            self._space.set_constraint(constraint_)
             self.is_constrained = True
 
         # Internal GP regressor
@@ -248,12 +247,22 @@ class BayesianOptimization:
             )
 
     def suggest(self) -> dict[str, float | NDArray[Float]]:
-        """Suggest a promising point to probe next."""
+        """
+        Suggests the next set of parameters to evaluate by maximizing the acquisition function.
+        
+        If no points have been evaluated yet, returns a random sample from the parameter space.
+        Otherwise, uses the acquisition function to propose the next promising point based on the current Gaussian Process model.
+        
+        Returns:
+            A dictionary mapping parameter names to their suggested values.
+        """
         if len(self._space) == 0:
             return self._space.array_to_params(self._space.random_sample(random_state=self._random_state))
 
         # Finding argmax of the acquisition function.
-        suggestion = self._acquisition_function.suggest(gp=self._gp, target_space=self._space, fit_gp=True)
+        suggestion = self._acquisition_function.suggest(
+            gp=self._gp, target_space=self._space, fit_gp=True, random_state=self._random_state
+        )
 
         return self._space.array_to_params(suggestion)
 
