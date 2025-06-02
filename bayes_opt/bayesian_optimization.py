@@ -236,10 +236,28 @@ class BayesianOptimization:
                 self._space.keys, self._space.res()[-1], self._space.params_config, self.max
             )
 
+    def random_sample(self, n: int = 1) -> dict[str, float | NDArray[Float]]:
+        """Generate a random sample of parameters from the target space.
+
+        Parameters
+        ----------
+        n: int, optional(default=1)
+            Number of random samples to generate.
+
+        Returns
+        -------
+        list of dict
+            List of randomly sampled parameters.
+        """
+        return [
+            self._space.array_to_params(self._space.random_sample(random_state=self._random_state))
+            for _ in range(n)
+        ]
+
     def suggest(self) -> dict[str, float | NDArray[Float]]:
         """Suggest a promising point to probe next."""
         if len(self._space) == 0:
-            return self._space.array_to_params(self._space.random_sample(random_state=self._random_state))
+            return self.random_sample(1)[0]
 
         # Finding argmax of the acquisition function.
         suggestion = self._acquisition_function.suggest(
@@ -259,9 +277,7 @@ class BayesianOptimization:
         if not self._queue and self._space.empty:
             init_points = max(init_points, 1)
 
-        for _ in range(init_points):
-            sample = self._space.random_sample(random_state=self._random_state)
-            self._queue.append(self._space.array_to_params(sample))
+        self._queue.extend(self.random_sample(init_points))
 
     def maximize(self, init_points: int = 5, n_iter: int = 25) -> None:
         r"""
