@@ -19,7 +19,6 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
 
 from bayes_opt import acquisition
-from bayes_opt.constraint import ConstraintModel
 from bayes_opt.domain_reduction import DomainTransformer
 from bayes_opt.logger import ScreenLogger
 from bayes_opt.parameter import wrap_kernel
