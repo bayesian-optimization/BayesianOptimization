@@ -76,7 +76,6 @@ class TargetSpace:
         random_state: int | RandomState | None = None,
         allow_duplicate_points: bool | None = False,
     ) -> None:
-        self.random_state = ensure_rng(random_state)
         self._allow_duplicate_points = allow_duplicate_points or False
         self.n_duplicate_points = 0
 
