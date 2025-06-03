@@ -19,7 +19,6 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
 
 from bayes_opt import acquisition
-from bayes_opt.constraint import ConstraintModel
 from bayes_opt.domain_reduction import DomainTransformer
 from bayes_opt.logger import ScreenLogger
 from bayes_opt.parameter import wrap_kernel
@@ -95,35 +94,25 @@ class BayesianOptimization:
 
         if acquisition_function is None:
             if constraint is None:
-                self._acquisition_function = acquisition.UpperConfidenceBound(
-                    kappa=2.576, random_state=self._random_state
-                )
+                self._acquisition_function = acquisition.UpperConfidenceBound(kappa=2.576)
             else:
-                self._acquisition_function = acquisition.ExpectedImprovement(
-                    xi=0.01, random_state=self._random_state
-                )
+                self._acquisition_function = acquisition.ExpectedImprovement(xi=0.01)
         else:
             self._acquisition_function = acquisition_function
 
+        # Data structure containing the function to be optimized, the
+        # bounds of its domain, and a record of the evaluations we have
+        # done so far
+        self._space = TargetSpace(
+            f,
+            pbounds,
+            constraint=constraint,
+            random_state=random_state,
+            allow_duplicate_points=self._allow_duplicate_points,
+        )
         if constraint is None:
-            # Data structure containing the function to be optimized, the
-            # bounds of its domain, and a record of the evaluations we have
-            # done so far
-            self._space = TargetSpace(
-                f, pbounds, random_state=random_state, allow_duplicate_points=self._allow_duplicate_points
-            )
             self.is_constrained = False
         else:
-            constraint_ = ConstraintModel(
-                constraint.fun, constraint.lb, constraint.ub, random_state=random_state
-            )
-            self._space = TargetSpace(
-                f,
-                pbounds,
-                constraint=constraint_,
-                random_state=random_state,
-                allow_duplicate_points=self._allow_duplicate_points,
-            )
             self.is_constrained = True
 
         # Internal GP regressor
@@ -247,13 +236,33 @@ class BayesianOptimization:
                 self._space.keys, self._space.res()[-1], self._space.params_config, self.max
             )
 
+    def random_sample(self, n: int = 1) -> dict[str, float | NDArray[Float]]:
+        """Generate a random sample of parameters from the target space.
+
+        Parameters
+        ----------
+        n: int, optional(default=1)
+            Number of random samples to generate.
+
+        Returns
+        -------
+        list of dict
+            List of randomly sampled parameters.
+        """
+        return [
+            self._space.array_to_params(self._space.random_sample(random_state=self._random_state))
+            for _ in range(n)
+        ]
+
     def suggest(self) -> dict[str, float | NDArray[Float]]:
         """Suggest a promising point to probe next."""
         if len(self._space) == 0:
-            return self._space.array_to_params(self._space.random_sample(random_state=self._random_state))
+            return self.random_sample(1)[0]
 
         # Finding argmax of the acquisition function.
-        suggestion = self._acquisition_function.suggest(gp=self._gp, target_space=self._space, fit_gp=True)
+        suggestion = self._acquisition_function.suggest(
+            gp=self._gp, target_space=self._space, fit_gp=True, random_state=self._random_state
+        )
 
         return self._space.array_to_params(suggestion)
 
@@ -268,9 +277,7 @@ class BayesianOptimization:
         if not self._queue and self._space.empty:
             init_points = max(init_points, 1)
 
-        for _ in range(init_points):
-            sample = self._space.random_sample(random_state=self._random_state)
-            self._queue.append(self._space.array_to_params(sample))
+        self._queue.extend(self.random_sample(init_points))
 
     def maximize(self, init_points: int = 5, n_iter: int = 25) -> None:
         r"""
