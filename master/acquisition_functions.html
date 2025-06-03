@@ -32,7 +32,7 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
-        <link rel="stylesheet" type="text/css" href="_static/sphinx_immaterial_theme.02cb18745d09eea51.min.css?v=ff456132" />
+        <link rel="stylesheet" type="text/css" href="_static/sphinx_immaterial_theme.c5589c0bd87d933a4.min.css?v=eeeb54bc" />
         <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=2aa19091" />
     <script>__md_scope=new URL("/",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -653,7 +653,7 @@
 <p>An acquisition function dictates the exploration policy of the optimizer. In practice, there are many different acquisition policies and which one is the best might depend on your situation. This package comes with several acquisition functions out-of-the-box, but it is also very easy to write your acquisition function. This notebook showcases how to do that using various examples.</p>
 <p>Let’s begin with a few import statements and some function definitions we will use later.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[1]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[ ]:
 </code></pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">bayes_opt</span><span class="w"> </span><span class="kn">import</span> <span class="n">BayesianOptimization</span>
@@ -662,6 +662,8 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">gridspec</span>
+
+<span class="n">SEED</span> <span class="o">=</span> <span class="mi">42</span>
 </code></pre></div>
 </div>
 </div>
@@ -734,8 +736,8 @@
 </code></pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">GreedyAcquisition</span><span class="p">(</span><span class="n">acquisition</span><span class="o">.</span><span class="n">AcquisitionFunction</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">base_acq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">mean</span> <span class="c1"># disregard std</span>
@@ -746,8 +748,8 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[4]:
 </code></pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">acquisition_function</span> <span class="o">=</span> <span class="n">GreedyAcquisition</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-<span class="n">optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">)},</span> <span class="n">acquisition_function</span><span class="o">=</span><span class="n">acquisition_function</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">173</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">acquisition_function</span> <span class="o">=</span> <span class="n">GreedyAcquisition</span><span class="p">()</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">)},</span> <span class="n">acquisition_function</span><span class="o">=</span><span class="n">acquisition_function</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">SEED</span><span class="p">)</span>
 <span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
 
 <span class="n">plot_gp</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">);</span>
@@ -761,16 +763,16 @@
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |
 -------------------------------------
-| 2         | 0.5721    | -0.880910 |
-| <span class="ansi-magenta-fg">3        </span> | <span class="ansi-magenta-fg">0.9973   </span> | <span class="ansi-magenta-fg">6.5105804</span> |
-| 4         | 0.7985    | 4.2669809 |
-| 5         | 0.9958    | 6.5250617 |
-| <span class="ansi-magenta-fg">6        </span> | <span class="ansi-magenta-fg">1.024    </span> | <span class="ansi-magenta-fg">6.1320853</span> |
-| <span class="ansi-magenta-fg">7        </span> | <span class="ansi-magenta-fg">1.027    </span> | <span class="ansi-magenta-fg">6.0239570</span> |
-| <span class="ansi-magenta-fg">8        </span> | <span class="ansi-magenta-fg">1.027    </span> | <span class="ansi-magenta-fg">5.9746439</span> |
-| <span class="ansi-magenta-fg">9        </span> | <span class="ansi-magenta-fg">1.027    </span> | <span class="ansi-magenta-fg">5.9643638</span> |
-| <span class="ansi-magenta-fg">10       </span> | <span class="ansi-magenta-fg">1.027    </span> | <span class="ansi-magenta-fg">5.9624613</span> |
-| <span class="ansi-magenta-fg">11       </span> | <span class="ansi-magenta-fg">1.027    </span> | <span class="ansi-magenta-fg">5.9607444</span> |
+| 2         | 1.2141683 | 2.4944814 |
+| 3         | 0.3240816 | 9.4085716 |
+| 4         | 0.9616628 | 6.7839273 |
+| 5         | 1.2141034 | 2.4945789 |
+| <span class="ansi-magenta-fg">6        </span> | <span class="ansi-magenta-fg">1.2213319</span> | <span class="ansi-magenta-fg">2.4836518</span> |
+| <span class="ansi-magenta-fg">7        </span> | <span class="ansi-magenta-fg">1.3813341</span> | <span class="ansi-magenta-fg">2.1554080</span> |
+| <span class="ansi-magenta-fg">8        </span> | <span class="ansi-magenta-fg">1.3904451</span> | <span class="ansi-magenta-fg">1.8852599</span> |
+| <span class="ansi-magenta-fg">9        </span> | <span class="ansi-magenta-fg">1.4018873</span> | <span class="ansi-magenta-fg">2.0042389</span> |
+| 10        | 1.4018854 | 2.0045581 |
+| 11        | 1.4018853 | 2.0045688 |
 =====================================
 </pre></div></div>
 </div>
@@ -797,8 +799,8 @@
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
 <span class="k">class</span><span class="w"> </span><span class="nc">ThompsonSampling</span><span class="p">(</span><span class="n">acquisition</span><span class="o">.</span><span class="n">AcquisitionFunction</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">base_acq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_mean</span><span class="p">,</span> <span class="n">y_cov</span><span class="p">):</span>
         <span class="k">assert</span> <span class="n">y_cov</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">y_cov</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;y_cov must be a square matrix.&quot;</span>
@@ -822,9 +824,10 @@
             <span class="k">return</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_acq</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">cov</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">acq</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">suggest</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">target_space</span><span class="p">,</span> <span class="n">n_random</span><span class="o">=</span><span class="mi">1_000</span><span class="p">,</span> <span class="n">n_l_bfgs_b</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">fit_gp</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">suggest</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">target_space</span><span class="p">,</span> <span class="n">n_random</span><span class="o">=</span><span class="mi">1_000</span><span class="p">,</span> <span class="n">n_l_bfgs_b</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">fit_gp</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="c1"># reduce n_random and n_l_bfgs_b to reduce the computational load</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">suggest</span><span class="p">(</span><span class="n">gp</span><span class="p">,</span> <span class="n">target_space</span><span class="p">,</span> <span class="n">n_random</span><span class="p">,</span> <span class="n">n_l_bfgs_b</span><span class="p">,</span> <span class="n">fit_gp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">suggest</span><span class="p">(</span><span class="n">gp</span><span class="p">,</span> <span class="n">target_space</span><span class="p">,</span> <span class="n">n_random</span><span class="p">,</span> <span class="n">n_l_bfgs_b</span><span class="p">,</span> <span class="n">fit_gp</span><span class="p">,</span> <span class="n">random_state</span><span class="p">)</span>
 </code><br/></pre></div>
 </div>
 </div>
@@ -832,8 +835,8 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[6]:
 </code></pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">acquisition_function</span> <span class="o">=</span> <span class="n">ThompsonSampling</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
-<span class="n">optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">)},</span> <span class="n">acquisition_function</span><span class="o">=</span><span class="n">acquisition_function</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">173</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">acquisition_function</span> <span class="o">=</span> <span class="n">ThompsonSampling</span><span class="p">()</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">)},</span> <span class="n">acquisition_function</span><span class="o">=</span><span class="n">acquisition_function</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">SEED</span><span class="p">)</span>
 <span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
 
 <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plot_gp</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">);</span>
@@ -858,16 +861,16 @@
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |
 -------------------------------------
-| 2         | 0.5721    | -0.880910 |
-| <span class="ansi-magenta-fg">3        </span> | <span class="ansi-magenta-fg">0.9973   </span> | <span class="ansi-magenta-fg">6.5105804</span> |
-| 4         | 0.7985    | 4.2669809 |
-| 5         | 0.7342    | 7.8195418 |
-| 6         | 0.263     | 9.7099044 |
-| 7         | 0.9564    | 1.0196176 |
-| <span class="ansi-magenta-fg">8        </span> | <span class="ansi-magenta-fg">1.033    </span> | <span class="ansi-magenta-fg">-0.076247</span> |
-| 9         | 1.023     | -0.111249 |
-| 10        | 1.002     | 0.3334067 |
-| <span class="ansi-magenta-fg">11       </span> | <span class="ansi-magenta-fg">1.23     </span> | <span class="ansi-magenta-fg">1.5189573</span> |
+| 2         | 1.2141683 | 2.4944814 |
+| 3         | 0.3240816 | 9.4085716 |
+| 4         | 0.9616628 | 6.7839273 |
+| 5         | 1.0070261 | -0.159783 |
+| 6         | 1.0327122 | -0.075615 |
+| <span class="ansi-magenta-fg">7        </span> | <span class="ansi-magenta-fg">1.3085636</span> | <span class="ansi-magenta-fg">1.6588374</span> |
+| 8         | 0.9518282 | 1.0057953 |
+| 9         | 1.0260256 | 5.8443843 |
+| 10        | 0.8310726 | 3.0843178 |
+| <span class="ansi-magenta-fg">11       </span> | <span class="ansi-magenta-fg">1.3409715</span> | <span class="ansi-magenta-fg">1.7284422</span> |
 =====================================
 Adding GP samples to the plot... this can take up to several minutes.
 </pre></div></div>
@@ -887,8 +890,8 @@ unit cost). Here we divide the EI by a specific cost function.</p>
 </code></pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ExpectedImprovementPerUnitCost</span><span class="p">(</span><span class="n">acquisition</span><span class="o">.</span><span class="n">ExpectedImprovement</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">exploration_decay</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exploration_decay_delay</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">exploration_decay</span><span class="p">,</span> <span class="n">exploration_decay_delay</span><span class="p">,</span> <span class="n">random_state</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">exploration_decay</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exploration_decay_delay</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">exploration_decay</span><span class="p">,</span> <span class="n">exploration_decay_delay</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">last_x</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">cost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
@@ -901,13 +904,13 @@ unit cost). Here we divide the EI by a specific cost function.</p>
         <span class="n">acq</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">super_acq</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">cost</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">acq</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">suggest</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">target_space</span><span class="p">,</span> <span class="n">n_random</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">n_l_bfgs_b</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">fit_gp</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">suggest</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">target_space</span><span class="p">,</span> <span class="n">n_random</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">n_l_bfgs_b</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">fit_gp</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="c1"># let&#39;s get the most recently evaluated point from the target_space</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">last_x</span> <span class="o">=</span> <span class="n">target_space</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">suggest</span><span class="p">(</span><span class="n">gp</span><span class="p">,</span> <span class="n">target_space</span><span class="p">,</span> <span class="n">n_random</span><span class="p">,</span> <span class="n">n_l_bfgs_b</span><span class="p">,</span> <span class="n">fit_gp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">suggest</span><span class="p">(</span><span class="n">gp</span><span class="p">,</span> <span class="n">target_space</span><span class="p">,</span> <span class="n">n_random</span><span class="p">,</span> <span class="n">n_l_bfgs_b</span><span class="p">,</span> <span class="n">fit_gp</span><span class="p">,</span> <span class="n">random_state</span><span class="p">)</span>
 
-<span class="n">acquisition_function</span> <span class="o">=</span> <span class="n">ExpectedImprovementPerUnitCost</span><span class="p">(</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-<span class="n">optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">)},</span> <span class="n">acquisition_function</span><span class="o">=</span><span class="n">acquisition_function</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">173</span><span class="p">)</span>
+<span class="n">acquisition_function</span> <span class="o">=</span> <span class="n">ExpectedImprovementPerUnitCost</span><span class="p">(</span><span class="mf">1e-4</span><span class="p">)</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">)},</span> <span class="n">acquisition_function</span><span class="o">=</span><span class="n">acquisition_function</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">SEED</span><span class="p">)</span>
 <span class="n">optimizer</span><span class="o">.</span><span class="n">maximize</span><span class="p">(</span><span class="n">init_points</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
 
 <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plot_gp</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
@@ -932,16 +935,16 @@ unit cost). Here we divide the EI by a specific cost function.</p>
 <div class="highlight"><pre>
 |   iter    |  target   |     x     |
 -------------------------------------
-| 2         | 0.5721    | -0.880910 |
-| <span class="ansi-magenta-fg">3        </span> | <span class="ansi-magenta-fg">0.9973   </span> | <span class="ansi-magenta-fg">6.5105804</span> |
-| 4         | 0.7985    | 4.2669809 |
-| <span class="ansi-magenta-fg">5        </span> | <span class="ansi-magenta-fg">1.016    </span> | <span class="ansi-magenta-fg">5.6169296</span> |
-| <span class="ansi-magenta-fg">6        </span> | <span class="ansi-magenta-fg">1.027    </span> | <span class="ansi-magenta-fg">5.9323247</span> |
-| 7         | 0.45      | 8.8753028 |
-| 8         | 1.026     | 6.07601   |
-| <span class="ansi-magenta-fg">9        </span> | <span class="ansi-magenta-fg">1.027    </span> | <span class="ansi-magenta-fg">5.9537344</span> |
-| <span class="ansi-magenta-fg">10       </span> | <span class="ansi-magenta-fg">1.027    </span> | <span class="ansi-magenta-fg">5.9548632</span> |
-| 11        | 1.027     | 5.9534215 |
+| 2         | 1.2141683 | 2.4944814 |
+| 3         | 0.3240816 | 9.4085716 |
+| 4         | 0.9616628 | 6.7839273 |
+| 5         | 0.9616602 | 6.7839440 |
+| 6         | 1.0206476 | 6.2145331 |
+| 7         | 0.8163580 | 4.3523918 |
+| <span class="ansi-magenta-fg">8        </span> | <span class="ansi-magenta-fg">1.4016703</span> | <span class="ansi-magenta-fg">1.9846975</span> |
+| 9         | 1.2147169 | 1.4938665 |
+| 10        | 1.0164502 | 0.2826411 |
+| 11        | 0.6099231 | -0.816548 |
 =====================================
 </pre></div></div>
 </div>
