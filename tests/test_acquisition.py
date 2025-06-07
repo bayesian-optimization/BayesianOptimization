@@ -406,40 +406,30 @@ def verify_optimizers_match(optimizer1, optimizer2):
     assert suggestion1 == suggestion2, f"\nSuggestion 1: {suggestion1}\nSuggestion 2: {suggestion2}"
 
 
-def test_integration_upper_confidence_bound(target_func_x_and_y, pbounds, tmp_path):
-    """Test save/load integration with UpperConfidenceBound acquisition."""
-    acquisition_function = UpperConfidenceBound(kappa=2.576)
-
-    # Create and run first optimizer
-    optimizer = BayesianOptimization(
-        f=target_func_x_and_y,
-        pbounds=pbounds,
-        acquisition_function=acquisition_function,
-        random_state=1,
-        verbose=0,
-    )
-    optimizer.maximize(init_points=2, n_iter=3)
-
-    # Save state
-    state_path = tmp_path / "ucb_state.json"
-    optimizer.save_state(state_path)
-
-    # Create new optimizer and load state
-    new_optimizer = BayesianOptimization(
-        f=target_func_x_and_y,
-        pbounds=pbounds,
-        acquisition_function=UpperConfidenceBound(kappa=2.576),
-        random_state=1,
-        verbose=0,
-    )
-    new_optimizer.load_state(state_path)
-
-    verify_optimizers_match(optimizer, new_optimizer)
-
-
-def test_integration_probability_improvement(target_func_x_and_y, pbounds, tmp_path):
-    """Test save/load integration with ProbabilityOfImprovement acquisition."""
-    acquisition_function = ProbabilityOfImprovement(xi=0.01)
+@pytest.mark.parametrize(
+    ("acquisition_fn_factory", "state_filename"),
+    [
+        (lambda: UpperConfidenceBound(kappa=2.576), "ucb_state.json"),
+        (lambda: ProbabilityOfImprovement(xi=0.01), "pi_state.json"),
+        (lambda: ExpectedImprovement(xi=0.01), "ei_state.json"),
+        (lambda: ConstantLiar(base_acquisition=UpperConfidenceBound(kappa=2.576)), "cl_state.json"),
+        (
+            lambda: GPHedge(
+                base_acquisitions=[
+                    UpperConfidenceBound(kappa=2.576),
+                    ProbabilityOfImprovement(xi=0.01),
+                    ExpectedImprovement(xi=0.01),
+                ]
+            ),
+            "gphedge_state.json",
+        ),
+    ],
+)
+def test_integration_acquisition_functions(
+    acquisition_fn_factory, state_filename, target_func_x_and_y, pbounds, tmp_path
+):
+    """Parametrized integration test for acquisition functions."""
+    acquisition_function = acquisition_fn_factory()
 
     optimizer = BayesianOptimization(
         f=target_func_x_and_y,
@@ -450,108 +440,13 @@ def test_integration_probability_improvement(target_func_x_and_y, pbounds, tmp_p
     )
     optimizer.maximize(init_points=2, n_iter=3)
 
-    state_path = tmp_path / "pi_state.json"
+    state_path = tmp_path / state_filename
     optimizer.save_state(state_path)
 
     new_optimizer = BayesianOptimization(
         f=target_func_x_and_y,
         pbounds=pbounds,
-        acquisition_function=ProbabilityOfImprovement(xi=0.01),
-        random_state=1,
-        verbose=0,
-    )
-    new_optimizer.load_state(state_path)
-
-    verify_optimizers_match(optimizer, new_optimizer)
-
-
-def test_integration_expected_improvement(target_func_x_and_y, pbounds, tmp_path):
-    """Test save/load integration with ExpectedImprovement acquisition."""
-    acquisition_function = ExpectedImprovement(xi=0.01)
-
-    optimizer = BayesianOptimization(
-        f=target_func_x_and_y,
-        pbounds=pbounds,
-        acquisition_function=acquisition_function,
-        random_state=1,
-        verbose=0,
-    )
-    optimizer.maximize(init_points=2, n_iter=3)
-
-    state_path = tmp_path / "ei_state.json"
-    optimizer.save_state(state_path)
-
-    new_optimizer = BayesianOptimization(
-        f=target_func_x_and_y,
-        pbounds=pbounds,
-        acquisition_function=ExpectedImprovement(xi=0.01),
-        random_state=1,
-        verbose=0,
-    )
-    new_optimizer.load_state(state_path)
-
-    verify_optimizers_match(optimizer, new_optimizer)
-
-
-def test_integration_constant_liar(target_func_x_and_y, pbounds, tmp_path):
-    """Test save/load integration with ConstantLiar acquisition."""
-    base_acq = UpperConfidenceBound(kappa=2.576)
-    acquisition_function = ConstantLiar(base_acquisition=base_acq)
-
-    optimizer = BayesianOptimization(
-        f=target_func_x_and_y,
-        pbounds=pbounds,
-        acquisition_function=acquisition_function,
-        random_state=1,
-        verbose=0,
-    )
-    optimizer.maximize(init_points=2, n_iter=3)
-
-    state_path = tmp_path / "cl_state.json"
-    optimizer.save_state(state_path)
-
-    new_optimizer = BayesianOptimization(
-        f=target_func_x_and_y,
-        pbounds=pbounds,
-        acquisition_function=ConstantLiar(base_acquisition=UpperConfidenceBound(kappa=2.576)),
-        random_state=1,
-        verbose=0,
-    )
-    new_optimizer.load_state(state_path)
-
-    verify_optimizers_match(optimizer, new_optimizer)
-
-
-def test_integration_gp_hedge(target_func_x_and_y, pbounds, tmp_path):
-    """Test save/load integration with GPHedge acquisition."""
-    base_acquisitions = [
-        UpperConfidenceBound(kappa=2.576),
-        ProbabilityOfImprovement(xi=0.01),
-        ExpectedImprovement(xi=0.01),
-    ]
-    acquisition_function = GPHedge(base_acquisitions=base_acquisitions)
-
-    optimizer = BayesianOptimization(
-        f=target_func_x_and_y,
-        pbounds=pbounds,
-        acquisition_function=acquisition_function,
-        random_state=1,
-        verbose=0,
-    )
-    optimizer.maximize(init_points=2, n_iter=3)
-
-    state_path = tmp_path / "gphedge_state.json"
-    optimizer.save_state(state_path)
-
-    new_base_acquisitions = [
-        UpperConfidenceBound(kappa=2.576),
-        ProbabilityOfImprovement(xi=0.01),
-        ExpectedImprovement(xi=0.01),
-    ]
-    new_optimizer = BayesianOptimization(
-        f=target_func_x_and_y,
-        pbounds=pbounds,
-        acquisition_function=GPHedge(base_acquisitions=new_base_acquisitions),
+        acquisition_function=acquisition_fn_factory(),
         random_state=1,
         verbose=0,
     )

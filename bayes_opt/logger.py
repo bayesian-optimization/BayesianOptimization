@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any
 from colorama import Fore, just_fix_windows_console
 
 if TYPE_CHECKING:
-    from bayes_opt.parameter import ParameterConfig
+    from bayes_opt.parameter import ParamsType
 
 just_fix_windows_console()
 
@@ -28,9 +28,9 @@ class ScreenLogger:
 
     _default_cell_size = 9
     _default_precision = 4
-    _colour_new_max = Fore.MAGENTA
-    _colour_regular_message = Fore.RESET
-    _colour_reset = Fore.RESET
+    _color_new_max = Fore.MAGENTA
+    _color_regular_message = Fore.RESET
+    _color_reset = Fore.RESET
 
     def __init__(self, verbose: int = 2, is_constrained: bool = False) -> None:
         self._verbose = verbose
@@ -141,8 +141,8 @@ class ScreenLogger:
         self,
         keys: list[str],
         result: dict[str, Any],
-        params_config: Mapping[str, ParameterConfig],
-        colour: str = _colour_regular_message,
+        params_config: Mapping[str, ParamsType],
+        color: str = _color_regular_message,
     ) -> str:
         """Print a step.
 
@@ -154,12 +154,12 @@ class ScreenLogger:
         keys : list[str]
             The parameter keys.
 
-        params_config : Mapping[str, ParameterConfig]
+        params_config : Mapping[str, ParamsType]
             The configuration to map the key to the parameter for correct formatting.
 
-        colour : str, optional
+        color : str, optional
             Color to use for the output.
-            (Default value = _colour_regular_message, equivalent to Fore.RESET)
+            (Default value = _color_regular_message, equivalent to Fore.RESET)
 
         Returns
         -------
@@ -178,7 +178,7 @@ class ScreenLogger:
             else params_config[key].to_string(val, self._default_cell_size)
             for key, val in params.items()
         ]
-        return "| " + " | ".join(colour + x + self._colour_reset for x in cells if x is not None) + " |"
+        return "| " + " | ".join(color + x + self._color_reset for x in cells if x is not None) + " |"
 
     def _print_header(self, keys: list[str]) -> str:
         """Print the header of the log.
@@ -258,7 +258,7 @@ class ScreenLogger:
         self,
         keys: list[str],
         result: dict[str, Any],
-        params_config: Mapping[str, ParameterConfig],
+        params_config: Mapping[str, ParamsType],
         current_max: dict[str, Any] | None,
     ) -> None:
         """Log an optimization step.
@@ -271,7 +271,7 @@ class ScreenLogger:
         result : dict[str, Any]
             The result dictionary for the most recent step.
 
-        params_config : Mapping[str, ParameterConfig]
+        params_config : Mapping[str, ParamsType]
             The configuration to map the key to the parameter for correct formatting.
 
         current_max : dict[str, Any] | None
@@ -283,8 +283,8 @@ class ScreenLogger:
             return
 
         if self._verbose == 2 or is_new_max:
-            colour = self._colour_new_max if is_new_max else self._colour_regular_message
-            line = self._print_step(keys, result, params_config, colour=colour) + "\n"
+            color = self._color_new_max if is_new_max else self._color_regular_message
+            line = self._print_step(keys, result, params_config, color=color) + "\n"
             if self._verbose:
                 print(line, end="")
 
