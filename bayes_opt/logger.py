@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any
 from colorama import Fore, just_fix_windows_console
 
 if TYPE_CHECKING:
-    from bayes_opt.parameter import ParameterConfig
+    from bayes_opt.parameter import ParamsType
 
 just_fix_windows_console()
 
@@ -141,7 +141,7 @@ class ScreenLogger:
         self,
         keys: list[str],
         result: dict[str, Any],
-        params_config: Mapping[str, ParameterConfig],
+        params_config: Mapping[str, ParamsType],
         colour: str = _colour_regular_message,
     ) -> str:
         """Print a step.
@@ -154,7 +154,7 @@ class ScreenLogger:
         keys : list[str]
             The parameter keys.
 
-        params_config : Mapping[str, ParameterConfig]
+        params_config : Mapping[str, ParamsType]
             The configuration to map the key to the parameter for correct formatting.
 
         colour : str, optional
@@ -258,7 +258,7 @@ class ScreenLogger:
         self,
         keys: list[str],
         result: dict[str, Any],
-        params_config: Mapping[str, ParameterConfig],
+        params_config: Mapping[str, ParamsType],
         current_max: dict[str, Any] | None,
     ) -> None:
         """Log an optimization step.
@@ -271,7 +271,7 @@ class ScreenLogger:
         result : dict[str, Any]
             The result dictionary for the most recent step.
 
-        params_config : Mapping[str, ParameterConfig]
+        params_config : Mapping[str, ParamsType]
             The configuration to map the key to the parameter for correct formatting.
 
         current_max : dict[str, Any] | None
