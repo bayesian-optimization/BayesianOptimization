@@ -407,12 +407,12 @@ def verify_optimizers_match(optimizer1, optimizer2):
 
 
 @pytest.mark.parametrize(
-    ("acquisition_fn_factory", "state_filename", "extra_kwargs"),
+    ("acquisition_fn_factory", "state_filename"),
     [
-        (lambda: UpperConfidenceBound(kappa=2.576), "ucb_state.json", {}),
-        (lambda: ProbabilityOfImprovement(xi=0.01), "pi_state.json", {}),
-        (lambda: ExpectedImprovement(xi=0.01), "ei_state.json", {}),
-        (lambda: ConstantLiar(base_acquisition=UpperConfidenceBound(kappa=2.576)), "cl_state.json", {}),
+        (lambda: UpperConfidenceBound(kappa=2.576), "ucb_state.json"),
+        (lambda: ProbabilityOfImprovement(xi=0.01), "pi_state.json"),
+        (lambda: ExpectedImprovement(xi=0.01), "ei_state.json"),
+        (lambda: ConstantLiar(base_acquisition=UpperConfidenceBound(kappa=2.576)), "cl_state.json"),
         (
             lambda: GPHedge(
                 base_acquisitions=[
@@ -422,12 +422,11 @@ def verify_optimizers_match(optimizer1, optimizer2):
                 ]
             ),
             "gphedge_state.json",
-            {},
         ),
     ],
 )
 def test_integration_acquisition_functions(
-    acquisition_fn_factory, state_filename, extra_kwargs, target_func_x_and_y, pbounds, tmp_path
+    acquisition_fn_factory, state_filename, target_func_x_and_y, pbounds, tmp_path
 ):
     """Parametrized integration test for acquisition functions."""
     acquisition_function = acquisition_fn_factory()
@@ -438,7 +437,6 @@ def test_integration_acquisition_functions(
         acquisition_function=acquisition_function,
         random_state=1,
         verbose=0,
-        **extra_kwargs,
     )
     optimizer.maximize(init_points=2, n_iter=3)
 
@@ -451,7 +449,6 @@ def test_integration_acquisition_functions(
         acquisition_function=acquisition_fn_factory(),
         random_state=1,
         verbose=0,
-        **extra_kwargs,
     )
     new_optimizer.load_state(state_path)
 
