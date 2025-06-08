@@ -1,6 +1,6 @@
 [project]
 name = "bayesian-optimization"
-version = "3.0.0b1"
+version = "3.0.0"
 description = "Bayesian Optimization package"
 authors = [{ name = "Fernando Nogueira", email = "fmfnogueira@gmail.com" }]
 license = { file = "LICENSE" }
