@@ -452,6 +452,12 @@ class UpperConfidenceBound(AcquisitionFunction):
         if kappa < 0:
             error_msg = "kappa must be greater than or equal to 0."
             raise ValueError(error_msg)
+        if exploration_decay is not None and not (0 < exploration_decay <= 1):
+            error_msg = "exploration_decay must be greater than 0 and less than or equal to 1."
+            raise ValueError(error_msg)
+        if exploration_decay_delay is not None and (not isinstance(exploration_decay_delay, int) or exploration_decay_delay < 0):
+            error_msg = "exploration_decay_delay must be an integer greater than or equal to 0."
+            raise ValueError(error_msg)
 
         super().__init__(random_state=random_state)
         self.kappa = kappa
@@ -604,6 +610,16 @@ class ProbabilityOfImprovement(AcquisitionFunction):
         exploration_decay_delay: int | None = None,
         random_state: int | RandomState | None = None,
     ) -> None:
+        if xi <= 0:
+            error_msg = "xi must be greater than 0."
+            raise ValueError(error_msg)
+        if exploration_decay is not None and not (0 < exploration_decay <= 1):
+            error_msg = "exploration_decay must be greater than 0 and less than or equal to 1."
+            raise ValueError(error_msg)
+        if exploration_decay_delay is not None and (not isinstance(exploration_decay_delay, int) or exploration_decay_delay < 0):
+            error_msg = "exploration_decay_delay must be an integer greater than or equal to 0."
+            raise ValueError(error_msg)
+
         super().__init__(random_state=random_state)
         self.xi = xi
         self.exploration_decay = exploration_decay
@@ -778,6 +794,16 @@ class ExpectedImprovement(AcquisitionFunction):
         exploration_decay_delay: int | None = None,
         random_state: int | RandomState | None = None,
     ) -> None:
+        if xi <= 0:
+            error_msg = "xi must be greater than 0."
+            raise ValueError(error_msg)
+        if exploration_decay is not None and not (0 < exploration_decay <= 1):
+            error_msg = "exploration_decay must be greater than 0 and less than or equal to 1."
+            raise ValueError(error_msg)
+        if exploration_decay_delay is not None and (not isinstance(exploration_decay_delay, int) or exploration_decay_delay < 0):
+            error_msg = "exploration_decay_delay must be an integer greater than or equal to 0."
+            raise ValueError(error_msg)
+        
         super().__init__(random_state=random_state)
         self.xi = xi
         self.exploration_decay = exploration_decay
