@@ -612,8 +612,8 @@ class ProbabilityOfImprovement(AcquisitionFunction):
         exploration_decay_delay: int | None = None,
         random_state: int | RandomState | None = None,
     ) -> None:
-        if xi <= 0:
-            error_msg = "xi must be greater than 0."
+        if xi < 0:
+            error_msg = "xi must be greater than equal to 0."
             raise ValueError(error_msg)
         if exploration_decay is not None and not (0 < exploration_decay <= 1):
             error_msg = "exploration_decay must be greater than 0 and less than or equal to 1."
@@ -798,8 +798,8 @@ class ExpectedImprovement(AcquisitionFunction):
         exploration_decay_delay: int | None = None,
         random_state: int | RandomState | None = None,
     ) -> None:
-        if xi <= 0:
-            error_msg = "xi must be greater than 0."
+        if xi < 0:
+            error_msg = "xi must be greater than equal to 0."
             raise ValueError(error_msg)
         if exploration_decay is not None and not (0 < exploration_decay <= 1):
             error_msg = "exploration_decay must be greater than 0 and less than or equal to 1."
