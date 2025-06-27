@@ -55,6 +55,11 @@ class BayesianOptimization:
         Dictionary with parameters names as keys and a tuple with minimum
         and maximum values.
 
+    acquisition_function: AcquisitionFunction, optional(default=None)
+            The acquisition function to use for suggesting new points to evaluate.
+            If None, defaults to UpperConfidenceBound for unconstrained problems
+            and ExpectedImprovement for constrained problems.
+
     constraint: NonlinearConstraint.
         Note that the names of arguments of the constraint function and of
         f need to be the same.

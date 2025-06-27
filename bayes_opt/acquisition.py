@@ -786,6 +786,7 @@ class ExpectedImprovement(AcquisitionFunction):
         Decay rate for xi. If None, no decay is applied.
 
     exploration_decay_delay : int, default None
+        Delay for decay. If None, decay is applied from the start.
 
     random_state : int, RandomState, default None
         Set the random state for reproducibility.
