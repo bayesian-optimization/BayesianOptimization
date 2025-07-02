@@ -168,7 +168,7 @@ class ScreenLogger:
         # iter, target, allowed [, *params]
         cells: list[str | None] = [None] * (3 + len(keys))
 
-        cells[:2] = self._format_number(self._iterations + 1), self._format_number(result["target"])
+        cells[:2] = self._format_number(self._iterations), self._format_number(result["target"])
         if self._is_constrained:
             cells[2] = self._format_bool(result["allowed"])
         params = result.get("params", {})
