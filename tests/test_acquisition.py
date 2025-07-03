@@ -377,6 +377,66 @@ def test_upper_confidence_bound_invalid_kappa_error(kappa: float):
         acquisition.UpperConfidenceBound(kappa=kappa)
 
 
+@pytest.mark.parametrize("exploration_decay", [-0.1, 0.0, 1.1, 2.0, np.inf])
+def test_upper_confidence_bound_invalid_exploration_decay_error(exploration_decay: float):
+    with pytest.raises(
+        ValueError, match="exploration_decay must be greater than 0 and less than or equal to 1."
+    ):
+        acquisition.UpperConfidenceBound(kappa=1.0, exploration_decay=exploration_decay)
+
+
+@pytest.mark.parametrize("exploration_decay_delay", [-1, -10, "not_an_int", 1.5])
+def test_upper_confidence_bound_invalid_exploration_decay_delay_error(exploration_decay_delay):
+    with pytest.raises(
+        ValueError, match="exploration_decay_delay must be an integer greater than or equal to 0."
+    ):
+        acquisition.UpperConfidenceBound(kappa=1.0, exploration_decay_delay=exploration_decay_delay)
+
+
+@pytest.mark.parametrize("xi", [-0.1, -1.0, -np.inf])
+def test_probability_of_improvement_invalid_xi_error(xi: float):
+    with pytest.raises(ValueError, match="xi must be greater than or equal to 0."):
+        acquisition.ProbabilityOfImprovement(xi=xi)
+
+
+@pytest.mark.parametrize("exploration_decay", [-0.1, 0.0, 1.1, 2.0, np.inf])
+def test_probability_of_improvement_invalid_exploration_decay_error(exploration_decay: float):
+    with pytest.raises(
+        ValueError, match="exploration_decay must be greater than 0 and less than or equal to 1."
+    ):
+        acquisition.ProbabilityOfImprovement(xi=0.01, exploration_decay=exploration_decay)
+
+
+@pytest.mark.parametrize("exploration_decay_delay", [-1, -10, "not_an_int", 1.5])
+def test_probability_of_improvement_invalid_exploration_decay_delay_error(exploration_decay_delay):
+    with pytest.raises(
+        ValueError, match="exploration_decay_delay must be an integer greater than or equal to 0."
+    ):
+        acquisition.ProbabilityOfImprovement(xi=0.01, exploration_decay_delay=exploration_decay_delay)
+
+
+@pytest.mark.parametrize("xi", [-0.1, -1.0, -np.inf])
+def test_expected_improvement_invalid_xi_error(xi: float):
+    with pytest.raises(ValueError, match="xi must be greater than or equal to 0."):
+        acquisition.ExpectedImprovement(xi=xi)
+
+
+@pytest.mark.parametrize("exploration_decay", [-0.1, 0.0, 1.1, 2.0, np.inf])
+def test_expected_improvement_invalid_exploration_decay_error(exploration_decay: float):
+    with pytest.raises(
+        ValueError, match="exploration_decay must be greater than 0 and less than or equal to 1."
+    ):
+        acquisition.ExpectedImprovement(xi=0.01, exploration_decay=exploration_decay)
+
+
+@pytest.mark.parametrize("exploration_decay_delay", [-1, -10, "not_an_int", 1.5])
+def test_expected_improvement_invalid_exploration_decay_delay_error(exploration_decay_delay):
+    with pytest.raises(
+        ValueError, match="exploration_decay_delay must be an integer greater than or equal to 0."
+    ):
+        acquisition.ExpectedImprovement(xi=0.01, exploration_decay_delay=exploration_decay_delay)
+
+
 def verify_optimizers_match(optimizer1, optimizer2):
     """Helper function to verify two optimizers match."""
     assert len(optimizer1.space) == len(optimizer2.space)
