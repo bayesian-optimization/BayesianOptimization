@@ -372,14 +372,16 @@ def test_save_load_unused_optimizer(tmp_path):
     """Test saving and loading optimizer state with unused optimizer."""
     optimizer = BayesianOptimization(f=target_func, pbounds=PBOUNDS, random_state=1, verbose=0)
 
-    # Test that saving without samples raises an error
-    with pytest.raises(ValueError, match="Cannot save optimizer state before collecting any samples"):
-        optimizer.save_state(tmp_path / "optimizer_state.json")
+    # Test that saving without samples does not raise an error
+    optimizer.save_state(tmp_path / "unprobed_optimizer_state.json")
 
-    # Add a sample point
+    # Check that we load the original state
+    first_suggestion = optimizer.suggest()
+    optimizer.load_state(tmp_path / "unprobed_optimizer_state.json")
+    assert optimizer.suggest() == first_suggestion
+
+    # Save an optimizer state with a probed point
     optimizer.probe(params={"p1": 1, "p2": 2}, lazy=False)
-
-    # Now saving should work
     optimizer.save_state(tmp_path / "optimizer_state.json")
 
     new_optimizer = BayesianOptimization(f=target_func, pbounds=PBOUNDS, random_state=1, verbose=0)
