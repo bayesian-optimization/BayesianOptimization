@@ -352,19 +352,7 @@ class BayesianOptimization:
         ----------
         path : str or PathLike
             Path to save the optimization state
-
-        Raises
-        ------
-        ValueError
-            If attempting to save state before collecting any samples.
         """
-        if len(self._space) == 0:
-            msg = (
-                "Cannot save optimizer state before collecting any samples. "
-                "Please probe or register at least one point before saving."
-            )
-            raise ValueError(msg)
-
         random_state = None
         if self._random_state is not None:
             state_tuple = self._random_state.get_state()
@@ -443,7 +431,8 @@ class BayesianOptimization:
         # Set the GP parameters
         self.set_gp_params(**gp_params)
 
-        self._gp.fit(self._space.params, self._space.target)
+        if len(self._space):
+            self._gp.fit(self._space.params, self._space.target)
 
         if state["random_state"] is not None:
             random_state_tuple = (
