@@ -25,39 +25,30 @@ dependencies = [
     "colorama>=0.4.6,<1.0.0",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0,<9.0",
+    "pytest-cov>=4.1.0,<5.0",
+    "coverage>=7.4.1,<8.0",
+    "ruff==0.6.6",
+    "pre-commit>=3.7.1,<4.0",
+]
+nbtools = [
+    "nbformat>=5.9.2,<6.0",
+    "nbconvert>=7.14.2,<8.0",
+    "jupyter>=1.0.0,<2.0",
+    "matplotlib>=3.0,<4.0",
+    "nbsphinx>=0.9.4,<1.0",
+    "sphinx-immaterial>=0.12.0,<1.0",
+    "sphinx>=7.0.0,<8.0; python_version<'3.10'",
+    "sphinx>=8.0.0,<9.0; python_version>='3.10'",
+    "sphinx-autodoc-typehints>=2.3.0,<3.0; python_version<'3.10'",
+    "sphinx-autodoc-typehints>=2.4.0,<3.0; python_version>='3.10'",
+]
+
 [tool.poetry]
 requires-poetry = ">=2.0"
 packages = [{ include = "bayes_opt" }]
-
-
-[tool.poetry.group.dev] # for testing/developing
-optional = true
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.0.0"
-pytest-cov = "^4.1.0"
-coverage = "^7.4.1"
-ruff = "0.6.6"
-pre-commit = "^3.7.1"
-
-
-[tool.poetry.group.nbtools] # for running/converting notebooks
-optional = true
-[tool.poetry.group.nbtools.dependencies]
-nbformat = "^5.9.2"
-nbconvert = "^7.14.2"
-jupyter = "^1.0.0"
-matplotlib = "^3.0"
-nbsphinx = "^0.9.4"
-sphinx-immaterial = "^0.12.0"
-sphinx = [
-    { version = "^7.0.0", python = "<3.10" },
-    { version = "^8.0.0", python = ">=3.10" },
-]
-sphinx-autodoc-typehints = [
-    { version = "^2.3.0", python = "<3.10" },
-    { version = "^2.4.0", python = ">=3.10" },
-]
-
 
 [build-system]
 requires = ["poetry-core>=2.0"]
