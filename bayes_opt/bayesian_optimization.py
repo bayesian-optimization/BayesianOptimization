@@ -12,6 +12,8 @@ from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from warnings import warn
+from datetime import timedelta, datetime, timezone
+from itertools import accumulate
 
 import numpy as np
 from scipy.optimize import NonlinearConstraint
@@ -92,6 +94,7 @@ class BayesianOptimization:
         verbose: int = 2,
         bounds_transformer: DomainTransformer | None = None,
         allow_duplicate_points: bool = False,
+        termination_criteria: Mapping[str, float | Mapping[str, float]] | None = None,
     ):
         self._random_state = ensure_rng(random_state)
         self._allow_duplicate_points = allow_duplicate_points
@@ -138,6 +141,18 @@ class BayesianOptimization:
             self._bounds_transformer.initialize(self._space)
 
         self._sorting_warning_already_shown = False  # TODO: remove in future version
+
+        self._termination_criteria = termination_criteria if termination_criteria is not None else {}
+
+        self._initial_iterations = 0
+        self._optimizing_iterations = 0
+
+        self._start_time: datetime | None = None
+        self._timedelta: timedelta | None = None
+
+        # Directly instantiate timedelta if provided
+        if termination_criteria and "time" in termination_criteria:
+            self._timedelta = timedelta(**termination_criteria["time"])
 
         # Initialize logger
         self.logger = ScreenLogger(verbose=self._verbose, is_constrained=self.is_constrained)
@@ -295,7 +310,7 @@ class BayesianOptimization:
 
         n_iter: int, optional(default=25)
             Number of iterations where the method attempts to find the maximum
-            value.
+            value. Used when other termination criteria are not provided.
 
         Warning
         -------
@@ -309,19 +324,27 @@ class BayesianOptimization:
         # Log optimization start
         self.logger.log_optimization_start(self._space.keys)
 
+        if self._start_time is None and "time" in self._termination_criteria:
+            self._start_time = datetime.now(timezone.utc)
+
+        # Set iterations as termination criteria if others not supplied, increment existing if it already exists.
+        self._termination_criteria["iterations"] = max(
+            self._termination_criteria.get("iterations", 0) + n_iter + init_points, 1
+        )
+
         # Prime the queue with random points
         self._prime_queue(init_points)
 
-        iteration = 0
-        while self._queue or iteration < n_iter:
+        while self._queue or not self.termination_criteria_met():
             try:
                 x_probe = self._queue.popleft()
+                self._initial_iterations += 1
             except IndexError:
                 x_probe = self.suggest()
-                iteration += 1
+                self._optimizing_iterations += 1
             self.probe(x_probe, lazy=False)
 
-            if self._bounds_transformer and iteration > 0:
+            if self._bounds_transformer and not self._queue:
                 # The bounds transformer should only modify the bounds after
                 # the init_points points (only for the true iterations)
                 self.set_bounds(self._bounds_transformer.transform(self._space))
@@ -344,6 +367,51 @@ class BayesianOptimization:
         if "kernel" in params:
             params["kernel"] = wrap_kernel(kernel=params["kernel"], transform=self._space.kernel_transform)
         self._gp.set_params(**params)
+
+    def termination_criteria_met(self) -> bool:
+        """Determine if the termination criteria have been met."""
+        if "iterations" in self._termination_criteria:
+            if (
+                self._optimizing_iterations + self._initial_iterations
+                >= self._termination_criteria["iterations"]
+            ):
+                return True
+
+        if "value" in self._termination_criteria:
+            if self.max is not None and self.max["target"] >= self._termination_criteria["value"]:
+                return True
+
+        if "time" in self._termination_criteria:
+            time_taken = datetime.now(timezone.utc) - self._start_time
+            if time_taken >= self._timedelta:
+                return True
+
+        if "convergence_tol" in self._termination_criteria and len(self._space.target) > 2:
+            # Find the maximum value of the target function at each iteration
+            running_max = list(accumulate(self._space.target, max))
+            # Determine improvements that have occurred each iteration
+            improvements = np.diff(running_max)
+            if (
+                self._initial_iterations + self._optimizing_iterations
+                >= self._termination_criteria["convergence_tol"]["n_iters"]
+            ):
+                # Check if there are improvements in the specified number of iterations
+                relevant_improvements = (
+                    improvements
+                    if len(self._space.target) == self._termination_criteria["convergence_tol"]["n_iters"]
+                    else improvements[-self._termination_criteria["convergence_tol"]["n_iters"] :]
+                )
+                # There has been no improvement within the iterations specified
+                if len(set(relevant_improvements)) == 1:
+                    return True
+                # The improvement(s) are lower than specified
+                if (
+                    max(relevant_improvements) - min(relevant_improvements)
+                    < self._termination_criteria["convergence_tol"]["abs_tol"]
+                ):
+                    return True
+
+        return False
 
     def save_state(self, path: str | PathLike[str]) -> None:
         """Save complete state for reconstruction of the optimizer.
@@ -385,6 +453,13 @@ class BayesianOptimization:
             "verbose": self._verbose,
             "random_state": random_state,
             "acquisition_params": acquisition_params,
+            "termination_criteria": self._termination_criteria,
+            "initial_iterations": self._initial_iterations,
+            "optimizing_iterations": self._optimizing_iterations,
+            "start_time": datetime.strftime(self._start_time, "%Y-%m-%dT%H:%M:%SZ")
+            if self._start_time
+            else "",
+            "timedelta": self._timedelta.total_seconds() if self._timedelta else "",
         }
 
         with Path(path).open("w") as f:
@@ -443,3 +518,14 @@ class BayesianOptimization:
                 state["random_state"]["cached_gaussian"],
             )
             self._random_state.set_state(random_state_tuple)
+
+        self._termination_criteria = state["termination_criteria"]
+        self._initial_iterations = state["initial_iterations"]
+        self._optimizing_iterations = state["optimizing_iterations"]
+        # Previously saved as UTC, so explicitly parse as UTC time.
+        self._start_time = (
+            datetime.strptime(state["start_time"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+            if state["start_time"] != ""
+            else None
+        )
+        self._timedelta = timedelta(seconds=state["timedelta"]) if state["timedelta"] else None
