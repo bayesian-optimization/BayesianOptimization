@@ -5,7 +5,7 @@ description = "Bayesian Optimization package"
 authors = [{ name = "Fernando Nogueira", email = "fmfnogueira@gmail.com" }]
 license = { file = "LICENSE" }
 readme = "README.md"
-requires-python = ">=3.9,<4.0"
+requires-python = ">=3.9"
 classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
@@ -17,31 +17,31 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
-    "colorama>=0.4.6,<1.0.0",
+    "colorama>=0.4.6",
     "numpy>=1.25; python_version<'3.13'",
     "numpy>=2.1.3; python_version>='3.13'",
-    "scikit-learn>=1.0.0,<2.0.0",
-    "scipy>=1.0.0,<2.0.0; python_version<'3.13'",
-    "scipy>=1.14.1,<2.0.0; python_version>='3.13'",
+    "scikit-learn>=1.0.0",
+    "scipy>=1.0.0; python_version<'3.13'",
+    "scipy>=1.14.1; python_version>='3.13'",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "coverage>=7.4.1,<8.0",
-    "jupyter>=1.0.0,<2.0",
-    "matplotlib>=3.0,<4.0",
-    "nbconvert>=7.14.2,<8.0",
-    "nbformat>=5.9.2,<6.0",
-    "nbsphinx>=0.9.4,<1.0",
-    "pre-commit>=3.7.1,<4.0",
-    "pytest>=8.0.0,<9.0",
-    "pytest-cov>=4.1.0,<5.0",
-    "ruff==0.6.6",
-    "sphinx-immaterial>=0.12.0,<1.0",
-    "sphinx>=7.0.0,<8.0; python_version<'3.10'",
-    "sphinx>=8.0.0,<9.0; python_version>='3.10'",
-    "sphinx-autodoc-typehints>=2.3.0,<3.0; python_version<'3.10'",
-    "sphinx-autodoc-typehints>=2.4.0,<3.0; python_version>='3.10'",
+    "coverage>=7.4.1",
+    "jupyter>=1.0.0",
+    "matplotlib>=3.0",
+    "nbconvert>=7.14.2",
+    "nbformat>=5.9.2",
+    "nbsphinx>=0.9.4",
+    "pre-commit>=3.7.1",
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.12.3",
+    "sphinx-immaterial>=0.12.0",
+    "sphinx>=7.0.0; python_version<'3.10'",
+    "sphinx>=8.0.0; python_version>='3.10'",
+    "sphinx-autodoc-typehints>=2.3.0; python_version<'3.10'",
+    "sphinx-autodoc-typehints>=2.4.0; python_version>='3.10'",
 ]
 
 [tool.poetry]
