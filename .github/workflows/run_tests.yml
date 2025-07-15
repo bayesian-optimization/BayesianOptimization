@@ -1,4 +1,4 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# This workflow will install Python dependencies and run tests in multiple versions of Python
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
 name: tests
@@ -25,31 +25,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python
-      uses: actions/setup-python@v3
+    - name: Install uv and set the python version
+      uses: astral-sh/setup-uv@v6
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install the latest version of uv
-      uses: astral-sh/setup-uv@v5
-      with:
-        version: "latest"
-    - name: Install Poetry
-      uses: snok/install-poetry@v1
-      with:
-        version: 'latest'
     - name: Install test dependencies
       run: |
-        poetry self add poetry-plugin-export
-        poetry export -f requirements.txt --extras dev --without-hashes --output requirements-dev.txt
-        echo "numpy${{ matrix.numpy-version }}" >> constraints.txt
-        uv pip compile requirements-dev.txt --output-file requirements.txt \
-          --python-version ${{ matrix.python-version }} \
-          --override constraints.txt
-        poetry run pip install -r requirements.txt
-        poetry install --only-root
-    - name: Test with pytest
-      run: |
-        poetry run pytest --cov-report xml --cov=bayes_opt/
+        uv sync --extra dev
+        uv add "numpy${{ matrix.numpy-version}}"
+    - name: Run pytest
+      run: uv run pytest --cov-report xml --cov=bayes_opt/
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:

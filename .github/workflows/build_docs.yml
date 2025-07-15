@@ -18,25 +18,20 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v3
-      - name: Setup Python
-        uses: actions/setup-python@v3
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
         with:
-          python-version: '3.10'
+          python-version: "3.10"
       - name: Get tag
         uses: olegtarasov/get-tag@v2.1
       - name: Install pandoc
         run: sudo apt-get install -y pandoc
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-        with:
-          version: 'latest'
       - name: Install package and test dependencies
-        run: |
-          poetry install --with dev,nbtools
+        run: uv sync --extra dev
       - name: build sphinx docs
         run: |
           cd docsrc
-          poetry run make github
+          uv run make github
       - name: Determine directory to publish docs to
         id: docs-publish-dir
         uses: jannekem/run-python-script-action@v1
