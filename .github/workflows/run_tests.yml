@@ -40,7 +40,7 @@ jobs:
     - name: Install test dependencies
       run: |
         poetry self add poetry-plugin-export
-        poetry export -f requirements.txt --with dev --without-hashes --output requirements-dev.txt
+        poetry export -f requirements.txt --extras dev --without-hashes --output requirements-dev.txt
         echo "numpy${{ matrix.numpy-version }}" >> constraints.txt
         uv pip compile requirements-dev.txt --output-file requirements.txt \
           --python-version ${{ matrix.python-version }} \
