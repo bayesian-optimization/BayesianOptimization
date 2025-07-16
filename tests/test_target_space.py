@@ -125,7 +125,7 @@ def test_register_point_beyond_bounds():
     PBOUNDS = {"p1": (0, 1), "p2": (1, 10)}
     space = TargetSpace(target_func, PBOUNDS)
 
-    with pytest.warns(UserWarning):
+    with pytest.warns(UserWarning, match="is outside the bounds of the parameter"):
         space.register(params={"p1": 0.5, "p2": 20}, target=2.5)
 
 
@@ -209,7 +209,7 @@ def test_y_max_within_pbounds():
     assert space._target_max() is None
     space.probe(params={"p1": 1, "p2": 2})
     space.probe(params={"p1": 0, "p2": 1})
-    with pytest.warns(UserWarning):
+    with pytest.warns(UserWarning, match="is outside the bounds of the parameter"):
         space.probe(params={"p1": 5, "p2": 1})
     assert space._target_max() == 3
 
