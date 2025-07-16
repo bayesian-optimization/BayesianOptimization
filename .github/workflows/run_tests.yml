@@ -32,9 +32,9 @@ jobs:
     - name: Install test dependencies
       run: |
         uv sync --extra dev
-        uv add "numpy${{ matrix.numpy-version}}"
+        uv pip install "numpy${{ matrix.numpy-version}}"
     - name: Run pytest
-      run: uv run pytest --cov-report xml --cov=bayes_opt/
+      run: uv run --no-sync pytest --cov-report xml --cov=bayes_opt/
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
