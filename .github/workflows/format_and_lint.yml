@@ -20,4 +20,4 @@ jobs:
     - name: Install dependencies
       run: uv sync --extra dev
     - name: Run pre-commit
-      run : uv run pre-commit run --all-files --show-diff-on-failure --color=always
+      run: uv run pre-commit run --all-files --show-diff-on-failure --color=always

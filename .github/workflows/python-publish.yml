@@ -20,4 +20,4 @@ jobs:
     - name: Publish to pypi
       env:
         PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-      run: uv publish --token $PYPI_API_TOKEN
+      run: uv publish --token "$PYPI_API_TOKEN"
