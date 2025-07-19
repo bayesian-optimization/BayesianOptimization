@@ -15,10 +15,10 @@ __version__ = importlib.metadata.version("bayesian-optimization")
 
 
 __all__ = [
-    "acquisition",
     "BayesianOptimization",
-    "TargetSpace",
     "ConstraintModel",
     "ScreenLogger",
     "SequentialDomainReductionTransformer",
+    "TargetSpace",
+    "acquisition",
 ]

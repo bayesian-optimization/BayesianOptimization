@@ -240,7 +240,7 @@ class ConstraintModel:
             return self._model[0].predict(X).reshape(X_shape[:-1])
 
         result = np.column_stack([gp.predict(X) for gp in self._model])
-        return result.reshape(X_shape[:-1] + (len(self._lb),))
+        return result.reshape(*X_shape[:-1], len(self._lb))
 
     def allowed(self, constraint_values: NDArray[Float]) -> NDArray[np.bool_]:
         """Check whether `constraint_values` fulfills the specified limits.
