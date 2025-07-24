@@ -1,0 +1,412 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Basic tour of the Bayesian Optimization package\n",
+    "\n",
+    "This is a constrained global optimization package built upon bayesian inference and gaussian process, that attempts to find the maximum value of an unknown function in as few iterations as possible. This technique is particularly suited for optimization of high cost functions, situations where the balance between exploration and exploitation is important.\n",
+    "\n",
+    "Bayesian optimization works by constructing a posterior distribution of functions (gaussian process) that best describes the function you want to optimize. As the number of observations grows, the posterior distribution improves, and the algorithm becomes more certain of which regions in parameter space are worth exploring and which are not, as seen in the picture below.\n",
+    "\n",
+    "As you iterate over and over, the algorithm balances its needs of exploration and exploitation taking into account what it knows about the target function. At each step a Gaussian Process is fitted to the known samples (points previously explored), and the posterior distribution, combined with a exploration strategy (such as UCB (Upper Confidence Bound), or EI (Expected Improvement)), are used to determine the next point that should be explored (see the gif below).\n",
+    "\n",
+    "This process is designed to minimize the number of steps required to find a combination of parameters that are close to the optimal combination. To do so, this method uses a proxy optimization problem (finding the maximum of the acquisition function) that, albeit still a hard problem, is cheaper (in the computational sense) and common tools can be employed. Therefore Bayesian Optimization is most adequate for situations where sampling the function to be optimized is a very expensive endeavor. See the references for a proper discussion of this method."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 1. Specifying the function to be optimized\n",
+    "\n",
+    "This is a function optimization package, therefore the first and most important ingredient is, of course, the function to be optimized.\n",
+    "\n",
+    "**DISCLAIMER:** We know exactly how the output of the function below depends on its parameter. Obviously this is just an example, and you shouldn't expect to know it in a real scenario. However, it should be clear that you don't need to. All you need in order to use this package (and more generally, this technique) is a function `f` that takes a known set of parameters and outputs a real number."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def black_box_function(x, y):\n",
+    "    \"\"\"Function with unknown internals we wish to maximize.\n",
+    "\n",
+    "    This is just serving as an example, for all intents and\n",
+    "    purposes think of the internals of this function, i.e.: the process\n",
+    "    which generates its output values, as unknown.\n",
+    "    \"\"\"\n",
+    "    return -x ** 2 - (y - 1) ** 2 + 1"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 2. Getting Started\n",
+    "\n",
+    "All we need to get started is to instantiate a `BayesianOptimization` object specifying a function to be optimized `f`, and its parameters with their corresponding bounds, `pbounds`. This is a constrained optimization technique, so you must specify the minimum and maximum values that can be probed for each parameter in order for it to work"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from bayes_opt import BayesianOptimization"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Bounded region of parameter space\n",
+    "pbounds = {'x': (2, 4), 'y': (-3, 3)}"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "optimizer = BayesianOptimization(\n",
+    "    f=black_box_function,\n",
+    "    pbounds=pbounds,\n",
+    "    verbose=2, # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent\n",
+    "    random_state=1,\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The BayesianOptimization object will work out of the box without much tuning needed. The main method you should be aware of is `maximize`, which does exactly what you think it does.\n",
+    "\n",
+    "There are many parameters you can pass to maximize, nonetheless, the most important ones are:\n",
+    "- `n_iter`: How many steps of bayesian optimization you want to perform. The more steps the more likely to find a good maximum you are.\n",
+    "- `init_points`: How many steps of **random** exploration you want to perform. Random exploration can help by diversifying the exploration space."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "|   iter    |  target   |     x     |     y     |\n",
+      "-------------------------------------------------\n",
+      "| \u001b[39m1        \u001b[39m | \u001b[39m-7.135   \u001b[39m | \u001b[39m2.8340440\u001b[39m | \u001b[39m1.3219469\u001b[39m |\n",
+      "| \u001b[39m2        \u001b[39m | \u001b[39m-7.78    \u001b[39m | \u001b[39m2.0002287\u001b[39m | \u001b[39m-1.186004\u001b[39m |\n",
+      "| \u001b[39m3        \u001b[39m | \u001b[39m-7.157   \u001b[39m | \u001b[39m2.8375977\u001b[39m | \u001b[39m1.3238498\u001b[39m |\n",
+      "| \u001b[35m4        \u001b[39m | \u001b[35m-6.633   \u001b[39m | \u001b[35m2.7487090\u001b[39m | \u001b[35m1.2790562\u001b[39m |\n",
+      "| \u001b[35m5        \u001b[39m | \u001b[35m-5.751   \u001b[39m | \u001b[35m2.5885326\u001b[39m | \u001b[35m1.2246876\u001b[39m |\n",
+      "=================================================\n"
+     ]
+    }
+   ],
+   "source": [
+    "optimizer.maximize(\n",
+    "    init_points=2,\n",
+    "    n_iter=3,\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The best combination of parameters and target value found can be accessed via the property `bo.max`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "{'target': np.float64(-5.750985875689304), 'params': {'x': np.float64(2.5885326650623566), 'y': np.float64(1.2246876000015976)}}\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(optimizer.max)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "While the list of all parameters probed and their corresponding target values is available via the property `bo.res`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Iteration 0: \n",
+      "\t{'target': np.float64(-7.135455292718879), 'params': {'x': np.float64(2.8340440094051482), 'y': np.float64(1.3219469606529486)}}\n",
+      "Iteration 1: \n",
+      "\t{'target': np.float64(-7.779531005607566), 'params': {'x': np.float64(2.0002287496346898), 'y': np.float64(-1.1860045642089614)}}\n",
+      "Iteration 2: \n",
+      "\t{'target': np.float64(-7.156839989425082), 'params': {'x': np.float64(2.8375977943744273), 'y': np.float64(1.3238498831039895)}}\n",
+      "Iteration 3: \n",
+      "\t{'target': np.float64(-6.633273772355583), 'params': {'x': np.float64(2.7487090390562576), 'y': np.float64(1.2790562505410115)}}\n",
+      "Iteration 4: \n",
+      "\t{'target': np.float64(-5.750985875689304), 'params': {'x': np.float64(2.5885326650623566), 'y': np.float64(1.2246876000015976)}}\n"
+     ]
+    }
+   ],
+   "source": [
+    "for i, res in enumerate(optimizer.res):\n",
+    "    print(\"Iteration {}: \\n\\t{}\".format(i, res))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### 2.1 Changing bounds\n",
+    "\n",
+    "During the optimization process you may realize the bounds chosen for some parameters are not adequate. For these situations you can invoke the method `set_bounds` to alter them. You can pass any combination of **existing** parameters and their associated new bounds."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "optimizer.set_bounds(new_bounds={\"x\": (-2, 3)})"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "|   iter    |  target   |     x     |     y     |\n",
+      "-------------------------------------------------\n",
+      "| \u001b[35m6        \u001b[39m | \u001b[35m-4.438   \u001b[39m | \u001b[35m2.3269441\u001b[39m | \u001b[35m1.1533794\u001b[39m |\n",
+      "| \u001b[35m7        \u001b[39m | \u001b[35m-2.42    \u001b[39m | \u001b[35m1.8477442\u001b[39m | \u001b[35m0.9230233\u001b[39m |\n",
+      "| \u001b[35m8        \u001b[39m | \u001b[35m-0.2088  \u001b[39m | \u001b[35m1.0781674\u001b[39m | \u001b[35m1.2152869\u001b[39m |\n",
+      "| \u001b[35m9        \u001b[39m | \u001b[35m0.7797   \u001b[39m | \u001b[35m-0.298812\u001b[39m | \u001b[35m1.3619705\u001b[39m |\n",
+      "| \u001b[39m10       \u001b[39m | \u001b[39m-3.391   \u001b[39m | \u001b[39m-0.655060\u001b[39m | \u001b[39m2.9904883\u001b[39m |\n",
+      "=================================================\n"
+     ]
+    }
+   ],
+   "source": [
+    "optimizer.maximize(\n",
+    "    init_points=0,\n",
+    "    n_iter=5,\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 3. Guiding the optimization\n",
+    "\n",
+    "It is often the case that we have an idea of regions of the parameter space where the maximum of our function might lie. For these situations the `BayesianOptimization` object allows the user to specify specific points to be probed. By default these will be explored lazily (`lazy=True`), meaning these points will be evaluated only the next time you call `maximize`. This probing process happens before the gaussian process takes over.\n",
+    "\n",
+    "Parameters can be passed as dictionaries such as below:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "optimizer.probe(\n",
+    "    params={\"x\": 0.5, \"y\": 0.7},\n",
+    "    lazy=True,\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Or as an iterable. Beware that the order has to match the order of the initial `pbounds` dictionary. You can usee `optimizer.space.keys` for guidance"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "['x', 'y']\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(optimizer.space.keys)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "optimizer.probe(\n",
+    "    params=[-0.3, 0.1],\n",
+    "    lazy=True,\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "|   iter    |  target   |     x     |     y     |\n",
+      "-------------------------------------------------\n",
+      "| \u001b[39m11       \u001b[39m | \u001b[39m0.66     \u001b[39m | \u001b[39m0.5      \u001b[39m | \u001b[39m0.7      \u001b[39m |\n",
+      "| \u001b[39m12       \u001b[39m | \u001b[39m0.1      \u001b[39m | \u001b[39m-0.3     \u001b[39m | \u001b[39m0.1      \u001b[39m |\n",
+      "=================================================\n"
+     ]
+    }
+   ],
+   "source": [
+    "optimizer.maximize(init_points=0, n_iter=0)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 4. Saving and loading the optimizer\n",
+    "\n",
+    "The optimizer state can be saved to a file and loaded from a file. This is useful for continuing an optimization from a previous state, or for analyzing the optimization history without running the optimizer again.\n",
+    "\n",
+    "Note: if you are using your own custom acquisition function, you will need to save and load the acquisition function state as well. This is done by calling the `get_acquisition_params` and `set_acquisition_params` methods of the acquisition function. See the acquisition function documentation for more information."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### 4.1 Saving the optimizer state\n",
+    "\n",
+    "The optimizer state can be saved to a file using the `save_state` method.\n",
+    "optimizer.save_state(\"./optimizer_state.json\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "optimizer.save_state(\"optimizer_state.json\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 4.2 Loading the optimizer state\n",
+    "\n",
+    "To load with a previously saved state, pass the path of your saved state file to the `load_state_path` parameter. Note that if you've changed the bounds of your parameters, you'll need to pass the updated bounds to the new optimizer.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "new_optimizer = BayesianOptimization(\n",
+    "    f=black_box_function,\n",
+    "    pbounds={\"x\": (-2, 3), \"y\": (-3, 3)},\n",
+    "    random_state=1,\n",
+    "    verbose=0\n",
+    ")\n",
+    "\n",
+    "new_optimizer.load_state(\"./optimizer_state.json\")\n",
+    "\n",
+    "# Continue optimization\n",
+    "new_optimizer.maximize(\n",
+    "    init_points=0,\n",
+    "    n_iter=5\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "This provides a simpler alternative to the logging system shown in section 4, especially when you want to continue optimization from a previous state."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Next Steps\n",
+    "\n",
+    "This tour should be enough to cover most usage scenarios of this package. If, however, you feel like you need to know more, please checkout the `advanced-tour` notebook. There you will be able to find other, more advanced features of this package that could be what you're looking for. Also, browse the examples folder for implementation tips and ideas."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.13.1"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
