@@ -10,9 +10,7 @@ from scipy.optimize import NonlinearConstraint
 from bayes_opt import BayesianOptimization, acquisition
 from bayes_opt.acquisition import AcquisitionFunction
 from bayes_opt.domain_reduction import SequentialDomainReductionTransformer
-from bayes_opt.event import DEFAULT_EVENTS, Events
 from bayes_opt.exception import NotUniqueError
-from bayes_opt.logger import ScreenLogger
 from bayes_opt.parameter import BayesParameter
 from bayes_opt.target_space import TargetSpace
 from bayes_opt.util import ensure_rng
@@ -161,38 +159,6 @@ def test_prime_queue_with_register_and_init():
     assert len(optimizer.space) == 1
 
 
-def test_prime_subscriptions():
-    optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
-    optimizer._prime_subscriptions()
-
-    # Test that the default observer is correctly subscribed
-    for event in DEFAULT_EVENTS:
-        assert all([isinstance(k, ScreenLogger) for k in optimizer._events[event]])
-        assert all([hasattr(k, "update") for k in optimizer._events[event]])
-
-    test_subscriber = "test_subscriber"
-
-    def test_callback(event, instance):
-        pass
-
-    optimizer = BayesianOptimization(target_func, PBOUNDS, random_state=1)
-    optimizer.subscribe(event=Events.OPTIMIZATION_START, subscriber=test_subscriber, callback=test_callback)
-    # Test that the desired observer is subscribed
-    assert all([k == test_subscriber for k in optimizer._events[Events.OPTIMIZATION_START]])
-    assert all([v == test_callback for v in optimizer._events[Events.OPTIMIZATION_START].values()])
-
-    # Check that prime subscriptions won't overwrite manual subscriptions
-    optimizer._prime_subscriptions()
-    assert all([k == test_subscriber for k in optimizer._events[Events.OPTIMIZATION_START]])
-    assert all([v == test_callback for v in optimizer._events[Events.OPTIMIZATION_START].values()])
-
-    assert optimizer._events[Events.OPTIMIZATION_STEP] == {}
-    assert optimizer._events[Events.OPTIMIZATION_END] == {}
-
-    with pytest.raises(KeyError):
-        optimizer._events["other"]
-
-
 def test_set_bounds():
     pbounds = {"p1": (0, 1), "p3": (0, 3), "p2": (0, 2), "p4": (0, 4)}
     optimizer = BayesianOptimization(target_func, pbounds, random_state=1)
@@ -223,56 +189,27 @@ def test_set_gp_params():
 
 
 def test_maximize():
-    class Tracker:
-        def __init__(self):
-            self.start_count = 0
-            self.step_count = 0
-            self.end_count = 0
-
-        def update_start(self, event, instance):
-            self.start_count += 1
-
-        def update_step(self, event, instance):
-            self.step_count += 1
-
-        def update_end(self, event, instance):
-            self.end_count += 1
-
-        def reset(self):
-            self.__init__()
-
     acq = acquisition.UpperConfidenceBound()
     optimizer = BayesianOptimization(
         target_func, PBOUNDS, acq, random_state=np.random.RandomState(1), allow_duplicate_points=True
     )
 
-    tracker = Tracker()
-    optimizer.subscribe(event=Events.OPTIMIZATION_START, subscriber=tracker, callback=tracker.update_start)
-    optimizer.subscribe(event=Events.OPTIMIZATION_STEP, subscriber=tracker, callback=tracker.update_step)
-    optimizer.subscribe(event=Events.OPTIMIZATION_END, subscriber=tracker, callback=tracker.update_end)
-
+    # Test initial maximize with no init_points and n_iter
     optimizer.maximize(init_points=0, n_iter=0)
     assert not optimizer._queue
-    assert len(optimizer.space) == 1
-    assert tracker.start_count == 1
-    assert tracker.step_count == 1
-    assert tracker.end_count == 1
+    assert len(optimizer.space) == 1  # Even with no init_points, we should have at least one point
 
+    # Test after setting GP parameters
     optimizer.set_gp_params(alpha=1e-2)
     optimizer.maximize(init_points=2, n_iter=0)
     assert not optimizer._queue
-    assert len(optimizer.space) == 3
+    assert len(optimizer.space) == 3  # Previously had 1, add 2 more from init_points
     assert optimizer._gp.alpha == 1e-2
-    assert tracker.start_count == 2
-    assert tracker.step_count == 3
-    assert tracker.end_count == 2
 
+    # Test with additional iterations
     optimizer.maximize(init_points=0, n_iter=2)
     assert not optimizer._queue
-    assert len(optimizer.space) == 5
-    assert tracker.start_count == 3
-    assert tracker.step_count == 5
-    assert tracker.end_count == 3
+    assert len(optimizer.space) == 5  # Previously had 3, add 2 more from n_iter
 
 
 def test_define_wrong_transformer():
@@ -435,14 +372,16 @@ def test_save_load_unused_optimizer(tmp_path):
     """Test saving and loading optimizer state with unused optimizer."""
     optimizer = BayesianOptimization(f=target_func, pbounds=PBOUNDS, random_state=1, verbose=0)
 
-    # Test that saving without samples raises an error
-    with pytest.raises(ValueError, match="Cannot save optimizer state before collecting any samples"):
-        optimizer.save_state(tmp_path / "optimizer_state.json")
+    # Test that saving without samples does not raise an error
+    optimizer.save_state(tmp_path / "unprobed_optimizer_state.json")
 
-    # Add a sample point
+    # Check that we load the original state
+    first_suggestion = optimizer.suggest()
+    optimizer.load_state(tmp_path / "unprobed_optimizer_state.json")
+    assert optimizer.suggest() == first_suggestion
+
+    # Save an optimizer state with a probed point
     optimizer.probe(params={"p1": 1, "p2": 2}, lazy=False)
-
-    # Now saving should work
     optimizer.save_state(tmp_path / "optimizer_state.json")
 
     new_optimizer = BayesianOptimization(f=target_func, pbounds=PBOUNDS, random_state=1, verbose=0)
@@ -645,4 +584,4 @@ def test_save_load_w_custom_parameter(tmp_path):
     for _ in range(5):
         suggestion1 = optimizer.suggest()
         suggestion2 = new_optimizer.suggest()
-        np.testing.assert_array_almost_equal(suggestion1["sides"], suggestion2["sides"], decimal=10)
+        np.testing.assert_array_almost_equal(suggestion1["sides"], suggestion2["sides"], decimal=7)

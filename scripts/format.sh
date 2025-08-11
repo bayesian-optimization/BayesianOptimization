@@ -1,6 +1,5 @@
 #!/usr/bin/env sh
 set -ex
 
-poetry run ruff format bayes_opt tests
-poetry run ruff check bayes_opt --fix
-
+uv run ruff format bayes_opt tests
+uv run ruff check bayes_opt --fix

@@ -3,18 +3,13 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable
 from os import PathLike
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import numpy as np
 
-from bayes_opt.exception import NotUniqueError
-
-if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-    from bayes_opt.bayesian_optimization import BayesianOptimization
+# from bayes_opt.bayesian_optimization import BayesianOptimization
 
 
 def load_logs(
@@ -47,14 +42,15 @@ def load_logs(
             continue
 
         for iteration in fileData:
-            try:
-                optimizer.register(
-                    params=iteration["params"],
-                    target=iteration["target"],
-                    constraint_value=(iteration["constraint"] if optimizer.is_constrained else None),
-                )
-            except NotUniqueError:
+            # Prevents duplicate points being registered when an exception can be raised
+            if not optimizer._allow_duplicate_points and iteration["params"] in optimizer:
                 continue
+
+            optimizer.register(
+                params=iteration["params"],
+                target=iteration["target"],
+                constraint_value=(iteration["constraint"] if optimizer.is_constrained else None),
+            )
 
     return optimizer
 

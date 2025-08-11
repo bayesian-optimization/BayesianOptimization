@@ -4,9 +4,9 @@ from __future__ import annotations
 
 __all__ = [
     "BayesianOptimizationError",
-    "NotUniqueError",
     "ConstraintNotSupportedError",
     "NoValidPointRegisteredError",
+    "NotUniqueError",
     "TargetSpaceEmptyError",
 ]
 

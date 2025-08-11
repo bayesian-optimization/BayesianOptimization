@@ -9,6 +9,7 @@ from warnings import warn
 import numpy as np
 from colorama import Fore
 
+from bayes_opt.constraint import ConstraintModel
 from bayes_opt.exception import NotUniqueError
 from bayes_opt.parameter import BayesParameter, CategoricalParameter, FloatParameter, IntParameter, is_numeric
 from bayes_opt.util import ensure_rng
@@ -18,8 +19,8 @@ if TYPE_CHECKING:
 
     from numpy.random import RandomState
     from numpy.typing import NDArray
+    from scipy.optimize import NonlinearConstraint
 
-    from bayes_opt.constraint import ConstraintModel
     from bayes_opt.parameter import BoundsMapping, ParamsType
 
     Float = np.floating[Any]
@@ -71,11 +72,10 @@ class TargetSpace:
         self,
         target_func: Callable[..., float] | None,
         pbounds: BoundsMapping,
-        constraint: ConstraintModel | None = None,
+        constraint: NonlinearConstraint | None = None,
         random_state: int | RandomState | None = None,
         allow_duplicate_points: bool | None = False,
     ) -> None:
-        self.random_state = ensure_rng(random_state)
         self._allow_duplicate_points = allow_duplicate_points or False
         self.n_duplicate_points = 0
 
@@ -98,17 +98,24 @@ class TargetSpace:
         # keep track of unique points we have seen so far
         self._cache: dict[tuple[float, ...], float | tuple[float, float | NDArray[Float]]] = {}
 
-        self._constraint: ConstraintModel | None = constraint
+        self._constraint: ConstraintModel | None = None
+        if constraint is None:
+            self._constraint = None
+        else:
+            self._constraint = ConstraintModel(
+                constraint.fun,
+                constraint.lb,
+                constraint.ub,
+                transform=self.kernel_transform,
+                random_state=random_state,
+            )
 
-        if constraint is not None:
             # preallocated memory for constraint fulfillment
             self._constraint_values: NDArray[Float]
-            if constraint.lb.size == 1:
+            if self._constraint.lb.size == 1:
                 self._constraint_values = np.empty(shape=(0), dtype=float)
             else:
                 self._constraint_values = np.empty(shape=(0, self._constraint.lb.size), dtype=float)
-        else:
-            self._constraint = None
 
     def __contains__(self, x: NDArray[Float]) -> bool:
         """Check if this parameter has already been registered.
@@ -312,9 +319,7 @@ class TargetSpace:
             Representation of the parameters as an array.
         """
         if set(params) != set(self.keys):
-            error_msg = (
-                f"Parameters' keys ({params}) do " f"not match the expected set of keys ({self.keys})."
-            )
+            error_msg = f"Parameters' keys ({params}) do not match the expected set of keys ({self.keys})."
             raise ValueError(error_msg)
         return self._to_float(params)
 
@@ -356,15 +361,14 @@ class TargetSpace:
         """
         if len(x) != self._dim:
             error_msg = (
-                f"Size of array ({len(x)}) is different than the "
-                f"expected number of parameters ({self._dim})."
+                f"Size of array ({len(x)}) is different than the expected number of parameters ({self._dim})."
             )
             raise ValueError(error_msg)
         return self._to_params(x)
 
     def _to_float(self, value: Mapping[str, float | NDArray[Float]]) -> NDArray[Float]:
         if set(value) != set(self.keys):
-            msg = f"Parameters' keys ({value}) do " f"not match the expected set of keys ({self.keys})."
+            msg = f"Parameters' keys ({value}) do not match the expected set of keys ({self.keys})."
             raise ValueError(msg)
         res = np.zeros(self._dim)
         for key in self._keys:
@@ -704,9 +708,7 @@ class TargetSpace:
                 params_config[key] = new_params_config[key]
             dims = dims + params_config[key].dim
         if dims != self.dim:
-            msg = (
-                f"Dimensions of new bounds ({dims}) does not match" f" dimensions of old bounds ({self.dim})."
-            )
+            msg = f"Dimensions of new bounds ({dims}) does not match dimensions of old bounds ({self.dim})."
             raise ValueError(msg)
         self._params_config = params_config
         self._bounds = self.calculate_bounds()
