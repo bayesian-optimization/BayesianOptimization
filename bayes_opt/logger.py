@@ -97,7 +97,8 @@ class ScreenLogger:
                 if width > 0:
                     result += s[dot_pos : dot_pos + width]
             else:
-                result += s[:width]
+                head = s[:e_pos] if "e" in s else s
+                result += head[:width]
             if "e" in s:
                 result += end
             result = result.ljust(self._default_cell_size)

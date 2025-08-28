@@ -91,7 +91,10 @@ def test_format_number():
     formatted = logger._format_number(sci_float)
     assert formatted == "1.111e-05"
 
-    # Test negative scientific notation truncation
+    sci_float_neg = -1.11111111e-5
+    formatted = logger._format_number(sci_float_neg)
+    assert formatted == "-1.11e-05"
+
     sci_float = -12345678901234.5678901234
     formatted = logger._format_number(sci_float)
     assert len(formatted) == logger._default_cell_size
