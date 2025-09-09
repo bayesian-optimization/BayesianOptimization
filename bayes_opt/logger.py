@@ -82,7 +82,7 @@ class ScreenLogger:
             result = ""
             width = self._default_cell_size
             # Keep negative sign, exponent, and as many decimal places as possible
-            if "-" in s:
+            if x < 0:
                 result += "-"
                 width -= 1
                 s = s[1:]
@@ -96,8 +96,6 @@ class ScreenLogger:
                 width -= dot_pos
                 if width > 0:
                     result += s[dot_pos : dot_pos + width]
-            else:
-                result += s[:width]
             if "e" in s:
                 result += end
             result = result.ljust(self._default_cell_size)
