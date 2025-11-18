@@ -175,6 +175,75 @@ class BayesianOptimization:
         """
         return self._space.res()
 
+    def predict(
+        self, params: dict[str, Any] | list[dict[str, Any]], return_std=False, return_cov=False, fit_gp=True
+    ) -> tuple[float | NDArray[Float], float | NDArray[Float]]:
+        """Predict the target function value at given parameters.
+
+        Parameters
+        ---------
+        params: dict or list
+            The parameters where the prediction is made.
+
+        return_std: bool, optional(default=True)
+            If True, the standard deviation of the prediction is returned.
+
+        return_cov: bool, optional(default=False)
+            If True, the covariance of the prediction is returned.
+
+        fit_gp: bool, optional(default=True)
+            If True, the internal Gaussian Process model is fitted before
+            making the prediction.
+
+        Returns
+        -------
+        mean: float or np.ndarray
+            The predicted mean of the target function at the given parameters.
+
+        std_or_cov: float or np.ndarray
+            The predicted standard deviation or covariance of the target function
+            at the given parameters.
+        """
+        if isinstance(params, list):
+            # convert list of dicts to 2D array
+            params_array = np.array([self._space.params_to_array(p) for p in params])
+            single_param = False
+        elif isinstance(params, dict):
+            params_array = self._space.params_to_array(params).reshape(1, -1)
+            single_param = True
+
+        if fit_gp:
+            if len(self._space) == 0:
+                msg = (
+                    "The Gaussian Process model cannot be fitted with zero observations. To use predict(), "
+                    "without fitting the GP, set fit_gp=False. The predictions will then be made using the "
+                    "GP prior."
+                )
+                raise RuntimeError(msg)
+            self.acquisition_function._fit_gp(self._gp, self._space)
+
+        res = self._gp.predict(params_array, return_std=return_std, return_cov=return_cov)
+
+        if return_std or return_cov:
+            mean, std_or_cov = res
+        else:
+            mean = res
+
+        if not single_param and mean.ndim == 0:
+            mean = np.atleast_1d(mean)
+        # ruff complains when nesting conditionals, so this three-way split is necessary
+        if not single_param and (return_std or return_cov) and std_or_cov.ndim == 0:
+            std_or_cov = np.atleast_1d(std_or_cov)
+
+        if single_param and mean.ndim > 0:
+            mean = mean[0]
+        if single_param and (return_std or return_cov) and std_or_cov.ndim > 0:
+            std_or_cov = std_or_cov[0]
+
+        if return_std or return_cov:
+            return mean, std_or_cov
+        return mean
+
     def register(
         self, params: ParamsType, target: float, constraint_value: float | NDArray[Float] | None = None
     ) -> None:
@@ -303,8 +372,8 @@ class BayesianOptimization:
             probe based on the acquisition function. This means that the GP may
             not be fitted on all points registered to the target space when the
             method completes. If you intend to use the GP model after the
-            optimization routine, make sure to fit it manually, e.g. by calling
-            ``optimizer._gp.fit(optimizer.space.params, optimizer.space.target)``.
+            optimization routine, make sure to call predict() with fit_gp=True.
+
         """
         # Log optimization start
         self.logger.log_optimization_start(self._space.keys)
