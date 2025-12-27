@@ -17,11 +17,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
         numpy-version: [">=1.25,<2", ">=2"]
         exclude:
-          - python-version: "3.13"
-            numpy-version: ">=1.25,<2" # numpy<2 is not supported on Python 3.13
+          - python-version: "3.13" # numpy<2 is not supported on 3.13+
+            numpy-version: ">=1.25,<2"
+          - python-version: "3.14"
+            numpy-version: ">=1.25,<2"
 
     steps:
     - uses: actions/checkout@v3
