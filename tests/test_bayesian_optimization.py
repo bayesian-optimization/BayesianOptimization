@@ -801,3 +801,108 @@ def test_predict_custom_parameter():
     assert len(stds) == len(test_points)
     for i in range(len(test_points)):
         assert stds[i] > 0.0
+
+
+def test_predict_invalid_params_type():
+    """Test that predict raises TypeError for invalid params type."""
+    optimizer = BayesianOptimization(f=target_func, pbounds=PBOUNDS, random_state=1, verbose=0)
+    optimizer.register(params={"p1": 1, "p2": 2}, target=3)
+
+    # Test with invalid type (string)
+    with pytest.raises(TypeError, match="params must be a dict or iterable of dicts"):
+        optimizer.predict("invalid", fit_gp=False)
+
+
+def test_predict_with_tuple():
+    """Test that predict works with tuple of dicts."""
+    optimizer = BayesianOptimization(f=target_func, pbounds=PBOUNDS, random_state=1, verbose=0)
+    optimizer.register(params={"p1": 1, "p2": 2}, target=3)
+
+    # Tuple of dicts should work as a valid iterable
+    result = optimizer.predict(({"p1": 1, "p2": 2},), fit_gp=False)
+    assert isinstance(result, np.ndarray)
+
+
+def test_predict_return_std_and_cov_mutually_exclusive():
+    """Test that predict raises ValueError when both return_std and return_cov are True."""
+    optimizer = BayesianOptimization(f=target_func, pbounds=PBOUNDS, random_state=1, verbose=0)
+    optimizer.register(params={"p1": 1, "p2": 2}, target=3)
+    optimizer.register(params={"p1": 4, "p2": 5}, target=9)
+
+    # Test with both return_std and return_cov as True
+    with pytest.raises(ValueError, match="return_std and return_cov cannot both be True"):
+        optimizer.predict({"p1": 2, "p2": 3}, return_std=True, return_cov=True, fit_gp=False)
+
+    # Test with list
+    with pytest.raises(ValueError, match="return_std and return_cov cannot both be True"):
+        optimizer.predict([{"p1": 2, "p2": 3}], return_std=True, return_cov=True, fit_gp=False)
+
+
+def test_predict_shape_semantics_dict_vs_list():
+    """Test that dict input returns scalars and list input returns arrays."""
+    optimizer = BayesianOptimization(f=target_func, pbounds=PBOUNDS, random_state=1, verbose=0)
+    optimizer.register(params={"p1": 1, "p2": 2}, target=3)
+    optimizer.register(params={"p1": 4, "p2": 5}, target=9)
+
+    # Test dict input returns scalar
+    mean_dict = optimizer.predict({"p1": 2, "p2": 3}, fit_gp=False)
+    assert mean_dict.ndim == 0, "dict input should return scalar (0-d array)"
+
+    # Test list with single dict returns 1D array
+    mean_list_single = optimizer.predict([{"p1": 2, "p2": 3}], fit_gp=False)
+    assert mean_list_single.ndim == 1, "list with single dict should return 1D array"
+    assert len(mean_list_single) == 1, "list with single dict should have length 1"
+
+    # Test list with multiple dicts returns 1D array
+    mean_list_multi = optimizer.predict([{"p1": 2, "p2": 3}, {"p1": 5, "p2": 6}], fit_gp=False)
+    assert mean_list_multi.ndim == 1, "list with multiple dicts should return 1D array"
+    assert len(mean_list_multi) == 2, "list with two dicts should have length 2"
+
+
+def test_predict_shape_semantics_with_std():
+    """Test shape semantics with return_std=True."""
+    optimizer = BayesianOptimization(f=target_func, pbounds=PBOUNDS, random_state=1, verbose=0)
+    optimizer.register(params={"p1": 1, "p2": 2}, target=3)
+    optimizer.register(params={"p1": 4, "p2": 5}, target=9)
+
+    # Test dict input returns tuple of scalars
+    mean_dict, std_dict = optimizer.predict({"p1": 2, "p2": 3}, return_std=True, fit_gp=False)
+    assert mean_dict.ndim == 0, "dict mean should be scalar"
+    assert std_dict.ndim == 0, "dict std should be scalar"
+
+    # Test list with single dict returns tuple of 1D arrays
+    mean_list, std_list = optimizer.predict([{"p1": 2, "p2": 3}], return_std=True, fit_gp=False)
+    assert mean_list.ndim == 1, "list mean should be 1D array"
+    assert std_list.ndim == 1, "list std should be 1D array"
+    assert len(mean_list) == 1, "list mean should have length 1"
+    assert len(std_list) == 1, "list std should have length 1"
+
+    # Test list with multiple dicts returns tuple of 1D arrays
+    mean_list, std_list = optimizer.predict(
+        [{"p1": 2, "p2": 3}, {"p1": 5, "p2": 6}], return_std=True, fit_gp=False
+    )
+    assert mean_list.ndim == 1, "list mean should be 1D array"
+    assert std_list.ndim == 1, "list std should be 1D array"
+    assert len(mean_list) == 2, "list mean should have length 2"
+    assert len(std_list) == 2, "list std should have length 2"
+
+
+def test_predict_shape_semantics_with_cov():
+    """Test shape semantics with return_cov=True."""
+    optimizer = BayesianOptimization(f=target_func, pbounds=PBOUNDS, random_state=1, verbose=0)
+    optimizer.register(params={"p1": 1, "p2": 2}, target=3)
+    optimizer.register(params={"p1": 4, "p2": 5}, target=9)
+
+    # Test dict input returns tuple of scalar and 2D covariance
+    mean_dict, cov_dict = optimizer.predict({"p1": 2, "p2": 3}, return_cov=True, fit_gp=False)
+    assert mean_dict.ndim == 0, "dict mean should be scalar"
+    assert cov_dict.ndim == 2, "dict cov should be 2D"
+
+    # Test list input returns tuple of 1D array and 2D covariance
+    mean_list, cov_list = optimizer.predict(
+        [{"p1": 2, "p2": 3}, {"p1": 5, "p2": 6}], return_cov=True, fit_gp=False
+    )
+    assert mean_list.ndim == 1, "list mean should be 1D array"
+    assert cov_list.ndim == 2, "list cov should be 2D"
+    assert len(mean_list) == 2, "list mean should have length 2"
+    assert cov_list.shape == (2, 2), "cov shape should match number of points"

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 from collections import deque
+from collections.abc import Iterable
 from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -176,16 +177,20 @@ class BayesianOptimization:
         return self._space.res()
 
     def predict(
-        self, params: dict[str, Any] | list[dict[str, Any]], return_std=False, return_cov=False, fit_gp=True
-    ) -> tuple[float | NDArray[Float], float | NDArray[Float]]:
+        self,
+        params: dict[str, Any] | Iterable[dict[str, Any]],
+        return_std=False,
+        return_cov=False,
+        fit_gp=True,
+    ) -> float | NDArray[Float] | tuple[float | NDArray[Float], float | NDArray[Float]]:
         """Predict the target function value at given parameters.
 
         Parameters
         ---------
-        params: dict or list
+        params: dict or iterable of dicts
             The parameters where the prediction is made.
 
-        return_std: bool, optional(default=True)
+        return_std: bool, optional(default=False)
             If True, the standard deviation of the prediction is returned.
 
         return_cov: bool, optional(default=False)
@@ -199,18 +204,29 @@ class BayesianOptimization:
         -------
         mean: float or np.ndarray
             The predicted mean of the target function at the given parameters.
+            When params is a dict, returns a scalar. When params is an iterable,
+            returns a 1D array.
 
-        std_or_cov: float or np.ndarray
+        std_or_cov: float or np.ndarray (only if return_std or return_cov is True)
             The predicted standard deviation or covariance of the target function
             at the given parameters.
         """
-        if isinstance(params, list):
-            # convert list of dicts to 2D array
-            params_array = np.array([self._space.params_to_array(p) for p in params])
-            single_param = False
-        elif isinstance(params, dict):
+        # Validate param types
+        if isinstance(params, dict):
             params_array = self._space.params_to_array(params).reshape(1, -1)
             single_param = True
+        elif isinstance(params, Iterable) and not isinstance(params, str):
+            # convert iterable of dicts to 2D array
+            params_array = np.array([self._space.params_to_array(p) for p in params])
+            single_param = False
+        else:
+            msg = f"params must be a dict or iterable of dicts, got {type(params).__name__}"
+            raise TypeError(msg)
+
+        # Validate mutual exclusivity of return_std and return_cov
+        if return_std and return_cov:
+            msg = "return_std and return_cov cannot both be True"
+            raise ValueError(msg)
 
         if fit_gp:
             if len(self._space) == 0:
@@ -229,6 +245,8 @@ class BayesianOptimization:
         else:
             mean = res
 
+        # Shape semantics: dict input returns scalars, list input returns arrays
+        # Ensure list input always returns arrays (convert scalar to 1D if needed)
         if not single_param and mean.ndim == 0:
             mean = np.atleast_1d(mean)
         # ruff complains when nesting conditionals, so this three-way split is necessary
@@ -237,7 +255,7 @@ class BayesianOptimization:
 
         if single_param and mean.ndim > 0:
             mean = mean[0]
-        if single_param and (return_std or return_cov) and std_or_cov.ndim > 0:
+        if single_param and return_std and std_or_cov.ndim > 0:
             std_or_cov = std_or_cov[0]
 
         if return_std or return_cov:
