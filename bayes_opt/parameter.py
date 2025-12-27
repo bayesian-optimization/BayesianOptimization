@@ -489,7 +489,10 @@ def wrap_kernel(kernel: kernels.Kernel, transform: Callable[[Any], Any]) -> kern
         def __reduce__(self) -> str | tuple[Any, ...]:
             return (wrap_kernel, (kernel, transform))
 
-    return WrappedKernel(**kernel.get_params())
+    wrapped_instance = WrappedKernel.__new__(WrappedKernel)
+    wrapped_instance.__dict__.update(kernel.__dict__)
+    wrapped_instance._transform = transform
+    return wrapped_instance
 
 
 def _copy_signature(source_fct: Callable[..., Any]) -> Callable[[Callable[..., Any]], Callable[..., Any]]:

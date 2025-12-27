@@ -244,3 +244,17 @@ def test_wrapped_kernel_fit():
     gp.fit(space.params, space.target)
 
     assert gp.kernel_.length_scale != 1e5
+
+
+def test_combined_wrapped_kernel_fit():
+    pbounds = {"p1": (0, 1), "p2": (1, 10, int)}
+    space = TargetSpace(None, pbounds)
+
+    space.register(space.random_sample(0), 1.0)
+    space.register(space.random_sample(1), 5.0)
+
+    kernel_fct = kernels.Matern(nu=2.5, length_scale=1e5) + kernels.WhiteKernel(noise_level=1.0)
+    kernel = wrap_kernel(kernel_fct, space.kernel_transform)
+    gp = GaussianProcessRegressor(kernel=kernel, alpha=1e-6, n_restarts_optimizer=5)
+
+    gp.fit(space.params, space.target)
