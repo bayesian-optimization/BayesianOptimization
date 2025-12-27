@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 from collections import deque
+from collections.abc import Iterable
 from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -175,6 +176,92 @@ class BayesianOptimization:
         """
         return self._space.res()
 
+    def predict(
+        self,
+        params: dict[str, Any] | Iterable[dict[str, Any]],
+        return_std=False,
+        return_cov=False,
+        fit_gp=True,
+    ) -> float | NDArray[Float] | tuple[float | NDArray[Float], float | NDArray[Float]]:
+        """Predict the target function value at given parameters.
+
+        Parameters
+        ---------
+        params: dict or iterable of dicts
+            The parameters where the prediction is made.
+
+        return_std: bool, optional(default=False)
+            If True, the standard deviation of the prediction is returned.
+
+        return_cov: bool, optional(default=False)
+            If True, the covariance of the prediction is returned.
+
+        fit_gp: bool, optional(default=True)
+            If True, the internal Gaussian Process model is fitted before
+            making the prediction.
+
+        Returns
+        -------
+        mean: float or np.ndarray
+            The predicted mean of the target function at the given parameters.
+            When params is a dict, returns a scalar. When params is an iterable,
+            returns a 1D array.
+
+        std_or_cov: float or np.ndarray (only if return_std or return_cov is True)
+            The predicted standard deviation or covariance of the target function
+            at the given parameters.
+        """
+        # Validate param types
+        if isinstance(params, dict):
+            params_array = self._space.params_to_array(params).reshape(1, -1)
+            single_param = True
+        elif isinstance(params, Iterable) and not isinstance(params, str):
+            # convert iterable of dicts to 2D array
+            params_array = np.array([self._space.params_to_array(p) for p in params])
+            single_param = False
+        else:
+            msg = f"params must be a dict or iterable of dicts, got {type(params).__name__}"
+            raise TypeError(msg)
+
+        # Validate mutual exclusivity of return_std and return_cov
+        if return_std and return_cov:
+            msg = "return_std and return_cov cannot both be True"
+            raise ValueError(msg)
+
+        if fit_gp:
+            if len(self._space) == 0:
+                msg = (
+                    "The Gaussian Process model cannot be fitted with zero observations. To use predict(), "
+                    "without fitting the GP, set fit_gp=False. The predictions will then be made using the "
+                    "GP prior."
+                )
+                raise RuntimeError(msg)
+            self.acquisition_function._fit_gp(self._gp, self._space)
+
+        res = self._gp.predict(params_array, return_std=return_std, return_cov=return_cov)
+
+        if return_std or return_cov:
+            mean, std_or_cov = res
+        else:
+            mean = res
+
+        # Shape semantics: dict input returns scalars, list input returns arrays
+        # Ensure list input always returns arrays (convert scalar to 1D if needed)
+        if not single_param and mean.ndim == 0:
+            mean = np.atleast_1d(mean)
+        # ruff complains when nesting conditionals, so this three-way split is necessary
+        if not single_param and (return_std or return_cov) and std_or_cov.ndim == 0:
+            std_or_cov = np.atleast_1d(std_or_cov)
+
+        if single_param and mean.ndim > 0:
+            mean = mean[0]
+        if single_param and return_std and std_or_cov.ndim > 0:
+            std_or_cov = std_or_cov[0]
+
+        if return_std or return_cov:
+            return mean, std_or_cov
+        return mean
+
     def register(
         self, params: ParamsType, target: float, constraint_value: float | NDArray[Float] | None = None
     ) -> None:
@@ -303,8 +390,8 @@ class BayesianOptimization:
             probe based on the acquisition function. This means that the GP may
             not be fitted on all points registered to the target space when the
             method completes. If you intend to use the GP model after the
-            optimization routine, make sure to fit it manually, e.g. by calling
-            ``optimizer._gp.fit(optimizer.space.params, optimizer.space.target)``.
+            optimization routine, make sure to call predict() with fit_gp=True.
+
         """
         # Log optimization start
         self.logger.log_optimization_start(self._space.keys)
