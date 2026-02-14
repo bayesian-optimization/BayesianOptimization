@@ -328,7 +328,7 @@ class BayesianOptimization:
                 self._space.keys, self._space.res()[-1], self._space.params_config, self.max
             )
 
-    def random_sample(self, n: int = 1) -> dict[str, float | NDArray[Float]]:
+    def random_sample(self, n: int = 1) -> list[dict[str, float | NDArray[Float]]]:
         """Generate a random sample of parameters from the target space.
 
         Parameters
@@ -442,13 +442,13 @@ class BayesianOptimization:
         """
         random_state = None
         if self._random_state is not None:
-            state_tuple = self._random_state.get_state()
+            state_dict = self._random_state.get_state(legacy=False)
             random_state = {
-                "bit_generator": state_tuple[0],
-                "state": state_tuple[1].tolist(),
-                "pos": state_tuple[2],
-                "has_gauss": state_tuple[3],
-                "cached_gaussian": state_tuple[4],
+                "bit_generator": state_dict["bit_generator"],
+                "state": state_dict["state"]["key"].tolist(),
+                "pos": state_dict["state"]["pos"],
+                "has_gauss": state_dict["has_gauss"],
+                "cached_gaussian": state_dict["gauss"],
             }
 
         # Get constraint values if they exist
