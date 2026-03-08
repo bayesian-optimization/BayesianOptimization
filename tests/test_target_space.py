@@ -293,6 +293,54 @@ def test_res():
     assert space.res() == expected_res
 
 
+def test_res_categorical() -> None:
+    PBOUNDS = {"p1": (0, 10), "p2": ["a", "b", "c"]}
+
+    def _f(p1: float, p2: str) -> float:
+        return p1 + len(p2)
+
+    space = TargetSpace(_f, PBOUNDS)
+
+    assert space.res() == []
+    space.probe(params={"p1": 1, "p2": "a"})
+    space.probe(params={"p1": 5, "p2": "b"})
+    space.probe(params={"p1": 2, "p2": "c"})
+    space.probe(params={"p1": 2, "p2": "a"})
+
+    expected_res = [
+        {"params": {"p1": 1, "p2": "a"}, "target": 2},
+        {"params": {"p1": 5, "p2": "b"}, "target": 6},
+        {"params": {"p1": 2, "p2": "c"}, "target": 3},
+        {"params": {"p1": 2, "p2": "a"}, "target": 3},
+    ]
+    assert len(space.res()) == 4
+    assert space.res() == expected_res
+
+
+def test_res_categorical_with_constraints() -> None:
+    PBOUNDS = {"p1": (0, 10), "p2": ["a", "b", "c"]}
+
+    def _f(p1: float, p2: str) -> float:
+        return p1 + len(p2)
+
+    space = TargetSpace(_f, PBOUNDS, constraint=NonlinearConstraint(lambda p1, p2: p1 - 2, 0, 5))
+
+    assert space.res() == []
+    space.probe(params={"p1": 1, "p2": "a"})
+    space.probe(params={"p1": 5, "p2": "b"})
+    space.probe(params={"p1": 2, "p2": "c"})
+    space.probe(params={"p1": 2, "p2": "a"})
+
+    expected_res = [
+        {"params": {"p1": 1, "p2": "a"}, "target": 2, "allowed": False, "constraint": -1},
+        {"params": {"p1": 5, "p2": "b"}, "target": 6, "allowed": True, "constraint": 3},
+        {"params": {"p1": 2, "p2": "c"}, "target": 3, "allowed": True, "constraint": 0},
+        {"params": {"p1": 2, "p2": "a"}, "target": 3, "allowed": True, "constraint": 0},
+    ]
+    assert len(space.res()) == 4
+    assert space.res() == expected_res
+
+
 def test_set_bounds():
     pbounds = {"p1": (0, 1), "p3": (0, 3), "p2": (0, 2), "p4": (0, 4)}
     space = TargetSpace(target_func, pbounds)
