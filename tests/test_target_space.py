@@ -253,6 +253,26 @@ def test_max_with_constraint_identical_target_value():
     assert space.max() == {"params": {"p1": 2, "p2": 3}, "target": 5, "constraint": -1}
 
 
+def test_max_categorical() -> None:
+    PBOUNDS = {
+        "first_float": (0.0, 1.0),
+        "categorical_value": ("a", "b", "c", "d"),
+        "second_float": (0.0, 1.0),
+    }
+
+    def _f(first_float: float, categorical_value: str, second_float: float) -> float:
+        return second_float if categorical_value == "c" else first_float
+
+    space = TargetSpace(_f, PBOUNDS)
+    space.probe(params={"first_float": 0.1, "categorical_value": "a", "second_float": 0.1})
+    space.probe(params={"first_float": 0.1, "categorical_value": "b", "second_float": 0.9})
+    space.probe(params={"first_float": 0.1, "categorical_value": "c", "second_float": 0.8})
+    space.probe(params={"first_float": 0.1, "categorical_value": "d", "second_float": 0.9})
+
+    expected = {"first_float": 0.1, "categorical_value": "c", "second_float": 0.8}
+    assert space.max()["params"] == expected
+
+
 def test_res():
     PBOUNDS = {"p1": (0, 10), "p2": (1, 100)}
     space = TargetSpace(target_func, PBOUNDS)
