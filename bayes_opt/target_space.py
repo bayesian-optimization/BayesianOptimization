@@ -643,7 +643,7 @@ class TargetSpace:
         params = self.params[self.mask]
         target_max_idx = np.argmax(target)
 
-        res = {"target": target_max, "params": dict(zip(self.keys, params[target_max_idx]))}
+        res = {"target": target_max, "params": self.array_to_params(params[target_max_idx])}
 
         if self._constraint is not None:
             constraint_values = self.constraint_values[self.mask]
@@ -672,7 +672,7 @@ class TargetSpace:
 
             return [{"target": target, "params": param} for target, param in zip(self.target, params)]
 
-        params = [dict(zip(self.keys, p)) for p in self.params]
+        params = [self.array_to_params(p) for p in self.params]
 
         return [
             {"target": target, "constraint": constraint_value, "params": param, "allowed": allowed}
