@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pickle
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -95,6 +96,28 @@ def test_register():
         optimizer.register(params={"p1": 1, "p2": 2}, target=3)
     with pytest.raises(NotUniqueError):
         optimizer.register(params={"p1": 5, "p2": 4}, target=9)
+
+
+def test_register_array_uses_pbounds_order_without_warning():
+    optimizer = BayesianOptimization(target_func, {"p1": (0, 10), "p2": (0, 10)}, random_state=1)
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        optimizer.register(params=np.array([1, 2]), target=3)
+
+    assert caught == []
+    assert optimizer.space.array_to_params(optimizer.space.params[0]) == {"p1": 1.0, "p2": 2.0}
+
+
+def test_probe_array_uses_pbounds_order_without_warning():
+    optimizer = BayesianOptimization(target_func, {"p1": (0, 10), "p2": (0, 10)}, random_state=1)
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        optimizer.probe(params=np.array([1, 2]), lazy=False)
+
+    assert caught == []
+    assert optimizer.space.array_to_params(optimizer.space.params[0]) == {"p1": 1.0, "p2": 2.0}
 
 
 def test_probe_lazy():

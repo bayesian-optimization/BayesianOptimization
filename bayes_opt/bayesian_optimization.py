@@ -12,7 +12,6 @@ from collections.abc import Iterable
 from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
-from warnings import warn
 
 import numpy as np
 from scipy.optimize import NonlinearConstraint
@@ -137,8 +136,6 @@ class BayesianOptimization:
                 msg = "The transformer must be an instance of DomainTransformer"
                 raise TypeError(msg)
             self._bounds_transformer.initialize(self._space)
-
-        self._sorting_warning_already_shown = False  # TODO: remove in future version
 
         # Initialize logger
         self.logger = ScreenLogger(verbose=self._verbose, is_constrained=self.is_constrained)
@@ -278,17 +275,6 @@ class BayesianOptimization:
         constraint_value: float or None
             Value of the constraint function at the observation, if any.
         """
-        # TODO: remove in future version
-        if isinstance(params, np.ndarray) and not self._sorting_warning_already_shown:
-            msg = (
-                "You're attempting to register an np.ndarray. In previous versions, the optimizer internally"
-                " sorted parameters by key and expected any registered array to respect this order."
-                " In the current and any future version the order as given by the pbounds dictionary will be"
-                " used. If you wish to retain sorted parameters, please manually sort your pbounds"
-                " dictionary before constructing the optimizer."
-            )
-            warn(msg, stacklevel=1)
-            self._sorting_warning_already_shown = True
         self._space.register(params, target, constraint_value)
         self.logger.log_optimization_step(
             self._space.keys, self._space.res()[-1], self._space.params_config, self.max
@@ -308,18 +294,6 @@ class BayesianOptimization:
             If True, the optimizer will evaluate the points when calling
             maximize(). Otherwise it will evaluate it at the moment.
         """
-        # TODO: remove in future version
-        if isinstance(params, np.ndarray) and not self._sorting_warning_already_shown:
-            msg = (
-                "You're attempting to register an np.ndarray. In previous versions, the optimizer internally"
-                " sorted parameters by key and expected any registered array to respect this order."
-                " In the current and any future version the order as given by the pbounds dictionary will be"
-                " used. If you wish to retain sorted parameters, please manually sort your pbounds"
-                " dictionary before constructing the optimizer."
-            )
-            warn(msg, stacklevel=1)
-            self._sorting_warning_already_shown = True
-            params = self._space.array_to_params(params)
         if lazy:
             self._queue.append(params)
         else:
