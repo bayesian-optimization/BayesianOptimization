@@ -26,7 +26,7 @@ from bayes_opt.target_space import TargetSpace
 from bayes_opt.util import ensure_rng
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Mapping
+    from collections.abc import Callable
 
     from numpy.random import RandomState
     from numpy.typing import NDArray
@@ -85,7 +85,7 @@ class BayesianOptimization:
     def __init__(
         self,
         f: Callable[..., float] | None,
-        pbounds: Mapping[str, tuple[float, float]],
+        pbounds: BoundsMapping,
         acquisition_function: AcquisitionFunction | None = None,
         constraint: NonlinearConstraint | None = None,
         random_state: int | RandomState | None = None,
