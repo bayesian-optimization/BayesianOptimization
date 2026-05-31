@@ -69,6 +69,11 @@ class BayesianOptimization:
         numpy.random.RandomState. Otherwise the random state provided is used.
         When set to None, an unseeded random state is generated.
 
+    alpha: float, optional(default=1e-6)
+        Regularization parameter to prevent numerical issues or to adjust to an
+        error gaussian distribution with high variance. The higher, the higher
+        the regularization.
+
     verbose: int, optional(default=2)
         The level of verbosity.
 
@@ -89,6 +94,7 @@ class BayesianOptimization:
         acquisition_function: AcquisitionFunction | None = None,
         constraint: NonlinearConstraint | None = None,
         random_state: int | RandomState | None = None,
+        alpha: float = 1e-6,
         verbose: int = 2,
         bounds_transformer: DomainTransformer | None = None,
         allow_duplicate_points: bool = False,
@@ -123,7 +129,7 @@ class BayesianOptimization:
         # Internal GP regressor
         self._gp = GaussianProcessRegressor(
             kernel=wrap_kernel(Matern(nu=2.5), transform=self._space.kernel_transform),
-            alpha=1e-6,
+            alpha=alpha,
             normalize_y=True,
             n_restarts_optimizer=5,
             random_state=self._random_state,
