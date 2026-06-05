@@ -1316,6 +1316,15 @@ class GPHedge(AcquisitionFunction):
         ]
         self.previous_candidates = np.array(x_max)
         idx = self._sample_idx_from_softmax_gains(random_state=random_state)
+        if not target_space._allow_duplicate_points and x_max[idx] in target_space:
+            # If every candidate is a duplicate, keep the original choice.
+            # Avoiding duplicates then requires generating new candidates, which
+            # is outside GPHedge's candidate-selection responsibility.
+            non_duplicate_idx = [idx for idx, x in enumerate(x_max) if x not in target_space]
+            if len(non_duplicate_idx) > 0:
+                cumsum_softmax_g = np.cumsum(softmax(self.gains[non_duplicate_idx]))
+                r = random_state.rand()
+                idx = non_duplicate_idx[np.argmax(r <= cumsum_softmax_g)]
         return x_max[idx]
 
     def get_acquisition_params(self) -> dict[str, Any]:
