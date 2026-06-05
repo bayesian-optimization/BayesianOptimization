@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 import numpy as np
 import pytest
 from scipy.optimize import NonlinearConstraint
@@ -163,5 +165,5 @@ def test_lower_less_than_upper(target_function):
 
 def test_null_constraint_function():
     constraint = ConstraintModel(None, np.array([0, 0]), np.array([1, 1]))
-    with pytest.raises(ValueError, match="No constraint function was provided."):
+    with pytest.raises(ValueError, match=re.escape("No constraint function was provided.")):
         constraint.eval()
