@@ -26,7 +26,7 @@ dependencies = [
     "packaging>=20.0; python_version<'3.14'",
     "packaging>=26.0; python_version>='3.14'",
     "scikit-learn>=1.0.0; python_version<'3.14'",
-    "scikit-learn>=1.7.2; python_version>='3.14'",
+    "scikit-learn>=1.8.0; python_version>='3.14'",
     "scipy>=1.0.0; python_version<'3.13'",
     "scipy>=1.14.1; python_version>='3.13' and python_version<'3.14'",
     "scipy>=1.17.0; python_version>='3.14'",
