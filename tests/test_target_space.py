@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 import numpy as np
 import pytest
 from scipy.optimize import NonlinearConstraint
@@ -358,7 +360,7 @@ def test_set_bounds():
 
 def test_no_target_func():
     target_space = TargetSpace(None, PBOUNDS)
-    with pytest.raises(ValueError, match="No target function has been provided."):
+    with pytest.raises(ValueError, match=re.escape("No target function has been provided.")):
         target_space.probe({"p1": 1, "p2": 2})
 
 
