@@ -69,6 +69,23 @@ def constrained_target_space(target_func):
     )
 
 
+class FixedSuggestion(acquisition.AcquisitionFunction):
+    def __init__(self, suggestion):
+        super().__init__()
+        self.suggestion = np.array(suggestion)
+
+    def suggest(self, *args, **kwargs):
+        return self.suggestion
+
+    def base_acq(self, mean, std):
+        return mean
+
+    def get_acquisition_params(self):
+        return {}
+
+    def set_acquisition_params(self, params): ...
+
+
 class MockAcquisition(acquisition.AcquisitionFunction):
     def __init__(self):
         super().__init__()
@@ -353,6 +370,19 @@ def test_gphedge_softmax_sampling(random_state):
         acq.previous_candidates = np.zeros(len(base_acquisitions))
         acq._update_gains(MockGP2(good_index=good_index))
         assert good_index == acq._sample_idx_from_softmax_gains(random_state=random_state)
+
+
+def test_gphedge_skips_duplicate_candidate_when_unique_candidate_exists(gp, target_space, random_state):
+    duplicate = np.array([2.5, 0.5])
+    unique = np.array([3.0, 1.0])
+    target_space.register(duplicate, target=sum(duplicate))
+
+    acq = acquisition.GPHedge(base_acquisitions=[FixedSuggestion(duplicate), FixedSuggestion(unique)])
+    acq.gains = np.array([100.0, 0.0])
+
+    suggestion = acq.suggest(gp=gp, target_space=target_space, fit_gp=False, random_state=random_state)
+
+    np.testing.assert_array_equal(suggestion, unique)
 
 
 def test_gphedge_integration(gp, target_space, random_state):
