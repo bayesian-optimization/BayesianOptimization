@@ -36,7 +36,7 @@ jobs:
     - name: Install test dependencies
       run: |
         uv sync --extra dev
-        uv pip install "{{ matrix.numpy-constraints }}"
+        uv pip install {{ matrix.numpy-constraints }}
     - name: Run pytest
       run: uv run --no-sync pytest --cov-report xml --cov=bayes_opt/
     - name: Upload coverage to Codecov
