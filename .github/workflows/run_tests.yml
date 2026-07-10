@@ -13,19 +13,19 @@ permissions:
 
 jobs:
   build:
-    name: Python ${{ matrix.python-version }} - ${{ matrix.numpy-constraints }}
+    name: Python ${{ matrix.python-version }} - NumPy ${{ matrix.numpy-major }}.x
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14", "3.14t"]
-        numpy-constraints: ["numpy>=1.25,<2 scipy<1.18", "numpy>=2"] # scipy>=1.18 is not supported on numpy<2
+        numpy-major: ["1", "2"]
         exclude:
           - python-version: "3.13" # numpy<2 is not supported on 3.13+
-            numpy-constraints: "numpy>=1.25,<2 scipy<1.18"
+            numpy-major: "1"
           - python-version: "3.14"
-            numpy-constraints: "numpy>=1.25,<2 scipy<1.18"
+            numpy-major: "1"
           - python-version: "3.14t"
-            numpy-constraints: "numpy>=1.25,<2 scipy<1.18"
+            numpy-major: "1"
 
     steps:
     - uses: actions/checkout@v3
@@ -36,7 +36,12 @@ jobs:
     - name: Install test dependencies
       run: |
         uv sync --extra dev
-        uv pip install {{ matrix.numpy-constraints }}
+    - name: Install NumPy 1.x compatibility dependencies
+      if: matrix.numpy-major == '1'
+      run: uv pip install "numpy>=1.25,<2" "scipy<1.18"  # scipy>=1.18 is not supported on numpy<2
+    - name: Install NumPy 2.x compatibility dependencies
+      if: matrix.numpy-major == '2'
+      run: uv pip install "numpy>=2"
     - name: Run pytest
       run: uv run --no-sync pytest --cov-report xml --cov=bayes_opt/
     - name: Upload coverage to Codecov
