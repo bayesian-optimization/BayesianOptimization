@@ -16,7 +16,7 @@ _NOTEBOOKS_NOT_TO_RUN = frozenset(["put_notebooks_to_skip_here"])
 
 
 # get all notebooks:
-@pytest.mark.parametrize("notebook", this_file_loc.with_name("examples").glob("*.ipynb"))
+@pytest.mark.parametrize("notebook", sorted(this_file_loc.with_name("examples").glob("*.ipynb")))
 def test_all_notebooks_run(notebook: Path):
     as_string = str(notebook)
     if any([nb in as_string for nb in _NOTEBOOKS_NOT_TO_RUN]):
