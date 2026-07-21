@@ -50,6 +50,10 @@ dev = [
     "sphinx-autodoc-typehints>=2.3.0; python_version<'3.10'",
     "sphinx-autodoc-typehints>=2.4.0; python_version>='3.10'",
 ]
+[project.urls]
+Repository = "https://github.com/bayesian-optimization/BayesianOptimization"
+Documentation = "https://bayesian-optimization.github.io/BayesianOptimization"
+Releases = "https://github.com/bayesian-optimization/BayesianOptimization/releases"
 
 [build-system]
 requires = ["uv_build>=0.7.21,<0.8.0"]
