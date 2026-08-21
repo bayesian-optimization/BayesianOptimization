@@ -1005,7 +1005,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[2]:
 </code></pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="c1"># Let&#39;s start by defining our function, bounds, and instantiating an optimization object.</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="c1"># Let's start by defining our function, bounds, and instantiating an optimization object.</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">black_box_function</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
     <span class="k">return</span> <span class="o">-</span><span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
 </code></pre></div>
@@ -1030,7 +1030,7 @@
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span>
     <span class="n">f</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">acquisition_function</span><span class="o">=</span><span class="n">acq</span><span class="p">,</span>
-    <span class="n">pbounds</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)},</span>
+    <span class="n">pbounds</span><span class="o">=</span><span class="p">{</span><span class="s1">'x'</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="s1">'y'</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)},</span>
     <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
     <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
 <span class="p">)</span>
@@ -1044,7 +1044,7 @@
 </code></pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">next_point_to_probe</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">suggest</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Next point to probe is:&quot;</span><span class="p">,</span> <span class="n">next_point_to_probe</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Next point to probe is:"</span><span class="p">,</span> <span class="n">next_point_to_probe</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
@@ -1062,7 +1062,7 @@ Next point to probe is: {&#39;x&#39;: np.float64(-0.331911981189704), &#39;y&#39
 </code></pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">target</span> <span class="o">=</span> <span class="n">black_box_function</span><span class="p">(</span><span class="o">**</span><span class="n">next_point_to_probe</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found the target value to be:&quot;</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Found the target value to be:"</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
@@ -1095,7 +1095,7 @@ Found the target value to be: 0.7861845912690544
 </pre></div></div>
 </div>
 <h3 id="1.1-The-maximize-loop">1.1 The maximize loop<a class="headerlink" href="#1.1-The-maximize-loop" title="Link to this heading">¶</a></h3>
-<p>And that’s it. By repeating the steps above you recreate the internals of the <code class="docutils literal notranslate"><span class="pre">maximize</span></code> method. This should give you all the flexibility you need to log progress, hault execution, perform concurrent evaluations, etc.</p>
+<p>And that’s it. By repeating the steps above you recreate the internals of the <code class="docutils literal notranslate"><span class="pre">maximize</span></code> method. This should give you all the flexibility you need to log progress, halt execution, perform concurrent evaluations, etc.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span><code>[ ]:
 </code></pre></div>
@@ -1138,7 +1138,7 @@ Found the target value to be: 0.7861845912690544
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><code><span class="n">optimizer</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span>
     <span class="n">f</span><span class="o">=</span><span class="n">black_box_function</span><span class="p">,</span>
-    <span class="n">pbounds</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)},</span>
+    <span class="n">pbounds</span><span class="o">=</span><span class="p">{</span><span class="s1">'x'</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="s1">'y'</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)},</span>
     <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
     <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
 <span class="p">)</span>
