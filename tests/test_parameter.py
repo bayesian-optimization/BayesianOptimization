@@ -87,6 +87,20 @@ def test_int_parameters():
     assert p1.kernel_transform(np.array([1.3, 3.6, 7.2])) == pytest.approx(np.array([1, 4, 7]))
 
 
+@pytest.mark.parametrize("bounds", [(3_000_000_000, 3_000_000_010), (-3_000_000_010, -3_000_000_000), (0, 5)])
+def test_int_random_sample_large_bounds(bounds):
+    parameter = IntParameter("x", bounds)
+    samples = parameter.random_sample(100, random_state=np.random.RandomState(42))
+    repeated = parameter.random_sample(100, random_state=np.random.RandomState(42))
+    assert samples.dtype == np.dtype(float)
+    np.testing.assert_array_equal(samples, repeated)
+    assert np.all(samples >= bounds[0])
+    assert np.all(samples <= bounds[1])
+    assert np.all(samples == np.floor(samples))
+    assert bounds[0] in samples
+    assert bounds[1] in samples
+
+
 def test_categorical_kernel_transform_preserves_batch_rows():
     parameter = CategoricalParameter("x", ["a", "b", "c"])
     values = np.array([[0.2, 0.8, 0.1], [0.9, 0.1, 0.2], [0.1, 0.2, 0.7], [0.2, 0.8, 0.1]])
