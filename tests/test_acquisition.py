@@ -7,7 +7,9 @@ import numpy as np
 import pytest
 from scipy.optimize import NonlinearConstraint
 from scipy.spatial.distance import pdist
+from scipy.stats import norm
 from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import ConstantKernel
 
 from bayes_opt import BayesianOptimization, acquisition, exception
 from bayes_opt.acquisition import (
@@ -236,6 +238,27 @@ def test_expected_improvement(gp, target_space, random_state):
     assert acq.xi == 0.01
     acq.suggest(gp=gp, target_space=target_space, random_state=random_state)
     assert acq.xi == 0.01
+
+
+@pytest.mark.parametrize("xi", [0.0, 0.25])
+def test_expected_improvement_zero_variance(xi):
+    acq = ExpectedImprovement(xi=xi)
+    acq.y_max = 1.0
+    mean = np.array([0.0, 1.0 + xi, 2.0, 1.5])
+    expected = [0.0, 0.0, 1.0 - xi, norm.expect(lambda x: max(x - 1.0 - xi, 0), loc=1.5, scale=0.5)]
+    with np.errstate(divide="raise", invalid="raise"):
+        np.testing.assert_allclose(acq.base_acq(mean, np.array([0.0, 0.0, 0.0, 0.5])), expected)
+        assert acq.base_acq(1.0 + xi, 0.0) == 0.0
+
+
+def test_expected_improvement_deterministic_gp():
+    gp = GaussianProcessRegressor(kernel=ConstantKernel(1.0, "fixed"), alpha=0, optimizer=None)
+    gp.fit([[0.0]], [1.0])
+    mean, std = gp.predict([[0.0], [1.0]], return_std=True)
+    np.testing.assert_array_equal(std, 0.0)
+    acq = ExpectedImprovement(xi=0.0)
+    acq.y_max = 1.0
+    np.testing.assert_array_equal(acq.base_acq(mean, std), 0.0)
 
 
 def test_expected_improvement_with_constraints(gp, constrained_target_space, random_state):
