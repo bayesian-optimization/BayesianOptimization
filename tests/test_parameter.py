@@ -101,6 +101,19 @@ def test_int_random_sample_large_bounds(bounds):
     assert bounds[1] in samples
 
 
+def test_categorical_kernel_transform_preserves_batch_rows():
+    parameter = CategoricalParameter("x", ["a", "b", "c"])
+    values = np.array([[0.2, 0.8, 0.1], [0.9, 0.1, 0.2], [0.1, 0.2, 0.7], [0.2, 0.8, 0.1]])
+    expected = np.eye(3)[[1, 0, 2, 1]]
+    np.testing.assert_array_equal(parameter.kernel_transform(values), expected)
+    kernel = wrap_kernel(kernels.RBF(length_scale=1.0), parameter.kernel_transform)
+    np.testing.assert_allclose(kernel(values), kernels.RBF(length_scale=1.0)(expected))
+    np.testing.assert_allclose(
+        kernel(values, values[:2]), kernels.RBF(length_scale=1.0)(expected, expected[:2])
+    )
+    np.testing.assert_array_equal(parameter.kernel_transform(values[:1]), expected[:1])
+
+
 def test_cat_parameters():
     fruit_ratings = {"apple": 1.0, "banana": 2.0, "mango": 5.0, "honeydew melon": -10.0, "strawberry": np.pi}
 
