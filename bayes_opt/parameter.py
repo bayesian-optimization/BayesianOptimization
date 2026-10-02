@@ -445,7 +445,7 @@ class CategoricalParameter(BayesParameter):
         """
         value = np.atleast_2d(value)
         res = np.zeros(value.shape)
-        res[:, np.argmax(value, axis=1)] = 1
+        res[np.arange(value.shape[0]), np.argmax(value, axis=1)] = 1
         return res
 
     @property
