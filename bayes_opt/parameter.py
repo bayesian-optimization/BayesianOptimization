@@ -278,7 +278,9 @@ class IntParameter(BayesParameter):
             The samples.
         """
         random_state = ensure_rng(random_state)
-        return random_state.randint(self.bounds[0], self.bounds[1] + 1, n_samples).astype(float)
+        return random_state.randint(self.bounds[0], self.bounds[1] + 1, n_samples, dtype=np.int64).astype(
+            float
+        )
 
     def to_float(self, value: int | float) -> float:
         """Convert a parameter value to a float.

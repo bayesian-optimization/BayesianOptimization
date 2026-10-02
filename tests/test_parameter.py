@@ -87,6 +87,20 @@ def test_int_parameters():
     assert p1.kernel_transform(np.array([1.3, 3.6, 7.2])) == pytest.approx(np.array([1, 4, 7]))
 
 
+@pytest.mark.parametrize("bounds", [(3_000_000_000, 3_000_000_010), (-3_000_000_010, -3_000_000_000), (0, 5)])
+def test_int_random_sample_large_bounds(bounds):
+    parameter = IntParameter("x", bounds)
+    samples = parameter.random_sample(100, random_state=np.random.RandomState(42))
+    repeated = parameter.random_sample(100, random_state=np.random.RandomState(42))
+    assert samples.dtype == np.dtype(float)
+    np.testing.assert_array_equal(samples, repeated)
+    assert np.all(samples >= bounds[0])
+    assert np.all(samples <= bounds[1])
+    assert np.all(samples == np.floor(samples))
+    assert bounds[0] in samples
+    assert bounds[1] in samples
+
+
 def test_cat_parameters():
     fruit_ratings = {"apple": 1.0, "banana": 2.0, "mango": 5.0, "honeydew melon": -10.0, "strawberry": np.pi}
 
