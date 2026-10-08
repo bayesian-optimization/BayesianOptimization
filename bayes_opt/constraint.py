@@ -37,10 +37,12 @@ class ConstraintModel:
     lb : float or np.ndarray
         The lower bound on the constraints. Should have the same
         dimensionality as the return value of the constraint function.
+        A scalar is broadcast to match the upper bound.
 
     ub : float or np.ndarray
         The upper bound on the constraints. Should have the same
         dimensionality as the return value of the constraint function.
+        A scalar is broadcast to match the lower bound.
 
     random_state : np.random.RandomState or int or None, default=None
         Random state to use.
@@ -62,8 +64,7 @@ class ConstraintModel:
     ) -> None:
         self.fun = fun
 
-        self._lb = np.atleast_1d(lb)
-        self._ub = np.atleast_1d(ub)
+        self._lb, self._ub = np.broadcast_arrays(np.atleast_1d(lb), np.atleast_1d(ub))
 
         if np.any(self._lb >= self._ub):
             msg = "Lower bounds must be less than upper bounds."

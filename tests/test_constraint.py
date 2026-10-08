@@ -125,6 +125,36 @@ def test_multiple_constraints(target_function):
     )
 
 
+@pytest.mark.parametrize(
+    ("lb", "ub"),
+    [
+        (-np.inf, np.array([0.5, 0.25])),
+        (np.array([-0.5, -0.25]), np.inf),
+        (-0.5, np.array([0.5, 0.25])),
+        (np.array([-0.5, -0.25]), 0.5),
+        (np.array([-np.inf, -np.inf]), np.array([0.5, 0.25])),
+        (np.array([-0.5, -0.25]), np.array([np.inf, np.inf])),
+    ],
+)
+def test_multiple_constraints_broadcast_bounds(lb, ub):
+    constraint = NonlinearConstraint(lambda x: np.array([x, -x]), lb, ub)
+    optimizer = BayesianOptimization(
+        f=lambda x: -(x**2), constraint=constraint, pbounds={"x": (-1, 1)}, verbose=0, random_state=1
+    )
+
+    for x in [-0.75, 0.0, 0.75]:
+        optimizer.probe({"x": x}, lazy=False)
+
+    np.testing.assert_array_equal(
+        optimizer.space.constraint_values, [[-0.75, 0.75], [0.0, 0.0], [0.75, -0.75]]
+    )
+    assert [result["allowed"] for result in optimizer.res] == [False, True, False]
+    assert optimizer.max["params"] == {"x": 0.0}
+    assert -1 <= optimizer.suggest()["x"] <= 1
+    probabilities = optimizer.constraint.predict(np.array([[-0.75], [0.0], [0.75]]))
+    np.testing.assert_allclose(probabilities, [0.0, 1.0, 0.0], atol=1e-6)
+
+
 def test_kwargs_not_the_same(target_function):
     def target_function(x, y):
         return np.cos(2 * x) * np.cos(y) + np.sin(x)
