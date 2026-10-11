@@ -372,6 +372,7 @@ def test_save_load_state(tmp_path):
 @pytest.mark.parametrize("existing_points", [False, True])
 @pytest.mark.parametrize("pbounds", [{"p2": (0, 10), "p1": (0, 10)}, {"width": (0, 10), "height": (0, 10)}])
 def test_load_state_rejects_incompatible_keys(tmp_path, saved_points, existing_points, pbounds):
+    """Reject incompatible keys without changing results or random-state progression."""
     original = BayesianOptimization(target_func, PBOUNDS, random_state=1, verbose=0)
     if saved_points:
         original.probe({"p1": 1, "p2": 2}, lazy=False)
