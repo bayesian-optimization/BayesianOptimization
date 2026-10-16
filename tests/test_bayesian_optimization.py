@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pickle
-import re
 import warnings
 from pathlib import Path
 
@@ -380,7 +379,7 @@ def test_load_state_rejects_incompatible_keys(tmp_path, saved_points, existing_p
         restored.probe(dict.fromkeys(pbounds, 0), lazy=False)
     before = restored.res
 
-    with pytest.raises(ValueError, match=re.escape("parameter keys.*same order")):
+    with pytest.raises(ValueError, match=r"parameter keys.*same order"):
         restored.load_state(state_path)
 
     assert restored.res == before
