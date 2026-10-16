@@ -845,8 +845,10 @@ class ExpectedImprovement(AcquisitionFunction):
             )
             raise ValueError(msg)
         a = mean - self.y_max - self.xi
-        z = a / std
-        return a * norm.cdf(z) + std * norm.pdf(z)
+        z = a / np.where(std == 0, 1, std)
+        improvement = a * norm.cdf(z) + std * norm.pdf(z)
+        # A deterministic prediction has no uncertainty to integrate over.
+        return np.where(std == 0, np.maximum(a, 0), improvement)
 
     def suggest(
         self,
