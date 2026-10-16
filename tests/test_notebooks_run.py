@@ -19,7 +19,7 @@ _NOTEBOOKS_NOT_TO_RUN = frozenset(["put_notebooks_to_skip_here"])
 @pytest.mark.parametrize("notebook", sorted(this_file_loc.with_name("examples").glob("*.ipynb")))
 def test_all_notebooks_run(notebook: Path):
     as_string = str(notebook)
-    if any([nb in as_string for nb in _NOTEBOOKS_NOT_TO_RUN]):
+    if any(nb in as_string for nb in _NOTEBOOKS_NOT_TO_RUN):
         pytest.skip(f"skipping [{notebook!s}]")
 
     print(f"running: {notebook}...")

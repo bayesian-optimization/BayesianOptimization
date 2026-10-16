@@ -670,7 +670,10 @@ class TargetSpace:
         if self._constraint is None:
             params = [self.array_to_params(p) for p in self.params]
 
-            return [{"target": target, "params": param} for target, param in zip(self.target, params)]
+            return [
+                {"target": target, "params": param}
+                for target, param in zip(self.target, params, strict=False)
+            ]
 
         params = [self.array_to_params(p) for p in self.params]
 
@@ -681,6 +684,7 @@ class TargetSpace:
                 self._constraint_values,
                 params,
                 self._constraint.allowed(self._constraint_values),
+                strict=False,
             )
         ]
 
