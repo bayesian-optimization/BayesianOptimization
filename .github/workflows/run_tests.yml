@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14", "3.14t"]
+        python-version: ["3.11", "3.12", "3.13", "3.14", "3.14t", "3.15", "3.15t"]
         numpy-major: ["1", "2"]
         exclude:
           - python-version: "3.13" # numpy<2 is not supported on 3.13+
@@ -25,6 +25,10 @@ jobs:
           - python-version: "3.14"
             numpy-major: "1"
           - python-version: "3.14t"
+            numpy-major: "1"
+          - python-version: "3.15"
+            numpy-major: "1"
+          - python-version: "3.15t"
             numpy-major: "1"
 
     steps:
