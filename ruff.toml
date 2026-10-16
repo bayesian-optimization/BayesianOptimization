@@ -1,6 +1,6 @@
 line-length = 110
 unsafe-fixes = false
-target-version = "py39"
+target-version = "py311"
 extend = "./pyproject.toml"
 exclude = [
     # docs

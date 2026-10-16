@@ -329,13 +329,8 @@ def test_duplicate_points():
     # register once (should work)
     optimizer.register(params=next_point_to_probe, target=target)
     # register twice (should throw error)
-    try:
+    with pytest.raises(NotUniqueError):
         optimizer.register(params=next_point_to_probe, target=target)
-        duplicate_point_error = None  # should be overwritten below
-    except Exception as e:
-        duplicate_point_error = e
-
-    assert isinstance(duplicate_point_error, NotUniqueError)
 
     # OK, now let's test that it DOESNT fail when allow_duplicate_points=True
     optimizer = BayesianOptimization(
@@ -384,7 +379,7 @@ def test_load_state_rejects_incompatible_keys(tmp_path, saved_points, existing_p
         restored.probe(dict.fromkeys(pbounds, 0), lazy=False)
     before = restored.res
 
-    with pytest.raises(ValueError, match="parameter keys.*same order"):
+    with pytest.raises(ValueError, match=r"parameter keys.*same order"):
         restored.load_state(state_path)
 
     assert restored.res == before

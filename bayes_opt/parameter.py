@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import abc
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from inspect import signature
 from numbers import Number
-from typing import TYPE_CHECKING, Any, Callable, Union
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from sklearn.gaussian_process import kernels
@@ -23,15 +23,15 @@ if TYPE_CHECKING:
 
     FloatBoundsWithoutType = tuple[float, float]
     FloatBoundsWithType = tuple[float, float, type[float]]
-    FloatBounds = Union[FloatBoundsWithoutType, FloatBoundsWithType]
-    IntBounds = tuple[Union[int, float], Union[int, float], type[int]]
+    FloatBounds = FloatBoundsWithoutType | FloatBoundsWithType
+    IntBounds = tuple[int | float, int | float, type[int]]
     CategoricalBounds = Sequence[Any]
-    Bounds = Union[FloatBounds, IntBounds, CategoricalBounds]
+    Bounds = FloatBounds | IntBounds | CategoricalBounds
     BoundsMapping = Mapping[str, Bounds]
 
     # FIXME: categorical parameters can be of any type.
     # This will make static type checking for parameters difficult.
-    ParamsType = Union[Mapping[str, Any], Sequence[Any], NDArray[Float]]
+    ParamsType = Mapping[str, Any] | Sequence[Any] | NDArray[Float]
 
 
 def is_numeric(value: Any) -> bool:
@@ -280,7 +280,7 @@ class IntParameter(BayesParameter):
         random_state = ensure_rng(random_state)
         return random_state.randint(self.bounds[0], self.bounds[1] + 1, n_samples).astype(float)
 
-    def to_float(self, value: int | float) -> float:
+    def to_float(self, value: float) -> float:
         """Convert a parameter value to a float.
 
         Parameters
@@ -290,7 +290,7 @@ class IntParameter(BayesParameter):
         """
         return float(value)
 
-    def to_param(self, value: int | float | NDArray[Int] | NDArray[Float]) -> int:
+    def to_param(self, value: float | NDArray[Int] | NDArray[Float]) -> int:
         """Convert a float value to a parameter.
 
         Parameters

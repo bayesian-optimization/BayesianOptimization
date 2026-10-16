@@ -1024,7 +1024,7 @@ class ConstantLiar(AcquisitionFunction):
             A copy of the target space.
         """
         keys = target_space.keys
-        pbounds = {key: bound for key, bound in zip(keys, target_space.bounds)}
+        pbounds = {key: bound for key, bound in zip(keys, target_space.bounds, strict=False)}
         target_space_copy = TargetSpace(
             None, pbounds=pbounds, allow_duplicate_points=target_space._allow_duplicate_points
         )
@@ -1351,7 +1351,7 @@ class GPHedge(AcquisitionFunction):
         params : dict
             Dictionary containing the acquisition function parameters.
         """
-        for acq, acq_params in zip(self.base_acquisitions, params["base_acquisitions_params"]):
+        for acq, acq_params in zip(self.base_acquisitions, params["base_acquisitions_params"], strict=False):
             acq.set_acquisition_params(acq_params)
 
         self.gains = np.array(params["gains"])

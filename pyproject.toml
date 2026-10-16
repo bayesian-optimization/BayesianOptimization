@@ -5,13 +5,11 @@ description = "Bayesian Optimization package"
 authors = [{ name = "Fernando Nogueira", email = "fmfnogueira@gmail.com" }]
 license = { file = "LICENSE" }
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -43,12 +41,10 @@ dev = [
     "pre-commit>=3.7.1",
     "pytest>=8.0.0",
     "pytest-cov>=4.1.0",
-    "ruff>=0.15.6",
+    "ruff==0.17.1",
     "sphinx-immaterial>=0.12.0",
-    "sphinx>=7.0.0; python_version<'3.10'",
-    "sphinx>=8.0.0; python_version>='3.10'",
-    "sphinx-autodoc-typehints>=2.3.0; python_version<'3.10'",
-    "sphinx-autodoc-typehints>=2.4.0; python_version>='3.10'",
+    "sphinx>=8.0.0",
+    "sphinx-autodoc-typehints>=2.4.0",
 ]
 [project.urls]
 Repository = "https://github.com/bayesian-optimization/BayesianOptimization"

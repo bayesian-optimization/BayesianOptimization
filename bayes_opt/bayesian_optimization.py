@@ -33,7 +33,6 @@ if TYPE_CHECKING:
 
     from bayes_opt.acquisition import AcquisitionFunction
     from bayes_opt.constraint import ConstraintModel
-    from bayes_opt.domain_reduction import DomainTransformer
     from bayes_opt.parameter import BoundsMapping, ParamsType
 
     Float = np.floating[Any]
@@ -476,7 +475,8 @@ class BayesianOptimization:
 
         if state.get("transformed_bounds") and self._bounds_transformer:
             new_bounds = {
-                key: bounds for key, bounds in zip(self._space.keys, np.array(state["transformed_bounds"]))
+                key: bounds
+                for key, bounds in zip(self._space.keys, np.array(state["transformed_bounds"]), strict=False)
             }
             self._space.set_bounds(new_bounds)
             self._bounds_transformer.initialize(self._space)

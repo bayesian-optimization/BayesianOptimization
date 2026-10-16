@@ -90,7 +90,7 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         else:
             self.minimum_window_value = self.minimum_window_value
 
-        any_not_float = any([not isinstance(p, FloatParameter) for p in target_space._params_config.values()])
+        any_not_float = any(not isinstance(p, FloatParameter) for p in target_space._params_config.values())
         if any_not_float:
             msg = "Domain reduction is only supported for all-FloatParameter optimization."
             raise ValueError(msg)
@@ -180,11 +180,8 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         for i, pbounds in enumerate(new_bounds):
             # If the one of the bounds is outside the global bounds, reset the bound to the global bound
             # This is expected to happen when the window is near the global bounds, no warning is issued
-            if pbounds[0] < global_bounds[i, 0]:
-                pbounds[0] = global_bounds[i, 0]
-
-            if pbounds[1] > global_bounds[i, 1]:
-                pbounds[1] = global_bounds[i, 1]
+            pbounds[0] = max(pbounds[0], global_bounds[i, 0])
+            pbounds[1] = min(pbounds[1], global_bounds[i, 1])
 
             # If a lower bound is greater than the associated global upper bound,
             # reset it to the global lower bound
