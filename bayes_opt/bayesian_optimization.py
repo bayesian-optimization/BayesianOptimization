@@ -456,6 +456,10 @@ class BayesianOptimization:
         state : dict
             Dictionary containing the optimizer state.
         """
+        if state["keys"] != self._space.keys:
+            msg = "Saved state must have the same parameter keys in the same order as the optimizer."
+            raise ValueError(msg)
+
         params_array = np.asarray(state["params"], dtype=np.float64)
         target_array = np.asarray(state["target"], dtype=np.float64)
         constraint_array = (

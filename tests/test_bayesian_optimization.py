@@ -368,6 +368,30 @@ def test_save_load_state(tmp_path):
     np.testing.assert_array_equal(optimizer.space.target, new_optimizer.space.target)
 
 
+@pytest.mark.parametrize("saved_points", [False, True])
+@pytest.mark.parametrize("existing_points", [False, True])
+@pytest.mark.parametrize("pbounds", [{"p2": (0, 10), "p1": (0, 10)}, {"width": (0, 10), "height": (0, 10)}])
+def test_load_state_rejects_incompatible_keys(tmp_path, saved_points, existing_points, pbounds):
+    """Reject incompatible keys without changing results or random-state progression."""
+    original = BayesianOptimization(target_func, PBOUNDS, random_state=1, verbose=0)
+    if saved_points:
+        original.probe({"p1": 1, "p2": 2}, lazy=False)
+    state_path = tmp_path / "optimizer_state.json"
+    original.save_state(state_path)
+
+    restored = BayesianOptimization(target_func, pbounds, random_state=7, verbose=0)
+    if existing_points:
+        restored.probe(dict.fromkeys(pbounds, 0), lazy=False)
+    before = restored.res
+
+    with pytest.raises(ValueError, match="parameter keys.*same order"):
+        restored.load_state(state_path)
+
+    assert restored.res == before
+    control = BayesianOptimization(target_func, pbounds, random_state=7, verbose=0)
+    assert restored.random_sample(2) == control.random_sample(2)
+
+
 def test_save_load_w_categorical_params(tmp_path):
     """Test saving and loading optimizer state with categorical parameters."""
 
