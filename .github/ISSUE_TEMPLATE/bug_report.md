@@ -20,14 +20,11 @@ Ex:
 ```python
 from bayes_opt import BayesianOptimization
 
-black_box_function = lambda x, y: -x ** 2 - (y - 1) ** 2 + 1
+black_box_function = lambda x, y: -(x**2) - (y - 1) ** 2 + 1
 
-pbounds = {'x': (2, 4), 'y': (-3, 3)}
+pbounds = {"x": (2, 4), "y": (-3, 3)}
 
-optimizer = BayesianOptimization(
-    f=black_box_function,
-    pbounds=pbounds
-)
+optimizer = BayesianOptimization(f=black_box_function, pbounds=pbounds)
 optimizer.maximize()
 ```
 

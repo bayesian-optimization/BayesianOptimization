@@ -70,7 +70,7 @@ def black_box_function(x, y):
     purposes think of the internals of this function, i.e.: the process
     which generates its output values, as unknown.
     """
-    return -x ** 2 - (y - 1) ** 2 + 1
+    return -(x**2) - (y - 1) ** 2 + 1
 ```
 
 ### 2. Getting Started
@@ -82,13 +82,9 @@ All we need to get started is to instantiate a `BayesianOptimization` object spe
 from bayes_opt import BayesianOptimization
 
 # Bounded region of parameter space
-pbounds = {'x': (2, 4), 'y': (-3, 3)}
+pbounds = {"x": (2, 4), "y": (-3, 3)}
 
-optimizer = BayesianOptimization(
-    f=black_box_function,
-    pbounds=pbounds,
-    random_state=1,
-)
+optimizer = BayesianOptimization(f=black_box_function, pbounds=pbounds, random_state=1)
 ```
 
 The BayesianOptimization object will work out of the box without much tuning needed. The main method you should be aware of is `maximize`, which does exactly what you think it does.
@@ -99,10 +95,7 @@ There are many parameters you can pass to maximize, nonetheless, the most import
 
 
 ```python
-optimizer.maximize(
-    init_points=2,
-    n_iter=3,
-)
+optimizer.maximize(init_points=2, n_iter=3)
 ```
 
     |   iter    |  target   |     x     |     y     |
