@@ -41,7 +41,7 @@ dev = [
     "pre-commit>=3.7.1",
     "pytest>=8.0.0",
     "pytest-cov>=4.1.0",
-    "ruff>=0.15.6",
+    "ruff==0.17.1",
     "sphinx-immaterial>=0.12.0",
     "sphinx>=8.0.0",
     "sphinx-autodoc-typehints>=2.4.0",
