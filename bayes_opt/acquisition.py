@@ -565,6 +565,7 @@ class UpperConfidenceBound(AcquisitionFunction):
             "kappa": self.kappa,
             "exploration_decay": self.exploration_decay,
             "exploration_decay_delay": self.exploration_decay_delay,
+            "i": self.i,
         }
 
     def set_acquisition_params(self, params: dict[str, Any]) -> None:
@@ -578,6 +579,7 @@ class UpperConfidenceBound(AcquisitionFunction):
         self.kappa = params["kappa"]
         self.exploration_decay = params["exploration_decay"]
         self.exploration_decay_delay = params["exploration_decay_delay"]
+        self.i = params.get("i", self.i)
 
 
 class ProbabilityOfImprovement(AcquisitionFunction):
@@ -745,6 +747,7 @@ class ProbabilityOfImprovement(AcquisitionFunction):
             "xi": self.xi,
             "exploration_decay": self.exploration_decay,
             "exploration_decay_delay": self.exploration_decay_delay,
+            "i": self.i,
         }
 
     def set_acquisition_params(self, params: dict[str, Any]) -> None:
@@ -758,6 +761,7 @@ class ProbabilityOfImprovement(AcquisitionFunction):
         self.xi = params["xi"]
         self.exploration_decay = params["exploration_decay"]
         self.exploration_decay_delay = params["exploration_decay_delay"]
+        self.i = params.get("i", self.i)
 
 
 class ExpectedImprovement(AcquisitionFunction):
@@ -934,6 +938,7 @@ class ExpectedImprovement(AcquisitionFunction):
             "xi": self.xi,
             "exploration_decay": self.exploration_decay,
             "exploration_decay_delay": self.exploration_decay_delay,
+            "i": self.i,
         }
 
     def set_acquisition_params(self, params: dict[str, Any]) -> None:
@@ -947,6 +952,7 @@ class ExpectedImprovement(AcquisitionFunction):
         self.xi = params["xi"]
         self.exploration_decay = params["exploration_decay"]
         self.exploration_decay_delay = params["exploration_decay_delay"]
+        self.i = params.get("i", self.i)
 
 
 class ConstantLiar(AcquisitionFunction):
