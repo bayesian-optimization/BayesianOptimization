@@ -167,7 +167,9 @@ class ConstraintModel:
         with :math:`\mu(x)`, :math:`\sigma^2(x)` the mean and variance at
         :math:`x` as given by the GP and :math:`c^{\text{low}}`,
         :math:`c^{\text{up}}` the lower and upper bounds of the constraint
-        respectively.
+        respectively. A prediction with zero standard deviation is treated as a
+        point mass: its probability is one exactly when its mean is within the
+        inclusive bounds, and zero otherwise.
 
         Note
         ----
@@ -197,28 +199,22 @@ class ConstraintModel:
         y_std: NDArray[Float]
         p_lower: NDArray[Float]
         p_upper: NDArray[Float]
-        if len(self._model) == 1:
-            y_mean, y_std = self._model[0].predict(X, return_std=True)
-
-            p_lower = (
-                norm(loc=y_mean, scale=y_std).cdf(self._lb[0]) if self._lb[0] != -np.inf else np.array([0])
-            )
-            p_upper = (
-                norm(loc=y_mean, scale=y_std).cdf(self._ub[0]) if self._ub[0] != np.inf else np.array([1])
-            )
-            result = p_upper - p_lower
-            return result.reshape(X_shape[:-1])
-
         result = np.ones(X.shape[0])
         for j, gp in enumerate(self._model):
             y_mean, y_std = gp.predict(X, return_std=True)
+            deterministic = y_std == 0
+            # A zero-variance Gaussian is a point mass; do not pass scale=0 to scipy.
+            safe_std = np.where(deterministic, 1.0, y_std)
             p_lower = (
-                norm(loc=y_mean, scale=y_std).cdf(self._lb[j]) if self._lb[j] != -np.inf else np.array([0])
+                norm(loc=y_mean, scale=safe_std).cdf(self._lb[j]) if self._lb[j] != -np.inf else np.array([0])
             )
             p_upper = (
-                norm(loc=y_mean, scale=y_std).cdf(self._ub[j]) if self._ub[j] != np.inf else np.array([1])
+                norm(loc=y_mean, scale=safe_std).cdf(self._ub[j]) if self._ub[j] != np.inf else np.array([1])
             )
-            result = result * (p_upper - p_lower)
+            probability = np.where(
+                deterministic, (self._lb[j] <= y_mean) & (y_mean <= self._ub[j]), p_upper - p_lower
+            )
+            result = result * probability
         return result.reshape(X_shape[:-1])
 
     def approx(self, X: NDArray[Float]) -> NDArray[Float]:

@@ -197,3 +197,50 @@ def test_null_constraint_function():
     constraint = ConstraintModel(None, np.array([0, 0]), np.array([1, 1]))
     with pytest.raises(ValueError, match=re.escape("No constraint function was provided.")):
         constraint.eval()
+
+
+@pytest.mark.parametrize(("lb", "ub"), [(0.0, 1.0), (-np.inf, 1.0), (0.0, np.inf), (-np.inf, np.inf)])
+@pytest.mark.parametrize("n_constraints", [1, 2])
+def test_predict_zero_variance(monkeypatch, lb, ub, n_constraints):
+    """Deterministic predictions use closed bounds, without dividing by zero."""
+    from scipy.stats import norm
+
+    lower = lb if n_constraints == 1 else [lb, -1.0]
+    upper = ub if n_constraints == 1 else [ub, 1.0]
+    model = ConstraintModel(None, lower, upper, random_state=0)
+    means = np.array([-1.0, 0.0, 0.5, 1.0, 2.0])
+    stds = np.array([0.0, 0.0, 0.5, 0.0, 0.0])
+    for i, gp in enumerate(model.model):
+        gp.n_features_in_ = 1
+        if i == 0:
+            monkeypatch.setattr(gp, "predict", lambda X, return_std: (means, stds))
+        else:
+            monkeypatch.setattr(gp, "predict", lambda X, return_std: (np.zeros(len(X)), np.ones(len(X))))
+    expected = ((lb <= means) & (means <= ub)).astype(float)
+    expected[2] = norm.cdf((ub - means[2]) / stds[2]) - norm.cdf((lb - means[2]) / stds[2])
+    if n_constraints == 2:
+        expected *= norm.cdf(1.0) - norm.cdf(-1.0)
+    X = np.arange(5.0).reshape(1, 5, 1)
+    with np.errstate(divide="raise", invalid="raise"):
+        actual = model.predict(X)
+    assert actual.shape == (1, 5)
+    np.testing.assert_allclose(actual[0], expected, rtol=1e-14, atol=0)
+
+
+@pytest.mark.parametrize("n_constraints", [1, 2])
+def test_noiseless_constraint_training_predictions(n_constraints):
+    """A real noiseless GP gives finite feasibility at observed inputs."""
+    bounds = (-0.5, 0.5) if n_constraints == 1 else ([-0.5, -0.5], [0.5, 0.5])
+    model = ConstraintModel(None, *bounds, random_state=0)
+    for gp in model.model:
+        gp.set_params(alpha=0, optimizer=None)
+    X = np.array([[0.0], [1.0], [2.0]])
+    Y = np.array([-1.0, 0.0, 1.0])
+    if n_constraints == 2:
+        Y = np.column_stack([Y, Y])
+    model.fit(X, Y)
+    # Keep this an integration regression, not only a mocked prediction table.
+    assert np.any(model.model[0].predict(X, return_std=True)[1] == 0)
+    with np.errstate(divide="raise", invalid="raise"):
+        actual = model.predict(X)
+    np.testing.assert_allclose(actual, model.allowed(model.approx(X)).astype(float))
