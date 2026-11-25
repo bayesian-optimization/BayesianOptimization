@@ -474,9 +474,13 @@ class BayesianOptimization:
         self._acquisition_function.set_acquisition_params(state["acquisition_params"])
 
         if state.get("transformed_bounds") and self._bounds_transformer:
+            bounds = np.asarray(state["transformed_bounds"])
+            # Discrete parameters keep their typed domains; a categorical
+            # parameter can occupy several rows of the encoded bounds.
             new_bounds = {
-                key: bounds
-                for key, bounds in zip(self._space.keys, np.array(state["transformed_bounds"]), strict=False)
+                key: bounds[mask][0]
+                for key, mask in self._space.masks.items()
+                if not np.array_equal(bounds[mask], self._space.bounds[mask])
             }
             self._space.set_bounds(new_bounds)
             self._bounds_transformer.initialize(self._space)
