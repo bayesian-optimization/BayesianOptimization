@@ -179,9 +179,35 @@ def test_minimum_window_dict_ordering():
     )
 
 
-def test_mixed_parameters():
-    """Ensure that the transformer errors when providing non-float parameters"""
-    pbounds = {"x": (-10, 10), "y": (-10, 10), "z": (1, 10, int)}
-    target_space = TargetSpace(target_func=black_box_function, pbounds=pbounds)
-    with pytest.raises(ValueError):
-        _ = SequentialDomainReductionTransformer().initialize(target_space)
+@pytest.mark.parametrize("window", [0.5, [0.5], {"rate": 0.5}])
+def test_mixed_parameters(window, tmp_path):
+    pbounds = {"model": ["small", "medium", "large"], "depth": (1, 5, int), "rate": (0.0, 2.0)}
+
+    def make_optimizer():
+        return BayesianOptimization(
+            f=lambda model, depth, rate: -((rate - 1) ** 2) + depth + (model == "small"),
+            pbounds=pbounds,
+            bounds_transformer=SequentialDomainReductionTransformer(minimum_window=window),
+            random_state=1,
+            verbose=0,
+        )
+
+    optimizer = make_optimizer()
+    original = optimizer.space.bounds.copy()
+    optimizer.maximize(init_points=2, n_iter=2)
+    bounds = optimizer.space.bounds
+    np.testing.assert_array_equal(bounds[:-1], original[:-1])
+    assert 0.5 <= bounds[-1, 1] - bounds[-1, 0] < 2.0
+
+    path = tmp_path / "state.json"
+    optimizer.save_state(path)
+    restored = make_optimizer()
+    restored.load_state(path)
+    np.testing.assert_array_equal(restored.space.bounds, bounds)
+    assert restored.max == optimizer.max
+
+
+def test_discrete_parameters_only():
+    target_space = TargetSpace(target_func=None, pbounds={"depth": (1, 5, int)})
+    with pytest.raises(ValueError, match="at least one FloatParameter"):
+        SequentialDomainReductionTransformer().initialize(target_space)

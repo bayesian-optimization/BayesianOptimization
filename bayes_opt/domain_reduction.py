@@ -57,8 +57,9 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         Zooming parameter used to shrink the region of interest.
 
     minimum_window : float or np.ndarray or dict, default=0.0
-        Minimum window size for each parameter. If a float is provided,
-        the same value is used for all parameters.
+        Minimum window size for each float parameter, in parameter order. If a
+        scalar is provided, the same value is used for all float parameters.
+        Integer and categorical parameters retain their original domains.
     """
 
     def __init__(
@@ -69,7 +70,6 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         eta: float = 0.9,
         minimum_window: NDArray[Float] | Sequence[float] | Mapping[str, float] | float = 0.0,
     ) -> None:
-        # TODO: Ensure that this is only applied to continuous parameters
         self.parameters = parameters
         self.gamma_osc = gamma_osc
         self.gamma_pan = gamma_pan
@@ -85,33 +85,31 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         target_space : TargetSpace
             TargetSpace this DomainTransformer operates on.
         """
-        if isinstance(self.minimum_window_value, Mapping):
-            self.minimum_window_value = [self.minimum_window_value[key] for key in target_space.keys]
-        else:
-            self.minimum_window_value = self.minimum_window_value
-
-        any_not_float = any(not isinstance(p, FloatParameter) for p in target_space._params_config.values())
-        if any_not_float:
-            msg = "Domain reduction is only supported for all-FloatParameter optimization."
+        self._float_keys = [
+            key for key, param in target_space.params_config.items() if isinstance(param, FloatParameter)
+        ]
+        if not self._float_keys:
+            msg = "Domain reduction requires at least one FloatParameter."
             raise ValueError(msg)
-        # Set the original bounds
-        self.original_bounds = np.copy(target_space.bounds)
+        self.original_bounds = np.array([target_space.params_config[key].bounds for key in self._float_keys])
         self.bounds = [self.original_bounds]
 
         self.minimum_window: NDArray[Float] | Sequence[float]
         # Set the minimum window to an array of length bounds
-        if isinstance(self.minimum_window_value, (Sequence, np.ndarray)):
-            if len(self.minimum_window_value) != len(target_space.bounds):
-                error_msg = "Length of minimum_window must be the same as the number of parameters"
+        if isinstance(self.minimum_window_value, Mapping):
+            self.minimum_window = [self.minimum_window_value[key] for key in self._float_keys]
+        elif isinstance(self.minimum_window_value, (Sequence, np.ndarray)):
+            if len(self.minimum_window_value) != len(self._float_keys):
+                error_msg = "Length of minimum_window must be the same as the number of float parameters"
                 raise ValueError(error_msg)
             self.minimum_window = self.minimum_window_value
         else:
-            self.minimum_window = [self.minimum_window_value] * len(target_space.bounds)
+            self.minimum_window = [self.minimum_window_value] * len(self._float_keys)
 
         # Set initial values
-        self.previous_optimal = np.mean(target_space.bounds, axis=1)
-        self.current_optimal = np.mean(target_space.bounds, axis=1)
-        self.r = target_space.bounds[:, 1] - target_space.bounds[:, 0]
+        self.previous_optimal = np.mean(self.original_bounds, axis=1)
+        self.current_optimal = np.mean(self.original_bounds, axis=1)
+        self.r = self.original_bounds[:, 1] - self.original_bounds[:, 0]
 
         self.previous_d = 2.0 * (self.current_optimal - self.previous_optimal) / self.r
 
@@ -141,7 +139,8 @@ class SequentialDomainReductionTransformer(DomainTransformer):
         self.previous_optimal = self.current_optimal
         self.previous_d = self.current_d
 
-        self.current_optimal = target_space.params_to_array(target_space.max()["params"])
+        best_params = target_space.max()["params"]
+        self.current_optimal = np.array([best_params[key] for key in self._float_keys])
 
         self.current_d = 2.0 * (self.current_optimal - self.previous_optimal) / self.r
 
@@ -289,4 +288,4 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
         new_bounds = self._trim(new_bounds, self.original_bounds)
         self.bounds.append(new_bounds)
-        return self._create_bounds(target_space.keys, new_bounds)
+        return self._create_bounds(self._float_keys, new_bounds)
